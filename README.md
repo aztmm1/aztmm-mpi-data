@@ -3,7 +3,7 @@
 This pipeline computes the daily MPI score, 3-state HMM regime label, and
 Pulse Compass probabilities from **free public data sources only** (FRED,
 Yahoo Finance, CBOE put/call, AAII, CNN Fear & Greed). It runs on
-**GitHub Actions** at 09:15 ET and 16:15 ET, Mon-Fri, and publishes the
+**GitHub Actions** at 09:15 ET and 16:30 ET, market days only (Mon-Fri excluding NYSE holidays), and publishes the
 result to `data/mpi.json` in your repo. The site reads it via the **jsDelivr
 CDN** through a small WP REST proxy.
 
@@ -187,7 +187,7 @@ file", wait 60 seconds (jsDelivr is provisioning) and try again.
 | ET time   | UTC (winter / EST) | UTC (summer / EDT) | What runs |
 |-----------|--------------------|--------------------|-----------|
 | 09:15 ET  | 14:15              | 13:15              | Pre-market refresh |
-| 16:15 ET  | 21:15              | 20:15              | Post-close refresh |
+| 16:30 ET  | 21:30              | 20:30              | Post-close refresh |
 
 The workflow lists all four UTC times. The Python script self-gates on the
 actual NY clock so the duplicate fires (during DST transitions and outside
@@ -205,7 +205,7 @@ NYSE holidays (full-day closures) are detected via
 1. **Actions** tab on `aztmm-mpi-data`.
 2. Click **MPI + HMM Auto-Update** workflow.
 3. Click **Run workflow** dropdown. Optional inputs:
-   - `force = true` — bypasses the 09:15/16:15 ET window check.
+   - `force = true` — bypasses the 09:15/16:30 ET window check.
    - `mock = true` — uses canned data (no network calls). Good for testing
      that the workflow itself is healthy without burning live data quota.
 
