@@ -16,7 +16,7 @@ Output JSON conforms to the existing seed schema (schema_version 2.0).
 
 Schedule self-gates on America/New_York clock:
   * Pre-market window  : 09:00 - 09:30 ET
-  * Post-close window  : 16:00 - 16:30 ET
+  * Post-close window  : 16:00 - 16:50 ET
   * Mon-Fri only, NYSE-holiday aware (pandas_market_calendars)
 
 Failsafe model: any source 5xx/timeout sets data_quality="degraded" and the
@@ -74,7 +74,7 @@ except Exception:
 NY_TZ = ZoneInfo("America/New_York")
 UTC = timezone.utc
 
-WINDOWS_ET = [(9, 0, 9, 30), (16, 0, 16, 30)]  # (h_lo, m_lo, h_hi, m_hi)
+WINDOWS_ET = [(9, 0, 9, 30), (16, 0, 16, 50)]  # (h_lo, m_lo, h_hi, m_hi)
 
 # FRED series IDs — see https://fred.stlouisfed.org/
 FRED_SERIES = {
@@ -836,10 +836,10 @@ def gate_clock(ctx: RunContext, force: bool) -> bool:
         nyse = mcal.get_calendar("NYSE")
         sched = nyse.schedule(start_date=et.date(), end_date=et.date())
         if sched.empty:
-            log.info("NYSE holiday — skipping")
+            log.info("[gate_holiday] NYSE closed today — exiting cleanly")
             return False
     except Exception as e:  # noqa: BLE001
-        ctx.warn(f"holiday calendar check skipped: {e}")
+        ctx.warn(f"[gate_holiday] calendar check failed ({e}) — proceeding")
     # Window check
     in_window = False
     for h_lo, m_lo, h_hi, m_hi in WINDOWS_ET:
