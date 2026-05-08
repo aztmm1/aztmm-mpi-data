@@ -1,6 +1,6 @@
 name: MPI + HMM Auto-Update
 
-# Runs Mon-Fri at 09:15 ET and 16:15 ET.
+# Runs Mon-Fri at 09:15 ET and 16:30 ET.
 # Note: GitHub Actions cron is in UTC and ET DST shifts ±1h.
 # We list both EST (UTC-5) and EDT (UTC-4) cron lines; the script self-gates
 # on the actual NY clock so duplicate fires no-op cleanly.
@@ -9,13 +9,13 @@ on:
     # 09:15 ET  -> 14:15 UTC (EST) and 13:15 UTC (EDT)
     - cron: "15 14 * * 1-5"
     - cron: "15 13 * * 1-5"
-    # 16:15 ET  -> 21:15 UTC (EST) and 20:15 UTC (EDT)
-    - cron: "15 21 * * 1-5"
-    - cron: "15 20 * * 1-5"
+    # 16:30 ET  -> 21:30 UTC (EST) and 20:30 UTC (EDT) 
+    - cron: "30 21 * * 1-5"
+    - cron: "30 20 * * 1-5"
   workflow_dispatch:
     inputs:
       force:
-        description: "Run even if outside the 09:15 / 16:15 ET window"
+        description: "Run even if outside the 09:15 / 16:30 ET window"
         required: false
         default: "false"
       mock:
