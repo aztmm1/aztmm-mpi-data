@@ -1,0 +1,99 @@
+name: MPI + HMM Auto-Update
+
+# Runs Mon-Fri at 09:15 ET and 16:15 ET.
+# Note: GitHub Actions cron is in UTC and ET DST shifts ±1h.
+# We list both EST (UTC-5) and EDT (UTC-4) cron lines; the script self-gates
+# on the actual NY clock so duplicate fires no-op cleanly.
+on:
+  schedule:
+    # 09:15 ET  -> 14:15 UTC (EST) and 13:15 UTC (EDT)
+    - cron: "15 14 * * 1-5"
+    - cron: "15 13 * * 1-5"
+    # 16:15 ET  -> 21:15 UTC (EST) and 20:15 UTC (EDT)
+    - cron: "15 21 * * 1-5"
+    - cron: "15 20 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Run even if outside the 09:15 / 16:15 ET window"
+        required: false
+        default: "false"
+      mock:
+        description: "Use canned data (no network calls)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mpi-update
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Compute & publish mpi.json
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pipeline
+        id: run
+        continue-on-error: true
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -e
+          ARGS=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARGS="$ARGS --force"; fi
+          if [ "${{ github.event.inputs.mock }}"  = "true" ]; then ARGS="$ARGS --mock";  fi
+          python mpi_hmm_pipeline.py $ARGS --output data/mpi.json
+
+      - name: Show output (debug)
+        if: always()
+        run: |
+          if [ -f data/mpi.json ]; then
+            echo "=== data/mpi.json (first 80 lines) ==="
+            head -n 80 data/mpi.json
+          else
+            echo "data/mpi.json not present"
+          fi
+
+      - name: Commit & push if changed
+        if: success()
+        run: |
+          set -e
+          git config user.name  "aztmm-mpi-bot"
+          git config user.email "aztmm-mpi-bot@users.noreply.github.com"
+          if git diff --quiet -- data/mpi.json; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git add data/mpi.json
+          MSG="auto: MPI update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git commit -m "$MSG"
+          git push
+
+      - name: Surface failure summary
+        if: steps.run.outcome != 'success'
+        run: |
+          echo "Pipeline step failed; last-good remains in data/mpi.json (if any)."
+          echo "See logs above; common causes: FRED_API_KEY missing, Yahoo throttle, CNN endpoint change."
+          exit 1
