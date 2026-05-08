@@ -1,6 +1,117 @@
 {
-  "_seed": true,
   "schema_version": "2.0",
-  "computed_at": "1970-01-01T00:00:00+00:00",
-  "asOf": "1970-01-01"
+  "computed_at": "2026-05-08T23:02:06Z",
+  "asOf": "2026-05-08",
+  "stale_threshold_hours": 18,
+  "data_quality": "degraded",
+  "data": {
+    "mpi_score": 59,
+    "mpi_label": "Bull",
+    "regime": "Bull",
+    "regime_label": "Bull · early",
+    "confidence": {
+      "ci_level": "85%",
+      "ci_low": 54,
+      "ci_high": 64
+    },
+    "signal": {
+      "bias": "Bullish",
+      "strength": "Medium"
+    },
+    "market": {
+      "spy_spot": null,
+      "expected_move_1sigma": 0.0,
+      "expected_move_pct": 0.0
+    },
+    "volatility": {
+      "vix": null,
+      "vix3m": null,
+      "vrp": 0.0,
+      "term_shape": "n/a",
+      "realized_vol_20d_pct": null
+    },
+    "compass": {
+      "bias": "Neutral",
+      "confidence": 0.4297,
+      "probability_up": 0.4297,
+      "probability_flat": 0.3014,
+      "probability_down": 0.2689
+    },
+    "hmm": {
+      "state": "Sideways",
+      "confidence": 0.33,
+      "probs": {
+        "Bull": 0.33,
+        "Sideways": 0.34,
+        "Bear": 0.33
+      }
+    },
+    "sub_indicators": {
+      "trend": {
+        "score": 50.0,
+        "error": "'raw'"
+      },
+      "breadth": {
+        "score": 50.0,
+        "error": "'raw'"
+      },
+      "volatility": {
+        "score": 50.0,
+        "error": "'raw'"
+      },
+      "yield_curve": {
+        "score": 69.2,
+        "t10y2y_pct": 0.48,
+        "dgs10": 4.41,
+        "dgs2": 3.92
+      },
+      "credit": {
+        "score": 86.5,
+        "hy_oas_pct": 2.79,
+        "ig_oas_pct": 0.79
+      },
+      "sentiment": {
+        "score": 66.9,
+        "cnn_fg": 66.9
+      },
+      "rotation": {
+        "score": 50.0,
+        "error": "'raw'"
+      },
+      "currency": {
+        "score": 50.0,
+        "error": "'raw'"
+      },
+      "liquidity": {
+        "score": 55.0,
+        "m2_latest": 22686.0,
+        "note": "trend proxy"
+      }
+    }
+  },
+  "warnings": [
+    "DEGRADED: yfinance returned empty frame",
+    "AAII fetch failed",
+    "CBOE put/call fetch failed",
+    "trend score failed: 'raw'",
+    "breadth score failed: 'raw'",
+    "volatility score failed: 'raw'",
+    "rotation score failed: 'raw'",
+    "currency score failed: 'raw'",
+    "HMM fit failed: SPY history unavailable for HMM\nTraceback (most recent call last):\n  File \"/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/mpi_hmm_pipeline.py\", line 651, in fit_hmm_regime\n    raise RuntimeError(\"SPY history unavailable for HMM\")\nRuntimeError: SPY history unavailable for HMM\n"
+  ],
+  "source_versions": {
+    "schema": "2.0",
+    "weights": {
+      "trend": 0.15,
+      "breadth": 0.1,
+      "volatility": 0.15,
+      "yield_curve": 0.1,
+      "credit": 0.1,
+      "sentiment": 0.15,
+      "rotation": 0.1,
+      "currency": 0.05,
+      "liquidity": 0.1
+    }
+  }
 }
