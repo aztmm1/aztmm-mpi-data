@@ -1,0 +1,14 @@
+# AZTMM MPI + HMM pipeline — pinned dependencies
+# All BSD/MIT/Apache-2.0; zero-cost runtime.
+
+pandas==2.2.3
+numpy==1.26.4
+requests==2.32.3
+fredapi==0.5.2
+yfinance==0.2.50
+hmmlearn==0.3.3
+scipy==1.13.1
+scikit-learn==1.5.2
+pandas_market_calendars==4.4.2
+PyYAML==6.0.2
+python-dateutil==2.9.0.post0

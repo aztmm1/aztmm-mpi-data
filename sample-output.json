@@ -1,0 +1,126 @@
+{
+  "schema_version": "2.0",
+  "computed_at": "2026-05-08T10:34:13Z",
+  "asOf": "2026-05-08",
+  "stale_threshold_hours": 18,
+  "data_quality": "ok",
+  "data": {
+    "mpi_score": 79,
+    "mpi_label": "Bull",
+    "regime": "Bull",
+    "regime_label": "Bull",
+    "confidence": {
+      "ci_level": "85%",
+      "ci_low": 74,
+      "ci_high": 84
+    },
+    "signal": {
+      "bias": "Bullish",
+      "strength": "High"
+    },
+    "market": {
+      "spy_spot": 731.58,
+      "expected_move_1sigma": 7.87,
+      "expected_move_pct": 0.0108
+    },
+    "volatility": {
+      "vix": 17.08,
+      "vix3m": 18.4,
+      "vrp": 2.84,
+      "term_shape": "Contango",
+      "realized_vol_20d_pct": 14.24
+    },
+    "compass": {
+      "bias": "Bullish",
+      "confidence": 0.5764,
+      "probability_up": 0.5764,
+      "probability_flat": 0.2754,
+      "probability_down": 0.1482
+    },
+    "hmm": {
+      "state": "Bull",
+      "confidence": 0.78,
+      "probs": {
+        "Bull": 0.78,
+        "Sideways": 0.16,
+        "Bear": 0.06
+      }
+    },
+    "sub_indicators": {
+      "trend": {
+        "score": 82.0,
+        "spy_close": 731.58,
+        "ma50": 715.0,
+        "ma200": 670.0,
+        "cross_ratio_pct": 6.71,
+        "ma50_slope_pct": 1.24
+      },
+      "breadth": {
+        "score": 71.0,
+        "cyclical_defensive_ratio": 1.42,
+        "cyc_def_percentile_1y": 78.0,
+        "iwm_spy_percentile_1y": 64.0
+      },
+      "volatility": {
+        "score": 78.0,
+        "vix": 17.08,
+        "vix3m": 18.4,
+        "vix_percentile_1y": 24.0,
+        "term_shape": "Contango"
+      },
+      "yield_curve": {
+        "score": 65.0,
+        "t10y2y_pct": 0.41,
+        "dgs10": 4.32,
+        "dgs2": 3.91
+      },
+      "credit": {
+        "score": 80.0,
+        "hy_oas_pct": 3.32,
+        "ig_oas_pct": 0.92
+      },
+      "sentiment": {
+        "score": 74.0,
+        "cnn_fg": 72.0,
+        "aaii_spread_pp": 18.5,
+        "putcall": 0.78,
+        "putcall_score": 72.0,
+        "aaii_score": 74.7
+      },
+      "rotation": {
+        "score": 76.0,
+        "xlu_xly_ratio": 0.412,
+        "xlu_xly_percentile_1y": 22.0
+      },
+      "currency": {
+        "score": 68.0,
+        "dxy": 102.1,
+        "dxy_50d_ma": 103.4,
+        "dxy_vs_ma_pct": -1.26
+      },
+      "liquidity": {
+        "score": 55.0,
+        "m2_latest": 21850.4,
+        "note": "trend proxy"
+      }
+    }
+  },
+  "warnings": [
+    "mock mode: no network calls"
+  ],
+  "source_versions": {
+    "schema": "2.0",
+    "weights": {
+      "trend": 0.15,
+      "breadth": 0.1,
+      "volatility": 0.15,
+      "yield_curve": 0.1,
+      "credit": 0.1,
+      "sentiment": 0.15,
+      "rotation": 0.1,
+      "currency": 0.05,
+      "liquidity": 0.1
+    },
+    "mode": "mock"
+  }
+}

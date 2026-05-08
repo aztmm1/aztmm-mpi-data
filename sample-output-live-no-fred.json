@@ -1,0 +1,120 @@
+{
+  "schema_version": "2.0",
+  "computed_at": "2026-05-08T10:33:37Z",
+  "asOf": "2026-05-08",
+  "stale_threshold_hours": 18,
+  "data_quality": "degraded",
+  "data": {
+    "mpi_score": 60,
+    "mpi_label": "Bull",
+    "regime": "Bull",
+    "regime_label": "Bull \u00b7 early",
+    "confidence": {
+      "ci_level": "85%",
+      "ci_low": 55,
+      "ci_high": 65
+    },
+    "signal": {
+      "bias": "Bullish",
+      "strength": "Medium"
+    },
+    "market": {
+      "spy_spot": 731.58,
+      "expected_move_1sigma": 7.9,
+      "expected_move_pct": 0.0108
+    },
+    "volatility": {
+      "vix": 17.14,
+      "vix3m": 20.35,
+      "vrp": 6.72,
+      "term_shape": "Contango",
+      "realized_vol_20d_pct": 10.42
+    },
+    "compass": {
+      "bias": "Bullish",
+      "confidence": 0.5425,
+      "probability_up": 0.5425,
+      "probability_flat": 0.2527,
+      "probability_down": 0.2048
+    },
+    "hmm": {
+      "state": "Bull",
+      "confidence": 0.9865,
+      "probs": {
+        "Bull": 0.9865,
+        "Sideways": 0.0134,
+        "Bear": 0.0001
+      }
+    },
+    "sub_indicators": {
+      "trend": {
+        "score": 62.2,
+        "spy_close": 731.58,
+        "ma50": 682.73,
+        "ma200": 670.01,
+        "cross_ratio_pct": 1.897,
+        "ma50_slope_pct": 1.056
+      },
+      "breadth": {
+        "score": 96.2,
+        "cyclical_defensive_ratio": 1.4109,
+        "cyc_def_percentile_1y": 99.2,
+        "iwm_spy_percentile_1y": 91.7
+      },
+      "volatility": {
+        "score": 58.8,
+        "vix": 17.14,
+        "vix3m": 20.35,
+        "vix_percentile_1y": 46.0,
+        "term_shape": "Contango"
+      },
+      "yield_curve": {
+        "score": 50.0,
+        "error": "no t10y2y"
+      },
+      "credit": {
+        "score": 50.0,
+        "error": "no hy_oas"
+      },
+      "sentiment": {
+        "score": 66.8,
+        "cnn_fg": 66.8
+      },
+      "rotation": {
+        "score": 38.9,
+        "xlu_xly_ratio": 0.3764,
+        "xlu_xly_percentile_1y": 61.1
+      },
+      "currency": {
+        "score": 63.3,
+        "dxy": 97.924,
+        "dxy_50d_ma": 98.976,
+        "dxy_vs_ma_pct": -1.063
+      },
+      "liquidity": {
+        "score": 50.0,
+        "note": "M2 unavailable; using neutral 50"
+      }
+    }
+  },
+  "warnings": [
+    "DEGRADED: FRED_API_KEY not set; macro sleeve will use last-good",
+    "AAII fetch failed",
+    "CBOE put/call fetch failed"
+  ],
+  "source_versions": {
+    "schema": "2.0",
+    "weights": {
+      "trend": 0.15,
+      "breadth": 0.1,
+      "volatility": 0.15,
+      "yield_curve": 0.1,
+      "credit": 0.1,
+      "sentiment": 0.15,
+      "rotation": 0.1,
+      "currency": 0.05,
+      "liquidity": 0.1
+    }
+  }
+}
+
