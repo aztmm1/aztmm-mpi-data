@@ -1,63 +1,72 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-05-09T03:45:30Z",
-  "asOf": "2026-05-08",
+  "computed_at": "2026-05-09T05:27:51Z",
+  "asOf": "2026-05-09",
   "stale_threshold_hours": 18,
-  "data_quality": "degraded",
+  "data_quality": "ok",
   "data": {
-    "mpi_score": 59,
+    "mpi_score": 68,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 54,
-      "ci_high": 64
+      "ci_low": 63,
+      "ci_high": 73
     },
     "signal": {
       "bias": "Bullish",
-      "strength": "Medium"
+      "strength": "High"
     },
     "market": {
-      "spy_spot": null,
-      "expected_move_1sigma": 0.0,
-      "expected_move_pct": 0.0
+      "spy_spot": 737.62,
+      "expected_move_1sigma": 7.99,
+      "expected_move_pct": 0.0108
     },
     "volatility": {
-      "vix": null,
-      "vix3m": null,
-      "vrp": 0.0,
-      "term_shape": "n/a",
-      "realized_vol_20d_pct": null
+      "vix": 17.19,
+      "vix3m": 20.5,
+      "vrp": 6.78,
+      "term_shape": "Contango",
+      "realized_vol_20d_pct": 10.41
     },
     "compass": {
-      "bias": "Neutral",
-      "confidence": 0.4297,
-      "probability_up": 0.4297,
-      "probability_flat": 0.3014,
-      "probability_down": 0.2689
+      "bias": "Bullish",
+      "confidence": 0.5704,
+      "probability_up": 0.5704,
+      "probability_flat": 0.2537,
+      "probability_down": 0.1759
     },
     "hmm": {
-      "state": "Sideways",
-      "confidence": 0.33,
+      "state": "Bull",
+      "confidence": 0.9803,
       "probs": {
-        "Bull": 0.33,
-        "Sideways": 0.34,
-        "Bear": 0.33
+        "Bull": 0.9803,
+        "Sideways": 0.0197,
+        "Bear": 0.0
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 50.0,
-        "error": "'raw'"
+        "score": 61.1,
+        "spy_close": 737.62,
+        "ma50": 684.28,
+        "ma200": 673.43,
+        "cross_ratio_pct": 1.612,
+        "ma50_slope_pct": 1.076
       },
       "breadth": {
-        "score": 50.0,
-        "error": "'raw'"
+        "score": 96.0,
+        "cyclical_defensive_ratio": 1.4322,
+        "cyc_def_percentile_1y": 99.6,
+        "iwm_spy_percentile_1y": 90.5
       },
       "volatility": {
-        "score": 50.0,
-        "error": "'raw'"
+        "score": 57.4,
+        "vix": 17.19,
+        "vix3m": 20.5,
+        "vix_percentile_1y": 48.0,
+        "term_shape": "Contango"
       },
       "yield_curve": {
         "score": 69.2,
@@ -75,12 +84,15 @@
         "cnn_fg": 66.9
       },
       "rotation": {
-        "score": 50.0,
-        "error": "'raw'"
+        "score": 66.3,
+        "xlu_xly_ratio": 0.372,
+        "xlu_xly_percentile_1y": 33.7
       },
       "currency": {
-        "score": 50.0,
-        "error": "'raw'"
+        "score": 59.2,
+        "dxy": 27.34,
+        "dxy_50d_ma": 27.543,
+        "dxy_vs_ma_pct": -0.738
       },
       "liquidity": {
         "score": 55.0,
@@ -90,15 +102,8 @@
     }
   },
   "warnings": [
-    "DEGRADED: yfinance returned empty frame",
     "AAII fetch failed",
-    "CBOE put/call fetch failed",
-    "trend score failed: 'raw'",
-    "breadth score failed: 'raw'",
-    "volatility score failed: 'raw'",
-    "rotation score failed: 'raw'",
-    "currency score failed: 'raw'",
-    "HMM fit failed: SPY history unavailable for HMM\nTraceback (most recent call last):\n  File \"/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/mpi_hmm_pipeline.py\", line 651, in fit_hmm_regime\n    raise RuntimeError(\"SPY history unavailable for HMM\")\nRuntimeError: SPY history unavailable for HMM\n"
+    "CBOE put/call fetch failed"
   ],
   "source_versions": {
     "schema": "2.0",
