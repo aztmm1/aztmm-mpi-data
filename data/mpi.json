@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-05-08T23:30:57Z",
+  "computed_at": "2026-05-09T03:45:30Z",
   "asOf": "2026-05-08",
   "stale_threshold_hours": 18,
   "data_quality": "degraded",
@@ -68,7 +68,7 @@
       "credit": {
         "score": 86.5,
         "hy_oas_pct": 2.79,
-        "ig_oas_pct": null
+        "ig_oas_pct": 0.79
       },
       "sentiment": {
         "score": 66.9,
@@ -90,8 +90,6 @@
     }
   },
   "warnings": [
-    "FRED BAMLC0A0CM fetch failed: Internal Server Error",
-    "FRED VIXCLS fetch failed: Internal Server Error",
     "DEGRADED: yfinance returned empty frame",
     "AAII fetch failed",
     "CBOE put/call fetch failed",
