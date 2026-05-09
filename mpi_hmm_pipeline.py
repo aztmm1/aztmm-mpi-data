@@ -7,7 +7,9 @@ Computes the daily Market Pulse Index (MPI), 3-state Gaussian HMM regime label,
 and Pulse Compass probabilities from FREE public data sources only:
 
   * FRED API (yields, credit spreads, M2, dollar)        — needs free FRED_API_KEY
-  * yfinance (SPY/QQQ/sectors/VIX family/DXY/CL/GC)      — no key
+  * StockAnalysis.com (SPY/QQQ/sectors/UUP=DXY proxy)     — no key, no rate limit
+  * CBOE EOD CSV (^VIX, ^VIX3M)                           — no key, public CDN
+  * yfinance (legacy fallback only)                       — no key, often blocked from CI
   * CBOE daily put/call CSV                              — no key (web scrape)
   * AAII weekly sentiment (best-effort, Wed cadence)     — no key (web scrape)
   * CNN Fear & Greed JSON endpoint                       — no key
@@ -113,6 +115,104 @@ SECTORS = {
     "xlf": "XLF",  # financials (cyclical)
     "xli": "XLI",  # industrials (cyclical)
 }
+
+
+# ---------------------------------------------------------------------------
+# Market data adapters (replacing yfinance for CI reliability)
+# ---------------------------------------------------------------------------
+# StockAnalysis.com serves a free no-auth JSON history endpoint that works
+# from GH Actions runner IPs (yfinance is consistently 429'd from CI).
+# CBOE EOD CSVs cover ^VIX and ^VIX3M (StockAnalysis lacks index symbols).
+# UUP (Invesco DB Dollar Bullish ETF) is used as a DX-Y.NYB proxy, since
+# the score_currency function only consumes Close + 50d MA.
+SA_BASE_URL = "https://stockanalysis.com/api/symbol/s/{sym}/history"
+SA_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json",
+}
+# Map "label expected by scorers" -> "StockAnalysis lookup symbol"
+SA_TICKERS_MAIN: Dict[str, str] = {
+    "SPY":  "SPY",
+    "QQQ":  "QQQ",
+    "IWM":  "IWM",
+    "XLU":  "XLU",
+    "XLP":  "XLP",
+    "XLV":  "XLV",
+    "XLY":  "XLY",
+    "XLK":  "XLK",
+    "XLF":  "XLF",
+    "XLI":  "XLI",
+    "DX-Y.NYB": "UUP",  # ETF proxy for the dollar
+}
+CBOE_VIX_URL    = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+CBOE_VIX3M_URL  = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX3M_History.csv"
+
+
+def _sa_history(symbol: str, range_: str = "5Y", retries: int = 2) -> Optional["pd.DataFrame"]:
+    """Fetch daily OHLC history from StockAnalysis.com. Returns None on fail."""
+    if pd is None:
+        return None
+    url = SA_BASE_URL.format(sym=symbol.lower()) + f"?range={range_}&period=Daily"
+    last_err: Optional[Exception] = None
+    for attempt in range(retries + 1):
+        try:
+            import urllib.request
+            req = urllib.request.Request(url, headers=SA_HEADERS)
+            with urllib.request.urlopen(req, timeout=20) as r:
+                text = r.read().decode("utf-8")
+            j = json.loads(text)
+            if j.get("status") != 200 or not j.get("data"):
+                last_err = RuntimeError(f"non-200 payload: {str(j)[:120]}")
+                continue
+            rows = j["data"]
+            df = pd.DataFrame(rows)
+            df["Date"] = pd.to_datetime(df["t"])
+            df = df.rename(columns={
+                "o": "Open", "h": "High", "l": "Low", "c": "Close", "v": "Volume",
+            })
+            df = df[["Date", "Open", "High", "Low", "Close", "Volume"]]
+            df = df.set_index("Date").sort_index()
+            return df
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            time.sleep(0.4 * (attempt + 1))
+    log.warning("StockAnalysis %s fetch failed: %s", symbol, last_err)
+    return None
+
+
+def _cboe_index_history(url: str) -> Optional["pd.DataFrame"]:
+    """Fetch a CBOE EOD index CSV (VIX, VIX3M, etc) -> OHLC DataFrame."""
+    if pd is None:
+        return None
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, headers={"User-Agent": SA_HEADERS["User-Agent"]})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            text = r.read().decode("utf-8")
+        df = pd.read_csv(io.StringIO(text))
+        df.columns = [c.strip().upper() for c in df.columns]
+        date_col = "DATE" if "DATE" in df.columns else df.columns[0]
+        close_col = "CLOSE" if "CLOSE" in df.columns else df.columns[-1]
+        df["Date"] = pd.to_datetime(df[date_col], errors="coerce")
+        df = df.dropna(subset=["Date"])
+        df = df.rename(columns={close_col: "Close"})
+        for src_col, dst_col in (("OPEN", "Open"), ("HIGH", "High"), ("LOW", "Low")):
+            if src_col in df.columns:
+                df = df.rename(columns={src_col: dst_col})
+        for col in ("Open", "High", "Low"):
+            if col not in df.columns:
+                df[col] = df["Close"]
+        df["Volume"] = 0
+        df = df.set_index("Date").sort_index()
+        return df[["Open", "High", "Low", "Close", "Volume"]]
+    except Exception as e:  # noqa: BLE001
+        log.warning("CBOE %s fetch failed: %s", url, e)
+        return None
+
+
 
 # CBOE daily put/call CSV — public download, no key
 CBOE_PUTCALL_URL = (
@@ -237,18 +337,22 @@ def _load_fred(ctx: RunContext) -> Dict[str, Optional[float]]:
     return out
 
 
-def _load_yfinance(ctx: RunContext) -> Dict[str, Any]:
-    """Pull SPY/VIX family/sector ETFs via yfinance. Returns price history dict."""
+def _load_yfinance_fallback(ctx: RunContext) -> Dict[str, Any]:
+    """Legacy yfinance path. Used as fallback if StockAnalysis+CBOE fails.
+
+    yfinance is unreliable from GitHub Actions IPs (HTTP 429), so we try
+    StockAnalysis.com + CBOE first via _load_market_data, and only fall
+    back here if the primary source returns nothing usable.
+    """
     out: Dict[str, Any] = {}
     try:
         import yfinance as yf  # type: ignore
     except Exception as e:  # noqa: BLE001
-        ctx.degrade(f"yfinance import failed: {e}")
+        ctx.warn(f"yfinance import failed (fallback unavailable): {e}")
         return out
 
     tickers = list(YF_INDICES.values()) + list(SECTORS.values())
     try:
-        # 2y of history covers 200-day MA, weekly returns for HMM, percentiles
         df = yf.download(
             tickers=" ".join(tickers),
             period="2y",
@@ -259,11 +363,11 @@ def _load_yfinance(ctx: RunContext) -> Dict[str, Any]:
             threads=True,
         )
     except Exception as e:  # noqa: BLE001
-        ctx.degrade(f"yfinance download failed: {e}")
+        ctx.warn(f"yfinance fallback download failed: {e}")
         return out
 
     if df is None or len(df) == 0:
-        ctx.degrade("yfinance returned empty frame")
+        ctx.warn("yfinance fallback returned empty frame")
         return out
 
     out["raw"] = df
@@ -272,20 +376,118 @@ def _load_yfinance(ctx: RunContext) -> Dict[str, Any]:
     for nice, sym in {**YF_INDICES, **SECTORS}.items():
         try:
             if sym not in level0:
-                ctx.warn(f"yfinance {sym}: missing from response")
                 continue
             close = df[sym]["Close"].dropna()
             if close.empty:
-                ctx.warn(f"yfinance {sym}: no close data")
                 continue
             val = float(close.iloc[-1])
             if math.isnan(val):
-                ctx.warn(f"yfinance {sym}: latest is NaN")
                 continue
             out["latest"][nice] = val
-        except Exception as e:  # noqa: BLE001
-            ctx.warn(f"yfinance {sym} parse failed: {e}")
+        except Exception:  # noqa: BLE001
+            continue
     return out
+
+
+def _load_market_data(ctx: RunContext) -> Dict[str, Any]:
+    """Primary equities/ETF + VIX loader.
+
+    Pulls SPY/QQQ/IWM/sector ETFs/UUP from StockAnalysis.com (no auth, no
+    rate limit, GH-runner-friendly), VIX/VIX3M from CBOE EOD CSV. Builds a
+    yfinance-compatible multi-index DataFrame so existing scorers see
+    yfd["raw"][SYMBOL]["Close"] exactly as before.
+
+    On total failure, degrades to _load_yfinance_fallback. yfinance is
+    intentionally a backup, not the primary, since CI runner IPs get
+    Yahoo HTTP-429d.
+    """
+    out: Dict[str, Any] = {}
+    if pd is None:
+        ctx.degrade("pandas unavailable for market data load")
+        return out
+
+    frames: Dict[str, "pd.DataFrame"] = {}
+    failed: List[str] = []
+
+    # --- StockAnalysis.com (equities, ETFs, dollar proxy) ---
+    for label, lookup in SA_TICKERS_MAIN.items():
+        df = _sa_history(lookup, range_="5Y")
+        if df is None or df.empty:
+            failed.append(f"SA:{lookup}({label})")
+            ctx.warn(f"market-data: StockAnalysis {label}<-{lookup} unavailable")
+            continue
+        frames[label] = df
+        time.sleep(0.15)  # gentle pacing
+
+    # --- CBOE EOD CSV (VIX, VIX3M) ---
+    vix_df = _cboe_index_history(CBOE_VIX_URL)
+    if vix_df is not None and not vix_df.empty:
+        frames["^VIX"] = vix_df
+    else:
+        failed.append("CBOE:^VIX")
+        ctx.warn("market-data: CBOE VIX history unavailable")
+
+    vix3m_df = _cboe_index_history(CBOE_VIX3M_URL)
+    if vix3m_df is not None and not vix3m_df.empty:
+        frames["^VIX3M"] = vix3m_df
+    else:
+        ctx.warn("market-data: CBOE VIX3M history unavailable (term-shape will fall back)")
+
+    # --- If we have nothing, defer to yfinance fallback ---
+    critical = {"SPY", "QQQ", "IWM", "XLU", "XLP", "XLV", "XLY", "XLK", "XLF", "XLI", "^VIX"}
+    have = set(frames.keys())
+    missing_critical = critical - have
+    if missing_critical:
+        ctx.warn(
+            "market-data primary missing critical: "
+            + ",".join(sorted(missing_critical))
+            + " -> trying yfinance fallback"
+        )
+        yf_out = _load_yfinance_fallback(ctx)
+        if yf_out.get("raw") is not None and len(yf_out["raw"]) > 0:
+            ctx.warn("market-data: yfinance fallback succeeded")
+            return yf_out
+        # both failed
+        ctx.degrade(
+            "market-data: both StockAnalysis+CBOE and yfinance fallback failed; "
+            f"missing={sorted(missing_critical)} sa_failed={failed}"
+        )
+        return out
+
+    # Build the multi-index DataFrame the scorers consume
+    multi = pd.concat(frames, axis=1)
+    out["raw"] = multi
+    out["latest"] = {}
+    # Populate the same nice-name lookups the legacy code wrote.
+    label_to_nice = {
+        "SPY": "spy", "QQQ": "qqq", "IWM": "iwm",
+        "^VIX": "vix", "^VIX3M": "vix3m",
+        "DX-Y.NYB": "dxy",
+        "XLU": "xlu", "XLP": "xlp", "XLV": "xlv",
+        "XLY": "xly", "XLK": "xlk", "XLF": "xlf", "XLI": "xli",
+    }
+    for label, df in frames.items():
+        try:
+            close = df["Close"].dropna()
+            if close.empty:
+                continue
+            val = float(close.iloc[-1])
+            if math.isnan(val):
+                continue
+            nice = label_to_nice.get(label, label.lower().replace("^", "").replace("-", ""))
+            out["latest"][nice] = val
+        except Exception:  # noqa: BLE001
+            continue
+    log.info("market-data primary OK: %d series, latest SPY=%.2f",
+             len(frames), out["latest"].get("spy", float("nan")))
+    return out
+
+
+def _load_yfinance(ctx: RunContext) -> Dict[str, Any]:
+    """Public entrypoint preserved for build_payload(). Delegates to the
+    StockAnalysis+CBOE primary loader, with yfinance as fallback inside.
+    """
+    return _load_market_data(ctx)
 
 
 def _load_cnn_fear_greed(ctx: RunContext) -> Optional[float]:
@@ -635,30 +837,26 @@ def fit_hmm_regime(yfd: Dict[str, Any], ctx: RunContext) -> Dict[str, Any]:
         return {"state": "Sideways", "confidence": 0.33,
                 "probs": {"Bull": 0.33, "Sideways": 0.34, "Bear": 0.33}, "error": str(e)}
     try:
-        # Try the existing 2y series first; if too short, pull 10y SPY.
+        # Use the existing series first; if too short for HMM, fetch 10y from
+        # StockAnalysis.com (yfinance is unreliable from CI IPs).
         close = yfd.get("raw", {}).get("SPY", {}).get("Close")
-        if close is None or len(close.dropna()) < 250:
-            try:
-                import yfinance as yf  # type: ignore
-                hist = yf.download("SPY", period="10y", interval="1d",
-                                   progress=False, auto_adjust=True)
-                close = hist["Close"].dropna() if hist is not None else None
-            except Exception:
-                close = None
-        else:
+        if close is not None:
             close = close.dropna()
+        if close is None or close.empty or len(close) < 1500:
+            df10 = _sa_history("SPY", range_="10Y")
+            if df10 is None or df10.empty:
+                # last-ditch yfinance fallback
+                try:
+                    import yfinance as yf  # type: ignore
+                    hist = yf.download("SPY", period="10y", interval="1d",
+                                       progress=False, auto_adjust=True)
+                    close = hist["Close"].dropna() if hist is not None else None
+                except Exception:
+                    close = None
+            else:
+                close = df10["Close"].dropna()
         if close is None or close.empty:
             raise RuntimeError("SPY history unavailable for HMM")
-        # If the existing 2y series is what we have, extend with 10y for HMM stability
-        try:
-            if len(close) < 1500:
-                import yfinance as yf  # type: ignore
-                hist = yf.download("SPY", period="10y", interval="1d",
-                                   progress=False, auto_adjust=True)
-                if hist is not None and not hist.empty:
-                    close = hist["Close"].dropna()
-        except Exception:
-            pass
         # Weekly returns (Friday close)
         weekly = close.resample("W-FRI").last().dropna()
         log_ret = np.log(weekly).diff().dropna()
