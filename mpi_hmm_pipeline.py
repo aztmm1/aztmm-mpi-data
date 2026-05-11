@@ -266,6 +266,25 @@ log = logging.getLogger("mpi_hmm")
 # Data containers
 # ---------------------------------------------------------------------------
 
+def _compute_data_quality(ctx: "RunContext") -> str:
+    """Honest data_quality flag based on degraded state and warning count.
+
+    - degraded (hard failure flagged via ctx.degrade) -> "degraded"
+    - 3+ warnings -> "degraded"
+    - 1-2 warnings -> "partial"
+    - 0 warnings -> "ok"
+    """
+    if getattr(ctx, "degraded", False):
+        return "degraded"
+    n = len(getattr(ctx, "warnings", []) or [])
+    if n >= 3:
+        return "degraded"
+    if n >= 1:
+        return "partial"
+    return "ok"
+
+
+
 @dataclass
 class RunContext:
     now_utc: datetime
@@ -782,23 +801,32 @@ def score_rotation(yfd: Dict[str, Any], ctx: RunContext) -> Tuple[float, Dict[st
 
 
 def score_currency(yfd: Dict[str, Any], ctx: RunContext) -> Tuple[float, Dict[str, Any]]:
-    """Stable/declining DXY + steady crude = bullish risk on."""
+    """Stable/declining USD proxy (UUP ETF) + steady crude = bullish risk on.
+
+    Note: We fetch the UUP ETF (Invesco DB Dollar Bullish Fund) as a proxy for
+    DXY because direct ^DXY / DX-Y.NYB access from CI runners is unreliable.
+    UUP tracks DXY directionally but at a different absolute scale (~1:4 ratio),
+    so we report the UUP price/MA directly rather than mis-labeling it as DXY.
+    The momentum score (vs 50d MA) is directionally identical either way.
+    """
     try:
         raw = yfd["raw"]
         try:
-            dxy = raw["DX-Y.NYB"]["Close"].dropna()
+            # DX-Y.NYB key in the frame is actually fed by UUP (see SA_TO_LEGACY).
+            uup = raw["DX-Y.NYB"]["Close"].dropna()
         except Exception:
-            return 50.0, {"error": "no dxy"}
-        dxy_last = float(dxy.iloc[-1])
-        ma50 = float(dxy.rolling(50).mean().iloc[-1])
+            return 50.0, {"error": "no usd proxy"}
+        uup_last = float(uup.iloc[-1])
+        ma50 = float(uup.rolling(50).mean().iloc[-1])
         # Below 50d MA -> dollar weakening -> bullish stocks
-        diff = (dxy_last - ma50) / ma50 * 100
+        diff = (uup_last - ma50) / ma50 * 100
         # +2% above MA -> 25, -2% below -> 75
         s = _clip01(50 - diff * 12.5)
         return s, {
-            "dxy": round(dxy_last, 3),
-            "dxy_50d_ma": round(ma50, 3),
-            "dxy_vs_ma_pct": round(diff, 3),
+            "uup": round(uup_last, 3),
+            "uup_50d_ma": round(ma50, 3),
+            "uup_vs_ma_pct": round(diff, 3),
+            "note": "UUP ETF used as USD proxy; do not interpret as DXY level",
         }
     except Exception as e:  # noqa: BLE001
         ctx.warn(f"currency score failed: {e}")
@@ -1140,7 +1168,7 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
         "computed_at":    ctx.now_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "asOf":           ctx.now_et.strftime("%Y-%m-%d"),
         "stale_threshold_hours": STALE_THRESHOLD_HOURS,
-        "data_quality":   "degraded" if ctx.degraded else "ok",
+        "data_quality":   _compute_data_quality(ctx),
         "data": {
             "mpi_score":  mpi,
             "mpi_label":  regime,
