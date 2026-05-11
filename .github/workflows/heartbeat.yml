@@ -1,0 +1,21 @@
+name: Heartbeat
+
+# Why this exists:
+# GitHub Actions schedulers on new/low-activity repos sometimes go dormant.
+# This tiny no-op workflow runs every hour to keep Actions warm and ensure
+# the real MPI cron in mpi-update.yml stays active. No commits, no side effects.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Ping
+        run: |
+          echo "Heartbeat at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "Schedulers warm. No data writes."
