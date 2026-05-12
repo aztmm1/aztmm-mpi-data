@@ -1,0 +1,105 @@
+{
+  "date": "2026-05-12",
+  "as_of": "2026-05-12 5:00 PM ET",
+  "summary_line": "Names that turned up in tonight's screen for elevated short pressure alongside options interest: 6 elevated, 2 notable, 2 watching.",
+  "rows": [
+    {
+      "ticker": "GME",
+      "sector": "Consumer Cyclical",
+      "short_interest_pct_float_fmt": "100.0%",
+      "days_to_cover_fmt": "2.7",
+      "call_put_ratio_fmt": "5.17x",
+      "alert_count": 142,
+      "band": "Elevated"
+    },
+    {
+      "ticker": "SNAP",
+      "sector": "Communication Services",
+      "short_interest_pct_float_fmt": "100.0%",
+      "days_to_cover_fmt": "3.4",
+      "call_put_ratio_fmt": "2.56x",
+      "alert_count": 128,
+      "band": "Elevated"
+    },
+    {
+      "ticker": "MSTR",
+      "sector": "Technology",
+      "short_interest_pct_float_fmt": "100.0%",
+      "days_to_cover_fmt": "4.0",
+      "call_put_ratio_fmt": "2.08x",
+      "alert_count": 200,
+      "band": "Elevated"
+    },
+    {
+      "ticker": "SOFI",
+      "sector": "Financial Services",
+      "short_interest_pct_float_fmt": "31.6%",
+      "days_to_cover_fmt": "1.5",
+      "call_put_ratio_fmt": "3.17x",
+      "alert_count": 200,
+      "band": "Elevated"
+    },
+    {
+      "ticker": "PLTR",
+      "sector": "Technology",
+      "short_interest_pct_float_fmt": "55.2%",
+      "days_to_cover_fmt": "2.4",
+      "call_put_ratio_fmt": "1.50x",
+      "alert_count": 200,
+      "band": "Elevated"
+    },
+    {
+      "ticker": "COIN",
+      "sector": "Technology",
+      "short_interest_pct_float_fmt": "35.0%",
+      "days_to_cover_fmt": "1.4",
+      "call_put_ratio_fmt": "1.78x",
+      "alert_count": 200,
+      "band": "Elevated"
+    },
+    {
+      "ticker": "SMCI",
+      "sector": "Technology",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "3.08x",
+      "alert_count": 200,
+      "band": "Notable"
+    },
+    {
+      "ticker": "RIVN",
+      "sector": "Consumer Cyclical",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "5.38x",
+      "alert_count": 83,
+      "band": "Notable"
+    },
+    {
+      "ticker": "CVNA",
+      "sector": "Consumer Cyclical",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "2.32x",
+      "alert_count": 103,
+      "band": "Watching"
+    },
+    {
+      "ticker": "RDDT",
+      "sector": "Communication Services",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "2.20x",
+      "alert_count": 147,
+      "band": "Watching"
+    }
+  ],
+  "commentary": [
+    "GME shows roughly 100.0% of float reported short with about 2.7 days to cover, and lopsided call-side options interest in tonight's flow. The combination is notable.",
+    "SNAP shows roughly 100.0% of float reported short with about 3.4 days to cover, and lopsided call-side options interest in tonight's flow. The combination is notable.",
+    "MSTR shows roughly 100.0% of float reported short with about 4.0 days to cover, and lopsided call-side options interest in tonight's flow. The combination is notable."
+  ],
+  "names_evaluated": 15,
+  "names_filtered_out": 0,
+  "data_quality_degraded": false
+}
