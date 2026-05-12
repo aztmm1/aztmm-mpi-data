@@ -39,6 +39,8 @@ from daily_pulse_publisher import (
     brand_check,
     build_post_payload,
     write_needs_review,
+    update_history,
+    build_sparkline_context,
 )
 
 ROOT = Path(__file__).parent
@@ -47,6 +49,7 @@ LOG_DIR = DATA_DIR / "daily-pulse-logs"
 INCIDENT_DIR = DATA_DIR / "incidents"
 NEEDS_REVIEW_DIR = DATA_DIR / "needs-review"
 TEMPLATE_PATH = ROOT / "daily_pulse_template.html.j2"
+HISTORY_PATH = DATA_DIR / "history.json"
 
 logger = logging.getLogger("daily_pulse.run")
 
@@ -172,9 +175,36 @@ def main() -> int:
         write_run_log(target_date, log)
         return 3
 
+    # 2b. Update rolling history + build sparkline context
+    try:
+        headline = agg.get("headline_metric") or {}
+        history_data = update_history(
+            HISTORY_PATH,
+            tracker_slug="aztmm-daily-pulse-v2",
+            label=headline.get("label", "Scenario score"),
+            date=target_date,
+            value=headline.get("value"),
+        )
+        sparkline_ctx = build_sparkline_context(history_data, lookback=30)
+        log["steps"].append({
+            "step": "update_history", "ok": True,
+            "points": len(history_data.get("points", [])),
+            "sparkline_available": sparkline_ctx.get("sparkline_available", False),
+        })
+    except Exception as e:  # noqa: BLE001
+        sparkline_ctx = {
+            "sparkline_available": False,
+            "headline_metric_label": "Scenario score",
+            "sparkline_placeholder": "Building history - sparkline appears after a few days.",
+        }
+        log["steps"].append({"step": "update_history", "ok": False, "error": str(e)})
+
+    # Merge sparkline context into the agg dict the template renders from
+    agg_with_sparkline = {**agg, **sparkline_ctx}
+
     # 3. Render
     try:
-        html = render_html(agg, TEMPLATE_PATH)
+        html = render_html(agg_with_sparkline, TEMPLATE_PATH)
         log["steps"].append({"step": "render", "ok": True, "html_bytes": len(html)})
     except Exception as e:  # noqa: BLE001
         write_incident(target_date, "render_failed", {"err": str(e)})

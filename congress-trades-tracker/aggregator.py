@@ -459,6 +459,10 @@ def aggregate(raw: dict, config: dict) -> dict:
         "as_of": as_of_label,
         "as_of_date": target_date,
         "refresh_label": "5:00 PM ET",
+        "headline_metric": {
+            "label": "Filings filed today",
+            "value": len(todays),
+        },
         "summary": {
             "filings_today": len(todays),
             "members_today": len({t["name"] for t in todays if t["name"]}),

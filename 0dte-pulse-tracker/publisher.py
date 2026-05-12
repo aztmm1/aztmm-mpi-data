@@ -143,6 +143,84 @@ def render_html(public: dict, template_path: str | Path) -> str:
 # Dual-output writer
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Sparkline - 30-day trend
+# ---------------------------------------------------------------------------
+
+def update_history(history_path, tracker_slug: str, label: str,
+                   date: str, value, max_entries: int = 90) -> dict:
+    """Load data/history.json, append today's metric, save back. Idempotent
+    on date - re-running the same date overwrites that day's point."""
+    import json as _json
+    history_path = Path(history_path)
+    data = None
+    if history_path.exists():
+        try:
+            data = _json.loads(history_path.read_text())
+        except (_json.JSONDecodeError, ValueError):
+            data = None
+    if not isinstance(data, dict) or "points" not in data:
+        data = {"tracker": tracker_slug, "headline_metric_label": label, "points": []}
+    data["tracker"] = tracker_slug
+    data["headline_metric_label"] = label
+    points = [p for p in data.get("points", [])
+              if isinstance(p, dict) and p.get("date") != date]
+    if value is not None:
+        try:
+            points.append({"date": date, "value": float(value)})
+        except (TypeError, ValueError):
+            pass
+    points.sort(key=lambda p: p.get("date") or "")
+    data["points"] = points[-max_entries:]
+    history_path.parent.mkdir(parents=True, exist_ok=True)
+    history_path.write_text(_json.dumps(data, indent=2))
+    return data
+
+
+def build_sparkline_context(history_data: dict, lookback: int = 30) -> dict:
+    """Return Jinja context for the sparkline. Placeholder if <3 points."""
+    points = (history_data or {}).get("points") or []
+    points = [p for p in points if isinstance(p, dict) and p.get("date") is not None
+              and p.get("value") is not None][-lookback:]
+    label = (history_data or {}).get("headline_metric_label") or "Headline metric"
+    if len(points) < 3:
+        return {
+            "sparkline_available": False,
+            "headline_metric_label": label,
+            "sparkline_placeholder": "Building history - sparkline appears after a few days.",
+        }
+    values = [float(p["value"]) for p in points]
+    dates = [p["date"] for p in points]
+    n = len(values)
+    vmin = min(values)
+    vmax = max(values)
+    vrange = (vmax - vmin) if vmax != vmin else 1.0
+    width, height = 600, 80
+    pad_x, pad_y = 4, 6
+    plot_w = width - 2 * pad_x
+    plot_h = height - 2 * pad_y
+    coords = []
+    for i, v in enumerate(values):
+        x = pad_x + (i / max(n - 1, 1)) * plot_w
+        y = pad_y + plot_h - ((v - vmin) / vrange) * plot_h
+        coords.append(f"{round(x, 2)},{round(y, 2)}")
+    polyline = " ".join(coords)
+    latest = values[-1]
+    if abs(latest - round(latest)) < 1e-9:
+        latest_fmt = f"{int(round(latest))}"
+    else:
+        latest_fmt = f"{latest:.2f}"
+    return {
+        "sparkline_available": True,
+        "headline_metric_label": label,
+        "sparkline_polyline": polyline,
+        "sparkline_first_date": dates[0],
+        "sparkline_last_date": dates[-1],
+        "sparkline_latest_value": latest_fmt,
+        "sparkline_point_count": n,
+    }
+
+
 def write_outputs(agg: dict, html: str, out_dir: Path, date: str) -> dict:
     """Write public.json, internal.json, and rendered HTML; return paths."""
     out_dir.mkdir(parents=True, exist_ok=True)

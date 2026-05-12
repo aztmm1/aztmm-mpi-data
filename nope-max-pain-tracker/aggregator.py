@@ -528,6 +528,10 @@ def aggregate(raw: dict, config: dict) -> dict:
 
     public_chart = {tkr: series for tkr, series in chart_series.items()}
 
+    # Headline metric for the 30-day trend sparkline: SPY NOPE reading.
+    spy_row = next((r for r in public_tickers if r.get("ticker") == "SPY"), None)
+    spy_nope = spy_row.get("nope") if spy_row else None
+
     public = {
         "date": target_date,
         "as_of_stamp": f"{target_date} 5:00 PM ET",
@@ -538,6 +542,10 @@ def aggregate(raw: dict, config: dict) -> dict:
         "nope_chart": public_chart,
         "commentary": commentary,
         "degraded": raw.get("data_quality", {}).get("degraded", False),
+        "headline_metric": {
+            "label": "SPY NOPE reading",
+            "value": spy_nope,
+        },
     }
 
     return {"internal": internal, "public": public}

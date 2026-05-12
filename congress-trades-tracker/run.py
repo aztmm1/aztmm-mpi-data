@@ -37,6 +37,8 @@ from publisher import (  # noqa: E402
     sanitize_public_json,
     build_page_payload,
     write_needs_review,
+    update_history,
+    build_sparkline_context,
 )
 
 ROOT = Path(__file__).parent
@@ -45,6 +47,7 @@ DEFAULT_TEMPLATE = ROOT / "dashboard.html.j2"
 DEFAULT_OUT_DIR = ROOT / "sample-output"
 NEEDS_REVIEW_DIR = ROOT / "data" / "needs-review"
 LOG_DIR = ROOT / "data" / "run-logs"
+HISTORY_PATH = ROOT / "data" / "history.json"
 
 logger = logging.getLogger("congress.run")
 
@@ -227,9 +230,34 @@ def main() -> int:
     # 3a. Sanitize public payload (belt-and-suspenders, before render)
     public_sanitized = sanitize_public_json(public)
 
+    # 3b. Update rolling history + build sparkline context
+    try:
+        headline = public_sanitized.get("headline_metric") or {}
+        history_data = update_history(
+            HISTORY_PATH,
+            tracker_slug="congress-trades-tracker",
+            label=headline.get("label", "Filings filed today"),
+            date=target_date,
+            value=headline.get("value"),
+        )
+        sparkline_ctx = build_sparkline_context(history_data, lookback=30)
+        log["steps"].append({
+            "step": "update_history", "ok": True,
+            "points": len(history_data.get("points", [])),
+            "sparkline_available": sparkline_ctx.get("sparkline_available", False),
+        })
+    except Exception as e:  # noqa: BLE001
+        sparkline_ctx = {
+            "sparkline_available": False,
+            "headline_metric_label": "Filings filed today",
+            "sparkline_placeholder": "Building history - sparkline appears after a few days.",
+        }
+        log["steps"].append({"step": "update_history", "ok": False, "error": str(e)})
+
     # 4. Render HTML
     try:
-        html = render_html(public_sanitized, args.template)
+        render_ctx = {**public_sanitized, **sparkline_ctx}
+        html = render_html(render_ctx, args.template)
         log["steps"].append({"step": "render", "ok": True, "html_bytes": len(html)})
     except Exception as e:  # noqa: BLE001
         log["status"] = "render_failed"

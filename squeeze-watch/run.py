@@ -23,13 +23,20 @@ from pathlib import Path
 
 from fetcher import fetch_all
 from aggregator import aggregate
-from publisher import render_html, brand_check, write_outputs
+from publisher import (
+    render_html,
+    brand_check,
+    write_outputs,
+    update_history,
+    build_sparkline_context,
+)
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
 LOG_DIR = DATA_DIR / "logs"
 SAMPLE_DIR = ROOT / "sample-output"
 TEMPLATE_PATH = ROOT / "dashboard.html.j2"
+HISTORY_PATH = DATA_DIR / "history.json"
 
 logger = logging.getLogger("squeeze.run")
 
@@ -130,9 +137,34 @@ def main() -> int:
         logger.error("aggregate failed: %s", e)
         return 3
 
+    # 2b. Update rolling history + build sparkline context
+    try:
+        headline = agg["public"].get("headline_metric") or {}
+        history_data = update_history(
+            HISTORY_PATH,
+            tracker_slug="squeeze-watch",
+            label=headline.get("label", "Elevated band names"),
+            date=target_date,
+            value=headline.get("value"),
+        )
+        sparkline_ctx = build_sparkline_context(history_data, lookback=30)
+        log["steps"].append({
+            "step": "update_history", "ok": True,
+            "points": len(history_data.get("points", [])),
+            "sparkline_available": sparkline_ctx.get("sparkline_available", False),
+        })
+    except Exception as e:  # noqa: BLE001
+        sparkline_ctx = {
+            "sparkline_available": False,
+            "headline_metric_label": "Elevated band names",
+            "sparkline_placeholder": "Building history - sparkline appears after a few days.",
+        }
+        log["steps"].append({"step": "update_history", "ok": False, "error": str(e)})
+
     # 3. Render (uses public side only)
     try:
-        html = render_html(agg["public"], TEMPLATE_PATH)
+        render_ctx = {**agg["public"], **sparkline_ctx}
+        html = render_html(render_ctx, TEMPLATE_PATH)
         log["steps"].append({"step": "render", "ok": True, "html_bytes": len(html)})
     except Exception as e:  # noqa: BLE001
         log["status"] = "render_failed"

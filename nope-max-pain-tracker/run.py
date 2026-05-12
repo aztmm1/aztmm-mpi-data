@@ -40,6 +40,8 @@ from publisher import (
     brand_check_public_json,
     build_page_payload,
     write_needs_review,
+    update_history,
+    build_sparkline_context,
 )
 
 ROOT = Path(__file__).parent
@@ -50,6 +52,7 @@ DATA_DIR = ROOT / "data"
 LOG_DIR = DATA_DIR / "logs"
 INCIDENT_DIR = DATA_DIR / "incidents"
 NEEDS_REVIEW_DIR = DATA_DIR / "needs-review"
+HISTORY_PATH = DATA_DIR / "history.json"
 
 logger = logging.getLogger("nope_max_pain.run")
 
@@ -192,9 +195,34 @@ def main() -> int:
         write_run_log(target_date, log)
         return 5
 
+    # 4b. Update rolling history + build sparkline context
+    try:
+        headline = result["public"].get("headline_metric") or {}
+        history_data = update_history(
+            HISTORY_PATH,
+            tracker_slug="nope-max-pain-tracker",
+            label=headline.get("label", "SPY NOPE reading"),
+            date=target_date,
+            value=headline.get("value"),
+        )
+        sparkline_ctx = build_sparkline_context(history_data, lookback=30)
+        log["steps"].append({
+            "step": "update_history", "ok": True,
+            "points": len(history_data.get("points", [])),
+            "sparkline_available": sparkline_ctx.get("sparkline_available", False),
+        })
+    except Exception as e:  # noqa: BLE001
+        sparkline_ctx = {
+            "sparkline_available": False,
+            "headline_metric_label": "SPY NOPE reading",
+            "sparkline_placeholder": "Building history - sparkline appears after a few days.",
+        }
+        log["steps"].append({"step": "update_history", "ok": False, "error": str(e)})
+
     # 5. Render
     try:
-        html = render_html(result["public"], TEMPLATE_PATH)
+        render_ctx = {**result["public"], **sparkline_ctx}
+        html = render_html(render_ctx, TEMPLATE_PATH)
         log["steps"].append({"step": "render", "ok": True, "html_bytes": len(html)})
     except Exception as e:  # noqa: BLE001
         write_incident(target_date, "render_failed", {"err": str(e)})

@@ -644,6 +644,10 @@ def aggregate(raw: dict, prev_raw: dict | None = None) -> dict:
         "watchlist": watchlist,
         "data_quality": raw.get("data_quality", {}),
         "generated_at_iso": datetime.utcnow().isoformat() + "Z",
+        "headline_metric": {
+            "label": "Scenario score",
+            "value": scenario.get("score"),
+        },
     }
 
 

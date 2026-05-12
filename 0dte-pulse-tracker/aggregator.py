@@ -292,6 +292,10 @@ def aggregate(bundle: dict, cfg: dict | None = None) -> dict:
     for r in records[:top_commentary_n]:
         commentary.append(_commentary_for(r))
 
+    # Headline metric for the 30-day trend sparkline: total 0DTE notable
+    # premium in millions of dollars (numeric).
+    total_prem_musd = round(total_prem / 1_000_000.0, 3)
+
     public = {
         "date": bundle["date"],
         "as_of": f"{bundle['date']} 5:00 PM ET",
@@ -299,6 +303,10 @@ def aggregate(bundle: dict, cfg: dict | None = None) -> dict:
         "watching_line": _watching_line(public_rows),
         "rows": public_rows,
         "commentary": commentary,
+        "headline_metric": {
+            "label": "Total 0DTE notable premium ($M)",
+            "value": total_prem_musd,
+        },
         "tape_totals": {
             "notable_prints": n_alerts,
             "tickers_in_pulse": len(records),

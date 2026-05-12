@@ -225,6 +225,8 @@ def aggregate(bundle: dict, cfg: dict | None = None) -> dict:
     for r in records[:top_commentary_n]:
         commentary.append(commentary_for(r))
 
+    elevated_today = sum(1 for r in public_rows if r["band"] == "Elevated")
+
     public = {
         "date": bundle["date"],
         "as_of": f"{bundle['date']} 5:00 PM ET",
@@ -234,6 +236,10 @@ def aggregate(bundle: dict, cfg: dict | None = None) -> dict:
         "names_evaluated": len(records),
         "names_filtered_out": len(bundle["data_quality"]["tickers_filtered"]),
         "data_quality_degraded": bundle["data_quality"]["endpoints_failed"] > bundle["data_quality"]["endpoints_ok"],
+        "headline_metric": {
+            "label": "Elevated band names",
+            "value": elevated_today,
+        },
     }
 
     # ---- Internal (raw + composite + components) ----
