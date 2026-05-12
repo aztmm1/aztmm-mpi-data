@@ -1,6 +1,6 @@
 {
   "date": "2026-05-12",
-  "started_at": "2026-05-12T23:49:34.915254Z",
+  "started_at": "2026-05-12T23:50:48.902792Z",
   "dry_run": false,
   "steps": [
     {
@@ -20,13 +20,13 @@
     {
       "step": "update_history",
       "ok": true,
-      "points": 15,
-      "sparkline_available": true
+      "points": 1,
+      "sparkline_available": false
     },
     {
       "step": "render",
       "ok": true,
-      "html_bytes": 7515
+      "html_bytes": 6925
     },
     {
       "step": "brand_check",
