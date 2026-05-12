@@ -143,19 +143,29 @@ function selectWorkflows(et) {
 
 // ----- daily freshness watchdog -----
 // Fires at 17:55 ET — 45 min after the 17:10 dispatch window.
-// Pings each tracker's latest.json on raw.githubusercontent.com and
-// verifies its `date` field equals today's ET date.
+// Uses GitHub Contents API (no CDN caching, always reflects latest commit) to
+// verify each tracker's latest.json `date` field equals today's ET date.
 async function runFreshnessWatch(env, etDate) {
   const results = [];
   for (const target of FRESHNESS_TARGETS) {
-    const url = `${RAW_BASE}/${target.slug}/sample-output/${target.file}?t=${Date.now()}`;
+    const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${target.slug}/sample-output/${target.file}?ref=main`;
     try {
-      const res = await fetch(url, { cf: { cacheTtl: 0, cacheEverything: false } });
+      const res = await fetch(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${env.GH_PAT}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": USER_AGENT,
+        },
+        cf: { cacheTtl: 0, cacheEverything: false },
+      });
       if (!res.ok) {
         results.push({ slug: target.slug, status: "fetch_failed", code: res.status });
         continue;
       }
-      const data = await res.json();
+      const meta = await res.json();
+      // Contents API returns base64-encoded content
+      const decoded = meta.content ? atob(meta.content.replace(/\n/g, "")) : "";
+      const data = decoded ? JSON.parse(decoded) : null;
       let foundDate = null;
       // 1. Check top-level keys
       for (const k of target.dateKeys) {
