@@ -101,6 +101,13 @@ jobs:
             cp -f congress-trades-tracker/publish-artifacts/*.json congress-trades-tracker/sample-output/ 2>/dev/null || true
             cp -f congress-trades-tracker/publish-artifacts/*.html congress-trades-tracker/sample-output/ 2>/dev/null || true
           fi
+          # Stable URLs: latest.{json,html} copies for jsDelivr to serve
+          cd congress-trades-tracker/sample-output/ 2>/dev/null && {
+            LATEST_JSON=$(ls -t congress-*.public.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls -t congress-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            cd - >/dev/null
+          } || true
+
           git add congress-trades-tracker/data/ congress-trades-tracker/sample-output/ || true
           git diff --cached --quiet || git commit -m "congress-watch: log run ${{ steps.guard.outputs.date }}"
           # Race-safe push: pull-rebase + retry up to 4 times

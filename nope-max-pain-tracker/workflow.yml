@@ -109,7 +109,13 @@ jobs:
         if: always()
         run: |
           git config user.name "aztmm-bot"
-          git config user.email "bot@aztmm.local"
+          git config user.email "bot@aztmm.local"          # Stable URLs: latest.{json,html} copies for jsDelivr to serve
+          cd nope-max-pain-tracker/sample-output/ 2>/dev/null && {
+            LATEST_JSON=$(ls -t nope-maxpain-*.public.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls -t nope-maxpain-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            cd - >/dev/null
+          } || true
+
           git add nope-max-pain-tracker/data/ nope-max-pain-tracker/sample-output/ || true
           git diff --cached --quiet || git commit -m "options-gravity: run ${{ steps.guard.outputs.date }}"
           # Race-safe push: pull-rebase + retry up to 4 times

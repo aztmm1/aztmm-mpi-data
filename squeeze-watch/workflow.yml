@@ -73,6 +73,13 @@ jobs:
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
+          # Stable URLs: latest.{json,html} copies for jsDelivr to serve
+          if [ -d squeeze-watch/sample-output/ ]; then
+            cd squeeze-watch/sample-output/
+            LATEST_JSON=$(ls -t squeeze-*.public.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls -t squeeze-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            cd - >/dev/null
+          fi
           git add squeeze-watch/sample-output/ squeeze-watch/data/ || true
           git diff --cached --quiet || git commit -m "squeeze-watch: snapshot ${{ steps.guard.outputs.date }}"
           # Race-safe push: pull-rebase + retry up to 4 times

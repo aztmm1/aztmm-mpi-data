@@ -95,6 +95,13 @@ jobs:
             cp -f aztmm-daily-pulse-v2/publish-artifacts/*.html aztmm-daily-pulse-v2/sample-output/ 2>/dev/null || true
             cp -f aztmm-daily-pulse-v2/publish-artifacts/payload.json aztmm-daily-pulse-v2/sample-output/daily-pulse-${{ steps.guard.outputs.date }}.payload.json 2>/dev/null || true
           fi
+          # Stable URLs: latest.{json,html} copies for jsDelivr to serve
+          cd aztmm-daily-pulse-v2/sample-output/ 2>/dev/null && {
+            LATEST_JSON=$(ls -t daily-pulse-*.payload.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls -t daily-pulse-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            cd - >/dev/null
+          } || true
+
           git add aztmm-daily-pulse-v2/data/ aztmm-daily-pulse-v2/sample-output/ || true
           git diff --cached --quiet || git commit -m "daily-pulse: log run ${{ steps.guard.outputs.date }}"
           # Race-safe push: pull-rebase + retry up to 4 times
