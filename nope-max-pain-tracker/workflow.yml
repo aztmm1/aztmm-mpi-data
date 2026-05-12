@@ -112,4 +112,13 @@ jobs:
           git config user.email "bot@aztmm.local"
           git add nope-max-pain-tracker/data/ nope-max-pain-tracker/sample-output/ || true
           git diff --cached --quiet || git commit -m "options-gravity: run ${{ steps.guard.outputs.date }}"
-          git push || true
+          # Race-safe push: pull-rebase + retry up to 4 times
+          for i in 1 2 3 4; do
+            if git pull --rebase origin main >/dev/null 2>&1; then
+              if git push origin main; then
+                echo "  push ok on attempt $i"; break
+              fi
+            fi
+            echo "  push attempt $i failed — sleeping $((i*3))s"
+            sleep $((i*3))
+          done
