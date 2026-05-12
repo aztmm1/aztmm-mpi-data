@@ -1,0 +1,69 @@
+# AZTMM Squeeze Watch — configuration
+#
+# INTERNAL FILE. The thresholds below are never exposed on user-visible pages.
+# They drive aggregator.py scoring only.
+
+# Candidate universe — the names we evaluate each evening.
+# Mix of historical short-squeeze candidates, high-short-interest names,
+# and meme-adjacent tickers. Universe is filtered down by the liquidity
+# floor in `universe_filters` before scoring.
+candidate_universe:
+  - GME
+  - CVNA
+  - UPST
+  - PLTR
+  - SOFI
+  - HOOD
+  - SMCI
+  - MSTR
+  - COIN
+  - SNAP
+  - RDDT
+  - CHWY
+  - AFRM
+  - LCID
+  - RIVN
+
+# Liquidity floor — anti-pump-and-dump filter (applied BEFORE scoring)
+universe_filters:
+  min_market_cap_usd: 500_000_000        # $500M
+  min_avg_daily_volume_shares: 1_000_000 # 1M shares avg over 30 days
+
+# Score weights (each component normalised 0-1 then averaged with these weights)
+# Internal only — never rendered to user.
+score_weights:
+  short_interest_pct_float: 0.25
+  days_to_cover:            0.20
+  options_volume_ratio:     0.20
+  call_put_volume_ratio:    0.15
+  gamma_context:            0.20
+
+# Normalisation caps (values at or above the cap normalise to 1.0)
+normalisation:
+  short_interest_pct_cap: 30.0   # 30% of float = max
+  days_to_cover_cap:      10.0   # 10 days = max
+  options_vol_ratio_cap:   5.0   # 5x 30-day avg = max
+  call_put_ratio_cap:      3.0   # 3:1 calls/puts = max
+  gex_negative_cap:       -1000000000.0  # -$1B GEX = max amplification context
+
+# Output limits
+output:
+  public_top_n: 10
+  commentary_top_n: 3
+  internal_top_n: 25
+
+# UW endpoint paths (private — never logged to public output)
+endpoints:
+  shorts_interest_float: "/api/shorts/{ticker}/interest-float"
+  shorts_ftds:           "/api/shorts/{ticker}/ftds"
+  shorts_volume_ratio:   "/api/shorts/{ticker}/volume-and-ratio"
+  flow_alerts:           "/api/option-trades/flow-alerts"
+  greek_exposure:        "/api/stock/{ticker}/greek-exposure"
+  stock_info:            "/api/stock/{ticker}/info"
+
+# HTTP behaviour
+http:
+  base_url: "https://api.unusualwhales.com"
+  timeout_seconds: 8
+  max_retries: 2
+  backoff_seconds: 1.5

@@ -1,0 +1,115 @@
+name: AZTMM Options Gravity (NOPE & Max-Pain)
+
+# Schedule: 5 PM ET, Mon–Fri.
+#  - During EDT (mid-Mar to early-Nov): 21:00 UTC
+#  - During EST (early-Nov to mid-Mar): 22:00 UTC
+# Both cron lines fire; the idempotency guard skips if the run log for the
+# date already exists with a terminal status.
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Target date YYYY-MM-DD (default: today)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish)'
+        required: false
+        default: 'false'
+      force_publish:
+        description: 'Force WP page update (else just emit payload)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  options-gravity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      UW_API_KEY: ${{ secrets.UW_API_KEY }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      WP_SITE: ${{ secrets.WP_SITE }}
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+      AZTMM_OPTIONS_GRAVITY_PAGE_ID: ${{ vars.AZTMM_OPTIONS_GRAVITY_PAGE_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: DST gate (5:00 PM America/New_York only)
+        id: dst
+        run: |
+          # Compute current ET hour. Both cron lines fire — only one matches 17:00 ET.
+          ET_HOUR=$(TZ=America/New_York date +%H)
+          if [ "$ET_HOUR" = "17" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: ET hour is $ET_HOUR, not 17"
+          fi
+
+      - name: Set up Python
+        if: steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        if: steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        working-directory: outputs/nope-max-pain-tracker
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Idempotency guard
+        if: steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        id: guard
+        working-directory: outputs/nope-max-pain-tracker
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then DATE=$(TZ=America/New_York date +%F); fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          LOG="data/logs/$DATE.json"
+          if [ -f "$LOG" ] && grep -qE '"status":\s*"(payload_emitted|dry_run_ok)"' "$LOG"; then
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        if: (steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch') && steps.guard.outputs.already_ran == 'false'
+        working-directory: outputs/nope-max-pain-tracker
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ github.event.inputs.force_publish }}" = "true" ]; then ARGS="$ARGS --force-publish"; fi
+          python run.py $ARGS
+
+      - name: Publish public.json to snapshots repo (jsDelivr)
+        if: (steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch') && steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
+        env:
+          SNAPSHOTS_PAT: ${{ secrets.SNAPSHOTS_PAT }}
+        working-directory: outputs/nope-max-pain-tracker
+        run: |
+          DATE="${{ steps.guard.outputs.date }}"
+          PUB="sample-output/nope-maxpain-$DATE.public.json"
+          if [ ! -f "$PUB" ]; then echo "no public json at $PUB"; exit 1; fi
+          # Caller-side commit to aztmm-data/snapshots; left to a follow-up step that
+          # is shared across all 4 trackers (see UW-INTEGRATION-MASTER-PLAN-v2.md).
+          echo "would push $PUB and copy to options-gravity/latest.json"
+
+      - name: Commit run logs
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add outputs/nope-max-pain-tracker/data/ outputs/nope-max-pain-tracker/sample-output/ || true
+          git diff --cached --quiet || git commit -m "options-gravity: run ${{ steps.guard.outputs.date }}"
+          git push || true

@@ -1,0 +1,119 @@
+---
+# AZTMM Congress Trades Tracker — Config
+# Edit thresholds here; never hardcode in aggregator.
+
+tracker_name: congress-trades-tracker
+page_slug: /congress-watch/
+
+cadence:
+  refresh_label: "5:00 PM ET"
+  one_per_day: true
+
+# Endpoints to pull. Internal-only — never surfaced to users.
+endpoints:
+  recent_trades:
+    path: /api/congress/recent-trades
+    limit: 200
+    enabled: true
+  late_reports:
+    path: /api/congress/late-reports
+    limit: 100
+    enabled: true
+  trader_view:
+    path: /api/congress/congress-trader
+    limit: 100
+    enabled: true
+  # Note: /api/congress/recent-reports and /api/congress/{member}/recent-trades
+  # both return 404 in current API. Drill-down is served by congress-trader?name=
+  # until upstream restores. enabled: false keeps the wire intact for later.
+  recent_reports:
+    path: /api/congress/recent-reports
+    limit: 100
+    enabled: false
+  member_drilldown:
+    path_template: /api/congress/congress-trader
+    name_param: name
+    enabled: true
+
+# Notability thresholds
+notability:
+  cluster_window_days: 5            # Same ticker disclosed by N+ members in this many days
+  cluster_min_members: 2
+  sector_cluster_min_members: 3     # X members in same sector inside the window
+  large_size_band: "$500,001 - $1,000,000"   # Or any band >= this
+  large_size_bands_treated_as_large:
+    - "$500,001 - $1,000,000"
+    - "$1,000,001 - $5,000,000"
+    - "$5,000,001 - $25,000,000"
+    - "$25,000,001 - $50,000,000"
+    - "$50,000,001 +"
+  late_window_days: 45              # Filed more than N days after transaction = late color
+
+# Sector mapping for the small core list we observe with.
+# Anything outside the map gets tagged as "Other".
+sector_map:
+  # Tech / mega-cap growth
+  NVDA: Technology
+  MSFT: Technology
+  AAPL: Technology
+  GOOGL: Communication Services
+  GOOG: Communication Services
+  META: Communication Services
+  TSLA: Consumer Discretionary
+  AMZN: Consumer Discretionary
+  AVGO: Technology
+  AMD: Technology
+  QCOM: Technology
+  INTC: Technology
+  TSM: Technology
+  CRM: Technology
+  ORCL: Technology
+  ADBE: Technology
+  MU: Technology
+  # Financials
+  JPM: Financials
+  BAC: Financials
+  WFC: Financials
+  GS: Financials
+  MS: Financials
+  C: Financials
+  V: Financials
+  MA: Financials
+  # Healthcare
+  UNH: Health Care
+  LLY: Health Care
+  JNJ: Health Care
+  PFE: Health Care
+  MRK: Health Care
+  ABBV: Health Care
+  DXCM: Health Care
+  PODD: Health Care
+  # Energy
+  XOM: Energy
+  CVX: Energy
+  COP: Energy
+  # Consumer staples / discretionary
+  WMT: Consumer Staples
+  COST: Consumer Staples
+  KO: Consumer Staples
+  PEP: Consumer Staples
+  HD: Consumer Discretionary
+  NKE: Consumer Discretionary
+  # Industrials
+  CAT: Industrials
+  BA: Industrials
+  GE: Industrials
+  # ETF / broad
+  SPY: Broad Market
+  QQQ: Broad Market
+  IWM: Broad Market
+
+# Output paths (relative to package root)
+output:
+  public_json: "sample-output/congress-{date}.public.json"
+  internal_json: "sample-output/congress-{date}.internal.json"
+  rendered_html: "sample-output/congress-{date}.html"
+
+# Disclaimer surfaced on every render (do not edit without legal review)
+disclaimer: >
+  Personal observations of one trader. Not investment advice. Data refreshed once daily at 5 PM ET.

@@ -1,0 +1,255 @@
+<div class="aztmm-options-gravity" data-tracker="options-gravity">
+
+  <header class="og-header">
+    <h2 class="og-title">Options Gravity</h2>
+    <p class="og-tagline">
+      End-of-session readings of net options pressure (NOPE) and max-pain strikes for index proxies and a handful of megacaps.
+    </p>
+    <p class="og-as-of">
+      As of <span data-bind="as_of_stamp">—</span>
+    </p>
+  </header>
+
+  <section class="og-section og-commentary">
+    <h3>What I'm seeing tonight</h3>
+    <ol class="og-commentary-list" data-bind="commentary"></ol>
+  </section>
+
+  <section class="og-section og-nope">
+    <h3>Tonight's NOPE readings</h3>
+    <p class="og-section-note">
+      NOPE summarises the day's net options pressure relative to spot trading volume. A reading above zero leans toward
+      call demand; below zero leans toward put demand. We show the closing reading per ticker, never an intraday quote.
+    </p>
+    <div class="og-table-wrap">
+      <table class="og-table og-nope-table">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>NOPE</th>
+            <th>Tone</th>
+          </tr>
+        </thead>
+        <tbody data-bind="nope_rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="og-section og-maxpain">
+    <h3>Tonight's max-pain strikes</h3>
+    <p class="og-section-note">
+      Max-pain is the strike at which the largest number of outstanding option contracts would expire worthless. Spot tends to
+      drift toward this level into expiry — that's an observation, not a prediction. We surface the near expiry and, when
+      different, the next monthly expiry.
+    </p>
+    <div class="og-table-wrap">
+      <table class="og-table og-maxpain-table">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Spot</th>
+            <th>Near max-pain</th>
+            <th>Distance</th>
+            <th>Monthly max-pain</th>
+            <th>Magnet zone?</th>
+          </tr>
+        </thead>
+        <tbody data-bind="maxpain_rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="og-section og-chart">
+    <h3>30-day NOPE — index proxies</h3>
+    <p class="og-section-note">
+      One end-of-session reading per trading day for SPY, QQQ and IWM. Lets you see whether tonight's print sits inside
+      the recent range or breaks out of it.
+    </p>
+    <div class="og-chart-wrap">
+      <canvas id="og-nope-chart" height="300"></canvas>
+    </div>
+    <p class="og-chart-note og-degraded" data-bind="degraded_note" hidden>
+      Note: one or more upstream data feeds were degraded for tonight's snapshot. Some readings may be incomplete.
+    </p>
+  </section>
+
+  <footer class="og-footer">
+    <p class="og-disclaimer">
+      Personal observations of one trader. Not investment advice. Data refreshed once daily at 5 PM ET.
+    </p>
+  </footer>
+
+</div>
+
+<style>
+  .aztmm-options-gravity { font-family: inherit; color: var(--aztmm-text, #1a1a1a); max-width: 1080px; margin: 0 auto; }
+  .og-header { padding: 1.5rem 0 0.5rem; }
+  .og-title { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
+  .og-tagline { margin: 0 0 0.5rem; font-size: 0.95rem; color: var(--aztmm-muted, #555); }
+  .og-as-of { margin: 0 0 1rem; font-size: 0.85rem; color: var(--aztmm-muted, #777); }
+  .og-section { padding: 1rem 0 1.25rem; border-top: 1px solid var(--aztmm-border, #e5e5e5); }
+  .og-section h3 { margin: 0 0 0.5rem; font-size: 1.15rem; }
+  .og-section-note { margin: 0 0 0.75rem; font-size: 0.9rem; color: var(--aztmm-muted, #555); }
+  .og-commentary-list { margin: 0; padding-left: 1.25rem; line-height: 1.55; }
+  .og-commentary-list li { margin: 0 0 0.5rem; }
+  .og-table-wrap { overflow-x: auto; }
+  .og-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  .og-table th, .og-table td { padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--aztmm-border, #eee); text-align: left; }
+  .og-table th { font-weight: 600; background: var(--aztmm-thead, #f7f7f7); }
+  .og-table tr.og-magnet td { background: var(--aztmm-magnet, #fff8e1); }
+  .og-band-positive { color: var(--aztmm-pos, #137a3e); font-weight: 600; }
+  .og-band-deeply-positive { color: var(--aztmm-pos, #137a3e); font-weight: 700; }
+  .og-band-negative { color: var(--aztmm-neg, #b3261e); font-weight: 600; }
+  .og-band-deeply-negative { color: var(--aztmm-neg, #b3261e); font-weight: 700; }
+  .og-band-neutral { color: var(--aztmm-muted, #555); }
+  .og-band-unavailable { color: var(--aztmm-muted, #999); font-style: italic; }
+  .og-chart-wrap { max-width: 100%; }
+  .og-footer { padding: 1.25rem 0; border-top: 1px solid var(--aztmm-border, #e5e5e5); }
+  .og-disclaimer { margin: 0; font-size: 0.85rem; color: var(--aztmm-muted, #666); font-style: italic; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+
+<script>
+(function() {
+  // SSR-time placeholder swap: page reads snapshot client-side from jsDelivr.
+  // The exact URL is configured by WP / WPCode; we expose a hook attribute.
+  var SNAPSHOT_URL = (window.AZTMM_OPTIONS_GRAVITY_URL) ||
+    'https://cdn.jsdelivr.net/gh/aztmm-data/snapshots@main/options-gravity/latest.json';
+
+  function fmtBand(b) {
+    return (b || 'unavailable').replace(/-/g, ' ');
+  }
+  function setText(sel, text) {
+    document.querySelectorAll('[data-bind="' + sel + '"]').forEach(function(el) { el.textContent = text; });
+  }
+
+  function renderCommentary(items) {
+    var ol = document.querySelector('[data-bind="commentary"]');
+    if (!ol) return;
+    ol.innerHTML = '';
+    (items || []).forEach(function(line) {
+      var li = document.createElement('li');
+      li.textContent = line;
+      ol.appendChild(li);
+    });
+  }
+
+  function renderNopeTable(tickers) {
+    var tbody = document.querySelector('[data-bind="nope_rows"]');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    tickers.forEach(function(r) {
+      var tr = document.createElement('tr');
+      var nopeText = (r.nope === null || r.nope === undefined) ? 'n/a' : r.nope.toFixed(2);
+      var band = r.nope_band || 'unavailable';
+      tr.innerHTML =
+        '<td><strong>' + r.ticker + '</strong></td>' +
+        '<td>' + nopeText + '</td>' +
+        '<td class="og-band-' + band + '">' + fmtBand(band) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderMaxPainTable(tickers) {
+    var tbody = document.querySelector('[data-bind="maxpain_rows"]');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    tickers.forEach(function(r) {
+      var tr = document.createElement('tr');
+      if (r.magnet_zone) tr.className = 'og-magnet';
+      var monthly = (r.monthly_max_pain_fmt && r.monthly_expiry &&
+                     r.monthly_expiry !== r.max_pain_expiry)
+                    ? (r.monthly_max_pain_fmt + ' (' + r.monthly_expiry + ')')
+                    : '—';
+      tr.innerHTML =
+        '<td><strong>' + r.ticker + '</strong></td>' +
+        '<td>' + (r.spot_fmt || 'n/a') + '</td>' +
+        '<td>' + (r.max_pain_fmt || 'n/a') +
+          (r.max_pain_expiry ? ' <span class="og-tkr">(' + r.max_pain_expiry + ')</span>' : '') +
+        '</td>' +
+        '<td>' + (r.distance_pct_fmt || 'n/a') + '</td>' +
+        '<td>' + monthly + '</td>' +
+        '<td>' + (r.magnet_zone ? 'within 1%' : '—') + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderChart(chartData) {
+    if (typeof Chart === 'undefined') {
+      // Try again shortly — Chart.js was loaded with defer
+      setTimeout(function() { renderChart(chartData); }, 150);
+      return;
+    }
+    var canvas = document.getElementById('og-nope-chart');
+    if (!canvas) return;
+    var tickers = Object.keys(chartData || {});
+    if (!tickers.length) return;
+    var allDatesSet = {};
+    tickers.forEach(function(t) {
+      (chartData[t] || []).forEach(function(p) { allDatesSet[p.date] = true; });
+    });
+    var labels = Object.keys(allDatesSet).sort();
+    var palette = { SPY: '#1f77b4', QQQ: '#ff7f0e', IWM: '#2ca02c' };
+    var datasets = tickers.map(function(t) {
+      var series = chartData[t] || [];
+      var byDate = {};
+      series.forEach(function(p) { byDate[p.date] = p.nope; });
+      return {
+        label: t,
+        data: labels.map(function(d) { return byDate[d] === undefined ? null : byDate[d]; }),
+        borderColor: palette[t] || '#888',
+        backgroundColor: 'transparent',
+        spanGaps: true,
+        tension: 0.2,
+        pointRadius: 1.5,
+      };
+    });
+    new Chart(canvas, {
+      type: 'line',
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: false } },
+      },
+    });
+  }
+
+  function render(snapshot) {
+    setText('as_of_stamp', snapshot.as_of_stamp || snapshot.date || '—');
+    renderCommentary(snapshot.commentary || []);
+    var indexNames = snapshot.index_tickers || ['SPY','QQQ','IWM'];
+    var megaNames = snapshot.megacap_tickers || [];
+    var idx = (snapshot.tickers || []).filter(function(r) { return indexNames.indexOf(r.ticker) !== -1; });
+    var meg = (snapshot.tickers || []).filter(function(r) { return megaNames.indexOf(r.ticker) !== -1; });
+    var all = idx.concat(meg);
+    renderNopeTable(all);
+    renderMaxPainTable(all);
+    renderChart(snapshot.nope_chart || {});
+    if (snapshot.degraded) {
+      var el = document.querySelector('[data-bind="degraded_note"]');
+      if (el) el.hidden = false;
+    }
+  }
+
+  function load() {
+    fetch(SNAPSHOT_URL, { cache: 'no-store' })
+      .then(function(r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(render)
+      .catch(function(err) {
+        var el = document.querySelector('[data-bind="commentary"]');
+        if (el) {
+          el.innerHTML = '<li>Tonight’s snapshot is loading. If this persists, the daily refresh has not yet completed — check back shortly.</li>';
+        }
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', load);
+  } else {
+    load();
+  }
+})();
+</script>

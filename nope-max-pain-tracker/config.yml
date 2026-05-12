@@ -1,0 +1,54 @@
+# AZTMM NOPE & Max-Pain Tracker — Config
+# ---------------------------------------
+# Ticker universe and lookback windows for the EOD options-gravity snapshot.
+
+# Index proxies (always shown in the NOPE table + max-pain table + chart)
+index_tickers:
+  - SPY
+  - QQQ
+  - IWM
+
+# Megacap single-name universe (shown in tables only; not charted)
+megacap_tickers:
+  - NVDA
+  - MSFT
+  - AAPL
+  - GOOGL
+  - META
+  - TSLA
+  - AMZN
+
+# 30-day rolling NOPE chart: per-day end-of-session NOPE reading per index
+nope_chart:
+  lookback_days: 30
+  charted_tickers: [SPY, QQQ, IWM]
+
+# Max-pain selection rules
+max_pain:
+  # Closest expiry strictly >= target date is the "near" expiry shown in headline
+  # Also include the next monthly Friday expiry as "monthly" context
+  show_near: true
+  show_monthly: true
+  # Highlight rows whose spot price is within this % of the near-expiry max-pain
+  magnet_pct_threshold: 1.0
+
+# NOPE classification bands (used for badges only, never published as scores)
+nope_bands:
+  # In headline copy: above HIGH_POS => "deeply positive", above LOW_POS => "positive",
+  # below LOW_NEG => "negative", below HIGH_NEG => "deeply negative"
+  high_pos: 5.0
+  low_pos: 1.0
+  low_neg: -1.0
+  high_neg: -5.0
+
+# Commentary thresholds
+commentary:
+  consecutive_negative_window: 4
+  magnet_zone_pct: 1.0
+  oi_shift_min_contracts: 5000
+
+# Cadence
+cadence:
+  publish_hour_et: 17    # 5 PM ET
+  publish_minute: 0
+  weekdays_only: true

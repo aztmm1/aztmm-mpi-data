@@ -1,0 +1,78 @@
+name: AZTMM Squeeze Watch
+
+# Schedule: weekday 5 PM ET (handles DST automatically by registering both crons)
+# - EDT (Mar–Nov): 21:00 UTC
+# - EST (Nov–Mar): 22:00 UTC
+# Both fire; the script idempotently skips if the per-date log shows
+# status == 'payload_emitted' or 'dry_run_ok'.
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Target date YYYY-MM-DD (default: today UTC)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish to jsDelivr)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write   # commit the dated artefacts + log
+
+jobs:
+  squeeze-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      UW_API_KEY: ${{ secrets.UW_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        working-directory: outputs/squeeze-watch
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Idempotency guard
+        id: guard
+        working-directory: outputs/squeeze-watch
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          # Skip if the public artefact for this date already exists.
+          if [ -f "sample-output/squeeze-$DATE.public.json" ]; then
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        if: steps.guard.outputs.already_ran == 'false'
+        working-directory: outputs/squeeze-watch
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python run.py $ARGS
+
+      - name: Commit artefacts
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add outputs/squeeze-watch/sample-output/ outputs/squeeze-watch/data/ || true
+          git diff --cached --quiet || git commit -m "squeeze-watch: snapshot ${{ steps.guard.outputs.date }}"
+          git push || true

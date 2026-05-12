@@ -1,0 +1,107 @@
+{# ============================================================
+   AZTMM Squeeze Watch — page body template
+   Renders the static frame + table rows from the public JSON.
+   ============================================================ #}
+
+<div class="aztmm-squeeze-watch" data-date="{{ date }}">
+
+  {# -------- HEADER -------- #}
+  <header class="sw-header">
+    <h1>Squeeze Watch</h1>
+    <p class="sw-as-of">As of {{ as_of }}</p>
+    <p class="sw-summary">{{ summary_line }}</p>
+  </header>
+
+  {# -------- WHAT THIS IS -------- #}
+  <section class="sw-section sw-what-this-is">
+    <h2>What this list is</h2>
+    <p>
+      A nightly screen of names where two things are showing up together:
+      a meaningful share of float reported short, and active options
+      interest on the tape. The list is sorted by how strongly those two
+      things are co-occurring tonight. It is a list of names that turned
+      up in tonight's screen, not a list of names to chase.
+    </p>
+    <p class="sw-watching-not-chasing">
+      <strong>I'm watching but not chasing.</strong> Names show up here
+      for many reasons that do not all resolve in the same direction.
+    </p>
+  </section>
+
+  {# -------- TABLE -------- #}
+  <section class="sw-section sw-table-section">
+    <h2>Tonight's screen ({{ rows|length }} names)</h2>
+    {% if rows %}
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Sector</th>
+          <th>Short interest (% float)</th>
+          <th>Days to cover</th>
+          <th>Call/put options interest</th>
+          <th>Alert count</th>
+          <th>Band</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="sw-row sw-band-{{ r.band|lower }}">
+          <td class="sw-ticker"><strong>{{ r.ticker }}</strong></td>
+          <td>{{ r.sector or '—' }}</td>
+          <td>{{ r.short_interest_pct_float_fmt }}</td>
+          <td>{{ r.days_to_cover_fmt }}</td>
+          <td>{{ r.call_put_ratio_fmt }}</td>
+          <td>{{ r.alert_count }}</td>
+          <td><span class="sw-band-pill sw-band-pill-{{ r.band|lower }}">{{ r.band }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No names cleared the screen tonight.</p>
+    {% endif %}
+  </section>
+
+  {# -------- COMMENTARY -------- #}
+  {% if commentary %}
+  <section class="sw-section sw-commentary">
+    <h2>Why the combination is notable — top of the list</h2>
+    <ul class="sw-commentary-list">
+      {% for line in commentary %}
+      <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {# -------- HOW TO READ -------- #}
+  <section class="sw-section sw-how-to-read">
+    <h2>How to read this page</h2>
+    <ul>
+      <li><strong>Short interest as a share of float</strong> is the number of shares reported short divided by shares available to trade.</li>
+      <li><strong>Days to cover</strong> is the reported short interest divided by average daily volume — a rough measure of how compressed the short position is.</li>
+      <li><strong>Call/put options interest</strong> on this page is the ratio of call-side to put-side options interest seen tonight. A high ratio means call-side interest dominated.</li>
+      <li><strong>Bands</strong> (Elevated / Notable / Watching) summarise where each name sits in tonight's screen relative to the others.</li>
+    </ul>
+    <p>None of these are direction calls. They are descriptions of conditions on tonight's tape.</p>
+  </section>
+
+  {# -------- DATA QUALITY -------- #}
+  {% if data_quality_degraded %}
+  <section class="sw-section sw-data-quality">
+    <p><em>Data quality note: one or more upstream feeds were degraded for this session. Read with appropriate caution.</em></p>
+  </section>
+  {% endif %}
+
+  {# -------- DISCLAIMER -------- #}
+  <footer class="sw-footer">
+    <p class="sw-disclaimer">
+      Personal observations of one trader. Not investment advice. Data refreshed once daily at 5 PM ET.
+    </p>
+    <p class="sw-disclaimer sw-extra-disclaimer">
+      <strong>Inclusion in this list is not a recommendation. Past short squeezes do not predict future moves.</strong>
+    </p>
+  </footer>
+
+</div>

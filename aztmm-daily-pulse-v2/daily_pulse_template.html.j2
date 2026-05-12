@@ -1,0 +1,180 @@
+{# ============================================================
+   AZTMM Daily Pulse v2 — Post Body Template
+   This template renders the WordPress post body only.
+   Never reference data vendor names — the publisher will
+   brand-scrub the output before publish.
+   ============================================================ #}
+
+<div class="aztmm-daily-pulse" data-date="{{ date }}">
+
+  {# -------- HERO -------- #}
+  <div class="dp-hero">
+    <div class="dp-meta">
+      <span class="dp-date">{{ date }}</span>
+      <span class="dp-sep">·</span>
+      <span class="dp-tag dp-tag-{{ scenario.label|lower|replace(' ', '-')|replace('(', '')|replace(')', '') }}">{{ scenario.label }}</span>
+      <span class="dp-sep">·</span>
+      <span class="dp-closing-bell">End-of-session read</span>
+    </div>
+    <h2 class="dp-headline">{{ scenario.headline }}</h2>
+  </div>
+
+  {# -------- SECTION 1 — What happened today -------- #}
+  <section class="dp-section dp-s1">
+    <h3>What happened today</h3>
+    {% if market_totals.available %}
+    <ul class="dp-bullets">
+      <li>Call premium: <strong>{{ market_totals.call_premium_fmt }}</strong>{% if market_totals.call_premium_delta_fmt %} ({{ market_totals.call_premium_delta_fmt }} vs prior session){% endif %}</li>
+      <li>Put premium: <strong>{{ market_totals.put_premium_fmt }}</strong>{% if market_totals.put_premium_delta_fmt %} ({{ market_totals.put_premium_delta_fmt }} vs prior session){% endif %}</li>
+      <li>Put/Call volume ratio: <strong>{{ market_totals.pc_ratio_fmt }}</strong></li>
+    </ul>
+    {% endif %}
+    {% if tide.available %}
+    <p class="dp-tide">Cumulative end-of-day net call premium: <strong>{{ tide.eod_net_call_premium_fmt }}</strong>. Tape {{ tide.shape }}.</p>
+    {% endif %}
+  </section>
+
+  {# -------- SECTION 2 — Sector heatmap -------- #}
+  <section class="dp-section dp-s2">
+    <h3>Sector heatmap</h3>
+    <table class="dp-heatmap">
+      <thead>
+        <tr><th>Sector</th><th>Change</th><th>Call prem</th><th>Put prem</th><th>Net</th><th>Band</th></tr>
+      </thead>
+      <tbody>
+        {% for r in sector.sector_rows %}
+        <tr class="dp-band-{{ r.band }}">
+          <td>{{ r.name }} <span class="dp-tkr">({{ r.ticker }})</span></td>
+          <td>{{ r.change_pct_fmt }}</td>
+          <td>{{ r.call_premium_fmt }}</td>
+          <td>{{ r.put_premium_fmt }}</td>
+          <td>{{ r.net_premium_fmt }}</td>
+          <td><span class="dp-band-pill dp-band-pill-{{ r.band }}">{{ r.band }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="dp-leaders"><strong>Leaders:</strong>
+      {% for l in sector.leaders %}{{ l.name }} ({{ l.change_pct_fmt }}){% if not loop.last %}, {% endif %}{% endfor %}
+    </p>
+    <p class="dp-laggards"><strong>Laggards:</strong>
+      {% for l in sector.laggards %}{{ l.name }} ({{ l.change_pct_fmt }}){% if not loop.last %}, {% endif %}{% endfor %}
+    </p>
+  </section>
+
+  {# -------- SECTION 3 — Where premium concentrated -------- #}
+  <section class="dp-section dp-s3">
+    <h3>Where premium concentrated</h3>
+    {% if concentration.available %}
+    <div class="dp-concentration">
+      <div class="dp-conc-col">
+        <h4>Top 5 — Tech / mega-cap growth</h4>
+        <ul>
+        {% for t in concentration.tech %}
+          <li><strong>{{ t.ticker }}</strong> {{ t.net_premium_fmt }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+      <div class="dp-conc-col">
+        <h4>Top 5 — Non-tech</h4>
+        <ul>
+        {% for t in concentration.non_tech %}
+          <li><strong>{{ t.ticker }}</strong> {{ t.net_premium_fmt }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% if concentration.narrowing %}
+    <p class="dp-narrowing-flag"><strong>Narrowing flag:</strong> tech premium is concentrating onto {{ concentration.narrowing_ticker }} — leadership is thin, not broad.</p>
+    {% endif %}
+    {% else %}
+    <p>No qualifying flow data for this session.</p>
+    {% endif %}
+  </section>
+
+  {# -------- SECTION 4 — Dark pool tell -------- #}
+  <section class="dp-section dp-s4">
+    <h3>Dark pool tell</h3>
+    {% if darkpool.available %}
+    <table class="dp-darkpool">
+      <thead>
+        <tr><th>Ticker</th><th>Total prem</th><th>Mega-prints (&ge;100K)</th>{% if darkpool.rows[0].pct_change_fmt is defined %}<th>vs prior</th>{% endif %}</tr>
+      </thead>
+      <tbody>
+      {% for r in darkpool.rows %}
+        <tr>
+          <td><strong>{{ r.ticker }}</strong></td>
+          <td>{{ r.total_premium_fmt }}</td>
+          <td>{{ r.mega_print_count }}</td>
+          {% if r.pct_change_fmt is defined %}<td>{{ r.pct_change_fmt }}</td>{% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>Dark pool data unavailable for this session.</p>
+    {% endif %}
+  </section>
+
+  {# -------- SECTION 5 — What's unusual today -------- #}
+  <section class="dp-section dp-s5">
+    <h3>What's unusual today</h3>
+    {% if presets.available %}
+    <ul class="dp-preset-counts">
+      <li>Unusually bullish setups: <strong>{{ presets.counts.unusually_bullish|default(0) }}</strong></li>
+      <li>Unusually bearish setups: <strong>{{ presets.counts.unusually_bearish|default(0) }}</strong></li>
+      <li>Deep-conviction call flow: <strong>{{ presets.counts.deep_conviction_calls|default(0) }}</strong></li>
+      <li>Deep-conviction put flow: <strong>{{ presets.counts.deep_conviction_puts|default(0) }}</strong></li>
+      <li>Long-dated call buyers (>60 DTE): <strong>{{ presets.counts.long_term_calls|default(0) }}</strong></li>
+      <li>Put-sells (implicit bullish): <strong>{{ presets.counts.put_sells|default(0) }}</strong></li>
+      <li>Cheap short-dated calls: <strong>{{ presets.counts.cheap_calls|default(0) }}</strong></li>
+    </ul>
+    {% if presets.top_alerts %}
+    <h4>Top 3 single-leg, ask-side prints</h4>
+    <ol class="dp-top-alerts">
+    {% for a in presets.top_alerts %}
+      <li><strong>{{ a.ticker }}</strong> — {{ a.type }} {% if a.strike %}${{ a.strike|round(0)|int }}{% endif %} {% if a.expiry %}exp {{ a.expiry }}{% endif %} ({{ a.premium_fmt }}{% if a.v_oi %}, V/OI {{ a.v_oi|round(1) }}{% endif %})</li>
+    {% endfor %}
+    </ol>
+    {% endif %}
+    {% else %}
+    <p>No alert data for this session.</p>
+    {% endif %}
+  </section>
+
+  {# -------- SECTION 6 — What to watch -------- #}
+  <section class="dp-section dp-s6">
+    <h3>What to watch tomorrow</h3>
+    {% if watchlist %}
+    <ol class="dp-watchlist">
+    {% for w in watchlist %}
+      <li>{{ w }}</li>
+    {% endfor %}
+    </ol>
+    {% else %}
+    <p>No specific levels to watch — tape was uninformative.</p>
+    {% endif %}
+  </section>
+
+  {# -------- WHY THIS READ -------- #}
+  <details class="dp-why">
+    <summary>Why this read</summary>
+    <ul>
+    {% for r in scenario.reasons %}
+      <li>{{ r }}</li>
+    {% endfor %}
+    </ul>
+  </details>
+
+  {# -------- FOOTER -------- #}
+  <footer class="dp-footer">
+    <p class="dp-disclaimer">
+      AZTMM aggregation of public end-of-day options and dark pool data feeds. Educational only — not investment advice.
+      Past tape patterns do not predict future results.
+    </p>
+    {% if data_quality.degraded %}
+    <p class="dp-degraded"><em>Data quality note: one or more upstream feeds were degraded for this session ({{ data_quality.endpoints_failed }} endpoint{{ 's' if data_quality.endpoints_failed != 1 else '' }} unavailable). Read with appropriate caution.</em></p>
+    {% endif %}
+  </footer>
+
+</div>

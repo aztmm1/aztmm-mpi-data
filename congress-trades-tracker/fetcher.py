@@ -1,0 +1,216 @@
+"""
+AZTMM Congress Trades Tracker - Fetcher
+=========================================
+
+Pulls congressional trade disclosures for an EOD snapshot.
+
+Design rules:
+  - Token loaded from env var UW_API_KEY (also accepts UW_API_TOKEN).
+  - Defensive: each endpoint wrapped in try/except, failure flagged in
+    data_quality, never crashes upstream consumers.
+  - Throttled: ~100 req/min ceiling.
+  - Idempotent on date: same input date -> same data envelope.
+  - The 5 PM ET filter is applied by aggregator (walk-forward).
+
+NOTE: Vendor identifiers stay internal. The aggregator and publisher
+use generic source labels in user-rendered output.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import time
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+from urllib import parse as urlparse
+from urllib import request as urlrequest
+from urllib.error import HTTPError, URLError
+
+API_BASE = "https://api.unusualwhales.com"  # internal only
+DEFAULT_THROTTLE_SEC = 0.6
+DEFAULT_TIMEOUT = 20
+
+logger = logging.getLogger("congress.fetcher")
+
+
+def _token() -> str:
+    tok = os.environ.get("UW_API_KEY") or os.environ.get("UW_API_TOKEN")
+    if not tok:
+        raise RuntimeError(
+            "UW_API_KEY not set. Export the env var before invoking fetcher."
+        )
+    return tok
+
+
+def _headers() -> dict[str, str]:
+    return {
+        "Authorization": f"Bearer {_token()}",
+        "Accept": "application/json",
+        "User-Agent": "aztmm-congress-watch/1.0",
+    }
+
+
+@dataclass
+class FetchResult:
+    ok: bool
+    data: Any = None
+    error: str | None = None
+    endpoint: str = ""
+
+
+def _get(path: str, params: dict | None = None,
+         throttle: float = DEFAULT_THROTTLE_SEC) -> FetchResult:
+    """Single GET with throttle, one retry on 429/5xx, never raise."""
+    qs = ""
+    if params:
+        qs = "?" + urlparse.urlencode({k: v for k, v in params.items() if v is not None})
+    url = f"{API_BASE}{path}{qs}"
+
+    last_err: str | None = None
+    for attempt in range(2):
+        try:
+            req = urlrequest.Request(url, headers=_headers())
+            with urlrequest.urlopen(req, timeout=DEFAULT_TIMEOUT) as resp:
+                raw = resp.read().decode("utf-8", errors="replace")
+                time.sleep(throttle)
+                payload = json.loads(raw)
+                return FetchResult(ok=True, data=payload, endpoint=path)
+        except HTTPError as e:
+            last_err = f"HTTP {e.code}: {str(e)[:160]}"
+            if e.code in (429, 500, 502, 503, 504) and attempt == 0:
+                time.sleep(2.0)
+                continue
+            break
+        except URLError as e:
+            last_err = f"Network: {type(e).__name__}: {e}"
+            if attempt == 0:
+                time.sleep(2.0)
+                continue
+            break
+        except Exception as e:  # noqa: BLE001
+            last_err = f"{type(e).__name__}: {e}"
+            break
+
+    logger.warning("fetch failed: %s - %s", path, last_err)
+    return FetchResult(ok=False, error=last_err, endpoint=path)
+
+
+# --- Endpoint wrappers ---
+
+def fetch_recent_trades(limit: int = 200) -> FetchResult:
+    return _get("/api/congress/recent-trades", {"limit": limit})
+
+
+def fetch_late_reports(limit: int = 100) -> FetchResult:
+    return _get("/api/congress/late-reports", {"limit": limit})
+
+
+def fetch_trader_view(limit: int = 100, name: str | None = None) -> FetchResult:
+    params: dict[str, Any] = {"limit": limit}
+    if name:
+        params["name"] = name
+    return _get("/api/congress/congress-trader", params)
+
+
+# --- Top-level batch ---
+
+def fetch_daily_data(date_str: str, member_drilldown_limit: int = 5) -> dict[str, Any]:
+    """
+    Pull all congressional disclosure datasets for `date_str`.
+
+    Returns:
+        {
+          "date": "YYYY-MM-DD",
+          "recent_trades": [...],
+          "late_reports": [...],
+          "trader_view": [...],
+          "member_views": {member_name: [...]},
+          "data_quality": {endpoints_ok, endpoints_failed, failures, degraded},
+          "fetched_at": "ISO-8601 UTC"
+        }
+    """
+    out: dict[str, Any] = {
+        "date": date_str,
+        "recent_trades": [],
+        "late_reports": [],
+        "trader_view": [],
+        "member_views": {},
+        "data_quality": {
+            "endpoints_ok": 0,
+            "endpoints_failed": 0,
+            "failures": [],
+            "degraded": False,
+        },
+        "fetched_at": datetime.utcnow().isoformat() + "Z",
+    }
+    dq = out["data_quality"]
+
+    def _record(res: FetchResult) -> None:
+        if res.ok:
+            dq["endpoints_ok"] += 1
+        else:
+            dq["endpoints_failed"] += 1
+            dq["failures"].append({"endpoint": res.endpoint, "error": res.error})
+
+    def _unwrap(payload: Any) -> list:
+        if isinstance(payload, dict) and "data" in payload:
+            payload = payload.get("data")
+        return payload if isinstance(payload, list) else []
+
+    # 1. Recent trades (primary)
+    r = fetch_recent_trades(limit=200)
+    _record(r)
+    if r.ok:
+        out["recent_trades"] = _unwrap(r.data)
+
+    # 2. Late reports (regulatory color)
+    r = fetch_late_reports(limit=100)
+    _record(r)
+    if r.ok:
+        out["late_reports"] = _unwrap(r.data)
+
+    # 3. Trader-view (per-member overview)
+    r = fetch_trader_view(limit=100)
+    _record(r)
+    if r.ok:
+        out["trader_view"] = _unwrap(r.data)
+
+    # 4. Drill-down per top member (re-uses trader_view?name=)
+    # Pick top-K most-active reporters from today's recent trades.
+    from collections import Counter
+    name_counts = Counter(
+        t.get("name") for t in out["recent_trades"] if t.get("name")
+    )
+    for name, _ in name_counts.most_common(member_drilldown_limit):
+        r = fetch_trader_view(limit=50, name=name)
+        _record(r)
+        if r.ok:
+            out["member_views"][name] = _unwrap(r.data)
+        else:
+            out["member_views"][name] = []
+
+    dq["degraded"] = dq["endpoints_failed"] > 0
+    return out
+
+
+# --- CLI ---
+
+if __name__ == "__main__":
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("--date", default=datetime.utcnow().strftime("%Y-%m-%d"))
+    p.add_argument("--out", default=None)
+    args = p.parse_args()
+
+    logging.basicConfig(level=logging.INFO)
+    payload = fetch_daily_data(args.date)
+    s = json.dumps(payload, indent=2, default=str)
+    if args.out:
+        with open(args.out, "w") as f:
+            f.write(s)
+        print(f"wrote {args.out}  ok={payload['data_quality']['endpoints_ok']}  fail={payload['data_quality']['endpoints_failed']}")
+    else:
+        print(s[:3000])

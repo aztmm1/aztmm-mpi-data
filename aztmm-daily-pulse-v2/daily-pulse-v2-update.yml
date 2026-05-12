@@ -1,0 +1,92 @@
+name: AZTMM Daily Pulse v2
+
+# Schedule: 5 PM ET, Mon–Fri.
+# - During EDT (Mar–Nov): 21:00 UTC
+# - During EST (Nov–Mar): 22:00 UTC
+# Both cron lines fire; the script idempotently skips if the run-log for the
+# date already exists with status=='payload_emitted' or 'dry_run_ok'.
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Target date YYYY-MM-DD (default: today)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish)'
+        required: false
+        default: 'false'
+      force_publish:
+        description: 'Force status=publish (else draft)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write   # commit run-logs back
+
+jobs:
+  daily-pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      WP_SITE: ${{ secrets.WP_SITE }}
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        working-directory: outputs/aztmm-daily-pulse-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Idempotency guard
+        id: guard
+        working-directory: outputs/aztmm-daily-pulse-v2
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          LOG="data/daily-pulse-logs/$DATE.json"
+          if [ -f "$LOG" ] && grep -qE '"status":\s*"(payload_emitted|dry_run_ok)"' "$LOG"; then
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline (emit payload)
+        if: steps.guard.outputs.already_ran == 'false'
+        working-directory: outputs/aztmm-daily-pulse-v2
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ github.event.inputs.force_publish }}" = "true" ]; then ARGS="$ARGS --force-publish"; fi
+          python run_daily_pulse.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
+
+      - name: Publish to WordPress (REST API)
+        if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: outputs/aztmm-daily-pulse-v2
+        run: |
+          python publish_to_wp.py publish-artifacts/payload.json
+
+      - name: Commit run logs
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add outputs/aztmm-daily-pulse-v2/data/ || true
+          git diff --cached --quiet || git commit -m "daily-pulse: log run ${{ steps.guard.outputs.date }}"
+          git push || true

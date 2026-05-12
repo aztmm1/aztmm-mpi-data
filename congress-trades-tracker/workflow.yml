@@ -1,0 +1,100 @@
+name: AZTMM Congress Watch
+
+# Schedule: weekday 5 PM ET. Both DST + EST cron entries registered.
+# - EDT (Mar-Nov): 21:00 UTC
+# - EST (Nov-Mar): 22:00 UTC
+# The idempotency guard skips the second cron if the first already produced
+# a payload for the day.
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Target date YYYY-MM-DD (default: today)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish)'
+        required: false
+        default: 'false'
+      force_publish:
+        description: 'Force status=publish (else draft)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  congress-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      UW_API_KEY: ${{ secrets.UW_API_KEY }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      WP_SITE: ${{ secrets.WP_SITE }}
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        working-directory: outputs/congress-trades-tracker
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Idempotency guard
+        id: guard
+        working-directory: outputs/congress-trades-tracker
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          LOG="data/run-logs/$DATE.json"
+          if [ -f "$LOG" ] && grep -qE '"status":\s*"(payload_emitted|dry_run_ok)"' "$LOG"; then
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        if: steps.guard.outputs.already_ran == 'false'
+        working-directory: outputs/congress-trades-tracker
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ github.event.inputs.force_publish }}" = "true" ]; then ARGS="$ARGS --force-publish"; fi
+          mkdir -p publish-artifacts
+          python run.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
+
+      - name: Publish to WordPress
+        if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: outputs/congress-trades-tracker
+        run: |
+          # Delegated to a shared publisher shim that wraps the WP REST call.
+          # The shim reads payload.json from publish-artifacts/ and upserts the
+          # /congress-watch/ page.
+          if [ -f ../_shared/publish_page_to_wp.py ]; then
+            python ../_shared/publish_page_to_wp.py publish-artifacts/payload.json
+          else
+            echo "publish_page_to_wp.py not present yet; payload retained for manual push"
+          fi
+
+      - name: Commit run artifacts
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add outputs/congress-trades-tracker/data/ outputs/congress-trades-tracker/sample-output/ || true
+          git diff --cached --quiet || git commit -m "congress-watch: log run ${{ steps.guard.outputs.date }}"
+          git push || true
