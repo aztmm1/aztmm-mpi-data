@@ -95,6 +95,12 @@ jobs:
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
+          # Promote publish-artifacts/ -> sample-output/ for jsDelivr serving
+          mkdir -p congress-trades-tracker/sample-output/
+          if [ -d congress-trades-tracker/publish-artifacts/ ]; then
+            cp -f congress-trades-tracker/publish-artifacts/*.json congress-trades-tracker/sample-output/ 2>/dev/null || true
+            cp -f congress-trades-tracker/publish-artifacts/*.html congress-trades-tracker/sample-output/ 2>/dev/null || true
+          fi
           git add congress-trades-tracker/data/ congress-trades-tracker/sample-output/ || true
           git diff --cached --quiet || git commit -m "congress-watch: log run ${{ steps.guard.outputs.date }}"
           # Race-safe push: pull-rebase + retry up to 4 times
