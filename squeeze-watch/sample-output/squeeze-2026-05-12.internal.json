@@ -27,7 +27,7 @@
       "call_alert_count": 119,
       "put_alert_count": 23,
       "call_put_alert_ratio": 5.173913043478261,
-      "short_volume_ratio": 0.6250764334101746,
+      "short_volume_ratio": 0.5530872741941167,
       "net_gex": 2527460.0878000003,
       "components": {
         "n_short_interest": 1.0,
@@ -50,7 +50,7 @@
       "call_alert_count": 92,
       "put_alert_count": 36,
       "call_put_alert_ratio": 2.5555555555555554,
-      "short_volume_ratio": 0.2857878052184044,
+      "short_volume_ratio": 0.2850938986610322,
       "net_gex": 7784631.1885,
       "components": {
         "n_short_interest": 1.0,
@@ -73,7 +73,7 @@
       "call_alert_count": 135,
       "put_alert_count": 65,
       "call_put_alert_ratio": 2.076923076923077,
-      "short_volume_ratio": 0.4263481793917839,
+      "short_volume_ratio": 0.5050956065696678,
       "net_gex": 612407.6388000001,
       "components": {
         "n_short_interest": 1.0,
@@ -96,7 +96,7 @@
       "call_alert_count": 152,
       "put_alert_count": 48,
       "call_put_alert_ratio": 3.1666666666666665,
-      "short_volume_ratio": 0.4026789249011856,
+      "short_volume_ratio": 0.4413794627669608,
       "net_gex": 3836267.4079,
       "components": {
         "n_short_interest": 1.0,
@@ -119,7 +119,7 @@
       "call_alert_count": 120,
       "put_alert_count": 80,
       "call_put_alert_ratio": 1.5,
-      "short_volume_ratio": 0.42583405699881777,
+      "short_volume_ratio": 0.4471246127588802,
       "net_gex": 74087.49619999994,
       "components": {
         "n_short_interest": 1.0,
@@ -142,7 +142,7 @@
       "call_alert_count": 128,
       "put_alert_count": 72,
       "call_put_alert_ratio": 1.7777777777777777,
-      "short_volume_ratio": 0.4418779735276494,
+      "short_volume_ratio": 0.418581916589046,
       "net_gex": 166277.19460000002,
       "components": {
         "n_short_interest": 1.0,
@@ -165,7 +165,7 @@
       "call_alert_count": 151,
       "put_alert_count": 49,
       "call_put_alert_ratio": 3.0816326530612246,
-      "short_volume_ratio": 0.24356611109825238,
+      "short_volume_ratio": 0.3415811669502112,
       "net_gex": 1879200.2631999997,
       "components": {
         "n_short_interest": 0.0,
@@ -188,7 +188,7 @@
       "call_alert_count": 70,
       "put_alert_count": 13,
       "call_put_alert_ratio": 5.384615384615385,
-      "short_volume_ratio": 0.4168061321494191,
+      "short_volume_ratio": 0.47259948810326574,
       "net_gex": 287308.0066999998,
       "components": {
         "n_short_interest": 0.0,
@@ -211,7 +211,7 @@
       "call_alert_count": 72,
       "put_alert_count": 31,
       "call_put_alert_ratio": 2.3225806451612905,
-      "short_volume_ratio": 0.6945782735104373,
+      "short_volume_ratio": 0.6650325393535103,
       "net_gex": 409062.3534,
       "components": {
         "n_short_interest": 0.0,
@@ -234,7 +234,7 @@
       "call_alert_count": 101,
       "put_alert_count": 46,
       "call_put_alert_ratio": 2.1956521739130435,
-      "short_volume_ratio": 0.5086195128194972,
+      "short_volume_ratio": 0.5364839458289182,
       "net_gex": 41727.26770000001,
       "components": {
         "n_short_interest": 0.0,
@@ -257,7 +257,7 @@
       "call_alert_count": 70,
       "put_alert_count": 33,
       "call_put_alert_ratio": 2.121212121212121,
-      "short_volume_ratio": 0.4335914697304776,
+      "short_volume_ratio": 0.492347957038813,
       "net_gex": 641950.5467000001,
       "components": {
         "n_short_interest": 0.0,
@@ -280,7 +280,7 @@
       "call_alert_count": 30,
       "put_alert_count": 11,
       "call_put_alert_ratio": 2.727272727272727,
-      "short_volume_ratio": 0.4532124547515769,
+      "short_volume_ratio": 0.5267292459328035,
       "net_gex": -7413.1632999999565,
       "components": {
         "n_short_interest": 0.0,
@@ -303,7 +303,7 @@
       "call_alert_count": 79,
       "put_alert_count": 62,
       "call_put_alert_ratio": 1.2741935483870968,
-      "short_volume_ratio": 0.6534170594740538,
+      "short_volume_ratio": 0.619018202676736,
       "net_gex": 156369.2597,
       "components": {
         "n_short_interest": 0.0,
@@ -326,7 +326,7 @@
       "call_alert_count": 13,
       "put_alert_count": 5,
       "call_put_alert_ratio": 2.6,
-      "short_volume_ratio": 0.7224226493050987,
+      "short_volume_ratio": 0.46574727961714396,
       "net_gex": -111435.619,
       "components": {
         "n_short_interest": 0.0,
@@ -349,7 +349,7 @@
       "call_alert_count": 11,
       "put_alert_count": 7,
       "call_put_alert_ratio": 1.5714285714285714,
-      "short_volume_ratio": 0.636681522118492,
+      "short_volume_ratio": 0.5602430930056509,
       "net_gex": -266625.33380000014,
       "components": {
         "n_short_interest": 0.0,
