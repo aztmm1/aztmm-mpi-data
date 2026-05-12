@@ -1,0 +1,123 @@
+name: AZTMM Insider Activity
+
+# Schedule: Friday 5 PM ET (both DST + EST entries; idempotency guard
+# prevents double-runs across the DST boundary).
+on:
+  schedule:
+    - cron: '0 21 * * 5'   # 5 PM ET Friday during EDT
+    - cron: '0 22 * * 5'   # 5 PM ET Friday during EST
+  workflow_dispatch:
+    inputs:
+      week_ending:
+        description: 'Target Friday YYYY-MM-DD (default: most recent Friday)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  insider-activity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      UW_API_KEY: ${{ secrets.UW_API_KEY }}
+      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        working-directory: insider-activity-tracker
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Resolve week-ending
+        id: weekend
+        working-directory: insider-activity-tracker
+        run: |
+          WK="${{ github.event.inputs.week_ending }}"
+          if [ -z "$WK" ]; then
+            # most recent Friday <= today UTC
+            WK=$(python -c "from datetime import datetime, timedelta, timezone; t=datetime.now(timezone.utc); print((t - timedelta(days=(t.weekday()-4)%7)).strftime('%Y-%m-%d'))")
+          fi
+          echo "week_ending=$WK" >> "$GITHUB_OUTPUT"
+          if [ -f "sample-output/insider-$WK.public.json" ]; then
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        if: steps.weekend.outputs.already_ran == 'false'
+        working-directory: insider-activity-tracker
+        run: |
+          ARGS="--week-ending ${{ steps.weekend.outputs.week_ending }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python run.py $ARGS
+
+      - name: Refresh latest.{html,json} via filename-date sort
+        if: always()
+        working-directory: insider-activity-tracker/sample-output
+        run: |
+          # Filename-date sort: dated artifacts are named
+          # insider-YYYY-MM-DD.{public.json,html}. Sort by filename and
+          # pick the last (= newest date). More robust than ls -t
+          # which depends on filesystem mtimes that don't survive
+          # workflow checkouts.
+          set -e
+          shopt -s nullglob
+          LATEST_JSON=""
+          for f in $(ls insider-*.public.json 2>/dev/null | sort); do
+            LATEST_JSON="$f"
+          done
+          if [ -n "$LATEST_JSON" ]; then
+            cp -f "$LATEST_JSON" latest.json
+            echo "latest.json <- $LATEST_JSON"
+          else
+            echo "no dated public.json found — skipping latest.json"
+          fi
+          LATEST_HTML=""
+          for f in $(ls insider-*.html 2>/dev/null | sort); do
+            LATEST_HTML="$f"
+          done
+          if [ -n "$LATEST_HTML" ]; then
+            cp -f "$LATEST_HTML" latest.html
+            echo "latest.html <- $LATEST_HTML"
+          else
+            echo "no dated html found — skipping latest.html"
+          fi
+
+      - name: Commit + race-safe push
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add insider-activity-tracker/sample-output/ insider-activity-tracker/data/ || true
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "insider-activity: snapshot ${{ steps.weekend.outputs.week_ending }}"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase origin main >/dev/null 2>&1; then
+              if git push origin main; then
+                echo "  push ok on attempt $i"; exit 0
+              fi
+            fi
+            echo "  push attempt $i failed — sleeping $((i*3))s"
+            sleep $((i*3))
+          done
+          echo "race-safe push exhausted retries"
+          exit 1

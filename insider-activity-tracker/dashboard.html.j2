@@ -1,0 +1,192 @@
+{# ============================================================
+   AZTMM Insider Activity — page body template
+   Renders the static frame + table rows from the public JSON.
+   ============================================================ #}
+
+<div class="aztmm-insider-activity" data-week-ending="{{ week_ending }}">
+
+  {# -------- HEADER -------- #}
+  <header class="ins-header">
+    <h1>Insider Activity</h1>
+    <p class="ins-as-of">Week ending {{ week_ending }} &middot; As of {{ as_of }}</p>
+    <p class="ins-window">Trailing window: {{ window_start }} through {{ window_end }}</p>
+    <p class="ins-summary">{{ summary_line }}</p>
+  </header>
+
+  {# -------- WHAT THIS IS -------- #}
+  <section class="ins-section ins-what-this-is">
+    <h2>What this page is</h2>
+    <p>
+      A weekly look at Form 4 insider transactions — what corporate
+      executives, directors, and large shareholders reported buying and
+      selling in the company they file under. The roll-up below covers
+      the trailing seven days ending Friday at 5 PM ET. It is a record
+      of past transactions, not a list of names to trade.
+    </p>
+    <p class="ins-watching-not-chasing">
+      <strong>I'm watching but not chasing.</strong> Form 4 filings show
+      what already happened, often by days. They are not a forecast of
+      future returns. Read this as journal commentary, nothing more.
+    </p>
+  </section>
+
+  {# -------- WEEK TOTALS -------- #}
+  <section class="ins-section ins-tape-totals">
+    <h2>This week's Form 4 tape, at a glance</h2>
+    <ul class="ins-tape-totals-list">
+      <li><strong>Filings in the window:</strong> {{ tape_totals.total_filings }}</li>
+      <li><strong>Filings that cleared the bar for inclusion:</strong> {{ tape_totals.qualifying_filings }}</li>
+      <li><strong>Companies with qualifying open-market buys:</strong> {{ tape_totals.buyer_tickers }}</li>
+      <li><strong>Companies with qualifying open-market sells:</strong> {{ tape_totals.seller_tickers }}</li>
+      <li><strong>Total qualifying open-market insider buying:</strong> {{ tape_totals.total_buy_value_fmt }}</li>
+      <li><strong>Total qualifying open-market insider selling:</strong> {{ tape_totals.total_sell_value_fmt }}</li>
+    </ul>
+  </section>
+
+  {# -------- TOP BUYERS TABLE -------- #}
+  <section class="ins-section ins-buyers-section">
+    <h2>Top of the week's open-market insider buying ({{ buyers|length }} companies)</h2>
+    {% if buyers %}
+    <table class="ins-table ins-buyers-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Sector</th>
+          <th>Total dollar value</th>
+          <th>Shares</th>
+          <th>Filings</th>
+          <th>Distinct filers</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in buyers %}
+        <tr class="ins-row ins-buyer-row">
+          <td class="ins-ticker"><strong>{{ r.ticker }}</strong></td>
+          <td>{{ r.sector }}</td>
+          <td>{{ r.buy_value_fmt }}</td>
+          <td>{{ r.buy_shares_fmt }}</td>
+          <td>{{ r.buy_filings }}</td>
+          <td>{{ r.distinct_filers }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No company cleared the bar for inclusion in this week's open-market insider buying rollup.</p>
+    {% endif %}
+  </section>
+
+  {# -------- TOP SELLERS TABLE -------- #}
+  <section class="ins-section ins-sellers-section">
+    <h2>Top of the week's open-market insider selling ({{ sellers|length }} companies)</h2>
+    {% if sellers %}
+    <table class="ins-table ins-sellers-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Sector</th>
+          <th>Total dollar value</th>
+          <th>Shares</th>
+          <th>Filings</th>
+          <th>Distinct filers</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in sellers %}
+        <tr class="ins-row ins-seller-row">
+          <td class="ins-ticker"><strong>{{ r.ticker }}</strong></td>
+          <td>{{ r.sector }}</td>
+          <td>{{ r.sell_value_fmt }}</td>
+          <td>{{ r.sell_shares_fmt }}</td>
+          <td>{{ r.sell_filings }}</td>
+          <td>{{ r.distinct_filers }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No company cleared the bar for inclusion in this week's open-market insider selling rollup.</p>
+    {% endif %}
+  </section>
+
+  {# -------- SECTOR ROLLUP -------- #}
+  {% if sectors %}
+  <section class="ins-section ins-sectors-section">
+    <h2>By sector</h2>
+    <table class="ins-table ins-sectors-table">
+      <thead>
+        <tr>
+          <th>Sector</th>
+          <th>Buying dollars</th>
+          <th>Selling dollars</th>
+          <th>Net (buys - sells)</th>
+          <th>Companies w/ buys</th>
+          <th>Companies w/ sells</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sectors %}
+        <tr>
+          <td>{{ s.sector }}</td>
+          <td>{{ s.buy_value_fmt }}</td>
+          <td>{{ s.sell_value_fmt }}</td>
+          <td>{{ s.net_value_fmt }}</td>
+          <td>{{ s.buyer_count }}</td>
+          <td>{{ s.seller_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {# -------- COMMENTARY -------- #}
+  {% if commentary %}
+  <section class="ins-section ins-commentary">
+    <h2>What I noticed</h2>
+    <ul class="ins-commentary-list">
+      {% for line in commentary %}
+      <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {# -------- WATCHING -------- #}
+  <section class="ins-section ins-watching">
+    <h2>What I'm watching</h2>
+    <p>{{ watching_line }}</p>
+  </section>
+
+  {# -------- HOW TO READ -------- #}
+  <section class="ins-section ins-how-to-read">
+    <h2>How to read this page</h2>
+    <ul>
+      <li><strong>Form 4</strong> is the SEC filing that corporate insiders &mdash; officers, directors, and 10% owners &mdash; must submit within two business days of transacting in their company's stock.</li>
+      <li><strong>Open-market buying</strong> on this page refers strictly to open-market purchases reported on Form 4 (transaction code P). It excludes stock-comp grants, option exercises, and tax-related dispositions.</li>
+      <li><strong>Open-market selling</strong> on this page refers strictly to open-market sales reported on Form 4 (transaction code S). It excludes grants, gifts, and option-related dispositions.</li>
+      <li><strong>Total dollar value</strong> is computed as shares times reported price across the filings in the week.</li>
+      <li><strong>Sector</strong> is the company's classification, not the insider's.</li>
+      <li><strong>Distinct filers</strong> is the count of unique people who filed in the week for that company on that side.</li>
+    </ul>
+    <p>None of these are direction calls. They are descriptions of past transactions.</p>
+  </section>
+
+  {# -------- DATA QUALITY -------- #}
+  {% if data_quality_degraded %}
+  <section class="ins-section ins-data-quality">
+    <p><em>Data quality note: one or more upstream feeds were degraded for this week. Read with appropriate caution.</em></p>
+  </section>
+  {% endif %}
+
+  {# -------- DISCLAIMER -------- #}
+  <footer class="ins-footer">
+    <p class="ins-disclaimer">
+      Personal observations of one trader. Not investment advice. Form 4 filings reflect past transactions and do not predict future returns. Data refreshed weekly Friday at 5 PM ET.
+    </p>
+    <p class="ins-disclaimer ins-extra-disclaimer">
+      <strong>Inclusion in this list is not a recommendation. Insiders transact for many reasons unrelated to their view of the stock &mdash; tax planning, diversification, contractual schedules, estate planning &mdash; and the page does not attempt to distinguish among them.</strong>
+    </p>
+  </footer>
+
+</div>

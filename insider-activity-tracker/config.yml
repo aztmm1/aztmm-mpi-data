@@ -1,0 +1,61 @@
+# AZTMM Insider Activity — configuration
+#
+# INTERNAL FILE. Thresholds below never appear on user-visible pages.
+# They drive aggregator.py + fetcher.py only.
+
+# Period — Form 4 has a 2-business-day filing deadline, so a 7-day
+# rolling window captures the full reporting cycle for the week.
+period:
+  trailing_days: 7              # rolling 7-day window ending on Friday
+  week_ends_on_dow: 4           # 0=Mon...4=Fri
+
+# Transaction-code filters (INTERNAL — never rendered)
+#
+# Form 4 transaction codes (subset we care about):
+#   P  Open-market purchase                  -> "buy"  (highest-signal)
+#   S  Open-market sale                      -> "sell" (highest-signal)
+#   A  Award / grant (incl. stock comp)       -> "grant" (excluded from buys/sells)
+#   M  Option exercise / conversion           -> "exercise"
+#   D  Disposition to issuer                  -> "disposal"
+#   F  Payment of exercise / tax via shares   -> "tax-related"
+#   G  Bona fide gift                         -> "gift"
+#   J  Other                                  -> "other"
+#   U  Tender offer disposition               -> "tender"
+#   X  Option exercise (in-the-money)         -> "exercise"
+#
+# We only count P (open-market buys) and S (open-market sales) for the
+# top-buyers / top-sellers headline rollup. The other codes are
+# preserved in the internal payload for context but not surfaced.
+transaction_codes:
+  buys:   ["P"]
+  sells:  ["S"]
+  all_tracked: ["P", "S", "A", "M", "D", "F", "G", "X"]
+
+# Dollar-value thresholds (INTERNAL — never rendered)
+thresholds:
+  min_marketcap_usd:        300000000   # $300M floor — filters penny stocks
+  min_transaction_value:    25000       # $25k floor — strips de-minimis fillings
+  top_buyers_public:        10
+  top_sellers_public:       10
+  top_buyers_internal:      50
+  top_sellers_internal:     50
+  commentary_top_n:         3
+  sector_top_n:             5
+
+# UW endpoint paths (private — never rendered to public output)
+endpoints:
+  insider_transactions:  "/api/insider/transactions"
+
+# HTTP behaviour
+http:
+  base_url: "https://api.unusualwhales.com"
+  timeout_seconds: 12
+  max_retries: 4
+  backoff_seconds: 1.5
+  page_limit: 500
+  max_pages: 12     # 500 * 12 = 6000 form-4 rows scanned per run
+
+# SEC EDGAR fallback (only used if UW endpoint is completely down)
+fallback:
+  sec_edgar_atom: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4&output=atom"
+  user_agent: "AZTMM Trader Journal contact@aztmm.com"

@@ -1,0 +1,2289 @@
+{
+  "week_ending": "2026-05-08",
+  "window_start": "2026-05-02",
+  "window_end": "2026-05-08",
+  "as_of": "2026-05-08 5:00 PM ET",
+  "thresholds": {
+    "min_marketcap_usd": 300000000,
+    "min_transaction_value": 25000,
+    "top_buyers_public": 10,
+    "top_sellers_public": 10,
+    "top_buyers_internal": 50,
+    "top_sellers_internal": 50,
+    "commentary_top_n": 3,
+    "sector_top_n": 5
+  },
+  "transaction_codes": {
+    "buys": [
+      "P"
+    ],
+    "sells": [
+      "S"
+    ],
+    "all_tracked": [
+      "P",
+      "S",
+      "A",
+      "M",
+      "D",
+      "F",
+      "G",
+      "X"
+    ]
+  },
+  "raw_row_count": 5091,
+  "qualifying_row_count": 4107,
+  "ticker_count": 725,
+  "buyers": [
+    {
+      "ticker": "ALKT",
+      "sector": "Technology",
+      "marketcap": 1842870176.0,
+      "buy_value": 69329847.36,
+      "buy_shares": 4133086,
+      "buy_filings": 6,
+      "filers_buys": [
+        "GENERAL ATLANTIC GENPAR (BERMUDA), L.P.",
+        "GENERAL ATLANTIC, L.P."
+      ],
+      "code_counts": {
+        "P": 6
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "WGS",
+      "sector": "Healthcare",
+      "marketcap": 1175942749.0,
+      "buy_value": 39952170.4914,
+      "buy_shares": 1033758,
+      "buy_filings": 2,
+      "filers_buys": [
+        "CASDIN CAPITAL, LLC",
+        "MEISTER KEITH"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "GOLD",
+      "sector": "Basic Materials",
+      "marketcap": 1235203682.0,
+      "buy_value": 23600041.0,
+      "buy_shares": 530338,
+      "buy_filings": 1,
+      "filers_buys": [
+        "TETHER GLOBAL INVESTMENTS FUND, S.I.C.A.F., S.A."
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "SRAD",
+      "sector": "Technology",
+      "marketcap": 2833795763.0,
+      "buy_value": 6681095.49,
+      "buy_shares": 497801,
+      "buy_filings": 3,
+      "filers_buys": [
+        "KOERL CARSTEN"
+      ],
+      "code_counts": {
+        "P": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "GEHC",
+      "sector": "Healthcare",
+      "marketcap": 28066823196.0,
+      "buy_value": 5061903.4,
+      "buy_shares": 81805,
+      "buy_filings": 2,
+      "filers_buys": [
+        "CULP LAWRENCE JR",
+        "STROMBERG WILLIAM"
+      ],
+      "code_counts": {
+        "A": 7,
+        "P": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "UPST",
+      "sector": "Financial Services",
+      "marketcap": 2745964915.0,
+      "buy_value": 5000067.968,
+      "buy_shares": 170240,
+      "buy_filings": 1,
+      "filers_buys": [
+        "GIROUARD DAVE"
+      ],
+      "code_counts": {
+        "M": 2,
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "PAM",
+      "sector": "Utilities",
+      "marketcap": 4454069666.0,
+      "buy_value": 4060500.0,
+      "buy_shares": 50000,
+      "buy_filings": 2,
+      "filers_buys": [
+        "MARIANI GUSTAVO"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "NSP",
+      "sector": "Industrials",
+      "marketcap": 1237826572.0,
+      "buy_value": 2873240.0,
+      "buy_shares": 100000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "SARVADI PAUL"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "COE",
+      "sector": "Consumer Defensive",
+      "marketcap": 459814617.0,
+      "buy_value": 2731202.9999999995,
+      "buy_shares": 95160,
+      "buy_filings": 2,
+      "filers_buys": [
+        "HUANG JACK JIAJIA"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "PATK",
+      "sector": "Industrials",
+      "marketcap": 3124856185.0,
+      "buy_value": 2391319.045,
+      "buy_shares": 27200,
+      "buy_filings": 5,
+      "filers_buys": [
+        "AUGSBURGER BLAKE",
+        "FILER MATTHEW",
+        "NEMETH ANDY",
+        "ROEDER CHARLES",
+        "WELCH SCOTT"
+      ],
+      "code_counts": {
+        "P": 5
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "OFIX",
+      "sector": "Healthcare",
+      "marketcap": 471720679.0,
+      "buy_value": 2294069.08,
+      "buy_shares": 189896,
+      "buy_filings": 4,
+      "filers_buys": [
+        "ENGINE CAPITAL MANAGEMENT, LP",
+        "HENNEMAN JOHN III"
+      ],
+      "code_counts": {
+        "P": 4
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "POOL",
+      "sector": "Consumer Cyclical",
+      "marketcap": 6733573664.0,
+      "buy_value": 2183280.88,
+      "buy_shares": 11464,
+      "buy_filings": 3,
+      "filers_buys": [
+        "HOPE JAMES",
+        "PEREZ DE LA MESA MANUEL",
+        "STOKELY JOHN"
+      ],
+      "code_counts": {
+        "P": 3,
+        "A": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "OPCH",
+      "sector": "Healthcare",
+      "marketcap": 3102363285.0,
+      "buy_value": 1875412.3599999999,
+      "buy_shares": 89489,
+      "buy_filings": 4,
+      "filers_buys": [
+        "KRAEMER HARRY JANSEN JR",
+        "RADEMACHER JOHN CHARLES",
+        "SETHNA MEENAL",
+        "SULLIVAN TIMOTHY"
+      ],
+      "code_counts": {
+        "P": 4
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "U",
+      "sector": "Technology",
+      "marketcap": 11729695369.0,
+      "buy_value": 1811700.0,
+      "buy_shares": 67500,
+      "buy_filings": 3,
+      "filers_buys": [
+        "MAHUAD QUIJANO EMILIO",
+        "OTERO ROSILES ADRIAN",
+        "WEST ENCLAVE SPONSOR LLC"
+      ],
+      "code_counts": {
+        "P": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "OLED",
+      "sector": "Technology",
+      "marketcap": 4246850938.0,
+      "buy_value": 1372803.976,
+      "buy_shares": 14694,
+      "buy_filings": 2,
+      "filers_buys": [
+        "ABRAMSON STEVEN",
+        "PREMUTICO MAURO"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "TXO",
+      "sector": "Energy",
+      "marketcap": 690531338.0,
+      "buy_value": 1089303.05,
+      "buy_shares": 87635,
+      "buy_filings": 1,
+      "filers_buys": [
+        "SIMPSON BOB"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "ARE",
+      "sector": "Real Estate",
+      "marketcap": 8016396080.0,
+      "buy_value": 1078174.0,
+      "buy_shares": 25000,
+      "buy_filings": 3,
+      "filers_buys": [
+        "MARCUS JOEL"
+      ],
+      "code_counts": {
+        "P": 3
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "WTW",
+      "sector": "Financial Services",
+      "marketcap": 23585548567.0,
+      "buy_value": 1009509.52,
+      "buy_shares": 3896,
+      "buy_filings": 2,
+      "filers_buys": [
+        "CLARKE LUCY",
+        "HESS CARL AARON"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "BCML",
+      "sector": "Financial Services",
+      "marketcap": 332406889.0,
+      "buy_value": 998235.45,
+      "buy_shares": 33082,
+      "buy_filings": 2,
+      "filers_buys": [
+        "BLACK WILLIAM"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "ANGX",
+      "sector": "Communication Services",
+      "marketcap": 394058070.0,
+      "buy_value": 983924.64,
+      "buy_shares": 321544,
+      "buy_filings": 1,
+      "filers_buys": [
+        "SAROWITZ STEVEN"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "ADP",
+      "sector": "Industrials",
+      "marketcap": 84611755471.0,
+      "buy_value": 745694.9500000001,
+      "buy_shares": 3619,
+      "buy_filings": 1,
+      "filers_buys": [
+        "SWAN ROBERT HOLMES"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "NCLH",
+      "sector": "Consumer Cyclical",
+      "marketcap": 7612046121.0,
+      "buy_value": 718386.9913999999,
+      "buy_shares": 40867,
+      "buy_filings": 2,
+      "filers_buys": [
+        "BYNG-THORNE ZILLAH",
+        "LANSBERRY KEVIN ALLEN"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "ZGN",
+      "sector": "Consumer Cyclical",
+      "marketcap": 3355687779.0,
+      "buy_value": 585427.5,
+      "buy_shares": 47250,
+      "buy_filings": 1,
+      "filers_buys": [
+        "TAGLIABUE GIANLUCA AMBROGIO"
+      ],
+      "code_counts": {
+        "M": 9,
+        "P": 1,
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "GTE",
+      "sector": "Energy",
+      "marketcap": 313995823.0,
+      "buy_value": 567900.0,
+      "buy_shares": 63000,
+      "buy_filings": 2,
+      "filers_buys": [
+        "LM ASSET MANAGEMENT INC."
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "L",
+      "sector": "Financial Services",
+      "marketcap": 21342347508.0,
+      "buy_value": 527200.0,
+      "buy_shares": 5000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "ROBUSTO DINO"
+      ],
+      "code_counts": {
+        "J": 2,
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "MMSI",
+      "sector": "Healthcare",
+      "marketcap": 3597784305.0,
+      "buy_value": 474117.5,
+      "buy_shares": 7750,
+      "buy_filings": 4,
+      "filers_buys": [
+        "ARONSON MARTHA GOLDBERG",
+        "LLOYD BRIAN",
+        "PARRA RAUL JR.",
+        "VOIGT MICHEL"
+      ],
+      "code_counts": {
+        "S": 1,
+        "P": 4
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "AMG",
+      "sector": "Financial Services",
+      "marketcap": 7957432969.0,
+      "buy_value": 458745.0,
+      "buy_shares": 1500,
+      "buy_filings": 1,
+      "filers_buys": [
+        "CATES STALEY"
+      ],
+      "code_counts": {
+        "S": 2,
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CLX",
+      "sector": "Consumer Defensive",
+      "marketcap": 10749908104.0,
+      "buy_value": 429099.99999999994,
+      "buy_shares": 5000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "BREBER PIERRE"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "DGICA",
+      "sector": "Financial Services",
+      "marketcap": 539444272.0,
+      "buy_value": 426785.0,
+      "buy_shares": 25500,
+      "buy_filings": 3,
+      "filers_buys": [
+        "DONEGAL MUTUAL INSURANCE CO"
+      ],
+      "code_counts": {
+        "P": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "ATEC",
+      "sector": "Healthcare",
+      "marketcap": 1075020060.0,
+      "buy_value": 420585.97000000003,
+      "buy_shares": 56153,
+      "buy_filings": 1,
+      "filers_buys": [
+        "VALENTINE KEITH"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "EVTC",
+      "sector": "Technology",
+      "marketcap": 1418500319.0,
+      "buy_value": 409700.0,
+      "buy_shares": 17000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "RODRIGUEZ-GONZALEZ LUIS"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "FND",
+      "sector": "Consumer Cyclical",
+      "marketcap": 5270670754.0,
+      "buy_value": 372975.0,
+      "buy_shares": 7500,
+      "buy_filings": 2,
+      "filers_buys": [
+        "LANGLEY BRYAN",
+        "PAULSEN BRADLEY"
+      ],
+      "code_counts": {
+        "F": 1,
+        "M": 2,
+        "S": 1,
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "OGN",
+      "sector": "Healthcare",
+      "marketcap": 3500469490.0,
+      "buy_value": 353080.8,
+      "buy_shares": 26448,
+      "buy_filings": 1,
+      "filers_buys": [
+        "HOLZBAUR LYNETTE"
+      ],
+      "code_counts": {
+        "P": 1,
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "NMM",
+      "sector": "Industrials",
+      "marketcap": 2098286857.0,
+      "buy_value": 334638.48,
+      "buy_shares": 4561,
+      "buy_filings": 4,
+      "filers_buys": [
+        "FRANGOU ANGELIKI"
+      ],
+      "code_counts": {
+        "P": 4
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "MKL",
+      "sector": "Financial Services",
+      "marketcap": 23009834537.0,
+      "buy_value": 268720.5,
+      "buy_shares": 150,
+      "buy_filings": 2,
+      "filers_buys": [
+        "LEOPOLD DIANE"
+      ],
+      "code_counts": {
+        "P": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "TENB",
+      "sector": "Technology",
+      "marketcap": 2349895745.0,
+      "buy_value": 258480.0,
+      "buy_shares": 12000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "BROWN MATTHEW CHARLES"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "BRK.B",
+      "sector": "Financial Services",
+      "marketcap": 1026413843284.0,
+      "buy_value": 250545.42799999999,
+      "buy_shares": 536,
+      "buy_filings": 1,
+      "filers_buys": [
+        "O'SULLIVAN MICHAEL"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "SOFI",
+      "sector": "Financial Services",
+      "marketcap": 20857371912.0,
+      "buy_value": 249760.94,
+      "buy_shares": 15878,
+      "buy_filings": 1,
+      "filers_buys": [
+        "NOTO ANTHONY"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "MSBI",
+      "sector": "Financial Services",
+      "marketcap": 570691366.0,
+      "buy_value": 249005.99999999997,
+      "buy_shares": 9400,
+      "buy_filings": 1,
+      "filers_buys": [
+        "FRANKLIN TRAVIS"
+      ],
+      "code_counts": {
+        "F": 1,
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "SITE",
+      "sector": "Industrials",
+      "marketcap": 5385665235.0,
+      "buy_value": 247200.0,
+      "buy_shares": 2000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "LAUGHLIN DANIEL"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CAT",
+      "sector": "Industrials",
+      "marketcap": 426913789327.0,
+      "buy_value": 219210.0,
+      "buy_shares": 250,
+      "buy_filings": 1,
+      "filers_buys": [
+        "MACLENNAN DAVID"
+      ],
+      "code_counts": {
+        "M": 10,
+        "S": 5,
+        "F": 4,
+        "G": 1,
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "ECL",
+      "sector": "Basic Materials",
+      "marketcap": 70668956752.0,
+      "buy_value": 205528.00000000003,
+      "buy_shares": 800,
+      "buy_filings": 1,
+      "filers_buys": [
+        "MACLENNAN DAVID"
+      ],
+      "code_counts": {
+        "M": 2,
+        "F": 1,
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "GPK",
+      "sector": "Consumer Cyclical",
+      "marketcap": 3023969095.0,
+      "buy_value": 200054.81999999998,
+      "buy_shares": 17878,
+      "buy_filings": 1,
+      "filers_buys": [
+        "STAFEIL JEFFREY"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "BETR",
+      "sector": "Financial Services",
+      "marketcap": 406327876.0,
+      "buy_value": 197484.73359999998,
+      "buy_shares": 6583,
+      "buy_filings": 1,
+      "filers_buys": [
+        "GARG VISHAL"
+      ],
+      "code_counts": {
+        "S": 1,
+        "M": 2,
+        "F": 1,
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "EXE",
+      "sector": "Energy",
+      "marketcap": 23133429698.0,
+      "buy_value": 192860.0,
+      "buy_shares": 2000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "TEUNISSEN MARCEL"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "CODI",
+      "sector": "Industrials",
+      "marketcap": 918631145.0,
+      "buy_value": 159000.0,
+      "buy_shares": 30000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "ADW CAPITAL MANAGEMENT, LLC"
+      ],
+      "code_counts": {
+        "S": 1,
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "XYL",
+      "sector": "Industrials",
+      "marketcap": 26621671216.0,
+      "buy_value": 141098.1,
+      "buy_shares": 1210,
+      "buy_filings": 1,
+      "filers_buys": [
+        "PERIBERE JEROME"
+      ],
+      "code_counts": {
+        "S": 1,
+        "M": 2,
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "BUSE",
+      "sector": "Financial Services",
+      "marketcap": 2220996222.0,
+      "buy_value": 129500.0,
+      "buy_shares": 5000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "PHILLIPS SCOTT"
+      ],
+      "code_counts": {
+        "P": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CARE",
+      "sector": "Financial Services",
+      "marketcap": 590438806.0,
+      "buy_value": 119865.0,
+      "buy_shares": 4575,
+      "buy_filings": 1,
+      "filers_buys": [
+        "WALSH ELIZABETH"
+      ],
+      "code_counts": {
+        "P": 1,
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "BRO",
+      "sector": "Financial Services",
+      "marketcap": 18760762999.0,
+      "buy_value": 114200.0,
+      "buy_shares": 2000,
+      "buy_filings": 1,
+      "filers_buys": [
+        "PROCTOR PALMER JR"
+      ],
+      "code_counts": {
+        "A": 12,
+        "P": 1
+      },
+      "is_sp500": true
+    }
+  ],
+  "sellers": [
+    {
+      "ticker": "CRWV",
+      "sector": "Technology",
+      "marketcap": 51336730803.0,
+      "sell_value": 1076803268.3389,
+      "sell_shares": 8566484,
+      "sell_filings": 16,
+      "filers_sells": [
+        "GOLDBERG CHEN",
+        "INTRATOR MICHAEL",
+        "JAIN SACHIN",
+        "MAGNETAR FINANCIAL LLC",
+        "VENTURO BRIAN"
+      ],
+      "code_counts": {
+        "S": 16,
+        "C": 6,
+        "M": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "LTH",
+      "sector": "Consumer Cyclical",
+      "marketcap": 7198972547.0,
+      "sell_value": 733737633.5399998,
+      "sell_shares": 24048212,
+      "sell_filings": 12,
+      "filers_sells": [
+        "BUSS ERIC",
+        "DANHAKL JOHN",
+        "GALASHAN JOHN KRISTOFER",
+        "GREEN LTF HOLDINGS II LP",
+        "LASHER STUART",
+        "PARTNERS GROUP PRIVATE EQUITY FUND, LLC",
+        "SINGH RITADHWAJA JEBENS",
+        "WEAVER ERIK"
+      ],
+      "code_counts": {
+        "S": 12,
+        "M": 4,
+        "F": 2,
+        "D": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CRGY",
+      "sector": "Energy",
+      "marketcap": 4124842834.0,
+      "sell_value": 402488000.0,
+      "sell_shares": 32640000,
+      "sell_filings": 2,
+      "filers_sells": [
+        "LIBERTY MUTUAL FOUNDATION INC.",
+        "ROWLAND MARCUS"
+      ],
+      "code_counts": {
+        "S": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "INGM",
+      "sector": "Technology",
+      "marketcap": 6254456418.0,
+      "sell_value": 361199978.88,
+      "sell_shares": 14471153,
+      "sell_filings": 1,
+      "filers_sells": [
+        "PLATINUM EQUITY, LLC"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "RSI",
+      "sector": "Consumer Cyclical",
+      "marketcap": 2919897151.0,
+      "sell_value": 287692970.0,
+      "sell_shares": 11523000,
+      "sell_filings": 7,
+      "filers_sells": [
+        "BLUHM NEIL",
+        "SAUERS KYLE",
+        "SCHWARTZ RICHARD TODD",
+        "STETZ MATTIAS"
+      ],
+      "code_counts": {
+        "D": 6,
+        "S": 7,
+        "C": 12
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "SEI",
+      "sector": "Energy",
+      "marketcap": 4360318555.0,
+      "sell_value": 149000000.0,
+      "sell_shares": 2000000,
+      "sell_filings": 1,
+      "filers_sells": [
+        "KEENAN HOWARD JR"
+      ],
+      "code_counts": {
+        "S": 1,
+        "J": 1,
+        "C": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "PWR",
+      "sector": "Industrials",
+      "marketcap": 117253999226.0,
+      "sell_value": 123244449.5336,
+      "sell_shares": 159992,
+      "sell_filings": 2,
+      "filers_sells": [
+        "AUSTIN EARL JR.",
+        "NOBEL PAUL"
+      ],
+      "code_counts": {
+        "S": 2,
+        "G": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "ALAB",
+      "sector": "Technology",
+      "marketcap": 35541436152.0,
+      "sell_value": 86063824.48120001,
+      "sell_shares": 432450,
+      "sell_filings": 3,
+      "filers_sells": [
+        "DYCKERHOFF STEFAN",
+        "GAJENDRA SANJAY",
+        "MOHAN JITENDRA"
+      ],
+      "code_counts": {
+        "S": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "MPWR",
+      "sector": "Technology",
+      "marketcap": 81609843000.0,
+      "sell_value": 72270031.7932,
+      "sell_shares": 44259,
+      "sell_filings": 7,
+      "filers_sells": [
+        "ELMIGER EUGEN",
+        "SCIAMMAS MAURICE",
+        "WYNNE EILEEN",
+        "XIAO DEMING",
+        "ZHOU JEFF"
+      ],
+      "code_counts": {
+        "S": 7
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "AAPL",
+      "sector": "Technology",
+      "marketcap": 4298695354080.0,
+      "sell_value": 71189725.0,
+      "sell_shares": 250000,
+      "sell_filings": 1,
+      "filers_sells": [
+        "LEVINSON ARTHUR"
+      ],
+      "code_counts": {
+        "G": 1,
+        "S": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "APG",
+      "sector": "Industrials",
+      "marketcap": 19114018875.0,
+      "sell_value": 64738050.2912,
+      "sell_shares": 1444000,
+      "sell_filings": 4,
+      "filers_sells": [
+        "ASHKEN IAN",
+        "LILLIE JAMES"
+      ],
+      "code_counts": {
+        "S": 4
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CAT",
+      "sector": "Industrials",
+      "marketcap": 426913789327.0,
+      "sell_value": 55306966.3502,
+      "sell_shares": 60329,
+      "sell_filings": 5,
+      "filers_sells": [
+        "BONFIELD ANDREW",
+        "DE LANGE BOB",
+        "FASSINO ANTHONY",
+        "KAISER JASON",
+        "SHURMAN RODNEY MICHAEL"
+      ],
+      "code_counts": {
+        "M": 10,
+        "S": 5,
+        "F": 4,
+        "G": 1,
+        "P": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "AGCO",
+      "sector": "Industrials",
+      "marketcap": 8604305263.0,
+      "sell_value": 52096895.2,
+      "sell_shares": 422590,
+      "sell_filings": 1,
+      "filers_sells": [
+        "TRACTORS FARM EQUIPMENT LTD"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "WCC",
+      "sector": "Industrials",
+      "marketcap": 17840601940.0,
+      "sell_value": 50232280.31799999,
+      "sell_shares": 140041,
+      "sell_filings": 10,
+      "filers_sells": [
+        "ENGEL JOHN",
+        "KHURANA AKASH",
+        "KULASA MATTHEW",
+        "LAZZARIS DIANE",
+        "NAYLOR DIRK WAUGH",
+        "PORWAL HEMANT",
+        "SCHULZ DAVID",
+        "SINGLETON JAMES LOUIS",
+        "WOLF CHRISTINE ANN"
+      ],
+      "code_counts": {
+        "M": 6,
+        "F": 3,
+        "D": 3,
+        "S": 10
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "IESC",
+      "sector": "Industrials",
+      "marketcap": 13650054223.0,
+      "sell_value": 44830551.3865,
+      "sell_shares": 66655,
+      "sell_filings": 5,
+      "filers_sells": [
+        "CLEVELAND TODD",
+        "GENDELL JEFFREY ET AL",
+        "SIMMES MATTHEW"
+      ],
+      "code_counts": {
+        "S": 5
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "AURA",
+      "sector": "Healthcare",
+      "marketcap": 846735910.0,
+      "sell_value": 39044986.8,
+      "sell_shares": 6922870,
+      "sell_filings": 1,
+      "filers_sells": [
+        "MATRIX CAPITAL MANAGEMENT COMPANY, LP"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "UTHR",
+      "sector": "Healthcare",
+      "marketcap": 24189544202.0,
+      "sell_value": 38477218.35,
+      "sell_shares": 66300,
+      "sell_filings": 7,
+      "filers_sells": [
+        "EDGEMOND JAMES",
+        "MAHON PAUL",
+        "ROTHBLATT MARTINE"
+      ],
+      "code_counts": {
+        "M": 14,
+        "S": 7
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CVX",
+      "sector": "Energy",
+      "marketcap": 367927765010.0,
+      "sell_value": 36031203.0,
+      "sell_shares": 195000,
+      "sell_filings": 1,
+      "filers_sells": [
+        "HESS JOHN"
+      ],
+      "code_counts": {
+        "G": 1,
+        "S": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "DOCN",
+      "sector": "Technology",
+      "marketcap": 16982139532.0,
+      "sell_value": 31805253.6882,
+      "sell_shares": 210659,
+      "sell_filings": 1,
+      "filers_sells": [
+        "ACCESS INDUSTRIES HOLDINGS LLC"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "FIX",
+      "sector": "Industrials",
+      "marketcap": 71565823944.0,
+      "sell_value": 30452396.919999998,
+      "sell_shares": 15613,
+      "sell_filings": 2,
+      "filers_sells": [
+        "LANE BRIAN",
+        "MYERS FRANKLIN"
+      ],
+      "code_counts": {
+        "S": 2,
+        "G": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "PBI",
+      "sector": "Industrials",
+      "marketcap": 2153518658.0,
+      "sell_value": 29505348.0421,
+      "sell_shares": 1952946,
+      "sell_filings": 3,
+      "filers_sells": [
+        "WOLF KURT JAMES"
+      ],
+      "code_counts": {
+        "S": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "SANM",
+      "sector": "Technology",
+      "marketcap": 13155028078.0,
+      "sell_value": 27312333.12,
+      "sell_shares": 119368,
+      "sell_filings": 2,
+      "filers_sells": [
+        "REID ALAN MCWILLIAMS",
+        "SOLA JURE"
+      ],
+      "code_counts": {
+        "S": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "FTAI",
+      "sector": "Industrials",
+      "marketcap": 28760162030.0,
+      "sell_value": 26724192.1908,
+      "sell_shares": 110676,
+      "sell_filings": 1,
+      "filers_sells": [
+        "TUCHMAN MARTIN"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "VIAV",
+      "sector": "Technology",
+      "marketcap": 12848559299.0,
+      "sell_value": 26513276.391000003,
+      "sell_shares": 501479,
+      "sell_filings": 9,
+      "filers_sells": [
+        "BELLUZZO RICHARD",
+        "GILSTRAP DOUG",
+        "KHAYKIN OLEG",
+        "MCNAB PAUL",
+        "SCRIVANICH LUKE",
+        "SIEBERT KEVIN CHRISTOPHER"
+      ],
+      "code_counts": {
+        "S": 9
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "LYV",
+      "sector": "Communication Services",
+      "marketcap": 38394171595.0,
+      "sell_value": 25932296.041200005,
+      "sell_shares": 156854,
+      "sell_filings": 2,
+      "filers_sells": [
+        "HOPMANS JOHN",
+        "ROWLES MICHAEL"
+      ],
+      "code_counts": {
+        "M": 4,
+        "S": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "MUSA",
+      "sector": "Consumer Cyclical",
+      "marketcap": 10674947689.0,
+      "sell_value": 24868831.05,
+      "sell_shares": 41658,
+      "sell_filings": 2,
+      "filers_sells": [
+        "MURPHY ROBERT MADISON",
+        "WOODWARD SCOTT"
+      ],
+      "code_counts": {
+        "M": 2,
+        "S": 2,
+        "F": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "JOE",
+      "sector": "Real Estate",
+      "marketcap": 3737374465.0,
+      "sell_value": 24840434.0,
+      "sell_shares": 377800,
+      "sell_filings": 3,
+      "filers_sells": [
+        "BERKOWITZ BRUCE"
+      ],
+      "code_counts": {
+        "S": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "STX",
+      "sector": "Technology",
+      "marketcap": 187009221618.0,
+      "sell_value": 24757184.6808,
+      "sell_shares": 32293,
+      "sell_filings": 5,
+      "filers_sells": [
+        "LEE JAMES CI",
+        "MORRIS JOHN CHRISTOPHER",
+        "ROMANO GIANLUCA",
+        "TILENIUS STEPHANIE"
+      ],
+      "code_counts": {
+        "S": 5
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "REG",
+      "sector": "Real Estate",
+      "marketcap": 14230282519.0,
+      "sell_value": 22155536.006,
+      "sell_shares": 282542,
+      "sell_filings": 2,
+      "filers_sells": [
+        "STEIN MARTIN JR",
+        "WIBBENMEYER NICHOLAS ANDREW"
+      ],
+      "code_counts": {
+        "A": 4,
+        "M": 9,
+        "S": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "SCHW",
+      "sector": "Financial Services",
+      "marketcap": 152748271580.0,
+      "sell_value": 20972236.9,
+      "sell_shares": 228510,
+      "sell_filings": 3,
+      "filers_sells": [
+        "SCHWAB CHARLES",
+        "SCHWAB-POMERANTZ CAROLYN"
+      ],
+      "code_counts": {
+        "S": 3,
+        "M": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "PBF",
+      "sector": "Energy",
+      "marketcap": 5030475677.0,
+      "sell_value": 19073000.0,
+      "sell_shares": 420000,
+      "sell_filings": 2,
+      "filers_sells": [
+        "CONTROL EMPRESARIAL DE CAPITALES S.A. DE C.V."
+      ],
+      "code_counts": {
+        "S": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "UWMC",
+      "sector": "Financial Services",
+      "marketcap": 1129620982.0,
+      "sell_value": 17518194.18,
+      "sell_shares": 5016665,
+      "sell_filings": 5,
+      "filers_sells": [
+        "MAT ISHBIA"
+      ],
+      "code_counts": {
+        "S": 5,
+        "C": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "GLW",
+      "sector": "Technology",
+      "marketcap": 178487678527.0,
+      "sell_value": 17363426.41,
+      "sell_shares": 91627,
+      "sell_filings": 5,
+      "filers_sells": [
+        "BECKER STEFAN",
+        "GULLO MICHELLE",
+        "SCHLESINGER EDWARD",
+        "STEVERSON LEWIS",
+        "ZHANG JOHN"
+      ],
+      "code_counts": {
+        "S": 5,
+        "F": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "AMZN",
+      "sector": "Consumer Cyclical",
+      "marketcap": 2893554867190.0,
+      "sell_value": 16184300.0,
+      "sell_shares": 58852,
+      "sell_filings": 2,
+      "filers_sells": [
+        "HERRINGTON DOUGLAS",
+        "JASSY ANDREW"
+      ],
+      "code_counts": {
+        "S": 2,
+        "G": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "KO",
+      "sector": "Consumer Defensive",
+      "marketcap": 338433267000.0,
+      "sell_value": 15780000.000000002,
+      "sell_shares": 200000,
+      "sell_filings": 1,
+      "filers_sells": [
+        "QUINCEY JAMES"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "LLY",
+      "sector": "Healthcare",
+      "marketcap": 910654522188.0,
+      "sell_value": 15754597.649999999,
+      "sell_shares": 15828,
+      "sell_filings": 1,
+      "filers_sells": [
+        "LILLY ENDOWMENT INC"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "DDOG",
+      "sector": "Technology",
+      "marketcap": 66932675451.0,
+      "sell_value": 15106279.3828,
+      "sell_shares": 100275,
+      "sell_filings": 8,
+      "filers_sells": [
+        "ACOCELLA KERRY",
+        "AGARWAL AMIT",
+        "LE-QUOC ALEXIS",
+        "RICHARDSON JULIE",
+        "WALTERS SEAN MICHAEL"
+      ],
+      "code_counts": {
+        "S": 8,
+        "C": 6,
+        "M": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "GS",
+      "sector": "Financial Services",
+      "marketcap": 278740711806.0,
+      "sell_value": 13421235.603600001,
+      "sell_shares": 14292,
+      "sell_filings": 1,
+      "filers_sells": [
+        "RUEMMLER KATHRYN"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "STGW",
+      "sector": "Communication Services",
+      "marketcap": 1549089788.0,
+      "sell_value": 13069291.6,
+      "sell_shares": 2163790,
+      "sell_filings": 1,
+      "filers_sells": [
+        "GROSS BRADLEY"
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "ESTA",
+      "sector": "Healthcare",
+      "marketcap": 2104272885.0,
+      "sell_value": 13002832.2812,
+      "sell_shares": 172751,
+      "sell_filings": 3,
+      "filers_sells": [
+        "CHACON QUIROS JUAN JOSE",
+        "JW ASSET MANAGEMENT, LLC"
+      ],
+      "code_counts": {
+        "S": 3
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CRWD",
+      "sector": "Technology",
+      "marketcap": 137524776443.0,
+      "sell_value": 11375310.4731,
+      "sell_shares": 23884,
+      "sell_filings": 6,
+      "filers_sells": [
+        "KURTZ GEORGE",
+        "PODBERE BURT",
+        "SENTONAS MICHAEL"
+      ],
+      "code_counts": {
+        "S": 6,
+        "M": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "SPOT",
+      "sector": "Communication Services",
+      "marketcap": 86346745077.0,
+      "sell_value": 11327358.28,
+      "sell_shares": 26269,
+      "sell_filings": 2,
+      "filers_sells": [
+        "NORSTROM ALEX",
+        "SODERSTROM GUSTAV"
+      ],
+      "code_counts": {
+        "M": 6,
+        "S": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "PI",
+      "sector": "Technology",
+      "marketcap": 4682795102.0,
+      "sell_value": 11048793.66,
+      "sell_shares": 72342,
+      "sell_filings": 2,
+      "filers_sells": [
+        "SYLEBRA CAPITAL LLC"
+      ],
+      "code_counts": {
+        "S": 2
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "HNGE",
+      "sector": "Healthcare",
+      "marketcap": 2991865389.0,
+      "sell_value": 11012181.76,
+      "sell_shares": 200000,
+      "sell_filings": 3,
+      "filers_sells": [
+        "MECKLENBURG GABRIEL M.I.",
+        "PEREZ DANIEL ANTONIO"
+      ],
+      "code_counts": {
+        "S": 3,
+        "C": 6
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "RAPP",
+      "sector": "Healthcare",
+      "marketcap": 1837988881.0,
+      "sell_value": 10892379.399999999,
+      "sell_shares": 271495,
+      "sell_filings": 1,
+      "filers_sells": [
+        "THIRD ROCK VENTURES V, L.P."
+      ],
+      "code_counts": {
+        "S": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "DVA",
+      "sector": "Healthcare",
+      "marketcap": 12771306000.0,
+      "sell_value": 10269495.18,
+      "sell_shares": 53655,
+      "sell_filings": 2,
+      "filers_sells": [
+        "ACKERMAN JOEL",
+        "HEARTY JAMES"
+      ],
+      "code_counts": {
+        "S": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "PAYX",
+      "sector": "Industrials",
+      "marketcap": 33636347908.0,
+      "sell_value": 9975811.0,
+      "sell_shares": 109300,
+      "sell_filings": 1,
+      "filers_sells": [
+        "GOLISANO THOMAS"
+      ],
+      "code_counts": {
+        "G": 2,
+        "S": 1
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "APH",
+      "sector": "Technology",
+      "marketcap": 150666812479.0,
+      "sell_value": 9921089.12,
+      "sell_shares": 69703,
+      "sell_filings": 2,
+      "filers_sells": [
+        "NORWITT RICHARD ADAM"
+      ],
+      "code_counts": {
+        "M": 4,
+        "S": 2
+      },
+      "is_sp500": true
+    },
+    {
+      "ticker": "CHEF",
+      "sector": "Consumer Defensive",
+      "marketcap": 3290346884.0,
+      "sell_value": 9750000.0,
+      "sell_shares": 125000,
+      "sell_filings": 1,
+      "filers_sells": [
+        "PAPPAS CHRISTOPHER"
+      ],
+      "code_counts": {
+        "S": 1,
+        "G": 1
+      },
+      "is_sp500": false
+    },
+    {
+      "ticker": "CACC",
+      "sector": "Financial Services",
+      "marketcap": 5457437444.0,
+      "sell_value": 8932100.964,
+      "sell_shares": 16194,
+      "sell_filings": 7,
+      "filers_sells": [
+        "BOOTH KENNETH",
+        "ELLIOTT NICHOLAS",
+        "KERBER ERIN",
+        "LUM JONATHAN",
+        "MARTIN JAY",
+        "RUMMLER WENDY",
+        "VALIYAVEETTIL RAVI MOHAN"
+      ],
+      "code_counts": {
+        "S": 7,
+        "M": 12
+      },
+      "is_sp500": false
+    }
+  ],
+  "sectors": [
+    {
+      "sector": "Technology",
+      "buy_value": 79966446.826,
+      "sell_value": 1961978541.1451995,
+      "net_value": -1882012094.3191996,
+      "tickers_with_buys": [
+        "ALKT",
+        "CLMB",
+        "EVTC",
+        "OLED",
+        "SRAD",
+        "TENB",
+        "TSSI",
+        "U"
+      ],
+      "tickers_with_sells": [
+        "AAPL",
+        "ACLS",
+        "ADTN",
+        "AI",
+        "AIP",
+        "ALAB",
+        "AMKR",
+        "AMPL",
+        "APH",
+        "ATEN",
+        "AVT",
+        "BAND",
+        "BBAI",
+        "BHE",
+        "CDNS",
+        "CORZ",
+        "CRWD",
+        "CRWV",
+        "DDOG",
+        "DOCN",
+        "EVCM",
+        "EXTR",
+        "FFIV",
+        "FLEX",
+        "FLYW",
+        "FROG",
+        "FSLR",
+        "FTNT",
+        "FTV",
+        "GBTG",
+        "GFS",
+        "GLW",
+        "GRMN",
+        "GWRE",
+        "HOOD",
+        "HPE",
+        "HUBS",
+        "ICHR",
+        "INGM",
+        "IONQ",
+        "KN",
+        "KOPN",
+        "KSPI",
+        "LAES",
+        "LDOS",
+        "LSCC",
+        "MDB",
+        "MPWR",
+        "MRAM",
+        "MSTR",
+        "MXL",
+        "NCNO",
+        "NET",
+        "NOVT",
+        "OKTA",
+        "OPFI",
+        "OSIS",
+        "OUST",
+        "PEGA",
+        "PENG",
+        "PI",
+        "PLXS",
+        "PRCH",
+        "QCOM",
+        "RMBS",
+        "RMNI",
+        "S",
+        "SANM",
+        "SEDG",
+        "SHLS",
+        "SIMO",
+        "SNX",
+        "SPSC",
+        "SQNS",
+        "STX",
+        "TDC",
+        "TEL",
+        "TER",
+        "TSSI",
+        "TXN",
+        "UCTT",
+        "VECO",
+        "VIAV",
+        "VICR",
+        "WDC",
+        "WIT"
+      ]
+    },
+    {
+      "sector": "Consumer Cyclical",
+      "buy_value": 4060125.1914,
+      "sell_value": 1094068830.3506997,
+      "net_value": -1090008705.1592996,
+      "tickers_with_buys": [
+        "FND",
+        "GPK",
+        "NCLH",
+        "POOL",
+        "ZGN"
+      ],
+      "tickers_with_sells": [
+        "ABNB",
+        "ACEL",
+        "AEVA",
+        "AMZN",
+        "AN",
+        "ATR",
+        "BURL",
+        "BYD",
+        "CHWY",
+        "COLM",
+        "EBAY",
+        "ETSY",
+        "FIGS",
+        "FND",
+        "GLBE",
+        "GNTX",
+        "GPC",
+        "KAR",
+        "LEVI",
+        "LQDT",
+        "LTH",
+        "MUSA",
+        "ORLY",
+        "OSW",
+        "PHM",
+        "QS",
+        "RSI",
+        "SBUX",
+        "VC",
+        "WH",
+        "ZGN"
+      ]
+    },
+    {
+      "sector": "Energy",
+      "buy_value": 1880360.8,
+      "sell_value": 636236632.6818999,
+      "net_value": -634356271.8819,
+      "tickers_with_buys": [
+        "EXE",
+        "GTE",
+        "PSX",
+        "TXO"
+      ],
+      "tickers_with_sells": [
+        "AM",
+        "AR",
+        "ASC",
+        "BSM",
+        "BTU",
+        "CHRD",
+        "CNX",
+        "CRGY",
+        "CVX",
+        "DK",
+        "FANG",
+        "FTI",
+        "HAL",
+        "KMI",
+        "LBRT",
+        "NE",
+        "PBF",
+        "PTEN",
+        "SEI",
+        "SLB",
+        "WKC",
+        "WMB",
+        "WTTR"
+      ]
+    },
+    {
+      "sector": "Industrials",
+      "buy_value": 7111400.575,
+      "sell_value": 574444832.2543998,
+      "net_value": -567333431.6793997,
+      "tickers_with_buys": [
+        "ADP",
+        "CAT",
+        "CODI",
+        "NMM",
+        "NSP",
+        "PATK",
+        "SITE",
+        "XYL"
+      ],
+      "tickers_with_sells": [
+        "AAON",
+        "AER",
+        "AGCO",
+        "AIT",
+        "ALLE",
+        "APG",
+        "ATKR",
+        "BE",
+        "BETA",
+        "CAT",
+        "CMI",
+        "CNH",
+        "CODI",
+        "CRS",
+        "DAL",
+        "EFX",
+        "ETN",
+        "EVLV",
+        "FA",
+        "FBYD",
+        "FIX",
+        "FTAI",
+        "HAYW",
+        "IESC",
+        "ITT",
+        "JBLU",
+        "JOBY",
+        "KEX",
+        "KTOS",
+        "LHX",
+        "LII",
+        "LUNR",
+        "MEC",
+        "MGRC",
+        "MIR",
+        "MTZ",
+        "NOC",
+        "NVT",
+        "ODFL",
+        "ORN",
+        "OTIS",
+        "PAYS",
+        "PAYX",
+        "PBI",
+        "PWR",
+        "R",
+        "ROK",
+        "SERV",
+        "SNA",
+        "SNDR",
+        "SYM",
+        "TEX",
+        "TNC",
+        "TRS",
+        "TXT",
+        "ULCC",
+        "ULS",
+        "VMI",
+        "WAB",
+        "WCC",
+        "XYL"
+      ]
+    },
+    {
+      "sector": "Healthcare",
+      "buy_value": 50431339.601399995,
+      "sell_value": 213079930.6968999,
+      "net_value": -162648591.0954999,
+      "tickers_with_buys": [
+        "ATEC",
+        "GEHC",
+        "MMSI",
+        "OFIX",
+        "OGN",
+        "OPCH",
+        "WGS"
+      ],
+      "tickers_with_sells": [
+        "ACAD",
+        "ALKS",
+        "AMGN",
+        "APGE",
+        "ARQT",
+        "AURA",
+        "AVTX",
+        "AXGN",
+        "AXSM",
+        "BBIO",
+        "BLTE",
+        "BMRN",
+        "CBLL",
+        "CDNA",
+        "CELC",
+        "CGEM",
+        "CHE",
+        "CORT",
+        "CSTL",
+        "CYTK",
+        "DOCS",
+        "DVA",
+        "DYN",
+        "ENSG",
+        "ESTA",
+        "EW",
+        "EWTX",
+        "EXEL",
+        "GYRE",
+        "HNGE",
+        "ILMN",
+        "INSM",
+        "IONS",
+        "IRMD",
+        "IRTC",
+        "LFST",
+        "LLY",
+        "LMAT",
+        "LQDA",
+        "MMSI",
+        "NGNE",
+        "NRIX",
+        "NTRA",
+        "NUVL",
+        "OGN",
+        "PAHC",
+        "PBH",
+        "PRVA",
+        "PTGX",
+        "RAPP",
+        "RCKT",
+        "RMD",
+        "RXRX",
+        "SRZN",
+        "SYRE",
+        "TECX",
+        "TEVA",
+        "TVTX",
+        "TWST",
+        "UTHR",
+        "VCEL",
+        "VCYT",
+        "VRTX"
+      ]
+    },
+    {
+      "sector": "Financial Services",
+      "buy_value": 10159817.6281,
+      "sell_value": 166523538.0411,
+      "net_value": -156363720.413,
+      "tickers_with_buys": [
+        "AMG",
+        "BCML",
+        "BETR",
+        "BRK.B",
+        "BRO",
+        "BUSE",
+        "CARE",
+        "DGICA",
+        "L",
+        "MKL",
+        "MPB",
+        "MSBI",
+        "RRBI",
+        "SOFI",
+        "UPST",
+        "WTW"
+      ],
+      "tickers_with_sells": [
+        "AAMI",
+        "AFL",
+        "AMG",
+        "ASB",
+        "AXS",
+        "BAC",
+        "BANF",
+        "BCAL",
+        "BETR",
+        "BOKF",
+        "BSVN",
+        "BWB",
+        "BWIN",
+        "CACC",
+        "CARE",
+        "CATY",
+        "CHCO",
+        "CIFR",
+        "CRCL",
+        "CRDA",
+        "EG",
+        "ENVA",
+        "EWBC",
+        "FAF",
+        "FCF",
+        "FHI",
+        "FSBC",
+        "FULT",
+        "GL",
+        "GRAB",
+        "GS",
+        "GSBC",
+        "HDB",
+        "HG",
+        "HOPE",
+        "HSBC",
+        "HTB",
+        "HTH",
+        "HUT",
+        "JPM",
+        "KNSL",
+        "LKFN",
+        "MBIN",
+        "MIAX",
+        "MORN",
+        "MTB",
+        "PB",
+        "PIPR",
+        "PJT",
+        "PWP",
+        "RBB",
+        "RF",
+        "SBCF",
+        "SCHW",
+        "SEIC",
+        "SEZL",
+        "SLDE",
+        "SMBC",
+        "SNEX",
+        "TFSL",
+        "THG",
+        "USB",
+        "USCB",
+        "UVSP",
+        "UWMC",
+        "VINP",
+        "VIRT",
+        "WT",
+        "WTFC",
+        "ZION"
+      ]
+    },
+    {
+      "sector": "Communication Services",
+      "buy_value": 1065424.6400000001,
+      "sell_value": 93376776.6715,
+      "net_value": -92311352.0315,
+      "tickers_with_buys": [
+        "ANGX",
+        "CXDO"
+      ],
+      "tickers_with_sells": [
+        "CMPR",
+        "CXDO",
+        "DASH",
+        "DLB",
+        "EVC",
+        "EVER",
+        "IDCC",
+        "LYV",
+        "MAX",
+        "META",
+        "MTCH",
+        "NBIS",
+        "NCMI",
+        "NFLX",
+        "PINS",
+        "RBLX",
+        "RDDT",
+        "ROKU",
+        "SBGI",
+        "SE",
+        "SPOT",
+        "STGW",
+        "TBLA",
+        "TKO",
+        "TV",
+        "TWLO",
+        "ZM"
+      ]
+    },
+    {
+      "sector": "Real Estate",
+      "buy_value": 1252106.83,
+      "sell_value": 59014803.1812,
+      "net_value": -57762696.3512,
+      "tickers_with_buys": [
+        "ARE",
+        "CCI",
+        "FCPT"
+      ],
+      "tickers_with_sells": [
+        "AGNC",
+        "AKR",
+        "EPR",
+        "EQIX",
+        "HST",
+        "JOE",
+        "KRC",
+        "MAA",
+        "NLY",
+        "REG",
+        "WPC",
+        "XHR"
+      ]
+    },
+    {
+      "sector": "Consumer Defensive",
+      "buy_value": 3160302.9999999995,
+      "sell_value": 37431222.0841,
+      "net_value": -34270919.0841,
+      "tickers_with_buys": [
+        "CLX",
+        "COE"
+      ],
+      "tickers_with_sells": [
+        "ACI",
+        "ANDE",
+        "CHEF",
+        "CL",
+        "HSY",
+        "KMB",
+        "KO",
+        "NWL",
+        "PSMT",
+        "STRA",
+        "UNFI",
+        "USNA"
+      ]
+    },
+    {
+      "sector": "Basic Materials",
+      "buy_value": 23805569.0,
+      "sell_value": 7371734.552,
+      "net_value": 16433834.447999999,
+      "tickers_with_buys": [
+        "ECL",
+        "GOLD"
+      ],
+      "tickers_with_sells": [
+        "CSTM",
+        "EMN",
+        "GGB",
+        "MP",
+        "NUE",
+        "SXT"
+      ]
+    },
+    {
+      "sector": "Unclassified",
+      "buy_value": 0.0,
+      "sell_value": 7052043.380000001,
+      "net_value": -7052043.380000001,
+      "tickers_with_buys": [],
+      "tickers_with_sells": [
+        "ECAT"
+      ]
+    },
+    {
+      "sector": "Utilities",
+      "buy_value": 4120218.75,
+      "sell_value": 2750877.04,
+      "net_value": 1369341.71,
+      "tickers_with_buys": [
+        "NWN",
+        "PAM"
+      ],
+      "tickers_with_sells": [
+        "AVA",
+        "ENLT",
+        "POR"
+      ]
+    }
+  ],
+  "totals": {
+    "total_buy_value": 187013112.84190002,
+    "total_sell_value": 4853329762.079,
+    "net_value": -4666316649.237101,
+    "n_filings": 4107
+  },
+  "fallback_used": false,
+  "data_quality": {
+    "endpoints_ok": 1,
+    "endpoints_failed": 0
+  }
+}
