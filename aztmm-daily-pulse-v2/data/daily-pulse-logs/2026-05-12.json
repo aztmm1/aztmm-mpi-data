@@ -1,0 +1,56 @@
+{
+  "date": "2026-05-12",
+  "started_at": "2026-05-12T23:45:47.905751Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 4,
+      "endpoints_failed": 14
+    },
+    {
+      "step": "fetch_prev",
+      "ok": true,
+      "endpoints_ok": 18
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "scenario": "BASE",
+      "score": 0
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 1,
+      "sparkline_available": false
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 3781
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    }
+  ],
+  "payload": {
+    "title": "Daily Pulse \u2014 2026-05-12 \u2014 BASE",
+    "excerpt": "Balanced tape \u2014 no decisive signal end-of-day.",
+    "status": "draft",
+    "categories": [
+      "Daily Pulse"
+    ],
+    "tags": [
+      "daily-pulse",
+      "scenario-base"
+    ],
+    "slug": "daily-pulse-2026-05-12",
+    "content_bytes": 3781
+  },
+  "status": "payload_emitted"
+}
