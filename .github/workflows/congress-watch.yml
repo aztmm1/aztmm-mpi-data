@@ -47,14 +47,14 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        working-directory: outputs/congress-trades-tracker
+        working-directory: congress-trades-tracker
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Idempotency guard
         id: guard
-        working-directory: outputs/congress-trades-tracker
+        working-directory: congress-trades-tracker
         run: |
           DATE="${{ github.event.inputs.date }}"
           if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run pipeline
         if: steps.guard.outputs.already_ran == 'false'
-        working-directory: outputs/congress-trades-tracker
+        working-directory: congress-trades-tracker
         run: |
           ARGS=""
           if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
@@ -79,7 +79,7 @@ jobs:
 
       - name: Publish to WordPress
         if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
-        working-directory: outputs/congress-trades-tracker
+        working-directory: congress-trades-tracker
         run: |
           # Delegated to a shared publisher shim that wraps the WP REST call.
           # The shim reads payload.json from publish-artifacts/ and upserts the
@@ -95,6 +95,6 @@ jobs:
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
-          git add outputs/congress-trades-tracker/data/ outputs/congress-trades-tracker/sample-output/ || true
+          git add congress-trades-tracker/data/ congress-trades-tracker/sample-output/ || true
           git diff --cached --quiet || git commit -m "congress-watch: log run ${{ steps.guard.outputs.date }}"
           git push || true

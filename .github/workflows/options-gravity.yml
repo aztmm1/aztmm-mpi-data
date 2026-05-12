@@ -62,7 +62,7 @@ jobs:
 
       - name: Install deps
         if: steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
-        working-directory: outputs/nope-max-pain-tracker
+        working-directory: nope-max-pain-tracker
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -70,7 +70,7 @@ jobs:
       - name: Idempotency guard
         if: steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
         id: guard
-        working-directory: outputs/nope-max-pain-tracker
+        working-directory: nope-max-pain-tracker
         run: |
           DATE="${{ github.event.inputs.date }}"
           if [ -z "$DATE" ]; then DATE=$(TZ=America/New_York date +%F); fi
@@ -84,7 +84,7 @@ jobs:
 
       - name: Run pipeline
         if: (steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch') && steps.guard.outputs.already_ran == 'false'
-        working-directory: outputs/nope-max-pain-tracker
+        working-directory: nope-max-pain-tracker
         run: |
           ARGS=""
           if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
@@ -96,7 +96,7 @@ jobs:
         if: (steps.dst.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch') && steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
         env:
           SNAPSHOTS_PAT: ${{ secrets.SNAPSHOTS_PAT }}
-        working-directory: outputs/nope-max-pain-tracker
+        working-directory: nope-max-pain-tracker
         run: |
           DATE="${{ steps.guard.outputs.date }}"
           PUB="sample-output/nope-maxpain-$DATE.public.json"
@@ -110,6 +110,6 @@ jobs:
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
-          git add outputs/nope-max-pain-tracker/data/ outputs/nope-max-pain-tracker/sample-output/ || true
+          git add nope-max-pain-tracker/data/ nope-max-pain-tracker/sample-output/ || true
           git diff --cached --quiet || git commit -m "options-gravity: run ${{ steps.guard.outputs.date }}"
           git push || true

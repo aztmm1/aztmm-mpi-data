@@ -47,14 +47,14 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        working-directory: outputs/aztmm-daily-pulse-v2
+        working-directory: aztmm-daily-pulse-v2
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Idempotency guard
         id: guard
-        working-directory: outputs/aztmm-daily-pulse-v2
+        working-directory: aztmm-daily-pulse-v2
         run: |
           DATE="${{ github.event.inputs.date }}"
           if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run pipeline (emit payload)
         if: steps.guard.outputs.already_ran == 'false'
-        working-directory: outputs/aztmm-daily-pulse-v2
+        working-directory: aztmm-daily-pulse-v2
         run: |
           ARGS=""
           if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
@@ -78,7 +78,7 @@ jobs:
 
       - name: Publish to WordPress (REST API)
         if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
-        working-directory: outputs/aztmm-daily-pulse-v2
+        working-directory: aztmm-daily-pulse-v2
         run: |
           python publish_to_wp.py publish-artifacts/payload.json
 
@@ -87,6 +87,6 @@ jobs:
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
-          git add outputs/aztmm-daily-pulse-v2/data/ || true
+          git add aztmm-daily-pulse-v2/data/ || true
           git diff --cached --quiet || git commit -m "daily-pulse: log run ${{ steps.guard.outputs.date }}"
           git push || true
