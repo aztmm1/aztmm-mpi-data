@@ -121,8 +121,8 @@
     <h3>What's unusual today</h3>
     {% if presets.available %}
     <ul class="dp-preset-counts">
-      <li>Unusually bullish setups: <strong>{{ presets.counts.unusually_bullish|default(0) }}</strong></li>
-      <li>Unusually bearish setups: <strong>{{ presets.counts.unusually_bearish|default(0) }}</strong></li>
+      <li>Unusually bullish option-flow names: <strong>{{ presets.counts.unusually_bullish|default(0) }}</strong></li>
+      <li>Unusually bearish option-flow names: <strong>{{ presets.counts.unusually_bearish|default(0) }}</strong></li>
       <li>Deep-conviction call flow: <strong>{{ presets.counts.deep_conviction_calls|default(0) }}</strong></li>
       <li>Deep-conviction put flow: <strong>{{ presets.counts.deep_conviction_puts|default(0) }}</strong></li>
       <li>Long-dated call buyers (>60 DTE): <strong>{{ presets.counts.long_term_calls|default(0) }}</strong></li>
