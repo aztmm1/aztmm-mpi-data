@@ -37,7 +37,19 @@ const WORKFLOWS = {
   congress:       "congress-watch.yml",
   optionsGravity: "options-gravity.yml",
   squeeze:        "squeeze-watch.yml",
+  zeroDte:        "0dte-pulse.yml",
 };
+
+// Trackers we watch for daily freshness (every weekday at 17:55 ET).
+// If latest.json's `date` field != today (ET), we log STALE and ping healthchecks.
+const FRESHNESS_TARGETS = [
+  { slug: "aztmm-daily-pulse-v2",      file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
+  { slug: "congress-trades-tracker",   file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
+  { slug: "nope-max-pain-tracker",     file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
+  { slug: "squeeze-watch",             file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
+  { slug: "0dte-pulse-tracker",        file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
+];
+const RAW_BASE = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main";
 
 // ----- ET time helpers -----
 function getETParts(date) {
@@ -117,15 +129,54 @@ function selectWorkflows(et) {
   const selected = [];
   if (hour === 9 && minute < 30) selected.push(WORKFLOWS.mpi);
   if (hour === 16 && minute >= 30) selected.push(WORKFLOWS.mpi);
-  if (hour === 17 && minute >= 10) {
+  if (hour === 17 && minute >= 10 && minute < 50) {
     selected.push(
       WORKFLOWS.dailyPulse,
       WORKFLOWS.congress,
       WORKFLOWS.optionsGravity,
       WORKFLOWS.squeeze,
+      WORKFLOWS.zeroDte,
     );
   }
   return selected;
+}
+
+// ----- daily freshness watchdog -----
+// Fires at 17:55 ET — 45 min after the 17:10 dispatch window.
+// Pings each tracker's latest.json on raw.githubusercontent.com and
+// verifies its `date` field equals today's ET date.
+async function runFreshnessWatch(env, etDate) {
+  const results = [];
+  for (const target of FRESHNESS_TARGETS) {
+    const url = `${RAW_BASE}/${target.slug}/sample-output/${target.file}?t=${Date.now()}`;
+    try {
+      const res = await fetch(url, { cf: { cacheTtl: 0, cacheEverything: false } });
+      if (!res.ok) {
+        results.push({ slug: target.slug, status: "fetch_failed", code: res.status });
+        continue;
+      }
+      const data = await res.json();
+      let foundDate = null;
+      for (const k of target.dateKeys) {
+        if (data && typeof data === "object" && data[k]) { foundDate = String(data[k]).slice(0, 10); break; }
+      }
+      if (!foundDate) {
+        results.push({ slug: target.slug, status: "no_date_field" });
+      } else if (foundDate === etDate) {
+        results.push({ slug: target.slug, status: "fresh", date: foundDate });
+      } else {
+        results.push({ slug: target.slug, status: "STALE", date: foundDate, expected: etDate });
+      }
+    } catch (e) {
+      results.push({ slug: target.slug, status: "error", error: String(e) });
+    }
+  }
+  const stale = results.filter(r => r.status === "STALE");
+  await appendLog(env, `${new Date().toISOString()} ${etDate} ET=17:55 [freshness-watch] checked=${results.length} fresh=${results.filter(r => r.status==="fresh").length} STALE=${stale.length} ${JSON.stringify(stale)}`);
+  if (stale.length > 0) {
+    await pingHealthchecks(env, "/fail");
+  }
+  return results;
 }
 
 // ----- core tick -----
@@ -134,6 +185,12 @@ async function runTick(env, source = "cron") {
   const et = getETParts(now);
   const etDate = getETDateStr(now);
   const stamp = now.toISOString();
+
+  // Freshness watchdog window: weekday 17:50–17:59 ET (one tick per day)
+  if (et.dow >= 1 && et.dow <= 5 && et.hour === 17 && et.minute >= 50 && et.minute < 60) {
+    const fresh = await runFreshnessWatch(env, etDate);
+    // Continue to dispatch logic below in case we're at the boundary
+  }
 
   const workflows = selectWorkflows(et);
   const result = {
@@ -204,6 +261,13 @@ export default {
       if (!env.KV) return new Response("KV not bound", { status: 503 });
       const log = (await env.KV.get("triggers")) || "(empty)";
       return new Response(log, { headers: { "content-type": "text/plain" } });
+    }
+
+    if (url.pathname === "/freshness") {
+      const now = new Date();
+      const etDate = getETDateStr(now);
+      const r = await runFreshnessWatch(env, etDate);
+      return Response.json({ etDate, results: r });
     }
 
     if (url.pathname === "/run" && request.method === "POST") {
