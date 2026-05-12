@@ -1,0 +1,10 @@
+{
+  "tracker": "congress-trades-tracker",
+  "headline_metric_label": "Filings filed today",
+  "points": [
+    {
+      "date": "2026-05-12",
+      "value": 0.0
+    }
+  ]
+}

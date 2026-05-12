@@ -2,6 +2,10 @@
   "as_of": "2026-05-12 5:00 PM ET",
   "as_of_date": "2026-05-12",
   "refresh_label": "5:00 PM ET",
+  "headline_metric": {
+    "label": "Filings filed today",
+    "value": 0
+  },
   "summary": {
     "filings_today": 0,
     "members_today": 0,
