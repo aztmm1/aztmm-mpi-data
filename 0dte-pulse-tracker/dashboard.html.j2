@@ -1,0 +1,128 @@
+{# ============================================================
+   AZTMM 0DTE Pulse — page body template
+   Renders the static frame + table rows from the public JSON.
+   ============================================================ #}
+
+<div class="aztmm-zerodte-pulse" data-date="{{ date }}">
+
+  {# -------- HEADER -------- #}
+  <header class="zd-header">
+    <h1>0DTE Pulse</h1>
+    <p class="zd-as-of">As of {{ as_of }}</p>
+    <p class="zd-summary">{{ summary_line }}</p>
+  </header>
+
+  {# -------- WHAT THIS IS -------- #}
+  <section class="zd-section zd-what-this-is">
+    <h2>What this page is</h2>
+    <p>
+      A nightly look at today's 0-day-to-expiration options tape — the
+      contracts that opened and closed (or expired) in the same session.
+      The list below is the set of tickers where 0DTE notable prints
+      stacked up enough today to land in the top of the pulse. It is
+      published once per day, at the close. It is a description of what
+      the tape looked like today, not a list of names to trade.
+    </p>
+    <p class="zd-watching-not-chasing">
+      <strong>I'm watching but not chasing.</strong> 0DTE flow is one of
+      the noisiest surfaces in the market, and most 0DTE positions expire
+      worthless. Read this as journal commentary, nothing more.
+    </p>
+  </section>
+
+  {# -------- TAPE TOTALS -------- #}
+  <section class="zd-section zd-tape-totals">
+    <h2>Today's 0DTE tape, at a glance</h2>
+    <ul class="zd-tape-totals-list">
+      <li><strong>Notable prints today:</strong> {{ tape_totals.notable_prints }}</li>
+      <li><strong>Tickers with 0DTE activity in the pulse:</strong> {{ tape_totals.tickers_in_pulse }}</li>
+      <li><strong>Total notable premium across 0DTE:</strong> {{ tape_totals.total_notable_premium_fmt }}</li>
+      <li><strong>Share of today's total options dollar volume:</strong> {{ tape_totals.market_share_of_options_dollar_volume_fmt }}</li>
+      <li><strong>Market-wide call/put dollar tilt today:</strong> {{ market_context.tilt }}</li>
+    </ul>
+  </section>
+
+  {# -------- TABLE -------- #}
+  <section class="zd-section zd-table-section">
+    <h2>Top of the 0DTE pulse ({{ rows|length }} tickers)</h2>
+    {% if rows %}
+    <table class="zd-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Sector(s)</th>
+          <th>0DTE notable prints</th>
+          <th>Total premium</th>
+          <th>Call share</th>
+          <th>Put share</th>
+          <th>Tilt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="zd-row zd-tilt-{{ r.tilt_label|replace(' ', '-')|replace('/', '-') }}">
+          <td class="zd-ticker"><strong>{{ r.ticker }}</strong></td>
+          <td>{% if r.sectors %}{{ r.sectors|join(', ') }}{% else %}&mdash;{% endif %}</td>
+          <td>{{ r.alert_count }}</td>
+          <td>{{ r.total_premium_fmt }}</td>
+          <td>{{ r.call_share_fmt }}</td>
+          <td>{{ r.put_share_fmt }}</td>
+          <td><span class="zd-tilt-pill zd-tilt-pill-{{ r.tilt_label|replace(' ', '-')|replace('/', '-') }}">{{ r.tilt_label }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No tickers cleared tonight's bar for inclusion in the 0DTE pulse.</p>
+    {% endif %}
+  </section>
+
+  {# -------- COMMENTARY -------- #}
+  {% if commentary %}
+  <section class="zd-section zd-commentary">
+    <h2>What I noticed</h2>
+    <ul class="zd-commentary-list">
+      {% for line in commentary %}
+      <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {# -------- WATCHING -------- #}
+  <section class="zd-section zd-watching">
+    <h2>What I'm watching</h2>
+    <p>{{ watching_line }}</p>
+  </section>
+
+  {# -------- HOW TO READ -------- #}
+  <section class="zd-section zd-how-to-read">
+    <h2>How to read this page</h2>
+    <ul>
+      <li><strong>0DTE</strong> means options whose final trading day is today &mdash; they expire at today's close.</li>
+      <li><strong>Notable prints</strong> are options trades that surfaced as unusual by size, premium, or fill profile relative to typical activity on that contract. The threshold is internal and not disclosed here.</li>
+      <li><strong>Call share / put share</strong> is the dollar weight of call-side versus put-side notable prints for that ticker today.</li>
+      <li><strong>Tilt</strong> is a one-word descriptor of where the dollar weight of today's 0DTE prints landed for each ticker.</li>
+      <li><strong>Share of today's total options dollar volume</strong> is the dollar weight of qualifying 0DTE notable prints divided by today's total options dollar volume across the market.</li>
+    </ul>
+    <p>None of these are direction calls. They are descriptions of conditions on today's tape.</p>
+  </section>
+
+  {# -------- DATA QUALITY -------- #}
+  {% if data_quality_degraded %}
+  <section class="zd-section zd-data-quality">
+    <p><em>Data quality note: one or more upstream feeds were degraded for this session. Read with appropriate caution.</em></p>
+  </section>
+  {% endif %}
+
+  {# -------- DISCLAIMER -------- #}
+  <footer class="zd-footer">
+    <p class="zd-disclaimer">
+      Personal observations of one trader. Not investment advice. 0DTE options are exceptionally high-risk and most expire worthless. Data refreshed once daily at 5 PM ET.
+    </p>
+    <p class="zd-disclaimer zd-extra-disclaimer">
+      <strong>Inclusion in this list is not a recommendation. Most 0DTE positions expire worthless and the rest are highly path-dependent.</strong>
+    </p>
+  </footer>
+
+</div>

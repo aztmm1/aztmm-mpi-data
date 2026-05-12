@@ -1,0 +1,40 @@
+{
+  "date": "2026-05-12",
+  "started_at": "2026-05-12T22:57:33.203972Z",
+  "dry_run": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "raw_alerts": 14,
+      "endpoints_ok": 2,
+      "endpoints_failed": 0
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "rows_public": 3,
+      "rows_internal": 3
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 5501
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    },
+    {
+      "step": "write_outputs",
+      "ok": true,
+      "paths": {
+        "public_json": "/sessions/wonderful-wizardly-carson/mnt/outputs/0dte-pulse-tracker/sample-output/0dte-2026-05-12.public.json",
+        "internal_json": "/sessions/wonderful-wizardly-carson/mnt/outputs/0dte-pulse-tracker/sample-output/0dte-2026-05-12.internal.json",
+        "html": "/sessions/wonderful-wizardly-carson/mnt/outputs/0dte-pulse-tracker/sample-output/0dte-2026-05-12.html"
+      }
+    }
+  ],
+  "status": "payload_emitted"
+}
