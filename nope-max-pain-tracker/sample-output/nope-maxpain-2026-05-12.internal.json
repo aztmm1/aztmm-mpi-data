@@ -1,0 +1,723 @@
+{
+  "date": "2026-05-12",
+  "generated_at_iso": "2026-05-12T21:33:48.824678Z",
+  "data_quality": {
+    "endpoints_ok": 28,
+    "endpoints_failed": 12,
+    "failures": [
+      {
+        "endpoint": "/api/stock/GOOGL/oi-change",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "GOOGL"
+      },
+      {
+        "endpoint": "/api/stock/META/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/META/max-pain",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/META/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/META/oi-change",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/TSLA/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "TSLA"
+      },
+      {
+        "endpoint": "/api/stock/TSLA/max-pain",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "TSLA"
+      },
+      {
+        "endpoint": "/api/stock/TSLA/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "TSLA"
+      },
+      {
+        "endpoint": "/api/stock/TSLA/oi-change",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "TSLA"
+      },
+      {
+        "endpoint": "/api/stock/AMZN/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AMZN"
+      },
+      {
+        "endpoint": "/api/stock/AMZN/max-pain",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AMZN"
+      },
+      {
+        "endpoint": "/api/stock/AMZN/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AMZN"
+      }
+    ],
+    "degraded": true
+  },
+  "tickers": {
+    "SPY": {
+      "ticker": "SPY",
+      "nope": {
+        "available": true,
+        "nope": 6.837008,
+        "nope_fill": 0.385884,
+        "call_vol": 1368097,
+        "put_vol": 1471862,
+        "stock_vol": 45440153,
+        "call_delta": 367041259.858538,
+        "put_delta": -56366571.438758,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "deeply-positive",
+      "nope_band_phrase": "deeply positive",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "SPY",
+        "spot": 738.18,
+        "spot_fmt": "$738.18",
+        "near": {
+          "expiry": "2026-05-12",
+          "max_pain": 737.0,
+          "max_pain_fmt": "$737",
+          "upper_strike": 738.0,
+          "lower_strike": 736.0
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 706.0,
+          "max_pain_fmt": "$706"
+        },
+        "distance_pct": 0.15985261047440327,
+        "distance_pct_fmt": "+0.16%",
+        "direction": "above",
+        "magnet_zone": true
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "SPY260930C00825000",
+            "oi_change": 56395.0,
+            "current_oi": 57425,
+            "volume": 57700
+          },
+          {
+            "symbol": "SPY260512C00740000",
+            "oi_change": 15579.0,
+            "current_oi": 17168,
+            "volume": 105793
+          },
+          {
+            "symbol": "SPY260515C00732000",
+            "oi_change": 10683.0,
+            "current_oi": 13898,
+            "volume": 14557
+          },
+          {
+            "symbol": "SPY260512C00759000",
+            "oi_change": 10093.0,
+            "current_oi": 10093,
+            "volume": 10093
+          },
+          {
+            "symbol": "SPY260512C00761000",
+            "oi_change": 8837.0,
+            "current_oi": 8837,
+            "volume": 8840
+          }
+        ],
+        "top_puts": [
+          {
+            "symbol": "SPY260512P00718000",
+            "oi_change": 20318.0,
+            "current_oi": 22159,
+            "volume": 23511
+          },
+          {
+            "symbol": "SPY260522P00700000",
+            "oi_change": 19726.0,
+            "current_oi": 29905,
+            "volume": 25637
+          },
+          {
+            "symbol": "SPY260515P00718000",
+            "oi_change": 13821.0,
+            "current_oi": 17958,
+            "volume": 18245
+          },
+          {
+            "symbol": "SPY260515P00735000",
+            "oi_change": 13731.0,
+            "current_oi": 19230,
+            "volume": 30773
+          },
+          {
+            "symbol": "SPY260512P00726000",
+            "oi_change": 12443.0,
+            "current_oi": 13430,
+            "volume": 19781
+          }
+        ]
+      }
+    },
+    "QQQ": {
+      "ticker": "QQQ",
+      "nope": {
+        "available": true,
+        "nope": 3.884204,
+        "nope_fill": 0.415167,
+        "call_vol": 959196,
+        "put_vol": 767392,
+        "stock_vol": 42384866,
+        "call_delta": 217906440.042003,
+        "put_delta": -53274971.571108,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "positive",
+      "nope_band_phrase": "positive",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "QQQ",
+        "spot": 707.24,
+        "spot_fmt": "$707.24",
+        "near": {
+          "expiry": "2026-05-12",
+          "max_pain": 710.0,
+          "max_pain_fmt": "$710",
+          "upper_strike": 711.0,
+          "lower_strike": 709.0
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 650.0,
+          "max_pain_fmt": "$650"
+        },
+        "distance_pct": -0.390249420281657,
+        "distance_pct_fmt": "-0.39%",
+        "direction": "below",
+        "magnet_zone": true
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "QQQ260513C00721000",
+            "oi_change": 15919.0,
+            "current_oi": 15919,
+            "volume": 16588
+          },
+          {
+            "symbol": "QQQ260513C00720000",
+            "oi_change": 15080.0,
+            "current_oi": 16708,
+            "volume": 20902
+          },
+          {
+            "symbol": "QQQ260512C00715000",
+            "oi_change": 13707.0,
+            "current_oi": 17508,
+            "volume": 52061
+          },
+          {
+            "symbol": "QQQ270115C00950000",
+            "oi_change": 11737.0,
+            "current_oi": 14267,
+            "volume": 12861
+          },
+          {
+            "symbol": "QQQ260512C00730000",
+            "oi_change": 7978.0,
+            "current_oi": 10420,
+            "volume": 12024
+          }
+        ],
+        "top_puts": [
+          {
+            "symbol": "QQQ260618P00684000",
+            "oi_change": 28273.0,
+            "current_oi": 28706,
+            "volume": 28393
+          },
+          {
+            "symbol": "QQQ260731P00620000",
+            "oi_change": 19928.0,
+            "current_oi": 20228,
+            "volume": 20274
+          },
+          {
+            "symbol": "QQQ260731P00650000",
+            "oi_change": 19913.0,
+            "current_oi": 20816,
+            "volume": 20233
+          },
+          {
+            "symbol": "QQQ260515P00625000",
+            "oi_change": 15790.0,
+            "current_oi": 27210,
+            "volume": 19200
+          },
+          {
+            "symbol": "QQQ260522P00705000",
+            "oi_change": 14825.0,
+            "current_oi": 15450,
+            "volume": 17293
+          }
+        ]
+      }
+    },
+    "IWM": {
+      "ticker": "IWM",
+      "nope": {
+        "available": true,
+        "nope": 0.410873,
+        "nope_fill": -0.050078,
+        "call_vol": 147082,
+        "put_vol": 258561,
+        "stock_vol": 25650996,
+        "call_delta": 32541925.658608,
+        "put_delta": -22002625.343571,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "IWM",
+        "spot": 282.57,
+        "spot_fmt": "$282.57",
+        "near": {
+          "expiry": "2026-05-12",
+          "max_pain": 285.0,
+          "max_pain_fmt": "$285",
+          "upper_strike": 286.0,
+          "lower_strike": 284.0
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 274.0,
+          "max_pain_fmt": "$274"
+        },
+        "distance_pct": -0.8599639027497635,
+        "distance_pct_fmt": "-0.86%",
+        "direction": "below",
+        "magnet_zone": true
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "IWM260918C00290000",
+            "oi_change": 12616.0,
+            "current_oi": 29626,
+            "volume": 12702
+          },
+          {
+            "symbol": "IWM260618C00315000",
+            "oi_change": 10014.0,
+            "current_oi": 15839,
+            "volume": 11243
+          },
+          {
+            "symbol": "IWM261218C00350000",
+            "oi_change": 6806.0,
+            "current_oi": 14394,
+            "volume": 7277
+          }
+        ],
+        "top_puts": [
+          {
+            "symbol": "IWM260515P00277000",
+            "oi_change": 34500.0,
+            "current_oi": 41589,
+            "volume": 37396
+          },
+          {
+            "symbol": "IWM260618P00272000",
+            "oi_change": 19130.0,
+            "current_oi": 33292,
+            "volume": 33284
+          },
+          {
+            "symbol": "IWM260717P00270000",
+            "oi_change": 14308.0,
+            "current_oi": 25686,
+            "volume": 14451
+          },
+          {
+            "symbol": "IWM260515P00280000",
+            "oi_change": 8355.0,
+            "current_oi": 20360,
+            "volume": 14853
+          },
+          {
+            "symbol": "IWM260512P00279000",
+            "oi_change": 7165.0,
+            "current_oi": 10063,
+            "volume": 9626
+          }
+        ]
+      }
+    },
+    "NVDA": {
+      "ticker": "NVDA",
+      "nope": {
+        "available": true,
+        "nope": 0.598483,
+        "nope_fill": 0.131372,
+        "call_vol": 597350,
+        "put_vol": 175456,
+        "stock_vol": 141014038,
+        "call_delta": 104479154.209212,
+        "put_delta": -20084593.733053,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "NVDA",
+        "spot": 220.78,
+        "spot_fmt": "$220.78",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 212.5,
+          "max_pain_fmt": "$212",
+          "upper_strike": 215.0,
+          "lower_strike": 210.0
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 195.0,
+          "max_pain_fmt": "$195"
+        },
+        "distance_pct": 3.7503397046833955,
+        "distance_pct_fmt": "+3.75%",
+        "direction": "above",
+        "magnet_zone": false
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "NVDA260515C00225000",
+            "oi_change": 20118.0,
+            "current_oi": 105178,
+            "volume": 84283
+          },
+          {
+            "symbol": "NVDA260618C00260000",
+            "oi_change": 15332.0,
+            "current_oi": 47957,
+            "volume": 19066
+          },
+          {
+            "symbol": "NVDA260513C00220000",
+            "oi_change": 13685.0,
+            "current_oi": 23291,
+            "volume": 112598
+          },
+          {
+            "symbol": "NVDA260515C00230000",
+            "oi_change": 12813.0,
+            "current_oi": 65221,
+            "volume": 69261
+          },
+          {
+            "symbol": "NVDA260618C00230000",
+            "oi_change": 10905.0,
+            "current_oi": 68710,
+            "volume": 25763
+          }
+        ],
+        "top_puts": [
+          {
+            "symbol": "NVDA260515P00180000",
+            "oi_change": 8142.0,
+            "current_oi": 74929,
+            "volume": 10725
+          },
+          {
+            "symbol": "NVDA270115P00180000",
+            "oi_change": 7793.0,
+            "current_oi": 40036,
+            "volume": 8684
+          },
+          {
+            "symbol": "NVDA260513P00215000",
+            "oi_change": 5451.0,
+            "current_oi": 6484,
+            "volume": 22651
+          }
+        ]
+      }
+    },
+    "MSFT": {
+      "ticker": "MSFT",
+      "nope": {
+        "available": true,
+        "nope": 0.15648,
+        "nope_fill": 0.030303,
+        "call_vol": 62776,
+        "put_vol": 26677,
+        "stock_vol": 23512688,
+        "call_delta": 6902946.414689,
+        "put_delta": -3223681.767082,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "MSFT",
+        "spot": 407.77,
+        "spot_fmt": "$407.77",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 410.0,
+          "max_pain_fmt": "$410",
+          "upper_strike": 412.5,
+          "lower_strike": 407.5
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 405.0,
+          "max_pain_fmt": "$405"
+        },
+        "distance_pct": -0.5468769159084823,
+        "distance_pct_fmt": "-0.55%",
+        "direction": "below",
+        "magnet_zone": true
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "MSFT260605C00470000",
+            "oi_change": 5020.0,
+            "current_oi": 5688,
+            "volume": 5361
+          }
+        ],
+        "top_puts": []
+      }
+    },
+    "AAPL": {
+      "ticker": "AAPL",
+      "nope": {
+        "available": true,
+        "nope": 0.544461,
+        "nope_fill": 0.09965,
+        "call_vol": 107908,
+        "put_vol": 43682,
+        "stock_vol": 32210241,
+        "call_delta": 22001341.440803,
+        "put_delta": -4464130.115332,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "AAPL",
+        "spot": 294.8,
+        "spot_fmt": "$294.80",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 287.5,
+          "max_pain_fmt": "$288",
+          "upper_strike": 290.0,
+          "lower_strike": 285.0
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 275.0,
+          "max_pain_fmt": "$275"
+        },
+        "distance_pct": 2.47625508819539,
+        "distance_pct_fmt": "+2.48%",
+        "direction": "above",
+        "magnet_zone": false
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "AAPL260918C00350000",
+            "oi_change": 25051.0,
+            "current_oi": 29729,
+            "volume": 28647
+          },
+          {
+            "symbol": "AAPL260513C00305000",
+            "oi_change": 7557.0,
+            "current_oi": 8931,
+            "volume": 9544
+          },
+          {
+            "symbol": "AAPL260515C00302500",
+            "oi_change": 5508.0,
+            "current_oi": 13194,
+            "volume": 14676
+          }
+        ],
+        "top_puts": []
+      }
+    },
+    "GOOGL": {
+      "ticker": "GOOGL",
+      "nope": {
+        "available": true,
+        "nope": 0.206989,
+        "nope_fill": 0.042283,
+        "call_vol": 40125,
+        "put_vol": 19853,
+        "stock_vol": 19121438,
+        "call_delta": 5611675.429185,
+        "put_delta": -1653753.457404,
+        "timestamp": "2026-05-12T19:59:00Z"
+      },
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": true,
+        "ticker": "GOOGL",
+        "spot": 387.35,
+        "spot_fmt": "$387.35",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 390.0,
+          "max_pain_fmt": "$390",
+          "upper_strike": 392.5,
+          "lower_strike": 387.5
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 330.0,
+          "max_pain_fmt": "$330"
+        },
+        "distance_pct": -0.6841357945010913,
+        "distance_pct_fmt": "-0.68%",
+        "direction": "below",
+        "magnet_zone": true
+      },
+      "oi_change": {
+        "available": false,
+        "top_calls": [],
+        "top_puts": []
+      }
+    },
+    "META": {
+      "ticker": "META",
+      "nope": {
+        "available": false
+      },
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": false,
+        "ticker": "META"
+      },
+      "oi_change": {
+        "available": false,
+        "top_calls": [],
+        "top_puts": []
+      }
+    },
+    "TSLA": {
+      "ticker": "TSLA",
+      "nope": {
+        "available": false
+      },
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": false,
+        "ticker": "TSLA"
+      },
+      "oi_change": {
+        "available": false,
+        "top_calls": [],
+        "top_puts": []
+      }
+    },
+    "AMZN": {
+      "ticker": "AMZN",
+      "nope": {
+        "available": false
+      },
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
+      "nope_proxy_used": false,
+      "max_pain": {
+        "available": false,
+        "ticker": "AMZN"
+      },
+      "oi_change": {
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "AMZN260513C00272500",
+            "oi_change": 6390.0,
+            "current_oi": 6864,
+            "volume": 15036
+          }
+        ],
+        "top_puts": [
+          {
+            "symbol": "AMZN270716P00270000",
+            "oi_change": 5006.0,
+            "current_oi": 8512,
+            "volume": 5011
+          }
+        ]
+      }
+    }
+  },
+  "nope_chart": {
+    "SPY": [
+      {
+        "date": "2026-05-12",
+        "nope": 6.837008
+      }
+    ],
+    "QQQ": [
+      {
+        "date": "2026-05-12",
+        "nope": 3.884204
+      }
+    ],
+    "IWM": [
+      {
+        "date": "2026-05-12",
+        "nope": 0.410873
+      }
+    ]
+  },
+  "commentary": [
+    "Spot prices for SPY, QQQ, IWM, MSFT, GOOGL are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
+    "SPY max-pain steps lower from the near expiry ($737) to the next monthly ($706) \u2014 open interest has built up away from current spot at the longer-dated tenor."
+  ]
+}
