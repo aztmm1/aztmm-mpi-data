@@ -210,15 +210,26 @@ def fetch_daily_data(date_str: str) -> dict[str, Any]:
             dq["failures"].append({"endpoint": res.endpoint, "error": res.error})
 
     # --- Market totals (today + yesterday)
+    # NOTE: UW returns this endpoint as {"data": [ {row} ]} — a single-row
+    # list wrapping the day's summary dict. Unwrap to the dict the aggregator
+    # expects (aggregate_market_totals calls .get() on this value).
+    def _unwrap_market_totals(payload: Any) -> dict | None:
+        inner = payload.get("data") if isinstance(payload, dict) else payload
+        if isinstance(inner, list):
+            return inner[0] if inner and isinstance(inner[0], dict) else None
+        if isinstance(inner, dict):
+            return inner
+        return None
+
     r = fetch_market_totals(date_str)
     _record(r)
     if r.ok:
-        out["market_totals"] = r.data.get("data") if isinstance(r.data, dict) else r.data
+        out["market_totals"] = _unwrap_market_totals(r.data)
 
     r_prev = fetch_market_totals(prev)
     _record(r_prev)
     if r_prev.ok:
-        out["market_totals_prev"] = r_prev.data.get("data") if isinstance(r_prev.data, dict) else r_prev.data
+        out["market_totals_prev"] = _unwrap_market_totals(r_prev.data)
 
     # --- Sector ETFs snapshot
     r = fetch_sector_etfs()
