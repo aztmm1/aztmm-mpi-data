@@ -1,6 +1,6 @@
 {
   "date": "2026-05-12",
-  "started_at": "2026-05-12T22:57:33.203972Z",
+  "started_at": "2026-05-12T23:45:41.046550Z",
   "dry_run": false,
   "steps": [
     {
@@ -17,9 +17,15 @@
       "rows_internal": 3
     },
     {
+      "step": "update_history",
+      "ok": true,
+      "points": 1,
+      "sparkline_available": false
+    },
+    {
       "step": "render",
       "ok": true,
-      "html_bytes": 5501
+      "html_bytes": 5716
     },
     {
       "step": "brand_check",
@@ -30,9 +36,9 @@
       "step": "write_outputs",
       "ok": true,
       "paths": {
-        "public_json": "/sessions/wonderful-wizardly-carson/mnt/outputs/0dte-pulse-tracker/sample-output/0dte-2026-05-12.public.json",
-        "internal_json": "/sessions/wonderful-wizardly-carson/mnt/outputs/0dte-pulse-tracker/sample-output/0dte-2026-05-12.internal.json",
-        "html": "/sessions/wonderful-wizardly-carson/mnt/outputs/0dte-pulse-tracker/sample-output/0dte-2026-05-12.html"
+        "public_json": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/0dte-pulse-tracker/sample-output/0dte-2026-05-12.public.json",
+        "internal_json": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/0dte-pulse-tracker/sample-output/0dte-2026-05-12.internal.json",
+        "html": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/0dte-pulse-tracker/sample-output/0dte-2026-05-12.html"
       }
     }
   ],
