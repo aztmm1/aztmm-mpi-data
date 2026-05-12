@@ -157,8 +157,20 @@ async function runFreshnessWatch(env, etDate) {
       }
       const data = await res.json();
       let foundDate = null;
+      // 1. Check top-level keys
       for (const k of target.dateKeys) {
         if (data && typeof data === "object" && data[k]) { foundDate = String(data[k]).slice(0, 10); break; }
+      }
+      // 2. Daily Pulse: extract from payload.title or payload.content (e.g. "Daily Pulse — 2026-05-12 — BASE")
+      if (!foundDate && data && data.payload) {
+        const text = (data.payload.title || "") + " " + (data.payload.content || "");
+        const m = text.match(/(\d{4}-\d{2}-\d{2})/);
+        if (m) foundDate = m[1];
+      }
+      // 3. Generic deep scan for first YYYY-MM-DD pattern in serialized JSON
+      if (!foundDate) {
+        const m = JSON.stringify(data).match(/"(?:date|asOf|as_of|as_of_date|target_date|run_date)":\s*"(\d{4}-\d{2}-\d{2})/);
+        if (m) foundDate = m[1];
       }
       if (!foundDate) {
         results.push({ slug: target.slug, status: "no_date_field" });
