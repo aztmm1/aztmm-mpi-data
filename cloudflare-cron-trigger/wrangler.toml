@@ -9,11 +9,11 @@ compatibility_date = "2024-12-01"
 crons = ["*/15 13-23 * * 1-5"]
 
 # KV namespace for trigger log (last 200 events).
-# Create via CF dashboard → Workers & Pages → KV → Create namespace (any name)
-# Then bind here with the namespace ID from the dashboard.
+# Namespace in CF dashboard is named "aztmm-cron-log".
+# Binding name MUST stay "KV" because worker.js references env.KV.
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "ccb3b59bf4024734a7c4bb8cb288e750"
 
 # Observability — Workers Logs visible in dashboard
 [observability]
