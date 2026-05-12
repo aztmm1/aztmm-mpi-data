@@ -78,17 +78,24 @@ jobs:
           python run_daily_pulse.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
 
       - name: Publish to WordPress (REST API)
-        if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
+        if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true' && env.WP_APP_PASSWORD != ''
+        continue-on-error: true
         working-directory: aztmm-daily-pulse-v2
         run: |
-          python publish_to_wp.py publish-artifacts/payload.json
+          python publish_to_wp.py publish-artifacts/payload.json || echo "WP publish failed — payload still committed to repo for manual review"
 
       - name: Commit run logs
         if: always()
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
-          git add aztmm-daily-pulse-v2/data/ || true
+          # Promote publish-artifacts/ -> sample-output/ for jsDelivr serving
+          mkdir -p aztmm-daily-pulse-v2/sample-output/
+          if [ -d aztmm-daily-pulse-v2/publish-artifacts/ ]; then
+            cp -f aztmm-daily-pulse-v2/publish-artifacts/*.html aztmm-daily-pulse-v2/sample-output/ 2>/dev/null || true
+            cp -f aztmm-daily-pulse-v2/publish-artifacts/payload.json aztmm-daily-pulse-v2/sample-output/daily-pulse-${{ steps.guard.outputs.date }}.payload.json 2>/dev/null || true
+          fi
+          git add aztmm-daily-pulse-v2/data/ aztmm-daily-pulse-v2/sample-output/ || true
           git diff --cached --quiet || git commit -m "daily-pulse: log run ${{ steps.guard.outputs.date }}"
           # Race-safe push: pull-rebase + retry up to 4 times
           for i in 1 2 3 4; do
