@@ -70,6 +70,7 @@ jobs:
         if: steps.guard.outputs.already_ran == 'false'
         working-directory: aztmm-daily-pulse-v2
         run: |
+          mkdir -p publish-artifacts/ data/daily-pulse-logs/
           ARGS=""
           if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
