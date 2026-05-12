@@ -1,0 +1,21 @@
+{
+  "date": "2026-05-12",
+  "started_at": "2026-05-12T21:29:20.482624Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 18,
+      "endpoints_failed": 0
+    },
+    {
+      "step": "fetch_prev",
+      "ok": true,
+      "endpoints_ok": 18
+    }
+  ],
+  "status": "aggregate_failed",
+  "error": "'list' object has no attribute 'get'"
+}

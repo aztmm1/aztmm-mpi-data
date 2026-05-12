@@ -1,0 +1,7 @@
+{
+  "date": "2026-05-12",
+  "reason": "aggregate_failed",
+  "detail": {
+    "err": "'list' object has no attribute 'get'"
+  }
+}
