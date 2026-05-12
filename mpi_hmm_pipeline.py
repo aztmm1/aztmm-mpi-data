@@ -216,8 +216,8 @@ def _cboe_index_history(url: str) -> Optional["pd.DataFrame"]:
 
 # CBOE daily put/call CSV — public download, no key
 CBOE_PUTCALL_URL = (
-    "https://cdn.cboe.com/api/global/us_indices/daily_market_statistics/"
-    "totalpc.csv"
+    "https://cdn.cboe.com/data/us/options/market_statistics/daily/"
+    "equity_pc_ratio_history.csv"
 )
 
 # CNN Fear & Greed — internal JSON endpoint, no key
@@ -559,10 +559,18 @@ def _load_cboe_putcall(ctx: RunContext) -> Optional[float]:
 
 
 def _load_aaii(ctx: RunContext) -> Optional[float]:
-    """Returns AAII bull-bear spread (bull% - bear%), or None on failure."""
+    """Returns AAII bull-bear spread (bull% - bear%), or None on failure.
+
+    Note: the community AAII mirror has been deleted. Until a replacement
+    source is wired in, this function returns None and logs at INFO level
+    so it does NOT degrade data_quality. CNN F&G carries the sentiment
+    sleeve alone in the meantime.
+    """
     body = _http_get(AAII_CSV_FALLBACK)
     if body is None or pd is None:
-        ctx.warn("AAII fetch failed")
+        # Silently skip: no ctx.warn() -> no entry in public "warnings" list,
+        # no degradation of data_quality. CNN F&G covers sentiment for now.
+        log.info("AAII source unavailable; using CNN F&G alone for sentiment")
         return None
     try:
         df = pd.read_csv(io.BytesIO(body))
@@ -1306,18 +1314,66 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
 
     payload = _scrub_nans(payload)
+
+    # ------------------------------------------------------------------
+    # Build PUBLIC + INTERNAL payloads.
+    # The jsDelivr CDN serves data/mpi.json raw and publicly, so the public
+    # copy must NOT leak internal debug fields (data_quality, warnings,
+    # source_versions.weights, transition_matrix, posterior, per-component
+    # weight/raw_value/error).  The internal copy keeps everything for the
+    # WP proxy / debugging consumers.
+    # ------------------------------------------------------------------
+    internal_payload = payload  # full version, includes all debug fields
+
+    # Deep copy via JSON round-trip so we can strip safely.
     try:
-        out_str = json.dumps(payload, indent=2, sort_keys=False,
-                             allow_nan=False, ensure_ascii=False)
-    except (TypeError, ValueError) as e:
-        log.error("JSON serialization failed (%s); attempting permissive fallback", e)
-        out_str = json.dumps(payload, indent=2, sort_keys=False, default=str)
+        public_payload = json.loads(json.dumps(internal_payload, default=str))
+    except (TypeError, ValueError):
+        public_payload = json.loads(json.dumps(_scrub_nans(internal_payload), default=str))
+
+    # Strip top-level internals.
+    public_payload.pop("data_quality", None)
+    public_payload.pop("warnings", None)
+    if isinstance(public_payload.get("source_versions"), dict):
+        public_payload["source_versions"].pop("weights", None)
+
+    # Strip nested HMM internals + per-component debug fields.
+    if isinstance(public_payload.get("data"), dict):
+        data_blk = public_payload["data"]
+        data_blk.pop("transition_matrix", None)
+        hmm_blk = data_blk.get("hmm")
+        if isinstance(hmm_blk, dict):
+            hmm_blk.pop("transition_matrix", None)
+            hmm_blk.pop("posterior", None)
+        sub_blk = data_blk.get("sub_indicators")
+        if isinstance(sub_blk, dict):
+            for k in list(sub_blk.keys()):
+                comp = sub_blk[k]
+                if isinstance(comp, dict):
+                    comp.pop("weight", None)
+                    comp.pop("raw_value", None)
+                    comp.pop("error", None)
+
+    def _serialize(obj: Dict[str, Any]) -> str:
+        try:
+            return json.dumps(obj, indent=2, sort_keys=False,
+                              allow_nan=False, ensure_ascii=False)
+        except (TypeError, ValueError) as e:
+            log.error("JSON serialization failed (%s); attempting permissive fallback", e)
+            return json.dumps(obj, indent=2, sort_keys=False, default=str)
+
+    public_str = _serialize(public_payload)
+    internal_str = _serialize(internal_payload)
+
+    # Back-compat: keep out_str as the public output for any downstream usage.
+    out_str = public_str
 
     if args.dry_run:
         print(out_str)
         return 0
 
-    # Compare with prior to skip no-op commits
+    # Compare with prior to skip no-op commits (compare PUBLIC file, which is
+    # the canonical CDN artifact).
     prior_str = out_path.read_text() if out_path.exists() else ""
     # Strip computed_at for diff comparison (always changes)
     def _strip_volatile(s: str) -> str:
@@ -1328,13 +1384,30 @@ def main(argv: Optional[List[str]] = None) -> int:
             return json.dumps(obj, sort_keys=True)
         except Exception:
             return s
-    if _strip_volatile(out_str) == _strip_volatile(prior_str):
+
+    # Derive internal output path: data/mpi.json -> data/mpi-internal.json
+    internal_path = out_path.with_name(out_path.stem + "-internal" + out_path.suffix)
+
+    public_changed = _strip_volatile(out_str) != _strip_volatile(prior_str)
+    prior_internal_str = internal_path.read_text() if internal_path.exists() else ""
+    internal_changed = _strip_volatile(internal_str) != _strip_volatile(prior_internal_str)
+
+    if not public_changed and not internal_changed:
         log.info("payload unchanged from prior; skipping write to save commit")
         return 0
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(out_str + "\n")
-    log.info("wrote %s (%d bytes)", out_path, len(out_str))
+    if public_changed:
+        out_path.write_text(out_str + "\n")
+        log.info("wrote %s (%d bytes, public)", out_path, len(out_str))
+    else:
+        log.info("public payload unchanged; skipping write to %s", out_path)
+
+    if internal_changed:
+        internal_path.write_text(internal_str + "\n")
+        log.info("wrote %s (%d bytes, internal)", internal_path, len(internal_str))
+    else:
+        log.info("internal payload unchanged; skipping write to %s", internal_path)
     return 0
 
 
