@@ -1,95 +1,97 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-05-11T20:24:38Z",
+  "computed_at": "2026-05-12T03:18:41Z",
   "asOf": "2026-05-11",
   "stale_threshold_hours": 18,
-  "data_quality": "degraded",
   "data": {
-    "mpi_score": 62,
+    "mpi_score": 64,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 57,
-      "ci_high": 67
+      "ci_low": 59,
+      "ci_high": 69
     },
     "signal": {
       "bias": "Bullish",
       "strength": "Medium"
     },
     "market": {
-      "spy_spot": 737.62,
-      "expected_move_1sigma": 7.99,
-      "expected_move_pct": 0.0108
+      "spy_spot": 739.3,
+      "expected_move_1sigma": 8.56,
+      "expected_move_pct": 0.0116
     },
     "volatility": {
-      "vix": 17.19,
-      "vix3m": 20.5,
-      "vrp": 6.78,
+      "vix": 18.38,
+      "vix3m": 21.24,
+      "vrp": 8.17,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 10.41
+      "realized_vol_20d_pct": 10.21
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5487,
-      "probability_up": 0.5487,
-      "probability_flat": 0.2537,
-      "probability_down": 0.1976
+      "confidence": 0.5593,
+      "probability_up": 0.5593,
+      "probability_flat": 0.2507,
+      "probability_down": 0.19
     },
     "hmm": {
       "state": "Bull",
-      "confidence": 0.9803,
+      "confidence": 0.9987,
       "probs": {
-        "Bull": 0.9803,
-        "Sideways": 0.0197,
+        "Bull": 0.9987,
+        "Sideways": 0.0013,
         "Bear": 0.0
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 61.1,
-        "spy_close": 737.62,
-        "ma50": 684.28,
-        "ma200": 673.43,
-        "cross_ratio_pct": 1.612,
-        "ma50_slope_pct": 1.076
+        "score": 61.6,
+        "spy_close": 739.3,
+        "ma50": 685.35,
+        "ma200": 673.95,
+        "cross_ratio_pct": 1.691,
+        "ma50_slope_pct": 1.132
       },
       "breadth": {
-        "score": 96.0,
-        "cyclical_defensive_ratio": 1.4322,
+        "score": 96.7,
+        "cyclical_defensive_ratio": 1.4458,
         "cyc_def_percentile_1y": 99.6,
-        "iwm_spy_percentile_1y": 90.5
+        "iwm_spy_percentile_1y": 92.5
       },
       "volatility": {
-        "score": 57.4,
-        "vix": 17.19,
-        "vix3m": 20.5,
-        "vix_percentile_1y": 48.0,
+        "score": 45.4,
+        "vix": 18.38,
+        "vix3m": 21.24,
+        "vix_percentile_1y": 65.1,
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 50.0,
-        "error": "no t10y2y"
+        "score": 68.8,
+        "t10y2y_pct": 0.47,
+        "dgs10": 4.38,
+        "dgs2": 3.9
       },
       "credit": {
-        "score": 50.0,
-        "error": "no hy_oas"
+        "score": 86.3,
+        "hy_oas_pct": 2.81,
+        "ig_oas_pct": 0.79
       },
       "sentiment": {
         "score": 67.0,
         "cnn_fg": 67.0
       },
       "rotation": {
-        "score": 66.3,
-        "xlu_xly_ratio": 0.372,
-        "xlu_xly_percentile_1y": 33.7
+        "score": 46.4,
+        "xlu_xly_ratio": 0.3782,
+        "xlu_xly_percentile_1y": 53.6
       },
       "currency": {
-        "score": 59.2,
-        "uup": 27.34,
-        "uup_50d_ma": 27.543,
-        "uup_vs_ma_pct": -0.738,
+        "score": 59.0,
+        "uup": 27.35,
+        "uup_50d_ma": 27.549,
+        "uup_vs_ma_pct": -0.721,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
@@ -99,25 +101,7 @@
       }
     }
   },
-  "warnings": [
-    "FRED DGS10 fetch failed: Internal Server Error",
-    "FRED T10Y2Y fetch failed: Internal Server Error",
-    "FRED BAMLH0A0HYM2 fetch failed: Internal Server Error",
-    "AAII fetch failed",
-    "CBOE put/call fetch failed"
-  ],
   "source_versions": {
-    "schema": "2.0",
-    "weights": {
-      "trend": 0.15,
-      "breadth": 0.1,
-      "volatility": 0.15,
-      "yield_curve": 0.1,
-      "credit": 0.1,
-      "sentiment": 0.15,
-      "rotation": 0.1,
-      "currency": 0.05,
-      "liquidity": 0.1
-    }
+    "schema": "2.0"
   }
 }
