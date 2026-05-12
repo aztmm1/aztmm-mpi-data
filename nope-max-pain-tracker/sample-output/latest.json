@@ -1,7 +1,7 @@
 {
-  "date": "2026-05-11",
-  "as_of_stamp": "2026-05-11 5:00 PM ET",
-  "generated_at_iso": "2026-05-12T20:52:40.518468Z",
+  "date": "2026-05-12",
+  "as_of_stamp": "2026-05-12 5:00 PM ET",
+  "generated_at_iso": "2026-05-12T23:46:44.783534Z",
   "index_tickers": [
     "SPY",
     "QQQ",
@@ -19,8 +19,8 @@
   "tickers": [
     {
       "ticker": "SPY",
-      "nope": -18.57,
-      "nope_band": "deeply-negative",
+      "nope": 6.84,
+      "nope_band": "deeply-positive",
       "max_pain": 737.0,
       "max_pain_expiry": "2026-05-12",
       "spot": 738.18,
@@ -36,8 +36,8 @@
     },
     {
       "ticker": "QQQ",
-      "nope": 0.49,
-      "nope_band": "neutral",
+      "nope": 3.88,
+      "nope_band": "positive",
       "max_pain": 710.0,
       "max_pain_expiry": "2026-05-12",
       "spot": 707.24,
@@ -53,7 +53,7 @@
     },
     {
       "ticker": "IWM",
-      "nope": -0.61,
+      "nope": 0.41,
       "nope_band": "neutral",
       "max_pain": 285.0,
       "max_pain_expiry": "2026-05-12",
@@ -70,7 +70,7 @@
     },
     {
       "ticker": "NVDA",
-      "nope": 0.56,
+      "nope": 0.6,
       "nope_band": "neutral",
       "max_pain": 212.5,
       "max_pain_expiry": "2026-05-13",
@@ -87,76 +87,48 @@
     },
     {
       "ticker": "MSFT",
-      "nope": 0.49,
-      "nope_band": "neutral",
-      "max_pain": 410.0,
-      "max_pain_expiry": "2026-05-13",
-      "spot": 407.77,
-      "distance_pct": -0.55,
-      "magnet_zone": true,
-      "max_pain_fmt": "$410",
-      "spot_fmt": "$407.77",
-      "distance_pct_fmt": "-0.55%",
-      "direction": "below",
-      "monthly_max_pain": 405.0,
-      "monthly_max_pain_fmt": "$405",
-      "monthly_expiry": "2026-05-15"
+      "nope": null,
+      "nope_band": "unavailable",
+      "max_pain": null,
+      "max_pain_expiry": null,
+      "spot": null,
+      "distance_pct": null,
+      "magnet_zone": false
     },
     {
       "ticker": "AAPL",
-      "nope": 0.59,
-      "nope_band": "neutral",
-      "max_pain": 287.5,
-      "max_pain_expiry": "2026-05-13",
-      "spot": 294.8,
-      "distance_pct": 2.48,
-      "magnet_zone": false,
-      "max_pain_fmt": "$288",
-      "spot_fmt": "$294.80",
-      "distance_pct_fmt": "+2.48%",
-      "direction": "above",
-      "monthly_max_pain": 275.0,
-      "monthly_max_pain_fmt": "$275",
-      "monthly_expiry": "2026-05-15"
+      "nope": null,
+      "nope_band": "unavailable",
+      "max_pain": null,
+      "max_pain_expiry": null,
+      "spot": null,
+      "distance_pct": null,
+      "magnet_zone": false
     },
     {
       "ticker": "GOOGL",
-      "nope": 0.01,
-      "nope_band": "neutral",
-      "max_pain": 390.0,
-      "max_pain_expiry": "2026-05-13",
-      "spot": 387.35,
-      "distance_pct": -0.68,
-      "magnet_zone": true,
-      "max_pain_fmt": "$390",
-      "spot_fmt": "$387.35",
-      "distance_pct_fmt": "-0.68%",
-      "direction": "below",
-      "monthly_max_pain": 330.0,
-      "monthly_max_pain_fmt": "$330",
-      "monthly_expiry": "2026-05-15"
+      "nope": null,
+      "nope_band": "unavailable",
+      "max_pain": null,
+      "max_pain_expiry": null,
+      "spot": null,
+      "distance_pct": null,
+      "magnet_zone": false
     },
     {
       "ticker": "META",
-      "nope": -0.18,
-      "nope_band": "neutral",
-      "max_pain": 600.0,
-      "max_pain_expiry": "2026-05-13",
-      "spot": 603.0,
-      "distance_pct": 0.5,
-      "magnet_zone": true,
-      "max_pain_fmt": "$600",
-      "spot_fmt": "$603.00",
-      "distance_pct_fmt": "+0.50%",
-      "direction": "above",
-      "monthly_max_pain": 607.5,
-      "monthly_max_pain_fmt": "$608",
-      "monthly_expiry": "2026-05-15"
+      "nope": 15.49,
+      "nope_band": "deeply-positive",
+      "max_pain": null,
+      "max_pain_expiry": null,
+      "spot": null,
+      "distance_pct": null,
+      "magnet_zone": false
     },
     {
       "ticker": "TSLA",
-      "nope": 2.31,
-      "nope_band": "positive",
+      "nope": 0.64,
+      "nope_band": "neutral",
       "max_pain": 425.0,
       "max_pain_expiry": "2026-05-13",
       "spot": 433.45,
@@ -172,7 +144,7 @@
     },
     {
       "ticker": "AMZN",
-      "nope": -0.04,
+      "nope": 0.21,
       "nope_band": "neutral",
       "max_pain": 270.0,
       "max_pain_expiry": "2026-05-13",
@@ -191,26 +163,30 @@
   "nope_chart": {
     "SPY": [
       {
-        "date": "2026-05-11",
-        "nope": -18.567623
+        "date": "2026-05-12",
+        "nope": 6.837008
       }
     ],
     "QQQ": [
       {
-        "date": "2026-05-11",
-        "nope": 0.491223
+        "date": "2026-05-12",
+        "nope": 3.884204
       }
     ],
     "IWM": [
       {
-        "date": "2026-05-11",
-        "nope": -0.60721
+        "date": "2026-05-12",
+        "nope": 0.410873
       }
     ]
   },
   "commentary": [
-    "Spot prices for SPY, QQQ, IWM, MSFT, GOOGL are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
+    "Spot prices for SPY, QQQ, IWM are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
     "SPY max-pain steps lower from the near expiry ($737) to the next monthly ($706) \u2014 open interest has built up away from current spot at the longer-dated tenor."
   ],
-  "degraded": false
+  "degraded": true,
+  "headline_metric": {
+    "label": "SPY NOPE reading",
+    "value": 6.84
+  }
 }

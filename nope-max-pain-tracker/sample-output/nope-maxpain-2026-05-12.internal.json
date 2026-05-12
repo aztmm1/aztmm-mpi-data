@@ -1,10 +1,65 @@
 {
   "date": "2026-05-12",
-  "generated_at_iso": "2026-05-12T21:33:48.824678Z",
+  "generated_at_iso": "2026-05-12T23:46:44.783534Z",
   "data_quality": {
-    "endpoints_ok": 28,
-    "endpoints_failed": 12,
+    "endpoints_ok": 26,
+    "endpoints_failed": 14,
     "failures": [
+      {
+        "endpoint": "/api/stock/MSFT/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "MSFT"
+      },
+      {
+        "endpoint": "/api/stock/MSFT/max-pain",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "MSFT"
+      },
+      {
+        "endpoint": "/api/stock/MSFT/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "MSFT"
+      },
+      {
+        "endpoint": "/api/stock/MSFT/oi-change",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "MSFT"
+      },
+      {
+        "endpoint": "/api/stock/AAPL/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AAPL"
+      },
+      {
+        "endpoint": "/api/stock/AAPL/max-pain",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AAPL"
+      },
+      {
+        "endpoint": "/api/stock/AAPL/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AAPL"
+      },
+      {
+        "endpoint": "/api/stock/AAPL/oi-change",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "AAPL"
+      },
+      {
+        "endpoint": "/api/stock/GOOGL/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "GOOGL"
+      },
+      {
+        "endpoint": "/api/stock/GOOGL/max-pain",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "GOOGL"
+      },
+      {
+        "endpoint": "/api/stock/GOOGL/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "GOOGL"
+      },
       {
         "endpoint": "/api/stock/GOOGL/oi-change",
         "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
@@ -19,51 +74,6 @@
         "endpoint": "/api/stock/META/max-pain",
         "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
         "ticker": "META"
-      },
-      {
-        "endpoint": "/api/stock/META/greek-exposure",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "META"
-      },
-      {
-        "endpoint": "/api/stock/META/oi-change",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "META"
-      },
-      {
-        "endpoint": "/api/stock/TSLA/nope",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "TSLA"
-      },
-      {
-        "endpoint": "/api/stock/TSLA/max-pain",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "TSLA"
-      },
-      {
-        "endpoint": "/api/stock/TSLA/greek-exposure",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "TSLA"
-      },
-      {
-        "endpoint": "/api/stock/TSLA/oi-change",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "TSLA"
-      },
-      {
-        "endpoint": "/api/stock/AMZN/nope",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "AMZN"
-      },
-      {
-        "endpoint": "/api/stock/AMZN/max-pain",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "AMZN"
-      },
-      {
-        "endpoint": "/api/stock/AMZN/greek-exposure",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "AMZN"
       }
     ],
     "degraded": true
@@ -472,154 +482,50 @@
     "MSFT": {
       "ticker": "MSFT",
       "nope": {
-        "available": true,
-        "nope": 0.15648,
-        "nope_fill": 0.030303,
-        "call_vol": 62776,
-        "put_vol": 26677,
-        "stock_vol": 23512688,
-        "call_delta": 6902946.414689,
-        "put_delta": -3223681.767082,
-        "timestamp": "2026-05-12T19:59:00Z"
+        "available": false
       },
-      "nope_band": "neutral",
-      "nope_band_phrase": "near zero",
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
       "nope_proxy_used": false,
       "max_pain": {
-        "available": true,
-        "ticker": "MSFT",
-        "spot": 407.77,
-        "spot_fmt": "$407.77",
-        "near": {
-          "expiry": "2026-05-13",
-          "max_pain": 410.0,
-          "max_pain_fmt": "$410",
-          "upper_strike": 412.5,
-          "lower_strike": 407.5
-        },
-        "monthly": {
-          "expiry": "2026-05-15",
-          "max_pain": 405.0,
-          "max_pain_fmt": "$405"
-        },
-        "distance_pct": -0.5468769159084823,
-        "distance_pct_fmt": "-0.55%",
-        "direction": "below",
-        "magnet_zone": true
+        "available": false,
+        "ticker": "MSFT"
       },
       "oi_change": {
-        "available": true,
-        "top_calls": [
-          {
-            "symbol": "MSFT260605C00470000",
-            "oi_change": 5020.0,
-            "current_oi": 5688,
-            "volume": 5361
-          }
-        ],
+        "available": false,
+        "top_calls": [],
         "top_puts": []
       }
     },
     "AAPL": {
       "ticker": "AAPL",
       "nope": {
-        "available": true,
-        "nope": 0.544461,
-        "nope_fill": 0.09965,
-        "call_vol": 107908,
-        "put_vol": 43682,
-        "stock_vol": 32210241,
-        "call_delta": 22001341.440803,
-        "put_delta": -4464130.115332,
-        "timestamp": "2026-05-12T19:59:00Z"
+        "available": false
       },
-      "nope_band": "neutral",
-      "nope_band_phrase": "near zero",
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
       "nope_proxy_used": false,
       "max_pain": {
-        "available": true,
-        "ticker": "AAPL",
-        "spot": 294.8,
-        "spot_fmt": "$294.80",
-        "near": {
-          "expiry": "2026-05-13",
-          "max_pain": 287.5,
-          "max_pain_fmt": "$288",
-          "upper_strike": 290.0,
-          "lower_strike": 285.0
-        },
-        "monthly": {
-          "expiry": "2026-05-15",
-          "max_pain": 275.0,
-          "max_pain_fmt": "$275"
-        },
-        "distance_pct": 2.47625508819539,
-        "distance_pct_fmt": "+2.48%",
-        "direction": "above",
-        "magnet_zone": false
+        "available": false,
+        "ticker": "AAPL"
       },
       "oi_change": {
-        "available": true,
-        "top_calls": [
-          {
-            "symbol": "AAPL260918C00350000",
-            "oi_change": 25051.0,
-            "current_oi": 29729,
-            "volume": 28647
-          },
-          {
-            "symbol": "AAPL260513C00305000",
-            "oi_change": 7557.0,
-            "current_oi": 8931,
-            "volume": 9544
-          },
-          {
-            "symbol": "AAPL260515C00302500",
-            "oi_change": 5508.0,
-            "current_oi": 13194,
-            "volume": 14676
-          }
-        ],
+        "available": false,
+        "top_calls": [],
         "top_puts": []
       }
     },
     "GOOGL": {
       "ticker": "GOOGL",
       "nope": {
-        "available": true,
-        "nope": 0.206989,
-        "nope_fill": 0.042283,
-        "call_vol": 40125,
-        "put_vol": 19853,
-        "stock_vol": 19121438,
-        "call_delta": 5611675.429185,
-        "put_delta": -1653753.457404,
-        "timestamp": "2026-05-12T19:59:00Z"
+        "available": false
       },
-      "nope_band": "neutral",
-      "nope_band_phrase": "near zero",
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
       "nope_proxy_used": false,
       "max_pain": {
-        "available": true,
-        "ticker": "GOOGL",
-        "spot": 387.35,
-        "spot_fmt": "$387.35",
-        "near": {
-          "expiry": "2026-05-13",
-          "max_pain": 390.0,
-          "max_pain_fmt": "$390",
-          "upper_strike": 392.5,
-          "lower_strike": 387.5
-        },
-        "monthly": {
-          "expiry": "2026-05-15",
-          "max_pain": 330.0,
-          "max_pain_fmt": "$330"
-        },
-        "distance_pct": -0.6841357945010913,
-        "distance_pct_fmt": "-0.68%",
-        "direction": "below",
-        "magnet_zone": true
+        "available": false,
+        "ticker": "GOOGL"
       },
       "oi_change": {
         "available": false,
@@ -630,11 +536,20 @@
     "META": {
       "ticker": "META",
       "nope": {
-        "available": false
+        "available": true,
+        "nope": 15.488550081299998,
+        "nope_fill": null,
+        "call_vol": null,
+        "put_vol": null,
+        "stock_vol": null,
+        "call_delta": 45320525.3717,
+        "put_delta": -29831975.2904,
+        "timestamp": "2026-05-12",
+        "proxy": true
       },
-      "nope_band": "unavailable",
-      "nope_band_phrase": "not available",
-      "nope_proxy_used": false,
+      "nope_band": "deeply-positive",
+      "nope_band_phrase": "deeply positive",
+      "nope_proxy_used": true,
       "max_pain": {
         "available": false,
         "ticker": "META"
@@ -648,32 +563,146 @@
     "TSLA": {
       "ticker": "TSLA",
       "nope": {
-        "available": false
+        "available": true,
+        "nope": 0.635102,
+        "nope_fill": 0.223584,
+        "call_vol": 451592,
+        "put_vol": 166782,
+        "stock_vol": 55983352,
+        "call_delta": 68529386.562321,
+        "put_delta": -32974252.937941,
+        "timestamp": "2026-05-12T19:59:00Z"
       },
-      "nope_band": "unavailable",
-      "nope_band_phrase": "not available",
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
       "nope_proxy_used": false,
       "max_pain": {
-        "available": false,
-        "ticker": "TSLA"
+        "available": true,
+        "ticker": "TSLA",
+        "spot": 433.45,
+        "spot_fmt": "$433.45",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 425.0,
+          "max_pain_fmt": "$425",
+          "upper_strike": 427.5,
+          "lower_strike": 422.5
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 400.0,
+          "max_pain_fmt": "$400"
+        },
+        "distance_pct": 1.9494751413081066,
+        "distance_pct_fmt": "+1.95%",
+        "direction": "above",
+        "magnet_zone": false
       },
       "oi_change": {
-        "available": false,
-        "top_calls": [],
-        "top_puts": []
+        "available": true,
+        "top_calls": [
+          {
+            "symbol": "TSLA260605C00475000",
+            "oi_change": 19899.0,
+            "current_oi": 20327,
+            "volume": 21950
+          },
+          {
+            "symbol": "TSLA260515C00900000",
+            "oi_change": 10350.0,
+            "current_oi": 13314,
+            "volume": 10517
+          },
+          {
+            "symbol": "TSLA260605C00465000",
+            "oi_change": 7702.0,
+            "current_oi": 7992,
+            "volume": 9892
+          },
+          {
+            "symbol": "TSLA260522C00500000",
+            "oi_change": 7684.0,
+            "current_oi": 9414,
+            "volume": 13782
+          },
+          {
+            "symbol": "TSLA260515C00950000",
+            "oi_change": 7013.0,
+            "current_oi": 7210,
+            "volume": 7013
+          }
+        ],
+        "top_puts": [
+          {
+            "symbol": "TSLA260918P00330000",
+            "oi_change": 11822.0,
+            "current_oi": 16962,
+            "volume": 12044
+          },
+          {
+            "symbol": "TSLA260918P00430000",
+            "oi_change": 11166.0,
+            "current_oi": 13168,
+            "volume": 12159
+          },
+          {
+            "symbol": "TSLA260522P00100000",
+            "oi_change": 7849.0,
+            "current_oi": 8337,
+            "volume": 7849
+          },
+          {
+            "symbol": "TSLA260515P00175000",
+            "oi_change": 6111.0,
+            "current_oi": 6632,
+            "volume": 6367
+          },
+          {
+            "symbol": "TSLA260515P00165000",
+            "oi_change": 5523.0,
+            "current_oi": 5877,
+            "volume": 5929
+          }
+        ]
       }
     },
     "AMZN": {
       "ticker": "AMZN",
       "nope": {
-        "available": false
+        "available": true,
+        "nope": 0.205192,
+        "nope_fill": 0.041641,
+        "call_vol": 69348,
+        "put_vol": 29851,
+        "stock_vol": 29302055,
+        "call_delta": 10428660.132857,
+        "put_delta": -4416106.124186,
+        "timestamp": "2026-05-12T19:59:00Z"
       },
-      "nope_band": "unavailable",
-      "nope_band_phrase": "not available",
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
       "nope_proxy_used": false,
       "max_pain": {
-        "available": false,
-        "ticker": "AMZN"
+        "available": true,
+        "ticker": "AMZN",
+        "spot": 265.82,
+        "spot_fmt": "$265.82",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 270.0,
+          "max_pain_fmt": "$270",
+          "upper_strike": 272.5,
+          "lower_strike": 267.5
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 230.0,
+          "max_pain_fmt": "$230"
+        },
+        "distance_pct": -1.5724926642088657,
+        "distance_pct_fmt": "-1.57%",
+        "direction": "below",
+        "magnet_zone": false
       },
       "oi_change": {
         "available": true,
@@ -717,7 +746,7 @@
     ]
   },
   "commentary": [
-    "Spot prices for SPY, QQQ, IWM, MSFT, GOOGL are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
+    "Spot prices for SPY, QQQ, IWM are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
     "SPY max-pain steps lower from the near expiry ($737) to the next monthly ($706) \u2014 open interest has built up away from current spot at the longer-dated tenor."
   ]
 }
