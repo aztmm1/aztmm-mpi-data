@@ -1,0 +1,26 @@
+name = "aztmm-cron"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+# Cron runs in UTC. Worker logic gates on ET windows internally.
+# Every 15 minutes, weekdays only, between 13:00 UTC (≈ 8 AM ET in EST/9 AM ET in EDT)
+# and 23:59 UTC (covers 5–6 PM ET in both EDT and EST).
+[triggers]
+crons = ["*/15 13-23 * * 1-5"]
+
+# KV namespace for trigger log (last 200 events).
+# Create via CF dashboard → Workers & Pages → KV → Create namespace (any name)
+# Then bind here with the namespace ID from the dashboard.
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Observability — Workers Logs visible in dashboard
+[observability]
+enabled = true
+
+# Secrets — set in CF dashboard → Workers & Pages → your worker → Settings → Variables and Secrets
+# Do NOT commit secret values to this file.
+#   GH_PAT             — GitHub PAT with `repo` + `workflow` scope (or fine-grained equiv)
+#   HEALTHCHECKS_URL   — optional, e.g. https://hc-ping.com/<uuid>
+#   MANUAL_TOKEN       — optional, required for POST /run
