@@ -1,0 +1,51 @@
+{
+  "date": "2026-05-12",
+  "started_at": "2026-05-13T00:00:34.301427Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "load_config",
+      "ok": true
+    },
+    {
+      "step": "fetch",
+      "ok": true,
+      "mode": "live",
+      "endpoints_ok": 6,
+      "endpoints_failed": 0
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "filings_today": 0,
+      "clusters": 5,
+      "large": 0,
+      "late": 0
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 1,
+      "sparkline_available": false
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 3994
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    },
+    {
+      "step": "write_outputs",
+      "ok": true,
+      "public": "publish-artifacts/congress-2026-05-12.public.json",
+      "internal": "publish-artifacts/congress-2026-05-12.internal.json",
+      "html": "publish-artifacts/congress-2026-05-12.html"
+    }
+  ],
+  "status": "payload_emitted"
+}
