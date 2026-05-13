@@ -111,8 +111,8 @@ jobs:
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"          # Stable URLs: latest.{json,html} copies for jsDelivr to serve
           cd nope-max-pain-tracker/sample-output/ 2>/dev/null && {
-            LATEST_JSON=$(ls -t nope-maxpain-*.public.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
-            LATEST_HTML=$(ls -t nope-maxpain-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            LATEST_JSON=$(ls nope-maxpain-*.public.json 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls nope-maxpain-*.html 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
             cd - >/dev/null
           } || true
 
