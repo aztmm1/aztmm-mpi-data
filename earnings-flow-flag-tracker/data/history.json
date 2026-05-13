@@ -1,0 +1,10 @@
+{
+  "tracker": "earnings-flow-flag-tracker",
+  "headline_metric_label": "Flagged upcoming reporters",
+  "points": [
+    {
+      "date": "2026-05-13",
+      "value": 0.0
+    }
+  ]
+}

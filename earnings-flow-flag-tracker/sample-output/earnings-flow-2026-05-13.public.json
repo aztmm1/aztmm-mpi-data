@@ -1,0 +1,21 @@
+{
+  "date": "2026-05-13",
+  "as_of": "2026-05-13 5:00 PM ET",
+  "window_start": "2026-05-14",
+  "window_end": "2026-05-20",
+  "summary_line": "Of the names reporting between 2026-05-14 and 2026-05-20, none cleared today's bar for notable options interest. The tape was quiet on the upcoming-reporter set.",
+  "watching_line": "Going into tomorrow I'll be watching whether the names on this week's report calendar start drawing options interest.",
+  "rows": [],
+  "commentary": [],
+  "headline_metric": {
+    "label": "Flagged upcoming reporters",
+    "value": 0
+  },
+  "tape_totals": {
+    "upcoming_reporters_in_window": 92,
+    "flagged_names": 0,
+    "window_start": "2026-05-14",
+    "window_end": "2026-05-20"
+  },
+  "data_quality_degraded": false
+}
