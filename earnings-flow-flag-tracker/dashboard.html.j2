@@ -1,0 +1,146 @@
+{# ============================================================
+   AZTMM Earnings Flow Flag — page body template
+   Renders the static frame + table rows from the public JSON.
+   ============================================================ #}
+
+<div class="aztmm-earnings-flow" data-date="{{ date }}">
+
+  {# -------- HEADER -------- #}
+  <header class="ef-header">
+    <h1>Earnings Flow Flag</h1>
+    <p class="ef-as-of">As of {{ as_of }}</p>
+    <p class="ef-window">Window: upcoming reporters between {{ window_start }} and {{ window_end }}.</p>
+    <p class="ef-summary">{{ summary_line }}</p>
+  </header>
+
+  {# -------- 30-DAY TREND SPARKLINE -------- #}
+  <section class="sparkline-section ef-section">
+    <h2>30-day trend &mdash; {{ headline_metric_label }}</h2>
+    {% if sparkline_available %}
+    <svg class="sparkline" viewBox="0 0 600 80" preserveAspectRatio="none" aria-label="30-day trend sparkline" role="img">
+      <line x1="0" y1="79" x2="600" y2="79" stroke="#94a3b8" stroke-width="0.5" />
+      <line x1="0" y1="1"  x2="600" y2="1"  stroke="#94a3b8" stroke-width="0.5" />
+      <polyline fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points="{{ sparkline_polyline }}" />
+    </svg>
+    <p class="sparkline-caption">{{ sparkline_first_date }} to {{ sparkline_last_date }}. Latest: {{ sparkline_latest_value }} flagged names.</p>
+    {% else %}
+    <p class="sparkline-caption">{{ sparkline_placeholder }}</p>
+    {% endif %}
+  </section>
+
+  {# -------- WHAT THIS IS -------- #}
+  <section class="ef-section ef-what-this-is">
+    <h2>What this page is</h2>
+    <p>
+      A nightly intersection of two lists: companies scheduled to report
+      earnings in the next five trading days, and the names whose
+      options tape ran notably hot today. Each row is a name reporting
+      soon that also drew above-floor options interest in today's
+      session. The page is descriptive — it records that the two
+      conditions co-occurred for this ticker on this date. It is not
+      a list of names to trade.
+    </p>
+    <p class="ef-watching-not-chasing">
+      <strong>I'm watching but not chasing.</strong> Earnings outcomes
+      are unpredictable, and options around earnings carry elevated
+      risk because implied volatility behaves in ways that punish
+      naive directional bets. Read this as journal commentary,
+      nothing more.
+    </p>
+  </section>
+
+  {# -------- TAPE TOTALS -------- #}
+  <section class="ef-section ef-tape-totals">
+    <h2>Tonight's intersection, at a glance</h2>
+    <ul class="ef-tape-totals-list">
+      <li><strong>Upcoming reporters in the window ({{ tape_totals.window_start }} &ndash; {{ tape_totals.window_end }}):</strong> {{ tape_totals.upcoming_reporters_in_window }}</li>
+      <li><strong>Flagged names (notable options interest today):</strong> {{ tape_totals.flagged_names }}</li>
+    </ul>
+  </section>
+
+  {# -------- TABLE -------- #}
+  <section class="ef-section ef-table-section">
+    <h2>Flagged upcoming reporters ({{ rows|length }} names)</h2>
+    {% if rows %}
+    <table class="ef-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Sector</th>
+          <th>Reporting</th>
+          <th>When</th>
+          <th>Total options interest</th>
+          <th>Call share</th>
+          <th>Put share</th>
+          <th>Tilt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="ef-row ef-tilt-{{ r.tilt_label|replace(' ', '-')|replace('/', '-') }}">
+          <td class="ef-ticker"><strong>{{ r.ticker }}</strong></td>
+          <td>{{ r.sector }}</td>
+          <td>{{ r.est_date_label }} ({{ r.report_date }})</td>
+          <td>{{ r.report_time_label }}</td>
+          <td>{{ r.total_premium_fmt }}</td>
+          <td>{{ r.call_share_fmt }}</td>
+          <td>{{ r.put_share_fmt }}</td>
+          <td><span class="ef-tilt-pill ef-tilt-pill-{{ r.tilt_label|replace(' ', '-')|replace('/', '-') }}">{{ r.tilt_label }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No upcoming reporter cleared today's bar for notable options interest.</p>
+    {% endif %}
+  </section>
+
+  {# -------- COMMENTARY -------- #}
+  {% if commentary %}
+  <section class="ef-section ef-commentary">
+    <h2>What I noticed</h2>
+    <ul class="ef-commentary-list">
+      {% for line in commentary %}
+      <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {# -------- WATCHING -------- #}
+  <section class="ef-section ef-watching">
+    <h2>What I'm watching</h2>
+    <p>{{ watching_line }}</p>
+  </section>
+
+  {# -------- HOW TO READ -------- #}
+  <section class="ef-section ef-how-to-read">
+    <h2>How to read this page</h2>
+    <ul>
+      <li><strong>Upcoming reporter</strong> means a company whose earnings release is on the calendar for one of the next five trading days. The "today" date itself is excluded because those reports have already happened by the time this page publishes.</li>
+      <li><strong>Notable options interest</strong> refers to a per-alert dollar and contract floor on today's options tape. The threshold itself is internal and not disclosed here.</li>
+      <li><strong>Call share / put share</strong> is the dollar weight of call-side versus put-side qualifying alerts for that ticker today.</li>
+      <li><strong>Tilt</strong> is a one-word descriptor of where the dollar weight of today's qualifying alerts landed.</li>
+      <li><strong>Reporting</strong> column shows the day-of-week label and the calendar date. "Before the open" and "after the close" describe whether the company reports premarket or postmarket.</li>
+    </ul>
+    <p>None of these are direction calls. They are descriptions of conditions on today's tape paired with calendar facts.</p>
+  </section>
+
+  {# -------- DATA QUALITY -------- #}
+  {% if data_quality_degraded %}
+  <section class="ef-section ef-data-quality">
+    <p><em>Data quality note: one or more upstream feeds were degraded for this session. Read with appropriate caution.</em></p>
+  </section>
+  {% endif %}
+
+  {# -------- DISCLAIMER -------- #}
+  <footer class="ef-footer">
+    <p class="ef-disclaimer">
+      Personal observations of one trader. Not investment advice. Earnings outcomes are unpredictable and options around earnings carry elevated risk. Data refreshed once daily at 5 PM ET.
+    </p>
+    <p class="ef-disclaimer ef-extra-disclaimer">
+      <strong>Inclusion in this list is not a recommendation. The intersection is descriptive: a name reporting soon and notable options interest today happened to co-occur. Many names with elevated pre-earnings options interest still see uneventful prints, and many quiet pre-earnings tapes still see large post-print moves.</strong>
+    </p>
+  </footer>
+
+</div>

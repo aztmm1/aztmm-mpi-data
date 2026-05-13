@@ -39,6 +39,7 @@ const WORKFLOWS = {
   squeeze:        "squeeze-watch.yml",
   zeroDte:        "0dte-pulse.yml",
   insiderActivity: "insider-activity.yml",
+  earningsFlow:   "earnings-flow.yml",
 };
 
 // Trackers we watch for daily freshness (every weekday at 17:55 ET).
@@ -49,7 +50,7 @@ const FRESHNESS_TARGETS = [
   { slug: "nope-max-pain-tracker",     file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
   { slug: "squeeze-watch",             file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
   { slug: "0dte-pulse-tracker",        file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
-  { slug: "insider-activity-tracker",  file: "latest.json", dateKeys: ["weekEnding", "week_ending", "asOf", "as_of", "date"] },
+  { slug: "earnings-flow-flag-tracker", file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
 ];
 const RAW_BASE = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main";
 
@@ -138,10 +139,11 @@ function selectWorkflows(et) {
       WORKFLOWS.optionsGravity,
       WORKFLOWS.squeeze,
       WORKFLOWS.zeroDte,
+      WORKFLOWS.earningsFlow,
     );
   }
-  // Friday-only weekly tracker
-  if (dow === 5 && hour === 17 && minute >= 10 && minute < 50) {
+  // Friday-only: insider activity (weekly cadence)
+  if (et.dow === 5 && hour === 17 && minute >= 10 && minute < 50) {
     selected.push(WORKFLOWS.insiderActivity);
   }
   return selected;

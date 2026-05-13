@@ -1,0 +1,120 @@
+name: AZTMM Earnings Flow Flag
+
+# Schedule: weekday 5 PM ET (both DST + EST entries; idempotency guard
+# prevents double-runs across the DST boundary).
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Target date YYYY-MM-DD (default: today UTC)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  earnings-flow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      UW_API_KEY: ${{ secrets.UW_API_KEY }}
+      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        working-directory: earnings-flow-flag-tracker
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Idempotency guard
+        id: guard
+        working-directory: earnings-flow-flag-tracker
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          if [ -f "sample-output/earnings-flow-$DATE.public.json" ]; then
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        if: steps.guard.outputs.already_ran == 'false'
+        working-directory: earnings-flow-flag-tracker
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python run.py $ARGS
+
+      - name: Refresh latest.{html,json} via filename-date sort
+        if: always()
+        working-directory: earnings-flow-flag-tracker/sample-output
+        run: |
+          # Filename-date sort: dated artifacts are named
+          # earnings-flow-YYYY-MM-DD.{public.json,html}. Sort by filename and
+          # pick the last (= newest date). More robust than ls -t which
+          # depends on filesystem mtimes that don't survive workflow checkouts.
+          set -e
+          shopt -s nullglob
+          LATEST_JSON=""
+          for f in $(ls earnings-flow-*.public.json 2>/dev/null | sort); do
+            LATEST_JSON="$f"
+          done
+          if [ -n "$LATEST_JSON" ]; then
+            cp -f "$LATEST_JSON" latest.json
+            echo "latest.json <- $LATEST_JSON"
+          else
+            echo "no dated public.json found — skipping latest.json"
+          fi
+          LATEST_HTML=""
+          for f in $(ls earnings-flow-*.html 2>/dev/null | sort); do
+            LATEST_HTML="$f"
+          done
+          if [ -n "$LATEST_HTML" ]; then
+            cp -f "$LATEST_HTML" latest.html
+            echo "latest.html <- $LATEST_HTML"
+          else
+            echo "no dated html found — skipping latest.html"
+          fi
+
+      - name: Commit + race-safe push
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add earnings-flow-flag-tracker/sample-output/ earnings-flow-flag-tracker/data/ || true
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "earnings-flow: snapshot ${{ steps.guard.outputs.date }}"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase origin main >/dev/null 2>&1; then
+              if git push origin main; then
+                echo "  push ok on attempt $i"; exit 0
+              fi
+            fi
+            echo "  push attempt $i failed — sleeping $((i*3))s"
+            sleep $((i*3))
+          done
+          echo "race-safe push exhausted retries"
+          exit 1
