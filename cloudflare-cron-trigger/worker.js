@@ -42,15 +42,16 @@ const WORKFLOWS = {
   earningsFlow:   "earnings-flow.yml",
 };
 
-// Trackers we watch for daily freshness (every weekday at 17:55 ET).
-// If latest.json's `date` field != today (ET), we log STALE and ping healthchecks.
+// Trackers we watch for freshness. cadence = "daily" (date must equal today ET)
+// or "weekly" (date must be within last 7 days ET). Watchdog runs at 17:55 ET weekdays.
 const FRESHNESS_TARGETS = [
-  { slug: "aztmm-daily-pulse-v2",      file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
-  { slug: "congress-trades-tracker",   file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
-  { slug: "nope-max-pain-tracker",     file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
-  { slug: "squeeze-watch",             file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
-  { slug: "0dte-pulse-tracker",        file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
-  { slug: "earnings-flow-flag-tracker", file: "latest.json", dateKeys: ["date", "asOf", "as_of"] },
+  { slug: "aztmm-daily-pulse-v2",       file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
+  { slug: "congress-trades-tracker",    file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
+  { slug: "nope-max-pain-tracker",      file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
+  { slug: "squeeze-watch",              file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
+  { slug: "0dte-pulse-tracker",         file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
+  { slug: "earnings-flow-flag-tracker", file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
+  { slug: "insider-activity-tracker",   file: "latest.json", dateKeys: ["weekEnding", "week_ending", "asOf", "as_of", "date"], cadence: "weekly" },
 ];
 const RAW_BASE = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main";
 
@@ -195,7 +196,19 @@ async function runFreshnessWatch(env, etDate) {
       } else if (foundDate === etDate) {
         results.push({ slug: target.slug, status: "fresh", date: foundDate });
       } else {
-        results.push({ slug: target.slug, status: "STALE", date: foundDate, expected: etDate });
+        // Weekly cadence: accept any date within last 7 days
+        if ((target.cadence || "daily") === "weekly") {
+          const today = new Date(etDate + "T00:00:00Z");
+          const got = new Date(foundDate + "T00:00:00Z");
+          const ageDays = (today - got) / (1000 * 60 * 60 * 24);
+          if (ageDays >= 0 && ageDays <= 7) {
+            results.push({ slug: target.slug, status: "fresh", date: foundDate, cadence: "weekly", ageDays });
+          } else {
+            results.push({ slug: target.slug, status: "STALE", date: foundDate, expected: etDate, cadence: "weekly", ageDays });
+          }
+        } else {
+          results.push({ slug: target.slug, status: "STALE", date: foundDate, expected: etDate });
+        }
       }
     } catch (e) {
       results.push({ slug: target.slug, status: "error", error: String(e) });

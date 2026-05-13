@@ -19,7 +19,7 @@ import argparse
 import json
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from fetcher import fetch_all
@@ -43,7 +43,14 @@ logger = logging.getLogger("earnings_flow.run")
 
 
 def _today_utc() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # Use America/New_York date — aligns with the 5 PM ET publishing cadence
+    # and avoids UTC-vs-ET edge cases between 8 PM and midnight ET.
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
+    except ImportError:
+        # Fallback: approximate ET as UTC-4 (EDT)
+        return (datetime.now(timezone.utc) - timedelta(hours=4)).strftime("%Y-%m-%d")
 
 
 def _is_market_day(d: datetime) -> bool:
