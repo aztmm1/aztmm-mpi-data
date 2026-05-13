@@ -1,7 +1,7 @@
 {
-  "date": "2026-05-13",
-  "as_of": "2026-05-13 5:00 PM ET",
-  "summary_line": "Names that turned up in tonight's screen for elevated short pressure alongside options interest: 6 elevated, 2 notable, 2 watching.",
+  "date": "2026-05-11",
+  "as_of": "2026-05-11 5:00 PM ET",
+  "summary_line": "Names that turned up in tonight's screen for elevated short pressure alongside options interest: 3 elevated, 1 notable, 6 watching.",
   "rows": [
     {
       "ticker": "GME",
@@ -22,24 +22,6 @@
       "band": "Elevated"
     },
     {
-      "ticker": "MSTR",
-      "sector": "Technology",
-      "short_interest_pct_float_fmt": "100.0%",
-      "days_to_cover_fmt": "4.0",
-      "call_put_ratio_fmt": "2.08x",
-      "alert_count": 200,
-      "band": "Elevated"
-    },
-    {
-      "ticker": "SOFI",
-      "sector": "Financial Services",
-      "short_interest_pct_float_fmt": "31.6%",
-      "days_to_cover_fmt": "1.5",
-      "call_put_ratio_fmt": "3.17x",
-      "alert_count": 200,
-      "band": "Elevated"
-    },
-    {
       "ticker": "PLTR",
       "sector": "Technology",
       "short_interest_pct_float_fmt": "55.2%",
@@ -47,24 +29,6 @@
       "call_put_ratio_fmt": "1.50x",
       "alert_count": 200,
       "band": "Elevated"
-    },
-    {
-      "ticker": "COIN",
-      "sector": "Technology",
-      "short_interest_pct_float_fmt": "35.0%",
-      "days_to_cover_fmt": "1.4",
-      "call_put_ratio_fmt": "1.78x",
-      "alert_count": 200,
-      "band": "Elevated"
-    },
-    {
-      "ticker": "SMCI",
-      "sector": "Technology",
-      "short_interest_pct_float_fmt": "0.0%",
-      "days_to_cover_fmt": "0.0",
-      "call_put_ratio_fmt": "3.08x",
-      "alert_count": 200,
-      "band": "Notable"
     },
     {
       "ticker": "RIVN",
@@ -92,18 +56,50 @@
       "call_put_ratio_fmt": "2.20x",
       "alert_count": 147,
       "band": "Watching"
+    },
+    {
+      "ticker": "UPST",
+      "sector": "Financial Services",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "2.73x",
+      "alert_count": 41,
+      "band": "Watching"
+    },
+    {
+      "ticker": "AFRM",
+      "sector": "Technology",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "1.27x",
+      "alert_count": 141,
+      "band": "Watching"
+    },
+    {
+      "ticker": "CHWY",
+      "sector": "Consumer Cyclical",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "2.60x",
+      "alert_count": 18,
+      "band": "Watching"
+    },
+    {
+      "ticker": "LCID",
+      "sector": "Consumer Cyclical",
+      "short_interest_pct_float_fmt": "0.0%",
+      "days_to_cover_fmt": "0.0",
+      "call_put_ratio_fmt": "1.57x",
+      "alert_count": 18,
+      "band": "Watching"
     }
   ],
   "commentary": [
     "GME shows roughly 100.0% of float reported short with about 2.7 days to cover, and lopsided call-side options interest in tonight's flow. The combination is notable.",
     "SNAP shows roughly 100.0% of float reported short with about 3.4 days to cover, and lopsided call-side options interest in tonight's flow. The combination is notable.",
-    "MSTR shows roughly 100.0% of float reported short with about 4.0 days to cover, and lopsided call-side options interest in tonight's flow. The combination is notable."
+    "PLTR shows roughly 55.2% of float reported short with about 2.4 days to cover, and call-leaning options interest. The combination is notable."
   ],
-  "names_evaluated": 15,
-  "names_filtered_out": 0,
-  "data_quality_degraded": false,
-  "headline_metric": {
-    "label": "Elevated band names",
-    "value": 6
-  }
+  "names_evaluated": 14,
+  "names_filtered_out": 1,
+  "data_quality_degraded": false
 }
