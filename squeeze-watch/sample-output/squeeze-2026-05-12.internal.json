@@ -178,29 +178,6 @@
       "band": "Notable"
     },
     {
-      "ticker": "RIVN",
-      "sector": "Consumer Cyclical",
-      "marketcap": 17691594540.0,
-      "avg30_volume": 27415660.76190476,
-      "short_interest_pct_float": 0.0,
-      "days_to_cover": 0.0,
-      "alert_count": 83,
-      "call_alert_count": 70,
-      "put_alert_count": 13,
-      "call_put_alert_ratio": 5.384615384615385,
-      "short_volume_ratio": 0.47259948810326574,
-      "net_gex": 287308.0066999998,
-      "components": {
-        "n_short_interest": 0.0,
-        "n_days_to_cover": 0.0,
-        "n_options_activity": 1.0,
-        "n_call_put_ratio": 1.0,
-        "n_gamma_context": 0.0
-      },
-      "composite": 0.35,
-      "band": "Notable"
-    },
-    {
       "ticker": "CVNA",
       "sector": "Consumer Cyclical",
       "marketcap": 54602663589.0,
@@ -235,7 +212,7 @@
       "put_alert_count": 46,
       "call_put_alert_ratio": 2.1956521739130435,
       "short_volume_ratio": 0.5364839458289182,
-      "net_gex": 41727.26770000001,
+      "net_gex": 0.0,
       "components": {
         "n_short_interest": 0.0,
         "n_days_to_cover": 0.0,
@@ -293,29 +270,6 @@
       "band": "Watching"
     },
     {
-      "ticker": "AFRM",
-      "sector": "Technology",
-      "marketcap": 19560075876.0,
-      "avg30_volume": 5644939.523809524,
-      "short_interest_pct_float": 0.0,
-      "days_to_cover": 0.0,
-      "alert_count": 141,
-      "call_alert_count": 79,
-      "put_alert_count": 62,
-      "call_put_alert_ratio": 1.2741935483870968,
-      "short_volume_ratio": 0.619018202676736,
-      "net_gex": 156369.2597,
-      "components": {
-        "n_short_interest": 0.0,
-        "n_days_to_cover": 0.0,
-        "n_options_activity": 1.0,
-        "n_call_put_ratio": 0.42473118279569894,
-        "n_gamma_context": 0.0
-      },
-      "composite": 0.26370967741935486,
-      "band": "Watching"
-    },
-    {
       "ticker": "CHWY",
       "sector": "Consumer Cyclical",
       "marketcap": 5402069550.0,
@@ -327,15 +281,38 @@
       "put_alert_count": 5,
       "call_put_alert_ratio": 2.6,
       "short_volume_ratio": 0.46574727961714396,
-      "net_gex": -111435.619,
+      "net_gex": 0.0,
       "components": {
         "n_short_interest": 0.0,
         "n_days_to_cover": 0.0,
         "n_options_activity": 0.36,
         "n_call_put_ratio": 0.8666666666666667,
-        "n_gamma_context": 0.000111435619
+        "n_gamma_context": 0.0
       },
-      "composite": 0.20202228712380002,
+      "composite": 0.202,
+      "band": "Watching"
+    },
+    {
+      "ticker": "AFRM",
+      "sector": "Technology",
+      "marketcap": 19560075876.0,
+      "avg30_volume": 5644939.523809524,
+      "short_interest_pct_float": 0.0,
+      "days_to_cover": 0.0,
+      "alert_count": 0,
+      "call_alert_count": 0,
+      "put_alert_count": 0,
+      "call_put_alert_ratio": 0.0,
+      "short_volume_ratio": null,
+      "net_gex": 0.0,
+      "components": {
+        "n_short_interest": 0.0,
+        "n_days_to_cover": 0.0,
+        "n_options_activity": 0.0,
+        "n_call_put_ratio": 0.0,
+        "n_gamma_context": 0.0
+      },
+      "composite": 0.0,
       "band": "Watching"
     },
     {
@@ -345,28 +322,38 @@
       "avg30_volume": 24264437.0,
       "short_interest_pct_float": 0.0,
       "days_to_cover": 0.0,
-      "alert_count": 18,
-      "call_alert_count": 11,
-      "put_alert_count": 7,
-      "call_put_alert_ratio": 1.5714285714285714,
-      "short_volume_ratio": 0.5602430930056509,
-      "net_gex": -266625.33380000014,
+      "alert_count": 0,
+      "call_alert_count": 0,
+      "put_alert_count": 0,
+      "call_put_alert_ratio": 0.0,
+      "short_volume_ratio": null,
+      "net_gex": 0.0,
       "components": {
         "n_short_interest": 0.0,
         "n_days_to_cover": 0.0,
-        "n_options_activity": 0.36,
-        "n_call_put_ratio": 0.5238095238095238,
-        "n_gamma_context": 0.00026662533380000016
+        "n_options_activity": 0.0,
+        "n_call_put_ratio": 0.0,
+        "n_gamma_context": 0.0
       },
-      "composite": 0.15062475363818859,
+      "composite": 0.0,
       "band": "Watching"
     }
   ],
-  "filtered_tickers": [],
+  "filtered_tickers": [
+    {
+      "ticker": "RIVN",
+      "reason": "no_info"
+    }
+  ],
   "data_quality": {
-    "endpoints_ok": 66,
-    "endpoints_failed": 9,
-    "tickers_filtered": []
+    "endpoints_ok": 56,
+    "endpoints_failed": 14,
+    "tickers_filtered": [
+      {
+        "ticker": "RIVN",
+        "reason": "no_info"
+      }
+    ]
   },
-  "names_evaluated": 15
+  "names_evaluated": 14
 }

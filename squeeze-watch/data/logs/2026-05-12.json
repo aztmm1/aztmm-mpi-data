@@ -1,21 +1,21 @@
 {
   "date": "2026-05-12",
-  "started_at": "2026-05-12T23:50:48.902792Z",
+  "started_at": "2026-05-13T00:00:41.092769Z",
   "dry_run": false,
   "steps": [
     {
       "step": "fetch",
       "ok": true,
-      "tickers_kept": 15,
-      "tickers_filtered": 0,
-      "endpoints_ok": 66,
-      "endpoints_failed": 9
+      "tickers_kept": 14,
+      "tickers_filtered": 1,
+      "endpoints_ok": 56,
+      "endpoints_failed": 14
     },
     {
       "step": "aggregate",
       "ok": true,
       "rows_public": 10,
-      "rows_internal": 15
+      "rows_internal": 14
     },
     {
       "step": "update_history",
@@ -26,7 +26,7 @@
     {
       "step": "render",
       "ok": true,
-      "html_bytes": 6925
+      "html_bytes": 6922
     },
     {
       "step": "brand_check",
