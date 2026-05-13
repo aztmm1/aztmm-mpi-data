@@ -1,0 +1,94 @@
+{
+  "date": "2026-05-13",
+  "started_at": "2026-05-13T21:16:12.086774Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 33,
+      "endpoints_failed": 7,
+      "failures": [
+        {
+          "endpoint": "/api/stock/TSLA/max-pain",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "TSLA"
+        },
+        {
+          "endpoint": "/api/stock/TSLA/greek-exposure",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "TSLA"
+        },
+        {
+          "endpoint": "/api/stock/TSLA/oi-change",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "TSLA"
+        },
+        {
+          "endpoint": "/api/stock/AMZN/nope",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "AMZN"
+        },
+        {
+          "endpoint": "/api/stock/AMZN/max-pain",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "AMZN"
+        },
+        {
+          "endpoint": "/api/stock/AMZN/greek-exposure",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "AMZN"
+        },
+        {
+          "endpoint": "/api/stock/AMZN/oi-change",
+          "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+          "ticker": "AMZN"
+        }
+      ]
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "tickers_seen": 10,
+      "commentary_lines": 2
+    },
+    {
+      "step": "write_jsons",
+      "ok": true
+    },
+    {
+      "step": "brand_check_json",
+      "ok": true,
+      "hits": []
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 2,
+      "sparkline_available": false
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 10313
+    },
+    {
+      "step": "write_html",
+      "ok": true
+    },
+    {
+      "step": "brand_check_html",
+      "ok": true,
+      "hits": []
+    }
+  ],
+  "payload": {
+    "title": "Options Gravity \u2014 NOPE & Max-Pain Watch",
+    "slug": "options-gravity",
+    "status": "publish",
+    "excerpt": "End-of-session NOPE readings and max-pain strikes for index proxies and a handful of megacaps. Updated once daily at 5 PM ET.",
+    "content_bytes": 10313
+  },
+  "status": "payload_emitted"
+}
