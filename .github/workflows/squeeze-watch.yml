@@ -76,8 +76,8 @@ jobs:
           # Stable URLs: latest.{json,html} copies for jsDelivr to serve
           if [ -d squeeze-watch/sample-output/ ]; then
             cd squeeze-watch/sample-output/
-            LATEST_JSON=$(ls -t squeeze-*.public.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
-            LATEST_HTML=$(ls -t squeeze-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            LATEST_JSON=$(ls squeeze-*.public.json 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls squeeze-*.html 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
             cd - >/dev/null
           fi
           git add squeeze-watch/sample-output/ squeeze-watch/data/ || true

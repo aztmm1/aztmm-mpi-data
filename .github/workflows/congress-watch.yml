@@ -103,8 +103,8 @@ jobs:
           fi
           # Stable URLs: latest.{json,html} copies for jsDelivr to serve
           cd congress-trades-tracker/sample-output/ 2>/dev/null && {
-            LATEST_JSON=$(ls -t congress-*.public.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
-            LATEST_HTML=$(ls -t congress-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            LATEST_JSON=$(ls congress-*.public.json 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls congress-*.html 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
             cd - >/dev/null
           } || true
 
