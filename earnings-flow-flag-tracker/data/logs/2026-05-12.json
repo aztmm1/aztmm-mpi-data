@@ -1,0 +1,8 @@
+{
+  "date": "2026-05-12",
+  "started_at": "2026-05-13T00:25:10.916019Z",
+  "dry_run": false,
+  "steps": [],
+  "status": "skipped_already_ran",
+  "existing_path": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/earnings-flow-flag-tracker/sample-output/earnings-flow-2026-05-12.public.json"
+}
