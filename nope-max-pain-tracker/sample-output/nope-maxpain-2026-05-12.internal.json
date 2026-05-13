@@ -1,25 +1,10 @@
 {
   "date": "2026-05-12",
-  "generated_at_iso": "2026-05-12T23:46:44.783534Z",
+  "generated_at_iso": "2026-05-13T00:01:36.248805Z",
   "data_quality": {
     "endpoints_ok": 26,
     "endpoints_failed": 14,
     "failures": [
-      {
-        "endpoint": "/api/stock/MSFT/nope",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "MSFT"
-      },
-      {
-        "endpoint": "/api/stock/MSFT/max-pain",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "MSFT"
-      },
-      {
-        "endpoint": "/api/stock/MSFT/greek-exposure",
-        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
-        "ticker": "MSFT"
-      },
       {
         "endpoint": "/api/stock/MSFT/oi-change",
         "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
@@ -74,6 +59,21 @@
         "endpoint": "/api/stock/META/max-pain",
         "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
         "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/META/greek-exposure",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/META/oi-change",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "META"
+      },
+      {
+        "endpoint": "/api/stock/TSLA/nope",
+        "error": "HTTP 429: {\"error\":\"You have hit the per-minute rate limit of 120 requests in 60 seconds.\\n\\nTo increase your burst capacity, upgrade your plan at https://unusualwhales.com/settings/api-dashboard?utm_source=api",
+        "ticker": "TSLA"
       }
     ],
     "degraded": true
@@ -482,14 +482,40 @@
     "MSFT": {
       "ticker": "MSFT",
       "nope": {
-        "available": false
+        "available": true,
+        "nope": 0.15648,
+        "nope_fill": 0.030303,
+        "call_vol": 62776,
+        "put_vol": 26677,
+        "stock_vol": 23512688,
+        "call_delta": 6902946.414689,
+        "put_delta": -3223681.767082,
+        "timestamp": "2026-05-12T19:59:00Z"
       },
-      "nope_band": "unavailable",
-      "nope_band_phrase": "not available",
+      "nope_band": "neutral",
+      "nope_band_phrase": "near zero",
       "nope_proxy_used": false,
       "max_pain": {
-        "available": false,
-        "ticker": "MSFT"
+        "available": true,
+        "ticker": "MSFT",
+        "spot": 407.77,
+        "spot_fmt": "$407.77",
+        "near": {
+          "expiry": "2026-05-13",
+          "max_pain": 410.0,
+          "max_pain_fmt": "$410",
+          "upper_strike": 412.5,
+          "lower_strike": 407.5
+        },
+        "monthly": {
+          "expiry": "2026-05-15",
+          "max_pain": 405.0,
+          "max_pain_fmt": "$405"
+        },
+        "distance_pct": -0.5468769159084823,
+        "distance_pct_fmt": "-0.55%",
+        "direction": "below",
+        "magnet_zone": true
       },
       "oi_change": {
         "available": false,
@@ -536,20 +562,11 @@
     "META": {
       "ticker": "META",
       "nope": {
-        "available": true,
-        "nope": 15.488550081299998,
-        "nope_fill": null,
-        "call_vol": null,
-        "put_vol": null,
-        "stock_vol": null,
-        "call_delta": 45320525.3717,
-        "put_delta": -29831975.2904,
-        "timestamp": "2026-05-12",
-        "proxy": true
+        "available": false
       },
-      "nope_band": "deeply-positive",
-      "nope_band_phrase": "deeply positive",
-      "nope_proxy_used": true,
+      "nope_band": "unavailable",
+      "nope_band_phrase": "not available",
+      "nope_proxy_used": false,
       "max_pain": {
         "available": false,
         "ticker": "META"
@@ -564,18 +581,19 @@
       "ticker": "TSLA",
       "nope": {
         "available": true,
-        "nope": 0.635102,
-        "nope_fill": 0.223584,
-        "call_vol": 451592,
-        "put_vol": 166782,
-        "stock_vol": 55983352,
-        "call_delta": 68529386.562321,
-        "put_delta": -32974252.937941,
-        "timestamp": "2026-05-12T19:59:00Z"
+        "nope": 119.44805215310001,
+        "nope_fill": null,
+        "call_vol": null,
+        "put_vol": null,
+        "stock_vol": null,
+        "call_delta": 158923874.7933,
+        "put_delta": -39475822.6402,
+        "timestamp": "2026-05-12",
+        "proxy": true
       },
-      "nope_band": "neutral",
-      "nope_band_phrase": "near zero",
-      "nope_proxy_used": false,
+      "nope_band": "deeply-positive",
+      "nope_band_phrase": "deeply positive",
+      "nope_proxy_used": true,
       "max_pain": {
         "available": true,
         "ticker": "TSLA",
@@ -746,7 +764,7 @@
     ]
   },
   "commentary": [
-    "Spot prices for SPY, QQQ, IWM are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
+    "Spot prices for SPY, QQQ, IWM, MSFT are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
     "SPY max-pain steps lower from the near expiry ($737) to the next monthly ($706) \u2014 open interest has built up away from current spot at the longer-dated tenor."
   ]
 }

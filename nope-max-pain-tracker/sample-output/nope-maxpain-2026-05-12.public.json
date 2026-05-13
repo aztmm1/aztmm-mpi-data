@@ -1,7 +1,7 @@
 {
   "date": "2026-05-12",
   "as_of_stamp": "2026-05-12 5:00 PM ET",
-  "generated_at_iso": "2026-05-12T23:46:44.783534Z",
+  "generated_at_iso": "2026-05-13T00:01:36.248805Z",
   "index_tickers": [
     "SPY",
     "QQQ",
@@ -87,13 +87,20 @@
     },
     {
       "ticker": "MSFT",
-      "nope": null,
-      "nope_band": "unavailable",
-      "max_pain": null,
-      "max_pain_expiry": null,
-      "spot": null,
-      "distance_pct": null,
-      "magnet_zone": false
+      "nope": 0.16,
+      "nope_band": "neutral",
+      "max_pain": 410.0,
+      "max_pain_expiry": "2026-05-13",
+      "spot": 407.77,
+      "distance_pct": -0.55,
+      "magnet_zone": true,
+      "max_pain_fmt": "$410",
+      "spot_fmt": "$407.77",
+      "distance_pct_fmt": "-0.55%",
+      "direction": "below",
+      "monthly_max_pain": 405.0,
+      "monthly_max_pain_fmt": "$405",
+      "monthly_expiry": "2026-05-15"
     },
     {
       "ticker": "AAPL",
@@ -117,8 +124,8 @@
     },
     {
       "ticker": "META",
-      "nope": 15.49,
-      "nope_band": "deeply-positive",
+      "nope": null,
+      "nope_band": "unavailable",
       "max_pain": null,
       "max_pain_expiry": null,
       "spot": null,
@@ -127,8 +134,8 @@
     },
     {
       "ticker": "TSLA",
-      "nope": 0.64,
-      "nope_band": "neutral",
+      "nope": 119.45,
+      "nope_band": "deeply-positive",
       "max_pain": 425.0,
       "max_pain_expiry": "2026-05-13",
       "spot": 433.45,
@@ -181,7 +188,7 @@
     ]
   },
   "commentary": [
-    "Spot prices for SPY, QQQ, IWM are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
+    "Spot prices for SPY, QQQ, IWM, MSFT are within 1% of their near-expiry max-pain strike \u2014 historically that's been a magnet zone into expiry.",
     "SPY max-pain steps lower from the near expiry ($737) to the next monthly ($706) \u2014 open interest has built up away from current spot at the longer-dated tenor."
   ],
   "degraded": true,
