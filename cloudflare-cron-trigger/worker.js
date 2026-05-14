@@ -55,7 +55,8 @@ const FRESHNESS_TARGETS = [
     file: "latest.json",
     dateKeys: ["date", "asOf", "as_of"],
     cadence: "daily",
-    yesterdayFile: (d) => `daily-pulse-${d}.payload.json`,
+    yesterdayFile: (d) => `daily-pulse-${d}.html`,
+    yesterdayFileIsText: true,
   },
   {
     slug: "congress-trades-tracker",
@@ -104,8 +105,13 @@ const FRESHNESS_TARGETS = [
 // every run even on cached data and would defeat the check.
 const FRESHNESS_KEY_NUMBERS = {
   "aztmm-daily-pulse-v2": (data) => {
-    const p = (data && data.payload) || data || {};
-    const c = (p && p.content) || "";
+    let c = "";
+    if (typeof data === "string") {
+      c = data;
+    } else {
+      const p = (data && data.payload) || data || {};
+      c = (p && p.content) || "";
+    }
     const m1 = c.match(/Call premium:\s*<strong>\$([\d.]+[BMK]?)/);
     const m2 = c.match(/Put premium:\s*<strong>\$([\d.]+[BMK]?)/);
     const m3 = c.match(/Put\/Call volume ratio:\s*<strong>([\d.]+)/);
@@ -229,6 +235,27 @@ async function fetchRepoJson(env, path) {
   }
 }
 
+// Like fetchRepoJson but returns the decoded text (used for HTML files).
+async function fetchRepoText(env, path) {
+  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=main`;
+  try {
+    const res = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${env.GH_PAT}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": USER_AGENT,
+      },
+      cf: { cacheTtl: 0, cacheEverything: false },
+    });
+    if (!res.ok) return { ok: false, data: null, status: res.status };
+    const meta = await res.json();
+    const decoded = meta.content ? atob(meta.content.replace(/\n/g, "")) : "";
+    return { ok: true, data: decoded, status: 200 };
+  } catch (e) {
+    return { ok: false, data: null, status: 0, error: String(e) };
+  }
+}
+
 // ----- KV log -----
 async function appendLog(env, line) {
   if (!env.KV) return;
@@ -283,9 +310,10 @@ async function checkTarget(env, target, etDate) {
     : null;
 
   // Parallel fetch: today + (optional) yesterday.
+  const yesterdayFetcher = (target.yesterdayFileIsText ? fetchRepoText : fetchRepoJson);
   const [todayRes, yResRaw] = await Promise.all([
     fetchRepoJson(env, todayPath),
-    yesterdayPath ? fetchRepoJson(env, yesterdayPath) : Promise.resolve(null),
+    yesterdayPath ? yesterdayFetcher(env, yesterdayPath) : Promise.resolve(null),
   ]);
 
   if (!todayRes.ok) {
