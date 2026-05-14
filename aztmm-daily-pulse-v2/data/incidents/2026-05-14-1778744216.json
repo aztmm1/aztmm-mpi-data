@@ -1,0 +1,10 @@
+{
+  "date": "2026-05-14",
+  "reason": "brand_check_failed",
+  "detail": {
+    "hits": [
+      "advisory:signal@136"
+    ],
+    "needs_review_path": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/aztmm-daily-pulse-v2/data/needs-review/daily-pulse-2026-05-14-NEEDS-REVIEW.html"
+  }
+}

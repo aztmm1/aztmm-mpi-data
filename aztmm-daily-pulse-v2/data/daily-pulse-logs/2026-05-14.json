@@ -1,0 +1,44 @@
+{
+  "date": "2026-05-14",
+  "started_at": "2026-05-14T07:36:01.558293Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 8,
+      "endpoints_failed": 10
+    },
+    {
+      "step": "fetch_prev",
+      "ok": true,
+      "endpoints_ok": 18
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "scenario": "BASE",
+      "score": 0
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 3,
+      "sparkline_available": true
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 18328
+    },
+    {
+      "step": "brand_check",
+      "ok": false,
+      "hits": [
+        "advisory:signal@136"
+      ]
+    }
+  ],
+  "status": "blocked_brand_check"
+}
