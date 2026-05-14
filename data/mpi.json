@@ -1,21 +1,21 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-05-14T13:00:42Z",
+  "computed_at": "2026-05-14T20:18:51Z",
   "asOf": "2026-05-14",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 59,
+    "mpi_score": 65,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 54,
-      "ci_high": 64
+      "ci_low": 60,
+      "ci_high": 70
     },
     "signal": {
       "bias": "Bullish",
-      "strength": "Medium"
+      "strength": "High"
     },
     "market": {
       "spy_spot": 742.31,
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4279,
-      "probability_up": 0.4279,
+      "confidence": 0.4469,
+      "probability_up": 0.4469,
       "probability_flat": 0.3513,
-      "probability_down": 0.2208
+      "probability_down": 0.2019
     },
     "hmm": {
       "state": "Sideways",
@@ -68,14 +68,19 @@
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 50.0
+        "score": 69.2,
+        "t10y2y_pct": 0.48,
+        "dgs10": 4.46,
+        "dgs2": 3.98
       },
       "credit": {
-        "score": 50.0
+        "score": 86.2,
+        "hy_oas_pct": 2.82,
+        "ig_oas_pct": 0.76
       },
       "sentiment": {
-        "score": 64.4,
-        "cnn_fg": 64.4
+        "score": 66.5,
+        "cnn_fg": 66.5
       },
       "rotation": {
         "score": 54.0,
