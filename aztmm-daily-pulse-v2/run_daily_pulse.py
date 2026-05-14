@@ -63,7 +63,13 @@ def _is_market_day(d: datetime) -> bool:
 
 
 def _today_utc() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # ET date — aligns with 5 PM ET publishing cadence
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
+    except ImportError:
+        from datetime import timedelta
+        return (datetime.now(timezone.utc) - timedelta(hours=4)).strftime("%Y-%m-%d")
 
 
 # ---------------------------------------------------------------------------
