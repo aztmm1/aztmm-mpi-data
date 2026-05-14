@@ -105,6 +105,10 @@ const FRESHNESS_TARGETS = [
 // every run even on cached data and would defeat the check.
 const FRESHNESS_KEY_NUMBERS = {
   "aztmm-daily-pulse-v2": (data) => {
+    // data may be the parsed latest.json (payload.content HTML) OR a raw HTML
+    // string (dated .html sibling). The two pipelines render different markup,
+    // so we use tag-agnostic regexes that look at the FIRST $X.XX[BMK] near
+    // each label.
     let c = "";
     if (typeof data === "string") {
       c = data;
@@ -112,9 +116,11 @@ const FRESHNESS_KEY_NUMBERS = {
       const p = (data && data.payload) || data || {};
       c = (p && p.content) || "";
     }
-    const m1 = c.match(/Call premium:\s*<strong>\$([\d.]+[BMK]?)/);
-    const m2 = c.match(/Put premium:\s*<strong>\$([\d.]+[BMK]?)/);
-    const m3 = c.match(/Put\/Call volume ratio:\s*<strong>([\d.]+)/);
+    // Strip HTML tags so the same regex works on both renderings.
+    const stripped = c.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const m1 = stripped.match(/Call premium[^$]*\$([\d.]+[BMK]?)/i);
+    const m2 = stripped.match(/Put premium[^$]*\$([\d.]+[BMK]?)/i);
+    const m3 = stripped.match(/P[\\/-]?C(?:\s*volume)?\s*ratio[^\d]*([\d.]+)/i) || stripped.match(/Put\/Call volume ratio[^\d]*([\d.]+)/i);
     return [m1 && m1[1], m2 && m2[1], m3 && m3[1]].filter(Boolean).join("|");
   },
   "congress-trades-tracker": (data) => {
