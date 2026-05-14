@@ -1,0 +1,58 @@
+{
+  "date": "2026-05-14",
+  "started_at": "2026-05-14T21:49:07.936151Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 40,
+      "endpoints_failed": 0,
+      "failures": []
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "tickers_seen": 10,
+      "commentary_lines": 2
+    },
+    {
+      "step": "write_jsons",
+      "ok": true
+    },
+    {
+      "step": "brand_check_json",
+      "ok": true,
+      "hits": []
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 3,
+      "sparkline_available": true
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 10752
+    },
+    {
+      "step": "write_html",
+      "ok": true
+    },
+    {
+      "step": "brand_check_html",
+      "ok": true,
+      "hits": []
+    }
+  ],
+  "payload": {
+    "title": "Options Gravity \u2014 NOPE & Max-Pain Watch",
+    "slug": "options-gravity",
+    "status": "publish",
+    "excerpt": "End-of-session NOPE readings and max-pain strikes for index proxies and a handful of megacaps. Updated once daily at 5 PM ET.",
+    "content_bytes": 10752
+  },
+  "status": "payload_emitted"
+}
