@@ -1,0 +1,56 @@
+{
+  "date": "2026-05-14",
+  "started_at": "2026-05-14T00:18:24.404852Z",
+  "dry_run": false,
+  "force_publish": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 5,
+      "endpoints_failed": 13
+    },
+    {
+      "step": "fetch_prev",
+      "ok": true,
+      "endpoints_ok": 18
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "scenario": "BASE (BULL TILT)",
+      "score": 1
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 3,
+      "sparkline_available": true
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 9292
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    }
+  ],
+  "payload": {
+    "title": "Daily Pulse \u2014 2026-05-14 \u2014 BASE (BULL TILT)",
+    "excerpt": "Mixed tape with a slight risk-on lean.",
+    "status": "draft",
+    "categories": [
+      "Daily Pulse"
+    ],
+    "tags": [
+      "daily-pulse",
+      "scenario-base-(bull-tilt)"
+    ],
+    "slug": "daily-pulse-2026-05-14",
+    "content_bytes": 9292
+  },
+  "status": "payload_emitted"
+}
