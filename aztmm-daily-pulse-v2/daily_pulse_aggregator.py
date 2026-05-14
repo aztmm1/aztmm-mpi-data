@@ -451,8 +451,16 @@ def aggregate_top_trades(flow_alerts: list[dict], top_n: int = 10) -> dict:
             strike_fmt = f"${strike:.1f}"
         else:
             strike_fmt = "—"
-        expiry = a.get("expiry") or a.get("expiration") or ""
+        expiry = a.get("expiry") or a.get("expiration") or a.get("expires_at") or ""
         dte = _int(a.get("dte"))
+        # Fallback: compute DTE from expiry date if not populated upstream
+        if dte == 0 and expiry:
+            try:
+                exp_d = datetime.strptime(str(expiry)[:10], "%Y-%m-%d").date()
+                today_d = datetime.utcnow().date()
+                dte = max(0, (exp_d - today_d).days)
+            except (ValueError, TypeError):
+                pass
         vol = _flt(a.get("volume") or a.get("total_size") or a.get("size"))
         oi = _flt(a.get("open_interest") or a.get("oi"))
         v_oi_ratio = _flt(a.get("volume_oi_ratio") or a.get("vol_oi_ratio"))
