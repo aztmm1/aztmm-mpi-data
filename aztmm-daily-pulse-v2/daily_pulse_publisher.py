@@ -29,36 +29,121 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 logger = logging.getLogger("daily_pulse.publisher")
 
 # ---------------------------------------------------------------------------
-# Brand policy — forbidden phrases (case-insensitive substring match)
+# Brand policy — forbidden phrases (case-insensitive substring or regex)
+#
+# Mirrors FRAMEWORK-RECAP-v2.md section 2. Three categories:
+#   1) Vendor / data-source names — must not appear in user-visible HTML.
+#   2) Methodology leaks — model weights, transition probabilities, etc.
+#   3) Advisory language — buy / sell / signal / recommend / target / setup.
+#
+# These are matched against the *visible text* of the rendered HTML
+# (everything outside <style>, <script>, HTML comments and tag-attribute
+# whitespace). The pre-extraction stripper avoids false positives from
+# inline CSS such as the literal word `live` inside class names.
 # ---------------------------------------------------------------------------
 
 FORBIDDEN_PHRASES = [
-    "cboe", "fred", "yahoo", "aaii",
-    "bbs", "blackbox", "black box",
-    "hmm", "hidden markov", "transition matrix",
-    "★",
-    "unusual whales", "unusualwhales", " uw ",
+    # Vendor / source names
+    "unusual whales", "unusualwhales", "unusual-whales",
+    "blackboxstocks", "blackbox", "black box", "blackbox.io",
+    "cboe", "fred", "yahoo finance", "yfinance", "aaii",
+    "volumeleaders",
+    # Bare " uw " spacings (avoids the `<bw>` word boundary class without regex)
+    " uw ", " uw.",
+    # Methodology leaks
+    "hidden markov", "transition matrix", "transition probabilities",
+    "hmm ",                # bare HMM keyword, requires trailing space
+    "mpi_sleeve",          # internal indicator name
+    # Star / rating glyphs
+    "★",  # ★
+    # Positioning drift — "live tape" / "real-time" / "streaming"
+    "live tape", "live data", "real-time", "real time", "streaming",
+    # Advisory verbs - these are word-boundary regex matches below; bare
+    # substring entries here would false-positive on technical CSS / class
+    # names like 'border-radius'. See FORBIDDEN_REGEXES.
 ]
 
-# These regex patterns catch model-weight leaks
+# These regex patterns catch advisory phrasing + model-weight leaks.
+# The "(?<![\w-])" / "(?![\w-])" guards approximate word boundaries while
+# allowing punctuation (so "buy," matches but "buyout" doesn't).
+ADVISORY_VERBS = [
+    "buy", "sell", "recommend", "recommended", "recommendation",
+    "signal", "signals", "setup", "setups", "target", "targets",
+    "entry", "exit", "strong buy", "bullish call", "bearish call",
+    "trade idea", "high conviction", "must-see",
+]
+ADVISORY_VERB_REGEXES = [
+    rf"(?<![\w-]){re.escape(v)}(?![\w-])" for v in ADVISORY_VERBS
+]
+
 FORBIDDEN_REGEXES = [
     r"\bp\s*=\s*0\.\d+",        # "p=0.42"
     r"\bweight\s*=\s*0\.\d+",   # "weight=0.3"
-    r"\bscore\s*=\s*\d+(?:\.\d+)?\b",  # "score=4.2" — leaks methodology
+    r"\bscore\s*=\s*\d+(?:\.\d+)?\b",  # "score=4.2"
+]
+# Allowed exceptions where these verbs are acceptable:
+ALLOWED_ADVISORY_CONTEXT = [
+    # "Recommendation" allowed inside the disclaimer block context
+    "not investment advice",
 ]
 
 
+def _strip_non_visible(html: str) -> str:
+    """Return visible-text approximation of the HTML for brand scanning.
+
+    Strips <style>...</style>, <script>...</script>, HTML comments, and
+    HTML tags themselves. CSS class names like 'dp-live' should never
+    fire a false positive because they live in attribute values which we
+    strip together with the tag.
+    """
+    out = html
+    # Comments
+    out = re.sub(r"<!--.*?-->", " ", out, flags=re.DOTALL)
+    # Style / script blocks
+    out = re.sub(r"<style[^>]*>.*?</style>", " ", out, flags=re.DOTALL | re.IGNORECASE)
+    out = re.sub(r"<script[^>]*>.*?</script>", " ", out, flags=re.DOTALL | re.IGNORECASE)
+    # Strip tags (keep their inner text)
+    out = re.sub(r"<[^>]+>", " ", out)
+    # Decode a few entities we emit
+    out = out.replace("&mdash;", "—").replace("&ge;", ">=").replace("&#8217;", "'")
+    return out
+
+
 def brand_check(html: str) -> dict:
-    """Return {ok: bool, hits: list[str]}. ok=True means no forbidden hits."""
-    text = html.lower()
+    """Return {ok: bool, hits: list[str]}. ok=True means no forbidden hits.
+
+    Brand scan runs against the visible text of the rendered HTML, not the
+    full source — this avoids false positives from inline CSS class names
+    or comment markers.
+    """
+    visible = _strip_non_visible(html)
+    text = visible.lower()
+
     hits: list[str] = []
+
     for phrase in FORBIDDEN_PHRASES:
         if phrase in text:
             hits.append(phrase.strip())
+
     for pattern in FORBIDDEN_REGEXES:
         m = re.search(pattern, text, flags=re.IGNORECASE)
         if m:
             hits.append(f"regex:{pattern}={m.group(0)}")
+
+    # Advisory verb scan — exempt the explicit disclaimer phrase that
+    # contains "advice" but is not advisory itself
+    for pattern in ADVISORY_VERB_REGEXES:
+        for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+            # Whitelist contexts where the verb is legitimate (e.g.
+            # "not investment advice" disclaimer)
+            start = max(0, m.start() - 40)
+            end = min(len(text), m.end() + 40)
+            window = text[start:end]
+            if any(allowed in window for allowed in ALLOWED_ADVISORY_CONTEXT):
+                continue
+            hits.append(f"advisory:{m.group(0)}@{m.start()}")
+            break  # one hit per pattern is enough
+
     return {"ok": not hits, "hits": hits}
 
 
@@ -108,10 +193,6 @@ def build_post_payload(agg: dict, html: str, status: str = "draft") -> dict:
         "slug": f"daily-pulse-{date}",
     }
 
-
-# ---------------------------------------------------------------------------
-# Needs-review writer (when brand check fails)
-# ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
 # Sparkline - 30-day trend
