@@ -1,0 +1,79 @@
+{
+  "as_of": "2026-05-14 5:00 PM ET",
+  "as_of_date": "2026-05-14",
+  "refresh_label": "5:00 PM ET",
+  "headline_metric": {
+    "label": "Filings filed today",
+    "value": 0
+  },
+  "summary": {
+    "filings_today": 0,
+    "members_today": 0,
+    "tickers_today": 0,
+    "chamber_breakdown": {},
+    "sector_breakdown": {},
+    "large_filings_today": 0,
+    "late_filings_today": 0
+  },
+  "most_active_today": [],
+  "trades_today": [],
+  "notable": {
+    "ticker_clusters": [],
+    "sector_clusters": [],
+    "large_filings": [],
+    "late_filings": []
+  },
+  "commentary": [
+    "Tonight's disclosure window was quiet - no new filings dated 2026-05-14."
+  ],
+  "data_quality": {
+    "degraded": true,
+    "endpoints_ok": 0,
+    "endpoints_failed": 3
+  },
+  "generated_at": "2026-05-14T21:00:00Z",
+  "wall_clock_generated_at": "2026-05-14T07:35:53.960823Z",
+  "raw_counts": {
+    "recent_trades_raw": 0,
+    "late_reports_raw": 0,
+    "trader_view_raw": 0,
+    "member_views": {}
+  },
+  "raw_data_quality": {
+    "endpoints_ok": 0,
+    "endpoints_failed": 3,
+    "failures": [
+      {
+        "endpoint": "/api/congress/recent-trades",
+        "error": "HTTP 429: HTTP Error 429: Too Many Requests"
+      },
+      {
+        "endpoint": "/api/congress/late-reports",
+        "error": "HTTP 429: HTTP Error 429: Too Many Requests"
+      },
+      {
+        "endpoint": "/api/congress/congress-trader",
+        "error": "HTTP 429: HTTP Error 429: Too Many Requests"
+      }
+    ],
+    "degraded": true
+  },
+  "notability_config": {
+    "cluster_window_days": 5,
+    "cluster_min_members": 2,
+    "sector_cluster_min_members": 3,
+    "large_size_band": "$500,001 - $1,000,000",
+    "large_size_bands_treated_as_large": [
+      "$500,001 - $1,000,000",
+      "$1,000,001 - $5,000,000",
+      "$5,000,001 - $25,000,000",
+      "$25,000,001 - $50,000,000",
+      "$50,000,001 +"
+    ],
+    "late_window_days": 45
+  },
+  "fetched_at": "2026-05-14T07:35:47.190241Z",
+  "all_trades_normalized": [],
+  "all_clusters_full": [],
+  "all_sector_clusters_full": []
+}
