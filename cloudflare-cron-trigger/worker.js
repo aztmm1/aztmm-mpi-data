@@ -37,7 +37,6 @@ const WORKFLOWS = {
   congress:       "congress-watch.yml",
   optionsGravity: "options-gravity.yml",
   squeeze:        "squeeze-watch.yml",
-  zeroDte:        "0dte-pulse.yml",
   insiderActivity: "insider-activity.yml",
   earningsFlow:   "earnings-flow.yml",
 };
@@ -49,7 +48,6 @@ const FRESHNESS_TARGETS = [
   { slug: "congress-trades-tracker",    file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
   { slug: "nope-max-pain-tracker",      file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
   { slug: "squeeze-watch",              file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
-  { slug: "0dte-pulse-tracker",         file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
   { slug: "earnings-flow-flag-tracker", file: "latest.json", dateKeys: ["date", "asOf", "as_of"], cadence: "daily" },
   { slug: "insider-activity-tracker",   file: "latest.json", dateKeys: ["weekEnding", "week_ending", "asOf", "as_of", "date"], cadence: "weekly" },
 ];
@@ -139,7 +137,6 @@ function selectWorkflows(et) {
       WORKFLOWS.congress,
       WORKFLOWS.optionsGravity,
       WORKFLOWS.squeeze,
-      WORKFLOWS.zeroDte,
       WORKFLOWS.earningsFlow,
     );
   }
