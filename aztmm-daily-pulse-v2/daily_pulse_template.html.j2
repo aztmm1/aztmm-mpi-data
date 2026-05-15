@@ -1,340 +1,198 @@
 {# ============================================================
-   AZTMM Daily Pulse v2 — Post Body Template
-   This template renders the WordPress post body only.
-   Never reference data vendor names — the publisher will
-   brand-scrub the output before publish.
-
-   CRITICAL: output is wrapped in <!-- wp:html --> Gutenberg
-   block markers so wpautop does NOT mangle scripts / anchors.
+   AZTMM Daily Pulse v3 — Email-Safe Post Body
+   Ported from daily-pulse-v3-PROFORMA-2026-05-14-v2.html
+   ------------------------------------------------------------
+   Rules:
+     * NO references to data vendor names (brand_check enforces)
+     * "TODAY'S TELL" is DESCRIPTIVE only — no entry / target /
+       stop / conviction-score. Conviction is the internal gate
+       that decides whether a name surfaces (>=80), never shown.
+     * All <style>/<script> blocks MUST be wrapped in
+       <!-- wp:html -->...<!-- /wp:html --> for WP Gutenberg.
+     * Email-safe: 600px max-width table, inline CSS,
+       NO flex / NO grid, all tables for layout.
    ============================================================ #}
-<!-- wp:html -->
-<div class="dpv1" data-date="{{ date }}">
-<style>
-.dpv1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#e2e8f0;background:#0b1220;padding:0;margin:0 0 2rem;border-radius:14px;overflow:hidden;line-height:1.6}
-.dpv1 .dp-hero{background:linear-gradient(135deg,#0b1220 0%,#0f172a 45%,#1e293b 100%);padding:2rem 1.75rem 1.75rem;border-bottom:1px solid rgba(56,189,248,0.18)}
-.dpv1 .dp-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;font-size:.82rem;color:#94a3b8;letter-spacing:.04em;text-transform:uppercase}
-.dpv1 .dp-date{color:#38bdf8;font-weight:600}
-.dpv1 .dp-sep{color:#475569}
-.dpv1 .dp-closing-bell{color:#cbd5e1}
-.dpv1 .dp-tag{display:inline-block;padding:.28rem .72rem;border-radius:999px;font-weight:700;font-size:.74rem;letter-spacing:.06em;background:linear-gradient(90deg,#10b981 0%,#38bdf8 100%);color:#0b1220;box-shadow:0 0 14px rgba(56,189,248,.25)}
-.dpv1 .dp-headline{font-size:1.7rem;line-height:1.25;margin:.9rem 0 .25rem;color:#f1f5f9;font-weight:700;letter-spacing:-.01em}
-.dpv1 .dp-sub{margin:.4rem 0 0;color:#94a3b8;font-size:.95rem}
-.dpv1 .dp-section{padding:1.5rem 1.75rem;border-bottom:1px solid rgba(71,85,105,.25)}
-.dpv1 .dp-section h3{color:#38bdf8;font-size:1.05rem;margin:0 0 .85rem;letter-spacing:.04em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:.5rem}
-.dpv1 .dp-section h3::before{content:"";display:inline-block;width:6px;height:18px;background:linear-gradient(180deg,#38bdf8,#10b981);border-radius:2px}
-.dpv1 .dp-narr p{margin:0 0 .9rem;color:#cbd5e1;font-size:1rem}
-.dpv1 .dp-narr p strong{color:#f1f5f9}
-.dpv1 .dp-narr p .pos{color:#10b981;font-weight:700}
-.dpv1 .dp-narr p .neg{color:#fb7185;font-weight:700}
-.dpv1 .dp-narr p .accent{color:#38bdf8;font-weight:700}
-.dpv1 .dp-narr p .warn{color:#fbbf24;font-weight:700}
-.dpv1 .dp-bullets{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem}
-.dpv1 .dp-bullets li{background:rgba(15,23,42,.6);border:1px solid rgba(56,189,248,.12);border-left:3px solid #38bdf8;padding:.65rem .85rem;border-radius:6px;font-size:.92rem;color:#cbd5e1}
-.dpv1 .dp-bullets li strong{color:#f1f5f9;display:block;font-size:1.05rem;margin-top:.15rem}
-.dpv1 .dp-tide{margin-top:1rem;background:linear-gradient(90deg,rgba(16,185,129,.12),rgba(56,189,248,.08));border:1px solid rgba(16,185,129,.25);padding:.85rem 1rem;border-radius:8px;color:#e2e8f0;font-size:.95rem}
-.dpv1 .dp-tide strong{color:#10b981}
-.dpv1 table{width:100%;border-collapse:collapse;font-size:.92rem;background:rgba(15,23,42,.4);border-radius:8px;overflow:hidden}
-.dpv1 table th{background:rgba(30,41,59,.8);color:#94a3b8;text-align:left;padding:.65rem .85rem;font-weight:600;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid rgba(71,85,105,.4)}
-.dpv1 table td{padding:.65rem .85rem;border-bottom:1px solid rgba(71,85,105,.18);color:#e2e8f0}
-.dpv1 table tr:last-child td{border-bottom:none}
-.dpv1 .dp-heatmap tr.band-pos td{background:linear-gradient(90deg,rgba(16,185,129,.18) 0%,rgba(16,185,129,.04) 100%);border-left:3px solid #10b981}
-.dpv1 .dp-heatmap tr.band-pos-strong td{background:linear-gradient(90deg,rgba(16,185,129,.32) 0%,rgba(16,185,129,.08) 100%);border-left:3px solid #10b981}
-.dpv1 .dp-heatmap tr.band-neg td{background:linear-gradient(90deg,rgba(251,113,133,.18) 0%,rgba(251,113,133,.04) 100%);border-left:3px solid #fb7185}
-.dpv1 .dp-heatmap tr.band-neutral td{background:rgba(71,85,105,.08);border-left:3px solid #475569}
-.dpv1 .dp-heatmap td:last-child{font-weight:700;font-variant-numeric:tabular-nums}
-.dpv1 .dp-heatmap tr.band-pos td:last-child,.dpv1 .dp-heatmap tr.band-pos-strong td:last-child{color:#10b981}
-.dpv1 .dp-heatmap tr.band-neg td:last-child{color:#fb7185}
-.dpv1 .dp-heatmap tr.band-neutral td:last-child{color:#cbd5e1}
-.dpv1 .dp-concentration{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.dpv1 .dp-conc-col{background:rgba(15,23,42,.5);border:1px solid rgba(56,189,248,.12);border-radius:8px;padding:1rem}
-.dpv1 .dp-conc-col h4{margin:0 0 .65rem;color:#38bdf8;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase}
-.dpv1 .dp-conc-col ul{list-style:none;padding:0;margin:0}
-.dpv1 .dp-conc-col li{padding:.4rem 0;border-bottom:1px dashed rgba(71,85,105,.2);display:flex;justify-content:space-between;align-items:center;font-variant-numeric:tabular-nums}
-.dpv1 .dp-conc-col li:last-child{border-bottom:none}
-.dpv1 .dp-conc-col li strong{color:#f1f5f9}
-.dpv1 .dp-conc-col li .val-pos{color:#10b981;font-weight:700}
-.dpv1 .dp-conc-col li .val-neg{color:#fb7185;font-weight:700}
-.dpv1 .dp-darkpool td.pct-up{color:#10b981;font-weight:700}
-.dpv1 .dp-darkpool td.pct-down{color:#fb7185;font-weight:700}
-.dpv1 .dp-darkpool td.pct-surge{color:#fbbf24;font-weight:700;text-shadow:0 0 8px rgba(251,191,36,.25)}
-.dpv1 .dp-darkpool td:first-child strong{color:#38bdf8}
-.dpv1 .dp-why{margin:1.5rem 1.75rem;border:1px solid rgba(56,189,248,.25);border-left:3px solid #38bdf8;border-radius:8px;background:rgba(15,23,42,.5);padding:0}
-.dpv1 .dp-why summary{padding:.85rem 1.1rem;cursor:pointer;color:#38bdf8;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.82rem;list-style:none}
-.dpv1 .dp-why summary::-webkit-details-marker{display:none}
-.dpv1 .dp-why summary::before{content:"+ ";color:#38bdf8;font-weight:700}
-.dpv1 .dp-why[open] summary::before{content:"\2212 "}
-.dpv1 .dp-why ul{margin:0;padding:0 1.5rem 1rem 2.25rem;color:#cbd5e1;font-size:.95rem}
-.dpv1 .dp-why li{padding:.2rem 0}
-.dpv1 .dp-watchlist{list-style:none;padding:0;margin:0;counter-reset:wl}
-.dpv1 .dp-watchlist li{counter-increment:wl;padding:.85rem 1rem .85rem 3.25rem;position:relative;background:rgba(15,23,42,.4);border:1px solid rgba(71,85,105,.2);border-radius:8px;margin-bottom:.65rem;color:#e2e8f0;font-size:.95rem}
-.dpv1 .dp-watchlist li::before{content:counter(wl);position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:1.85rem;height:1.85rem;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#10b981);color:#0b1220;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem}
-.dpv1 .dp-watchlist li strong{color:#38bdf8}
-.dpv1 .dp-footer{padding:1.25rem 1.75rem;background:rgba(15,23,42,.6);border-top:1px solid rgba(71,85,105,.25)}
-.dpv1 .dp-caveat{margin:0 0 .65rem;font-size:.82rem;color:#94a3b8;font-style:italic;line-height:1.55}
-.dpv1 .dp-disclaimer{margin:0;color:#64748b;font-size:.78rem;line-height:1.55}
-.dpv1 .dp-toptrades td:nth-child(1){color:#64748b;width:36px;text-align:center;font-variant-numeric:tabular-nums}
-.dpv1 .dp-toptrades td:nth-child(4).val-pos{color:#10b981;font-weight:700}
-.dpv1 .dp-toptrades td:nth-child(4).val-neg{color:#fb7185;font-weight:700}
-.dpv1 .dp-toptrades td:nth-child(5){font-weight:700;color:#f1f5f9;font-variant-numeric:tabular-nums}
-.dpv1 .dp-aggflow td:nth-child(2){color:#38bdf8;font-weight:700;font-variant-numeric:tabular-nums}
-.dpv1 .dp-aggflow td:nth-child(3){color:#94a3b8;font-variant-numeric:tabular-nums}
-.dpv1 .dp-aggflow td:nth-child(4){color:#cbd5e1;font-size:.85rem}
-.dpv1 .dp-sector-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.85rem}
-.dpv1 .dp-sec-block{background:rgba(15,23,42,.5);border:1px solid rgba(56,189,248,.12);border-left:3px solid #38bdf8;border-radius:8px;padding:.85rem 1rem}
-.dpv1 .dp-sec-block h4{margin:0 0 .55rem;color:#38bdf8;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
-.dpv1 .dp-sec-block ul{list-style:none;margin:0;padding:0}
-.dpv1 .dp-sec-block li{display:flex;justify-content:space-between;align-items:center;padding:.32rem 0;border-bottom:1px dashed rgba(71,85,105,.22);font-variant-numeric:tabular-nums;font-size:.9rem}
-.dpv1 .dp-sec-block li:last-child{border-bottom:none}
-.dpv1 .dp-sec-block li strong{color:#f1f5f9}
-.dpv1 .dp-sec-block li .val-pos{color:#10b981;font-weight:700}
-.dpv1 .dp-sec-block p.dp-empty{margin:.25rem 0 0;color:#64748b;font-size:.88rem;font-style:italic}
-.dpv1 .dp-notable{list-style:none;padding:0;margin:0;counter-reset:n}
-.dpv1 .dp-notable li{counter-increment:n;padding:.7rem 1rem .7rem 3rem;position:relative;background:rgba(15,23,42,.4);border:1px solid rgba(71,85,105,.2);border-left:3px solid #10b981;border-radius:6px;margin-bottom:.5rem;color:#e2e8f0;font-size:.93rem;line-height:1.55}
-.dpv1 .dp-notable li::before{content:counter(n);position:absolute;left:.85rem;top:50%;transform:translateY(-50%);width:1.55rem;height:1.55rem;border-radius:50%;background:linear-gradient(135deg,#10b981,#38bdf8);color:#0b1220;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem}
-.dpv1 .dp-notable li .pos{color:#10b981;font-weight:700}
-.dpv1 .dp-notable li .neg{color:#fb7185;font-weight:700}
-.dpv1 .dp-notable li .warn{color:#fbbf24;font-weight:700}
-.dpv1 .dp-notable li .accent{color:#38bdf8;font-weight:700}
-.dpv1 .dp-themes{display:grid;grid-template-columns:1fr;gap:.65rem}
-.dpv1 .dp-themes p{margin:0;background:rgba(15,23,42,.45);border:1px solid rgba(56,189,248,.14);border-left:3px solid #38bdf8;border-radius:6px;padding:.7rem .95rem;font-size:.93rem;color:#cbd5e1;line-height:1.55}
-.dpv1 .dp-themes p strong:first-child{color:#38bdf8;display:inline-block;margin-right:.25rem}
-.dpv1 .dp-themes .pos{color:#10b981;font-weight:700}
-.dpv1 .dp-themes .neg{color:#fb7185;font-weight:700}
-.dpv1 .dp-themes .accent{color:#38bdf8;font-weight:700}
-.dpv1 .dp-themes .warn{color:#fbbf24;font-weight:700}
-.sparkline-section .sparkline{display:block;width:100%;height:auto;margin:0 0 .5rem}
-.sparkline-section .sparkline-caption{margin:0;color:#94a3b8;font-size:.85rem;font-style:italic}
-@media (max-width:600px){.dpv1 .dp-headline{font-size:1.3rem}.dpv1 .dp-section{padding:1.25rem 1rem}.dpv1 .dp-hero{padding:1.5rem 1rem 1.25rem}.dpv1 .dp-concentration{grid-template-columns:1fr}.dpv1 .dp-why{margin:1.25rem 1rem}.dpv1 .dp-footer{padding:1.1rem 1rem}.dpv1 table{font-size:.85rem}.dpv1 table th,.dpv1 table td{padding:.5rem .55rem}.dpv1 .dp-toptrades{font-size:.78rem}.dpv1 .dp-toptrades th,.dpv1 .dp-toptrades td{padding:.4rem .4rem}.dpv1 .dp-sector-grid{grid-template-columns:1fr}}
-</style>
+<div style="max-width:1300px;margin:0 auto;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
-  {# -------- HERO -------- #}
-  <div class="dp-hero">
-    <div class="dp-meta">
-      <span class="dp-date">{{ date }}</span>
-      <span class="dp-sep">/</span>
-      <span class="dp-tag">{{ scenario.label }}</span>
-      <span class="dp-sep">/</span>
-      <span class="dp-closing-bell">End-of-session read</span>
-    </div>
-    <h2 class="dp-headline">{{ scenario.headline }}</h2>
-    {% if subtitle %}<p class="dp-sub">{{ subtitle }}</p>{% endif %}
-  </div>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f1f5f9;padding:32px 0;border-radius:8px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;width:100%;background:#ffffff;border-radius:10px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:1px solid #e2e8f0;">
 
-  {# -------- WHAT I NOTICED TODAY (journal narrative) -------- #}
-  {% if narrative %}
-  <section class="dp-section dp-narr">
-    <h3>What I noticed today</h3>
-    {% for para in narrative %}
-    <p>{{ para|safe }}</p>
-    {% endfor %}
-  </section>
-  {% endif %}
-
-  {# -------- BY THE NUMBERS -------- #}
-  <section class="dp-section">
-    <h3>By the numbers</h3>
-    {% if market_totals.available %}
-    <ul class="dp-bullets">
-      <li>Call premium <strong>{{ market_totals.call_premium_fmt }}</strong></li>
-      <li>Put premium <strong>{{ market_totals.put_premium_fmt }}</strong></li>
-      <li>Call/Put skew <strong>{{ market_totals.cp_skew_fmt }}</strong></li>
-      <li>P/C volume <strong>{{ market_totals.pc_ratio_fmt }}</strong></li>
-      {% if tide.available %}<li>EOD net call <strong>{{ tide.eod_net_call_premium_fmt }}</strong></li>{% endif %}
-      <li>Scenario <strong>{{ scenario.label }}</strong></li>
-    </ul>
-    {% endif %}
-    {% if tide.available %}
-    <p class="dp-tide">Cumulative end-of-day net call premium closed at <strong>{{ tide.eod_net_call_premium_fmt }}</strong>. Tape {{ tide.shape }}.</p>
-    {% endif %}
-  </section>
-
-  {# -------- TOP 10 SINGLE-TRADE EVENTS -------- #}
-  {% if top_trades.available %}
-  <section class="dp-section">
-    <h3>Top 10 single-trade events</h3>
-    <p style="margin:.2rem 0 .9rem;color:#94a3b8;font-size:.92rem">Today's largest single-trade notable flow events, ranked by total premium. Observational only &mdash; what stood out, not a to-do.</p>
-    <table class="dp-toptrades">
-      <thead><tr><th>#</th><th>Ticker</th><th>Strike &middot; Expiry (DTE)</th><th>Type</th><th>Premium</th><th>Vol / OI (V/OI)</th><th>Spot</th></tr></thead>
-      <tbody>
-        {% for t in top_trades.rows %}
+        {# -------- View-on-web strip -------- #}
         <tr>
-          <td>{{ loop.index }}</td>
-          <td><strong>{{ t.ticker }}</strong></td>
-          <td>{{ t.strike_expiry_fmt }}</td>
-          <td class="{{ t.kind_class }}">{{ t.kind }}</td>
-          <td>{{ t.premium_fmt }}</td>
-          <td>{{ t.v_oi_fmt }}</td>
-          <td>{{ t.spot_fmt }}</td>
+          <td style="background:#f8fafc;padding:10px 28px;border-bottom:1px solid #e2e8f0;text-align:right;">
+            <a href="{{ appendix_url }}" style="color:#64748b;font-size:11px;text-decoration:none;letter-spacing:0.2px;">View on web &rarr;</a>
+          </td>
         </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% if top_trades.rows %}
-    <p class="dp-tide">Today's largest single-trade event was a {{ top_trades.rows[0].ticker }} {{ top_trades.rows[0].strike_fmt }} {{ top_trades.rows[0].kind|lower }} dated {{ top_trades.rows[0].expiry }} at {{ top_trades.rows[0].premium_fmt }} in premium.</p>
-    {% endif %}
-  </section>
-  {% endif %}
 
-  {# -------- SECTOR HEATMAP -------- #}
-  <section class="dp-section">
-    <h3>Sector heatmap</h3>
-    <table class="dp-heatmap">
-      <thead><tr><th>Sector</th><th>Call prem</th><th>Put prem</th><th>Net</th></tr></thead>
-      <tbody>
-        {% for r in sector.sector_rows %}
-        <tr class="{% if r.net_premium > 5000000 %}band-pos-strong{% elif r.net_premium > 0 %}band-pos{% elif r.net_premium < 0 %}band-neg{% else %}band-neutral{% endif %}">
-          <td>{{ r.name }} ({{ r.ticker }})</td>
-          <td>{{ r.call_premium_fmt }}</td>
-          <td>{{ r.put_premium_fmt }}</td>
-          <td>{{ r.net_premium_fmt }}</td>
+        {# -------- Hero band -------- #}
+        <tr>
+          <td style="background:#0f172a;padding:32px 28px;border-bottom:3px solid {{ hero_underline_color }};">
+            <p style="margin:0 0 12px 0;color:#94a3b8;font-size:10px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;line-height:1.4;">
+              Live &middot; {{ post_date_display }} &middot; Closing Pulse
+            </p>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;line-height:1.4;font-weight:600;letter-spacing:-0.2px;">
+              {{ headline }}
+            </h1>
+          </td>
         </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </section>
 
-  {# -------- PER-SECTOR TOP 3 SINGLE-NAME FLOW -------- #}
-  {% if sector_top_names.available %}
-  <section class="dp-section">
-    <h3>Sector deep-dive &mdash; top 3 tickers per sector</h3>
-    <p style="margin:.2rem 0 .9rem;color:#94a3b8;font-size:.92rem">Top 3 names within each sector by aggregate notable-flow premium today. Empty buckets mean no single-name notable flow registered in that sector.</p>
-    <div class="dp-sector-grid">
-      {% for b in sector_top_names.blocks %}
-      <div class="dp-sec-block">
-        <h4>{{ b.sector_name }} ({{ b.sector_code }})</h4>
-        {% if b.empty %}
-        <p class="dp-empty">No notable single-name flow today.</p>
-        {% else %}
-        <ul>
-          {% for r in b.rows %}
-          <li><strong>{{ r.ticker }}</strong><span class="val-pos">{{ r.premium_fmt }}</span></li>
-          {% endfor %}
-        </ul>
+        {# -------- 3-strip regime card -------- #}
+        <tr>
+          <td style="padding:32px 28px 8px 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="padding:20px 6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;width:33%;vertical-align:top;">
+                  <p style="margin:0;color:#64748b;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">MPI</p>
+                  <p style="margin:10px 0 4px 0;color:#0f172a;font-size:28px;font-weight:700;line-height:1;">{{ mpi_score }}</p>
+                  <p style="margin:0;color:#10b981;font-size:11px;font-weight:600;letter-spacing:0.3px;">&#9650; {{ mpi_label }}</p>
+                </td>
+                <td style="width:10px;"></td>
+                <td style="padding:20px 6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;width:33%;vertical-align:top;">
+                  <p style="margin:0;color:#64748b;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Regime</p>
+                  <p style="margin:10px 0 4px 0;color:#0f172a;font-size:15px;font-weight:600;line-height:1.3;">{{ regime_short }}</p>
+                  <p style="margin:0;color:#10b981;font-size:11px;font-weight:600;letter-spacing:0.3px;">{{ regime_confidence_label }}</p>
+                </td>
+                <td style="width:10px;"></td>
+                <td style="padding:20px 6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;width:33%;vertical-align:top;">
+                  <p style="margin:0;color:#64748b;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">{{ key_metric_label }}</p>
+                  <p style="margin:10px 0 4px 0;color:#0f172a;font-size:15px;font-weight:600;line-height:1.3;">{{ key_metric_value }}</p>
+                  <p style="margin:0;color:#0ea5e9;font-size:11px;font-weight:600;letter-spacing:0.3px;">{{ key_metric_caption }}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {# -------- TODAY'S TELL -------- #}
+        <tr>
+          <td style="padding:32px 28px 8px 28px;">
+            <p style="margin:0 0 18px 0;color:#0f172a;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;border-bottom:2px solid #0ea5e9;padding-bottom:8px;display:inline-block;">
+              Today's Tell
+            </p>
+
+            {% if tells and tells|length > 0 %}
+              {% for tell in tells %}
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#ffffff;border:1px solid #e2e8f0;border-left:4px solid {{ tell.accent_color }};border-radius:8px;margin-bottom:16px;">
+                <tr>
+                  <td style="padding:24px 24px 8px 24px;">
+                    <p style="margin:0;color:#0f172a;font-size:18px;font-weight:700;letter-spacing:0.3px;line-height:1.2;">{{ tell.ticker }}</p>
+                    <p style="margin:4px 0 0 0;color:#64748b;font-size:11px;letter-spacing:0.3px;">{{ tell.sub_header }}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 24px 24px 24px;">
+                    <p style="margin:0;color:#334155;font-size:13px;line-height:1.7;">
+                      {{ tell.observation|safe }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              {% endfor %}
+            {% else %}
+              {# Quiet Tape panel — no name scored >=80 #}
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;">
+                <tr>
+                  <td style="padding:32px 28px;text-align:center;">
+                    <p style="margin:0 0 12px 0;color:#92400e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Quiet Tape</p>
+                    <p style="margin:0 0 18px 0;color:#78350f;font-size:18px;line-height:1.5;font-weight:700;">No standout single-name positioning today.</p>
+                    <p style="margin:0;color:#92400e;font-size:13px;line-height:1.65;">
+                      Flow distributed evenly across index products. No single ticker accumulated the kind of one-sided ask-side imbalance or concentrated dark-pool absorption that draws institutional attention. Tape stayed in observation mode.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:18px 0 0 0;color:#64748b;font-size:11px;line-height:1.6;font-style:italic;text-align:center;">
+                Some sessions reveal positioning. This one didn't.
+              </p>
+            {% endif %}
+          </td>
+        </tr>
+
+        {# -------- What Changed -------- #}
+        <tr>
+          <td style="padding:32px 28px 8px 28px;">
+            <p style="margin:0 0 18px 0;color:#0f172a;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;border-bottom:2px solid #0ea5e9;padding-bottom:8px;display:inline-block;">
+              What Changed
+            </p>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              {% for change in changes %}
+              <tr>
+                <td style="padding:14px 0;{% if not loop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
+                  <p style="margin:0;color:#334155;font-size:13px;line-height:1.65;">
+                    <span style="display:inline-block;width:20px;color:{{ change.arrow_color }};font-weight:700;">{{ change.arrow }}</span>
+                    {{ change.text|safe }}
+                  </p>
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </td>
+        </tr>
+
+        {# -------- Tomorrow's Catalyst -------- #}
+        {% if catalysts and catalysts|length > 0 %}
+        <tr>
+          <td style="padding:32px 28px 8px 28px;">
+            <p style="margin:0 0 18px 0;color:#0f172a;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;border-bottom:2px solid #fb7185;padding-bottom:8px;display:inline-block;">
+              Tomorrow's Catalyst
+            </p>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fef2f2;border-left:3px solid #fb7185;border-radius:6px;">
+              <tr>
+                <td style="padding:20px 22px;">
+                  {% for catalyst in catalysts %}
+                  <p style="margin:0{% if not loop.last %} 0 14px 0{% endif %};color:#7f1d1d;font-size:13px;line-height:1.65;">
+                    {{ catalyst.text|safe }}
+                  </p>
+                  {% endfor %}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
         {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
 
-  {# -------- AGGREGATE FLOW LEADERS — TOP 15 NAMES -------- #}
-  {% if flow_leaders.available %}
-  <section class="dp-section">
-    <h3>Aggregate flow leaders &mdash; top 15 names</h3>
-    <p style="margin:.2rem 0 .9rem;color:#94a3b8;font-size:.92rem">Names that absorbed the most combined options premium across all notable trades today. Observation only.</p>
-    <table class="dp-aggflow">
-      <thead><tr><th>Ticker</th><th>Aggregate premium</th><th># notable trades</th><th>Sector</th></tr></thead>
-      <tbody>
-      {% for r in flow_leaders.rows %}
+        {# -------- Appendix link -------- #}
         <tr>
-          <td><strong>{{ r.ticker }}</strong></td>
-          <td>{{ r.premium_fmt }}</td>
-          <td>{{ r.trades }}</td>
-          <td>{{ r.sector_label }}</td>
+          <td style="padding:32px 28px 36px 28px;text-align:center;">
+            <a href="{{ appendix_url }}" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:13px;font-weight:600;letter-spacing:0.3px;">
+              View full data appendix &rarr;
+            </a>
+            <p style="margin:14px 0 0 0;color:#64748b;font-size:11px;line-height:1.6;">
+              Sector heatmap &middot; Top-15 flow &middot; Dark pool &middot; By-the-numbers &middot; Observations
+            </p>
+          </td>
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </section>
-  {% endif %}
 
-  {# -------- CROSS-CUTTING FLOWS -------- #}
-  {% if themes.available %}
-  <section class="dp-section dp-themes">
-    <h3>Cross-cutting flows</h3>
-    {% for t in themes.themes %}
-      {% if t.quiet %}
-        {% if t.total_premium > 0 %}
-    <p><strong>{{ t.label }}.</strong> Combined notable premium across the {{ t.label|lower }} bucket totaled <span class="accent">{{ t.total_premium_fmt }}</span> &mdash; effectively quiet today.</p>
-        {% else %}
-    <p><strong>{{ t.label }}.</strong> No notable options activity registered in the {{ t.label|lower }} bucket today &mdash; combined premium was <span class="accent">$0</span>.</p>
-        {% endif %}
-      {% else %}
-    <p><strong>{{ t.label }}.</strong> Combined notable premium reached <span class="pos">{{ t.total_premium_fmt }}</span>{% if t.top_names %}, led by {% for n in t.top_names %}<strong>{{ n.ticker }}</strong> ({{ n.premium_fmt }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}.</p>
-      {% endif %}
-    {% endfor %}
-  </section>
-  {% endif %}
-
-  {# -------- 12 NOTABLE DATA POINTS -------- #}
-  {% if notable_points %}
-  <section class="dp-section">
-    <h3>{{ notable_points|length }} notable data points</h3>
-    <p style="margin:.2rem 0 .9rem;color:#94a3b8;font-size:.92rem">Observations from today's tape &mdash; one-line takeaways drawn from the option, dark-pool and sector data above. Notes, not a to-do.</p>
-    <ol class="dp-notable">
-    {% for n in notable_points %}
-      <li>{{ n|safe }}</li>
-    {% endfor %}
-    </ol>
-  </section>
-  {% endif %}
-
-  {# -------- DARK POOL TELL -------- #}
-  {% if darkpool.available %}
-  <section class="dp-section">
-    <h3>Dark pool tell</h3>
-    <table class="dp-darkpool">
-      <thead>
-        <tr><th>Ticker</th><th>Total prem</th><th>Mega-prints (&ge;100K)</th><th>vs prior</th></tr>
-      </thead>
-      <tbody>
-      {% for r in darkpool.rows %}
+        {# -------- Footer -------- #}
         <tr>
-          <td><strong>{{ r.ticker }}</strong></td>
-          <td>{{ r.total_premium_fmt }}</td>
-          <td>{{ r.mega_print_count }}</td>
-          <td class="{{ r.pct_class }}">{{ r.pct_change_fmt }}</td>
+          <td style="background:#0f172a;padding:28px 28px;text-align:center;">
+            <p style="margin:0 0 6px 0;color:#ffffff;font-size:14px;font-weight:600;letter-spacing:0.2px;">AZTMM Research</p>
+            <p style="margin:0 0 20px 0;color:#94a3b8;font-size:11px;line-height:1.6;">
+              Closing-bell research on options flow + regime
+            </p>
+            <p style="margin:0 0 10px 0;color:#64748b;font-size:10px;line-height:1.65;">
+              Not investment advice. Past patterns do not predict future moves.
+            </p>
+            <p style="margin:0;color:#64748b;font-size:10px;line-height:1.65;">
+              <a href="https://aztmm.com/manage-preferences/" style="color:#0ea5e9;text-decoration:none;">Manage preferences</a> &middot;
+              <a href="mailto:admin@aztmm.com" style="color:#0ea5e9;text-decoration:none;">admin@aztmm.com</a> &middot;
+              <a href="https://aztmm.com/" style="color:#0ea5e9;text-decoration:none;">aztmm.com</a>
+            </p>
+          </td>
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </section>
-  {% endif %}
 
-  {# -------- 30-DAY TREND SPARKLINE -------- #}
-  <section class="sparkline-section dp-section">
-    <h3>30-day trend &mdash; {{ headline_metric_label }}</h3>
-    {% if sparkline_available %}
-    <svg class="sparkline" viewBox="0 0 600 80" preserveAspectRatio="none" aria-label="30-day trend sparkline" role="img">
-      <line x1="0" y1="79" x2="600" y2="79" stroke="#94a3b8" stroke-width="0.5" />
-      <line x1="0" y1="1"  x2="600" y2="1"  stroke="#94a3b8" stroke-width="0.5" />
-      <polyline fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points="{{ sparkline_polyline }}" />
-    </svg>
-    <p class="sparkline-caption">{{ sparkline_first_date }} to {{ sparkline_last_date }}. Latest: {{ sparkline_latest_value }}.</p>
-    {% else %}
-    <p class="sparkline-caption">{{ sparkline_placeholder }}</p>
-    {% endif %}
-  </section>
-
-  {# -------- WHY THIS READ -------- #}
-  <details class="dp-why">
-    <summary>Why I read it as {{ scenario.label }}</summary>
-    <ul>
-    {% for r in scenario.reasons %}
-      <li>{{ r }}</li>
-    {% endfor %}
-    </ul>
-  </details>
-
-  {# -------- WHAT I'M WATCHING TOMORROW -------- #}
-  {% if watchlist %}
-  <section class="dp-section">
-    <h3>What I&#8217;m watching tomorrow</h3>
-    <ol class="dp-watchlist">
-    {% for w in watchlist %}
-      <li>{{ w|safe }}</li>
-    {% endfor %}
-    </ol>
-  </section>
-  {% endif %}
-
-  {# -------- FOOTER -------- #}
-  <footer class="dp-footer">
-    {% if data_quality.degraded %}
-    <p class="dp-caveat">Data quality note: one or more upstream feeds were degraded for this session ({{ data_quality.endpoints_failed }} endpoint{{ 's' if data_quality.endpoints_failed != 1 else '' }} unavailable). The option premium numbers themselves are intact and were used as primary input.</p>
-    {% endif %}
-    <p class="dp-disclaimer">Personal observations of one trader. Not investment advice. End-of-day data, refreshed daily at 5 PM ET. Past tape patterns do not predict future results.</p>
-  </footer>
+      </table>
+    </td>
+  </tr>
+</table>
 
 </div>
-<!-- /wp:html -->
+{# Data-quality footnote (rendered outside email card) #}
+{% if data_quality and data_quality.degraded %}
+<p style="max-width:600px;margin:18px auto;color:#64748b;font-size:11px;line-height:1.6;font-style:italic;text-align:center;">
+  Data quality note: one or more upstream feeds were degraded for this session
+  ({{ data_quality.endpoints_failed }} endpoint{{ 's' if data_quality.endpoints_failed != 1 else '' }} unavailable). Read with appropriate caution.
+</p>
+{% endif %}

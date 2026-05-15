@@ -1,14 +1,18 @@
 name: AZTMM Daily Pulse v2
 
-# Schedule: 5 PM ET, Mon–Fri.
+# Schedule: 5 PM ET, Mon–Fri (CURRENTLY HALTED 2026-05-14).
 # - During EDT (Mar–Nov): 21:00 UTC
 # - During EST (Nov–Mar): 22:00 UTC
-# Both cron lines fire; the script idempotently skips if the run-log for the
-# date already exists with status=='payload_emitted' or 'dry_run_ok'.
+# Auto-cron is commented out below pending v3 template verification.
+# Manual triggers via workflow_dispatch still work.
+# The script idempotently skips if the run-log for the date already exists
+# with status=='payload_emitted' or 'dry_run_ok'.
 on:
-  schedule:
-    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
-    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  # AUTO-CRON HALTED 2026-05-14 pending v3 template verification.
+  # Re-enable both lines (uncomment) after test sends pass.
+  # schedule:
+  #   - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+  #   - cron: '0 22 * * 1-5'   # 5 PM ET during EST
   workflow_dispatch:
     inputs:
       date:
