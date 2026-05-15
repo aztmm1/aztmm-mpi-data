@@ -1,34 +1,29 @@
-# === PATH A LOCKED 2026-05-15 ===
-# Auto-cron permanently disabled. This pipeline produced posts/snapshots that
-# violated UW TOS (personal-use-only data on a public surface).
-# DO NOT re-enable schedule until pipeline is rebuilt on free sources only
-# (FINRA OTC, CBOE, yfinance, EDGAR).
-# Manual workflow_dispatch retained for archive/testing use only.
+# === PATH A LOCKED 2026-05-15 - reads House Clerk PTR feed only ===
+# Free-source replacement for the UW-derived pipeline. Pulls 2026FD.ZIP from
+# disclosures-clerk.house.gov, parses recent Periodic Transaction Reports,
+# and writes the same public.json + HTML artifacts the page consumes.
+# Senate (efdsearch.senate.gov) is phase 2.
 
 name: AZTMM Congress Watch
 
-# Schedule: weekday 5 PM ET. Both DST + EST cron entries registered.
-# - EDT (Mar-Nov): 21:00 UTC
-# - EST (Nov-Mar): 22:00 UTC
-# The idempotency guard skips the second cron if the first already produced
-# a payload for the day.
+# House Clerk PTRs are batch-processed by the Clerk. Daily 6 AM UTC is plenty;
+# nothing useful is gained from intra-day polling.
 on:
-  # schedule:
-  #   - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
-  #   - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  schedule:
+    - cron: '0 6 * * *'   # 6 AM UTC daily - House data updates infrequently
   workflow_dispatch:
     inputs:
       date:
-        description: 'Target date YYYY-MM-DD (default: today)'
+        description: 'Target date YYYY-MM-DD (default: today UTC)'
         required: false
-      dry_run:
-        description: 'Dry run only (no publish)'
+      max_filings:
+        description: 'Max PTR PDFs to pull this run (default 50)'
         required: false
-        default: 'false'
+        default: '50'
       force_publish:
-        description: 'Force status=publish (else draft)'
+        description: 'Force WP status=publish (else draft)'
         required: false
-        default: 'false'
+        default: 'true'
 
 permissions:
   contents: write
@@ -39,7 +34,6 @@ jobs:
     timeout-minutes: 15
 
     env:
-      UW_API_KEY: ${{ secrets.UW_API_KEY }}
       WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
       WP_SITE: ${{ secrets.WP_SITE }}
       WP_USERNAME: ${{ secrets.WP_USERNAME }}
@@ -53,46 +47,35 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps
+      - name: Install system deps (pdftotext via poppler)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+
+      - name: Install Python deps
         working-directory: congress-trades-tracker
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Idempotency guard
-        id: guard
+      - name: Run House Clerk pipeline
         working-directory: congress-trades-tracker
         run: |
           DATE="${{ github.event.inputs.date }}"
-          if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
-          echo "date=$DATE" >> "$GITHUB_OUTPUT"
-          LOG="data/run-logs/$DATE.json"
-          if [ -f "$LOG" ] && grep -qE '"status":\s*"(payload_emitted|dry_run_ok)"' "$LOG"; then
-            echo "already_ran=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "already_ran=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Run pipeline
-        if: steps.guard.outputs.already_ran == 'false'
-        working-directory: congress-trades-tracker
-        run: |
+          MAX="${{ github.event.inputs.max_filings }}"
+          FP="${{ github.event.inputs.force_publish }}"
           ARGS=""
-          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
-          if [ "${{ github.event.inputs.force_publish }}" = "true" ]; then ARGS="$ARGS --force-publish"; fi
+          if [ -n "$DATE" ]; then ARGS="$ARGS --date $DATE"; fi
+          if [ -n "$MAX" ]; then ARGS="$ARGS --max-filings $MAX"; fi
+          if [ "$FP" != "false" ]; then ARGS="$ARGS --force-publish"; fi
           mkdir -p publish-artifacts
-          python run.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
+          python house_clerk_runner.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/run-summary.json
 
       - name: Publish to WordPress
-        if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true'
         working-directory: congress-trades-tracker
         run: |
-          # Delegated to a shared publisher shim that wraps the WP REST call.
-          # The shim reads payload.json from publish-artifacts/ and upserts the
-          # /congress-watch/ page.
           if [ -f ../_shared/publish_page_to_wp.py ]; then
-            python ../_shared/publish_page_to_wp.py publish-artifacts/payload.json
+            python ../_shared/publish_page_to_wp.py publish-artifacts/*-wp-payload.json
           else
             echo "publish_page_to_wp.py not present yet; payload retained for manual push"
           fi
@@ -102,13 +85,11 @@ jobs:
         run: |
           git config user.name "aztmm-bot"
           git config user.email "bot@aztmm.local"
-          # Promote publish-artifacts/ -> sample-output/ for jsDelivr serving
           mkdir -p congress-trades-tracker/sample-output/
           if [ -d congress-trades-tracker/publish-artifacts/ ]; then
             cp -f congress-trades-tracker/publish-artifacts/*.json congress-trades-tracker/sample-output/ 2>/dev/null || true
             cp -f congress-trades-tracker/publish-artifacts/*.html congress-trades-tracker/sample-output/ 2>/dev/null || true
           fi
-          # Stable URLs: latest.{json,html} copies for jsDelivr to serve
           cd congress-trades-tracker/sample-output/ 2>/dev/null && {
             LATEST_JSON=$(ls congress-*.public.json 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
             LATEST_HTML=$(ls congress-*.html 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
@@ -116,14 +97,13 @@ jobs:
           } || true
 
           git add congress-trades-tracker/data/ congress-trades-tracker/sample-output/ || true
-          git diff --cached --quiet || git commit -m "congress-watch: log run ${{ steps.guard.outputs.date }}"
-          # Race-safe push: pull-rebase + retry up to 4 times
+          git diff --cached --quiet || git commit -m "congress-watch (house-clerk): log run $(date -u +%F)"
           for i in 1 2 3 4; do
             if git pull --rebase origin main >/dev/null 2>&1; then
               if git push origin main; then
                 echo "  push ok on attempt $i"; break
               fi
             fi
-            echo "  push attempt $i failed — sleeping $((i*3))s"
+            echo "  push attempt $i failed - sleeping $((i*3))s"
             sleep $((i*3))
           done

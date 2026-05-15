@@ -1,3 +1,4 @@
+# DISABLED PATH A 2026-05-15 - UW-dependent fetcher retired. See house_clerk_fetcher.py.
 """
 AZTMM Congress Trades Tracker - Fetcher
 =========================================

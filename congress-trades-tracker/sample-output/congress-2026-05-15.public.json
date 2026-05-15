@@ -1,5 +1,62 @@
 {
-  "status": "offline",
-  "message": "Tracker temporarily offline. Migrating to free-source data feed.",
-  "removed_2026_05_15": true
+  "as_of": "2026-05-15 5:00 PM ET",
+  "as_of_date": "2026-05-15",
+  "refresh_label": "5:00 PM ET",
+  "headline_metric": {
+    "label": "Filings filed today",
+    "value": 0
+  },
+  "trades_today": [],
+  "members_today": [],
+  "tickers_today": [],
+  "summary": {
+    "filings_today": 0,
+    "members_today": 0,
+    "tickers_today": 0,
+    "chamber_breakdown": {},
+    "sector_breakdown": {},
+    "large_filings_today": 0,
+    "late_filings_today": 0
+  },
+  "most_active_today": [],
+  "notable": {
+    "ticker_clusters": [
+      {
+        "ticker": "STE",
+        "sector": "Health Care",
+        "member_count": 2,
+        "members": [
+          "April Delaney",
+          "Gilbert Cisneros"
+        ],
+        "filings_in_window": 3,
+        "window_start": "2026-05-01",
+        "window_end": "2026-05-07",
+        "tilt": "tilted toward acquisitions"
+      }
+    ],
+    "sector_clusters": [
+      {
+        "sector": "Technology",
+        "member_count": 3,
+        "filings_in_window": 5,
+        "window_start": "2026-05-01",
+        "window_end": "2026-05-07"
+      }
+    ],
+    "large_filings": [],
+    "late_filings": []
+  },
+  "commentary": [
+    "STE drew 2 distinct members inside the last 30 days (3 filings, tilted toward acquisitions). That kind of cluster is worth noting - not chasing.",
+    "3 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
+  ],
+  "data_quality": {
+    "degraded": false,
+    "endpoints_ok": 30,
+    "endpoints_failed": 0,
+    "source": "House Clerk PTR feed (free, public)",
+    "senate_status": "phase 2 - efdsearch.senate.gov scraper pending"
+  },
+  "generated_at": "2026-05-15T07:47:35Z"
 }

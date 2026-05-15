@@ -1,5 +1,6 @@
 {
-  "status": "offline",
-  "message": "Tracker temporarily offline. Migrating to free-source data feed.",
-  "removed_2026_05_15": true
+  "date": "2026-05-15",
+  "filings_today": 0,
+  "generated_at": "2026-05-15T07:47:35Z",
+  "source": "house-clerk-ptr"
 }
