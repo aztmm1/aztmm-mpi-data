@@ -1,5 +1,5 @@
 /**
- * AZTMM Cloudflare Worker — GH Actions cron backup (v2.1)
+ * AZTMM Cloudflare Worker — GH Actions cron backup (v2.2)
  *
  * Solves the GH Actions scheduler-dormancy problem.
  * GH Actions cron triggers go silent on low-activity repos. CF Workers do not.
@@ -21,6 +21,17 @@
  *       Each tracker's "key numbers" are extracted from today's latest.json
  *       and yesterday's dated file. Identical numbers => STALE_DATA flag.
  *
+ * v2.2: MPI added to FRESHNESS_TARGETS with value-hash check on the
+ *       core market numbers (spy_spot, vix, vix3m). Yesterday's hash is
+ *       stored in KV (key `<slug>:yesterdayValueHash`) and compared to
+ *       today's. Identical => STALE_DATA. Catches the wall-clock-fresh
+ *       but data-stale scenario from the 2026-05-14 incident (mpi.json
+ *       asOf=today but SPY/VIX values were yesterday's because the
+ *       close-cron fired before CBOE/SA had published the EOD bar).
+ *       Also supports an optional `path` override on target so files
+ *       outside the standard `<slug>/sample-output/<file>` layout
+ *       (e.g. data/mpi.json) can be watched.
+ *
  * Bindings + secrets (set in CF dashboard or `wrangler secret put`):
  *   GH_PAT             — fine-grained PAT, scopes: Actions read+write on
  *                        aztmm-mpi-data (or classic PAT with `repo` + `workflow`)
@@ -32,7 +43,7 @@
 
 const GH_OWNER = "aztmm1";
 const GH_REPO  = "aztmm-mpi-data";
-const USER_AGENT = "AZTMM-CF-Worker/2.1";
+const USER_AGENT = "AZTMM-CF-Worker/2.2";
 
 // Workflow file names (active workflows in .github/workflows/)
 const WORKFLOWS = {
@@ -95,6 +106,22 @@ const FRESHNESS_TARGETS = [
     // weekday runs since data only changes once per week.
     yesterdayFile: null,
   },
+  // MPI lives at data/mpi.json (not under <slug>/sample-output/...), so we
+  // provide an explicit `path` override. Value-hash check compares today's
+  // SPY/VIX/VIX3M against yesterday's stored hash in KV — catches the
+  // data-stale-but-clock-fresh scenario where asOf is today but the
+  // underlying market values are still yesterday's bars. (Ref: 2026-05-14
+  // incident — close-cron at 16:30 ET fired before EOD publish, so mpi.json
+  // reported the prior session's closes with asOf=today.)
+  {
+    slug: "mpi",
+    path: "data/mpi.json",
+    file: "mpi.json",
+    dateKeys: ["asOf"],
+    cadence: "daily",
+    yesterdayFile: null,
+    valueHashKeys: ["data.market.spy_spot", "data.volatility.vix", "data.volatility.vix3m"],
+  },
 ];
 
 // Per-tracker key-numbers extractors. Return a "|" joined string of stable
@@ -152,6 +179,13 @@ const FRESHNESS_KEY_NUMBERS = {
   "insider-activity-tracker": (data) => {
     const tt = (data && data.tape_totals) || {};
     return [data && data.summary_line, tt.total_filings, tt.total_buy_value_fmt, tt.total_sell_value_fmt].filter((v) => v !== undefined && v !== null && v !== "").join("|");
+  },
+  // MPI: extract spy_spot / vix / vix3m for KV-based day-over-day comparison.
+  // Returns a "|" joined string of fingerprint values.
+  "mpi": (data) => {
+    const d = (data && data.data) || {};
+    const m = d.market || {}; const v = d.volatility || {};
+    return [m.spy_spot, v.vix, v.vix3m].filter((x) => x !== undefined && x !== null).join("|");
   },
 };
 
@@ -309,7 +343,9 @@ function selectWorkflows(et) {
 // Per-target check: today's latest.json + (optionally) yesterday's dated file.
 // Returns a result object suitable for inclusion in the /freshness response.
 async function checkTarget(env, target, etDate) {
-  const todayPath = `${target.slug}/sample-output/${target.file}`;
+  // Allow `path` override for targets that live outside the standard
+  // `<slug>/sample-output/<file>` layout (e.g. MPI at data/mpi.json).
+  const todayPath = target.path || `${target.slug}/sample-output/${target.file}`;
   const yesterdayDate = prevDateStr(etDate);
   const yesterdayPath = (target.cadence === "daily" && target.yesterdayFile)
     ? `${target.slug}/sample-output/${target.yesterdayFile(yesterdayDate)}`
@@ -357,6 +393,44 @@ async function checkTarget(env, target, etDate) {
         staleDataReason = "key_numbers_identical_to_yesterday";
       }
     }
+  }
+
+  // v2.2: KV-based value-hash check.
+  // For targets with valueHashKeys (e.g. MPI), compute today's fingerprint
+  // from the listed dot-paths and compare to yesterday's value stored in
+  // KV at `<slug>:yesterdayValueHash`. This catches the data-stale-but-
+  // clock-fresh scenario where wall-clock asOf is fresh but underlying
+  // market values are stale (cf. 2026-05-14 incident).
+  if (target.valueHashKeys && Array.isArray(target.valueHashKeys) && env.KV) {
+    try {
+      const dig = (obj, dotPath) => {
+        const parts = dotPath.split(".");
+        let cur = obj;
+        for (const p of parts) {
+          if (cur == null || typeof cur !== "object") return undefined;
+          cur = cur[p];
+        }
+        return cur;
+      };
+      const parts = target.valueHashKeys.map((k) => {
+        const v = dig(data, k);
+        return (v === undefined || v === null) ? "" : String(v);
+      });
+      const todayValueHash = parts.join("|");
+      const kvKey = `${target.slug}:yesterdayValueHash`;
+      const prior = await env.KV.get(kvKey);
+      if (prior && todayValueHash && prior === todayValueHash) {
+        numbersMatched = true;
+        staleDataReason = "value_hash_identical_to_yesterday_kv";
+        // Surface in the result fingerprints too.
+        todayHash = todayHash || todayValueHash;
+        yesterdayHash = yesterdayHash || prior;
+      }
+      // Store today's hash for tomorrow's comparison (7-day TTL).
+      if (todayValueHash) {
+        await env.KV.put(kvKey, todayValueHash, { expirationTtl: 7 * 24 * 3600 });
+      }
+    } catch (_) { /* fail open */ }
   }
 
   // Status logic.
@@ -481,7 +555,7 @@ export default {
       return Response.json({
         ok: true,
         worker: "aztmm-cron",
-        version: "2.1",
+        version: "2.2",
         utc: now.toISOString(),
         etDate,
         etHour: et.hour,
