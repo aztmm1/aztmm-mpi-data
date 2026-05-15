@@ -189,6 +189,12 @@
 </table>
 
 </div>
+{# Methodology footnote (always rendered when present) #}
+{% if methodology_footnote %}
+<p style="max-width:600px;margin:18px auto 0 auto;color:#94a3b8;font-size:10px;line-height:1.6;text-align:center;font-style:italic;">
+  {{ methodology_footnote }}
+</p>
+{% endif %}
 {# Data-quality footnote (rendered outside email card) #}
 {% if data_quality and data_quality.degraded %}
 <p style="max-width:600px;margin:18px auto;color:#64748b;font-size:11px;line-height:1.6;font-style:italic;text-align:center;">

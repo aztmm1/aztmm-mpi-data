@@ -604,39 +604,48 @@ def _ticker_flow_signals(alerts: list[dict]) -> dict:
     }
 
 
-def _conviction_score(flow: dict, dp_total: float, dp_mega: int) -> int:
+def _conviction_score(flow: dict, dp_total: float, dp_mega: int,
+                       has_insider: bool = False) -> int:
     """
     Composite conviction (0-100). INTERNAL.
 
-    Weights:
-      Flow imbalance (call/put ask ratio): up to 35
-      Premium scale (call-ask $):           up to 20
-      Dark-pool premium absorption:         up to 25
-      Mega-print count:                     up to 10
-      OI buildup alerts:                    up to 5
-      Multi-expiry breadth:                 up to 5
+    Weights (post-UW, free-source rewrite):
+      Flow imbalance (call/put ask ratio): up to 30
+      Volume spike + premium scale:         up to 25
+      IV-rank elevation:                    up to 15
+      Dark-pool concentration (T-14):       up to 15
+      Insider crossover (Form 4):           up to 15
     """
     s = 0.0
+    # 1. Flow imbalance (call/put ratio anomaly) — up to 30 pts
     r = flow.get("call_put_ask_ratio")
     if r is not None:
-        if r >= 5: s += 35
-        elif r >= 3: s += 25
-        elif r >= 2: s += 15
-        elif r >= 1.5: s += 8
+        if r >= 5: s += 30
+        elif r >= 3: s += 22
+        elif r >= 2: s += 14
+        elif r >= 1.5: s += 7
+    # 2. Volume spike + premium scale — up to 25 pts
     call_ask = flow.get("call_ask_prem", 0)
-    if call_ask >= 100_000_000: s += 20
-    elif call_ask >= 25_000_000: s += 15
-    elif call_ask >= 10_000_000: s += 10
-    elif call_ask >= 5_000_000: s += 5
-    if dp_total >= 1_000_000_000: s += 25
-    elif dp_total >= 500_000_000: s += 18
-    elif dp_total >= 250_000_000: s += 10
-    elif dp_total >= 100_000_000: s += 5
-    if dp_mega >= 20: s += 10
-    elif dp_mega >= 10: s += 6
-    elif dp_mega >= 5: s += 3
-    s += min(flow.get("call_oi_buildup_alerts", 0), 5)
-    s += min(flow.get("expiry_breadth", 0), 5)
+    if call_ask >= 100_000_000: s += 25
+    elif call_ask >= 25_000_000: s += 18
+    elif call_ask >= 10_000_000: s += 12
+    elif call_ask >= 5_000_000: s += 6
+    # 3. IV-rank elevation — up to 15 pts
+    ivr = flow.get("iv_rank_avg")
+    if ivr is not None:
+        if ivr >= 70: s += 15
+        elif ivr >= 50: s += 10
+        elif ivr >= 30: s += 5
+    # 4. Dark-pool concentration (T-14 caveat) — up to 15 pts
+    if dp_total >= 1_000_000_000: s += 15
+    elif dp_total >= 500_000_000: s += 11
+    elif dp_total >= 250_000_000: s += 7
+    elif dp_total >= 100_000_000: s += 4
+    if dp_mega >= 10: s += 3
+    elif dp_mega >= 5: s += 1
+    # 5. Insider crossover (Form 4 buys, last 14 days) — up to 15 pts
+    if has_insider:
+        s += 15
     return int(min(100, round(s)))
 
 
@@ -763,7 +772,8 @@ def aggregate_tells(flow_alerts: list[dict], darkpool: dict) -> list[dict]:
         dp_total = _dp_total_premium(prints)
         dp_mega = _dp_mega_count(prints)
         dp_largest = _largest_dp_share_print(prints)
-        conviction = _conviction_score(flow, dp_total, dp_mega)
+        has_insider = any(a.get("insider_double_confirmation") for a in alerts)
+        conviction = _conviction_score(flow, dp_total, dp_mega, has_insider)
         if conviction < CONVICTION_GATE:
             continue
         sector = TICKER_SECTOR.get(tkr, "Single-name")
@@ -784,7 +794,7 @@ def aggregate_tells(flow_alerts: list[dict], darkpool: dict) -> list[dict]:
         })
 
     scored.sort(key=lambda r: r["_conviction"], reverse=True)
-    out = scored[:2]
+    out = scored[:3]
     # Strip internal fields before returning
     for o in out:
         o.pop("_conviction", None)
@@ -1072,6 +1082,12 @@ def aggregate(raw: dict, prev_raw: dict | None = None) -> dict:
             "label": "MPI",
             "value": mpi_score,
         },
+        # v3 free-source: methodology footnote piped from fetcher
+        "methodology_footnote": raw.get("methodology_footnote", (
+            "Data sources: yfinance EOD options chain - CBOE Daily Volume "
+            "Summary - FINRA OTC Transparency (T-14) - SEC EDGAR Form 4 - "
+            "Not investment advice."
+        )),
     }
     return out
 
@@ -1081,23 +1097,47 @@ def aggregate(raw: dict, prev_raw: dict | None = None) -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    import argparse, json, sys
-    p = argparse.ArgumentParser()
-    p.add_argument("--input", required=True)
+    import argparse, json, sys, logging
+    p = argparse.ArgumentParser(description="AZTMM Daily Pulse v3 aggregator")
+    # New free-source mode (spec)
+    p.add_argument("--asof", default=None,
+                   help="YYYY-MM-DD: run end-to-end fetch + aggregate")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Print JSON to stdout, skip publish")
+    p.add_argument("--fast", action="store_true",
+                   help="Limit to 5 names / 3 sectors for smoke test")
+    # Legacy file-driven mode (kept for back-compat)
+    p.add_argument("--input", default=None, help="Pre-fetched raw JSON file")
     p.add_argument("--prev", default=None)
     p.add_argument("--out", default=None)
     args = p.parse_args()
 
-    with open(args.input) as f:
-        raw = json.load(f)
-    prev = None
-    if args.prev:
-        with open(args.prev) as f:
-            prev = json.load(f)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
+
+    if args.asof:
+        # Free-source end-to-end run
+        from daily_pulse_fetcher import fetch_daily_data
+        raw = fetch_daily_data(args.asof, fast=args.fast)
+        prev = None
+    else:
+        if not args.input:
+            p.error("Provide --asof YYYY-MM-DD (free-source) or --input file (legacy)")
+        with open(args.input) as f:
+            raw = json.load(f)
+        prev = None
+        if args.prev:
+            with open(args.prev) as f:
+                prev = json.load(f)
+
     agg = aggregate(raw, prev)
     out_str = json.dumps(agg, indent=2, default=str)
     if args.out:
         with open(args.out, "w") as f:
             f.write(out_str)
+    elif args.dry_run or args.asof:
+        sys.stdout.write(out_str)
     else:
         sys.stdout.write(out_str)

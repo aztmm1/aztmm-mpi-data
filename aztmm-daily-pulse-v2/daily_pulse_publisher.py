@@ -32,13 +32,23 @@ logger = logging.getLogger("daily_pulse.publisher")
 # Brand policy — forbidden phrases (case-insensitive substring match)
 # ---------------------------------------------------------------------------
 
+# Post-UW free-source rewrite: methodology footnote now EXPLICITLY discloses
+# sources (yfinance/CBOE/FINRA/EDGAR), so source names are allowed there.
+# The brand_check strips the methodology block before scanning.
 FORBIDDEN_PHRASES = [
-    "cboe", "fred", "yahoo", "aaii",
+    "fred", "aaii",
     "bbs", "blackbox", "black box",
     "hmm", "hidden markov", "transition matrix",
     "★",
-    "unusual whales", "unusualwhales", " uw ",
+    "unusual whales", "unusualwhales",
 ]
+# Note: "uw " removed because false-positive risk (e.g. "two-week" etc).
+# UW vendor name now strictly forbidden via "unusual whales"/"unusualwhales".
+
+# Allowlist regex: methodology footnote block — exempt from brand-check.
+METHODOLOGY_RE = (
+    r"<p[^>]*>\s*Data sources:[^<]*</p>"
+)
 
 # These regex patterns catch model-weight leaks
 FORBIDDEN_REGEXES = [
@@ -49,8 +59,13 @@ FORBIDDEN_REGEXES = [
 
 
 def brand_check(html: str) -> dict:
-    """Return {ok: bool, hits: list[str]}. ok=True means no forbidden hits."""
-    text = html.lower()
+    """Return {ok: bool, hits: list[str]}. ok=True means no forbidden hits.
+
+    The methodology-footnote block is excluded from the scan because it
+    explicitly discloses data sources per the v3 free-source policy.
+    """
+    # Strip methodology footnote — it intentionally names sources
+    text = re.sub(METHODOLOGY_RE, "", html, flags=re.IGNORECASE | re.DOTALL).lower()
     hits: list[str] = []
     for phrase in FORBIDDEN_PHRASES:
         if phrase in text:

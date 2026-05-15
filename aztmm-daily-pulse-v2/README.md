@@ -1,27 +1,41 @@
-# AZTMM Daily Pulse v2
+# AZTMM Daily Pulse v3 (Free-Source Rewrite)
 
-End-of-day options + dark pool pulse. Auto-generated 5 PM ET, Mon–Fri.
-Replaces the earlier BBS-based daily pulse with the richer end-of-day options
-and dark pool data feeds.
+End-of-day options + dark pool pulse. Auto-generated 5 PM ET, Mon-Fri.
+
+**v3 changes (May 2026):** rewrote fetcher to use ONLY free data sources.
+Zero UW dependency. Sources are explicitly disclosed in the methodology
+footnote on every post.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `daily_pulse_fetcher.py` | Pulls raw end-of-day feeds for a date |
-| `daily_pulse_aggregator.py` | Pure aggregation / scenario classification |
-| `daily_pulse_template.html.j2` | Jinja2 post-body template |
+| `daily_pulse_fetcher.py` | Pulls raw EOD feeds (yfinance + FINRA + EDGAR + repo MPI) |
+| `daily_pulse_aggregator.py` | Pure aggregation + conviction gate + tell rendering |
+| `daily_pulse_template.html.j2` | Jinja2 post-body template (email-safe, WP-block-wrapped) |
 | `daily_pulse_publisher.py` | Render + brand-policy scrubber + payload builder |
 | `run_daily_pulse.py` | Orchestrator (CLI + run logs) |
 | `publish_to_wp.py` | WordPress REST API publisher (called by workflow) |
-| `daily-pulse-v2-update.yml` | GH Actions workflow (cron 21:00 UTC EDT / 22:00 UTC EST) |
-| `methodology.md` | Public methodology page (no vendor names) |
+| `daily-pulse-v2-update.yml` | GH Actions workflow — HALTED, main agent re-enables after verify |
+| `methodology.md` | Public methodology page |
 | `sample-output/` | Rendered post bodies for verification |
+
+## Data sources (post-UW, all free)
+
+| Source | What it provides | Lag / caveat |
+|---|---|---|
+| **yfinance EOD option chain** | Per-strike volume, OI, IV, bid/ask for top 50 names + 12 sector ETFs (nearest 2 expiries) | EOD only, IV-rank is heuristic |
+| **yfinance ^VIX / ^VIX3M** | Volatility regime baseline | EOD |
+| **CBOE Daily Volume Summary CSV** | Equity P/C ratio history | **403 from CDN endpoint as of May 2026** — falls back to yfinance-aggregated P/C |
+| **FINRA OTC Transparency API** | ATS by-symbol weekly notional (dark-pool proxy) | **T-14 to T-28 lag** (latest is the prior 1-4 weeks) |
+| **SEC EDGAR Form 4** | Recent insider filings per ticker (last 14 days) | Filing-date only; does NOT distinguish buys from sells without primary-doc parsing |
+| **`data/mpi.json`** | Live MPI score + regime from the regime tool | Refreshed by MPI workflow, read at runtime |
+| **`ECON_CAL_2026` (hardcoded)** | Tomorrow's macro catalyst (CPI/FOMC/NFP/OPEX/PCE etc.) | Static — refresh monthly |
 
 ## Install
 
 ```bash
-cd outputs/aztmm-daily-pulse-v2
+cd aztmm-daily-pulse-v2
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -29,84 +43,67 @@ pip install -r requirements.txt
 
 ## Environment variables
 
-| Var | Used by | Notes |
+| Var | Used in | Notes |
 |---|---|---|
-| `UW_API_TOKEN` | fetcher | NEVER commit. Loaded at runtime only. |
-| `WP_SITE` | publisher | e.g. `aztmm.com` |
-| `WP_USERNAME` | publisher | WP user with author/editor role |
-| `WP_APP_PASSWORD` | publisher | WordPress application password (Users → Profile → Application Passwords). NOT your login password. |
+| `EDGAR_USER_AGENT` | fetcher | Optional. Defaults to "AZTMM Research nikhil.kothari17@gmail.com". SEC requires a real UA with email. |
 
-## WordPress application password
+**No paid-API tokens required.** The previous `UW_API_TOKEN` is no longer used and is safe to delete from GH Actions secrets.
 
-1. Log in to WP admin, go to Users → Profile.
-2. Scroll to **Application Passwords**.
-3. Enter `aztmm-daily-pulse` and click **Add New**.
-4. Copy the 24-character password (shown once).
-5. Add it to GH Actions Secrets as `WP_APP_PASSWORD`.
+## CLI
 
-## Local test
-
+### Free-source dry run (spec-compliant)
 ```bash
-# Dry run for a specific date
-UW_API_TOKEN=$YOUR_TOKEN python run_daily_pulse.py --date 2026-05-12 --dry-run --out-dir sample-output/
-
-# Re-render only (from cached fetch JSON)
-python daily_pulse_aggregator.py --input data/raw/2026-05-12.json --out data/agg/2026-05-12.json
-python daily_pulse_publisher.py --agg data/agg/2026-05-12.json --template daily_pulse_template.html.j2 --out preview.html
+python3 daily_pulse_aggregator.py --asof 2026-05-15 --dry-run --fast
+# --fast limits to 5 names + 3 sectors for ~30 second smoke test
+# without --fast, full top-50 + 12 sectors (~90-120 seconds)
 ```
 
-## Schedule
+### Legacy file-driven (back-compat)
+```bash
+python3 daily_pulse_fetcher.py --asof 2026-05-15 --fast --out raw.json
+python3 daily_pulse_aggregator.py --input raw.json --out agg.json
+```
 
-The cron has two lines because GH Actions schedules in UTC but ET shifts by 1
-hour twice a year.
+### Full orchestrator (publish path)
+```bash
+python3 run_daily_pulse.py --date 2026-05-15 --dry-run --out-dir sample-output/
+```
 
-| Period | ET offset | UTC cron |
+## Conviction scoring (INTERNAL — NEVER surfaced in HTML)
+
+Per-ticker composite (0-100). Surface names with score >= 80 (capped at 3 tells).
+
+| Component | Max pts | Source |
 |---|---|---|
-| EDT (Mar–Nov) | UTC−4 | `0 21 * * 1-5` |
-| EST (Nov–Mar) | UTC−5 | `0 22 * * 1-5` |
+| Flow imbalance (call/put ask ratio) | 30 | yfinance option chain |
+| Volume spike + premium scale | 25 | yfinance option chain |
+| IV-rank elevation | 15 | yfinance heuristic |
+| Dark-pool concentration (T-14) | 15 | FINRA ATS weekly |
+| Insider crossover (Form 4 in 14d) | 15 | SEC EDGAR |
 
-The orchestrator has an idempotency guard: if a run log for the target date
-already shows `payload_emitted` or `dry_run_ok`, the second cron skips.
+## Brand-check policy
 
-## Brand policy
+`daily_pulse_publisher.brand_check()` flags forbidden phrases in the post body.
+The **methodology footnote is exempt** (it intentionally names sources per the v3 disclosure policy). Forbidden phrases include:
 
-The publisher runs a substring + regex scrubber on the rendered HTML.
-Forbidden phrases (case-insensitive):
+> fred, aaii, bbs, blackbox, hmm, hidden markov, transition matrix, ★, Unusual Whales, unusualwhales
 
-> CBOE, FRED, Yahoo, AAII, BBS, BlackBox, Black Box, HMM, Hidden Markov,
-> transition matrix, ★, Unusual Whales, unusualwhales, " uw "
+Model weights / agent scores / methodology numbers caught via regex (e.g. `p=0.42`, `weight=0.3`, `score=4.2`).
 
-Plus regexes:
+## Methodology footnote (every post)
 
-> `\bp\s*=\s*0\.\d+`, `\bweight\s*=\s*0\.\d+`, `\bscore\s*=\s*\d+`
+> "Data sources: yfinance EOD options chain - CBOE Daily Volume Summary - FINRA OTC Transparency (T-14) - SEC EDGAR Form 4 - Not investment advice."
 
-Any hit → publish is **blocked**, an incident is written to `data/incidents/`,
-the rendered HTML lands in `data/needs-review/`, and a macOS notification
-fires. The post never goes live until a human reviews and fixes the source.
+Rendered inline at the bottom of every post, outside the email card.
 
-## First weeks of runs
+## v3 known caveats / next-session queue
 
-`run_daily_pulse.py` defaults to `status=draft`. Open the WP admin Drafts
-list, review, and Publish manually for the first ~10 runs. Once you trust
-the output, set `force_publish: 'true'` in the workflow dispatch or change
-the orchestrator default.
+1. **CBOE equity-P/C CSV endpoint returns 403** consistently. The methodology footnote retains the source label (it's the canonical reference) but the actual P/C is computed from yfinance-aggregated volumes. Investigate authenticated CBOE DataShop endpoint or alternate path.
+2. **EDGAR Form 4 classification is row-count-only.** Cannot distinguish buy (P) from sell (S) without parsing each filing's primary XML doc. Track A (insider tracker) may have a richer parser to reuse.
+3. **FINRA ATS lag is T-14 to T-28**, not T-7. The conviction gate weights this signal accordingly (max 15 pts).
+4. **IV-rank is heuristic** mapped from raw IV (yfinance doesn't expose true IV rank). Replace with a 252-day rolling rank when historical chains are cached.
+5. **`ECON_CAL_2026` is hardcoded** through June 2026. Refresh monthly or wire to `https://www.federalreserve.gov/newsevents/calendar.htm` scrape.
 
-## Rollback plan
+## Workflow status
 
-1. **Stop the cron**: comment out the two `cron:` lines in
-   `daily-pulse-v2-update.yml` and push, OR disable the workflow from the
-   GH Actions UI.
-2. **Hide live posts**: in WP admin, set the offending day's post status to
-   `private` or `pending`.
-3. **Resume the BBS-based pipeline**: the v1 workflow is preserved in the
-   `legacy/` folder if a fallback is needed.
-
-## Audit-grade properties
-
-- Walk-forward only — fetcher uses the target date as a hard upper bound.
-- Idempotent on date — re-running the same date overwrites the run log only.
-- Token never persisted — loaded from `UW_API_TOKEN` env var at call time.
-- Defensive — each endpoint wraps try/except, failure marked in `data_quality`.
-- Rate-limit aware — 0.6s throttle keeps under 120/min.
-- Brand grep enforced — non-zero hit blocks publish.
-- All academic citations live in `methodology.md`.
+Per Track-B instructions: `daily-pulse-v2-update.yml` is **halted**. Main agent re-enables after verify.

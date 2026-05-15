@@ -1,0 +1,375 @@
+{
+  "post_date_display": "Friday May 15, 2026",
+  "headline": "Call-heavy tape; Financials led (-0.23%); standout single-name positioning surfaced.",
+  "mpi_score": 59,
+  "mpi_label": "Bull",
+  "regime_short": "Bull \u00b7 early",
+  "regime_confidence_label": "85%",
+  "key_metric_label": "Tape",
+  "key_metric_value": "Call 1.7\u00d7",
+  "key_metric_caption": "Call-tilted tape",
+  "hero_underline_color": "#10b981",
+  "tells": [
+    {
+      "ticker": "LLY",
+      "sub_header": "Single-name \u00b7 spot $998.97",
+      "observation": "<strong style=\"white-space:nowrap;\">$147.8M</strong> call-ask vs <strong style=\"white-space:nowrap;\">$266.7K</strong> put-ask at the <strong style=\"white-space:nowrap;\">$550</strong> strike &mdash; a <strong style=\"white-space:nowrap;\">554.1\u00d7</strong> dominance. IV rank sits at <strong style=\"white-space:nowrap;\">88</strong> &mdash; premium isn't cheap, which means buyers are paying up rather than waiting. The pattern is the kind institutions ladder-buy into when they expect a multi-week grind.",
+      "accent_color": "#10b981"
+    }
+  ],
+  "changes": [
+    {
+      "arrow": "\u25bc",
+      "arrow_color": "#ef4444",
+      "text": "SPY closed <strong style=\"color:#ef4444;white-space:nowrap;\">$741.31</strong> (-0.92%). Index tape held in line with the broader read."
+    },
+    {
+      "arrow": "\u25b2",
+      "arrow_color": "#10b981",
+      "text": "Net call premium <strong style=\"white-space:nowrap;\">$1.57B</strong> vs put <strong style=\"white-space:nowrap;\">$897.7M</strong> = <strong style=\"white-space:nowrap;\">1.7\u00d7</strong> call-heavy."
+    },
+    {
+      "arrow": "\u25cf",
+      "arrow_color": "#0ea5e9",
+      "text": "Dark pool <strong style=\"white-space:nowrap;\">$3.91B</strong> on AMZN, 1 mega-print. End-of-day institutional accumulation pattern."
+    }
+  ],
+  "catalysts": [],
+  "appendix_url": "https://aztmm.com/2026/05/15/daily-pulse-options-flow-dark-pool-2026-05-15/",
+  "date": "2026-05-15",
+  "prev_date": "2026-05-14",
+  "scenario": {
+    "score": 4,
+    "label": "BULL",
+    "headline": "Risk-on tape: broad participation, conviction flow leans long.",
+    "reasons": [
+      "Sector breadth tilts down (1 vs 0)",
+      "Intraday options tape closed net-call positive",
+      "P/C ratio bullish (0.65)",
+      "Bullish-flagged alerts > bearish (98 vs 45)",
+      "High-conviction call flow > put (139 vs 38)",
+      "Heavy put-selling (170 alerts)"
+    ]
+  },
+  "market_totals": {
+    "available": true,
+    "call_volume": 5644819,
+    "put_volume": 3689281,
+    "call_premium": 1566379571.0,
+    "put_premium": 897695421.0,
+    "call_premium_fmt": "$1.57B",
+    "put_premium_fmt": "$897.7M",
+    "pc_ratio": 0.653569405856946,
+    "pc_ratio_fmt": "0.65",
+    "call_put_premium_ratio": 1.7448897859533585,
+    "call_put_premium_ratio_fmt": "Call 1.7\u00d7"
+  },
+  "sector": {
+    "rows": [
+      {
+        "ticker": "SPY",
+        "name": "S&P 500 (broad market)",
+        "change_pct": -0.9173669770567294,
+        "change_pct_fmt": "-0.92%",
+        "close": 741.3065185546875,
+        "call_premium": 262420949.0,
+        "call_premium_fmt": "$262.4M",
+        "put_premium": 259666945.0,
+        "put_premium_fmt": "$259.7M",
+        "net_premium": 2754004.0,
+        "net_premium_fmt": "$2.8M",
+        "band": "lagging"
+      },
+      {
+        "ticker": "XLK",
+        "name": "Technology",
+        "change_pct": -1.21726883487117,
+        "change_pct_fmt": "-1.22%",
+        "close": 177.31500244140625,
+        "call_premium": 3310619.0,
+        "call_premium_fmt": "$3.3M",
+        "put_premium": 0.0,
+        "put_premium_fmt": "$0",
+        "net_premium": 3310619.0,
+        "net_premium_fmt": "$3.3M",
+        "band": "lagging"
+      },
+      {
+        "ticker": "XLF",
+        "name": "Financials",
+        "change_pct": -0.23396908644956188,
+        "change_pct_fmt": "-0.23%",
+        "close": 51.16999816894531,
+        "call_premium": 0.0,
+        "call_premium_fmt": "$0",
+        "put_premium": 109916.99999999999,
+        "put_premium_fmt": "$109.9K",
+        "net_premium": -109916.99999999999,
+        "net_premium_fmt": "-$109.9K",
+        "band": "neutral"
+      }
+    ],
+    "sector_rows": [
+      {
+        "ticker": "XLF",
+        "name": "Financials",
+        "change_pct": -0.23396908644956188,
+        "change_pct_fmt": "-0.23%",
+        "close": 51.16999816894531,
+        "call_premium": 0.0,
+        "call_premium_fmt": "$0",
+        "put_premium": 109916.99999999999,
+        "put_premium_fmt": "$109.9K",
+        "net_premium": -109916.99999999999,
+        "net_premium_fmt": "-$109.9K",
+        "band": "neutral"
+      },
+      {
+        "ticker": "XLK",
+        "name": "Technology",
+        "change_pct": -1.21726883487117,
+        "change_pct_fmt": "-1.22%",
+        "close": 177.31500244140625,
+        "call_premium": 3310619.0,
+        "call_premium_fmt": "$3.3M",
+        "put_premium": 0.0,
+        "put_premium_fmt": "$0",
+        "net_premium": 3310619.0,
+        "net_premium_fmt": "$3.3M",
+        "band": "lagging"
+      }
+    ],
+    "leaders": [
+      {
+        "ticker": "XLF",
+        "name": "Financials",
+        "change_pct": -0.23396908644956188,
+        "change_pct_fmt": "-0.23%",
+        "close": 51.16999816894531,
+        "call_premium": 0.0,
+        "call_premium_fmt": "$0",
+        "put_premium": 109916.99999999999,
+        "put_premium_fmt": "$109.9K",
+        "net_premium": -109916.99999999999,
+        "net_premium_fmt": "-$109.9K",
+        "band": "neutral"
+      },
+      {
+        "ticker": "XLK",
+        "name": "Technology",
+        "change_pct": -1.21726883487117,
+        "change_pct_fmt": "-1.22%",
+        "close": 177.31500244140625,
+        "call_premium": 3310619.0,
+        "call_premium_fmt": "$3.3M",
+        "put_premium": 0.0,
+        "put_premium_fmt": "$0",
+        "net_premium": 3310619.0,
+        "net_premium_fmt": "$3.3M",
+        "band": "lagging"
+      }
+    ],
+    "laggards": [
+      {
+        "ticker": "XLK",
+        "name": "Technology",
+        "change_pct": -1.21726883487117,
+        "change_pct_fmt": "-1.22%",
+        "close": 177.31500244140625,
+        "call_premium": 3310619.0,
+        "call_premium_fmt": "$3.3M",
+        "put_premium": 0.0,
+        "put_premium_fmt": "$0",
+        "net_premium": 3310619.0,
+        "net_premium_fmt": "$3.3M",
+        "band": "lagging"
+      },
+      {
+        "ticker": "XLF",
+        "name": "Financials",
+        "change_pct": -0.23396908644956188,
+        "change_pct_fmt": "-0.23%",
+        "close": 51.16999816894531,
+        "call_premium": 0.0,
+        "call_premium_fmt": "$0",
+        "put_premium": 109916.99999999999,
+        "put_premium_fmt": "$109.9K",
+        "net_premium": -109916.99999999999,
+        "net_premium_fmt": "-$109.9K",
+        "band": "neutral"
+      }
+    ],
+    "spy": {
+      "ticker": "SPY",
+      "name": "S&P 500 (broad market)",
+      "change_pct": -0.9173669770567294,
+      "change_pct_fmt": "-0.92%",
+      "close": 741.3065185546875,
+      "call_premium": 262420949.0,
+      "call_premium_fmt": "$262.4M",
+      "put_premium": 259666945.0,
+      "put_premium_fmt": "$259.7M",
+      "net_premium": 2754004.0,
+      "net_premium_fmt": "$2.8M",
+      "band": "lagging"
+    }
+  },
+  "tide": {
+    "available": true,
+    "eod_net_call_premium": 668684150.0,
+    "eod_net_put_premium": 0.0,
+    "eod_net_volume": 0.0,
+    "eod_net_call_premium_fmt": "$668.7M",
+    "eod_net_put_premium_fmt": "$0",
+    "shape": "closed mid-range (chop)",
+    "direction": "positive"
+  },
+  "concentration": {
+    "available": true,
+    "tech": [
+      {
+        "ticker": "NVDA",
+        "net_premium": 106403719.0,
+        "net_premium_fmt": "$106.4M"
+      },
+      {
+        "ticker": "TSLA",
+        "net_premium": 68334934.0,
+        "net_premium_fmt": "$68.3M"
+      },
+      {
+        "ticker": "AAPL",
+        "net_premium": 63198214.5,
+        "net_premium_fmt": "$63.2M"
+      },
+      {
+        "ticker": "META",
+        "net_premium": 61866532.5,
+        "net_premium_fmt": "$61.9M"
+      },
+      {
+        "ticker": "AMD",
+        "net_premium": 49016034.5,
+        "net_premium_fmt": "$49.0M"
+      }
+    ],
+    "non_tech": [
+      {
+        "ticker": "LLY",
+        "net_premium": 165946909.5,
+        "net_premium_fmt": "$165.9M"
+      },
+      {
+        "ticker": "XOM",
+        "net_premium": -61175098.5,
+        "net_premium_fmt": "-$61.2M"
+      },
+      {
+        "ticker": "SPY",
+        "net_premium": -39522152.0,
+        "net_premium_fmt": "-$39.5M"
+      },
+      {
+        "ticker": "UNH",
+        "net_premium": 34096661.0,
+        "net_premium_fmt": "$34.1M"
+      },
+      {
+        "ticker": "BA",
+        "net_premium": -4266378.5,
+        "net_premium_fmt": "-$4.3M"
+      }
+    ],
+    "narrowing": false,
+    "narrowing_ticker": null
+  },
+  "darkpool": {
+    "available": true,
+    "rows": [
+      {
+        "ticker": "AMZN",
+        "total_premium": 3911620813.1,
+        "total_premium_fmt": "$3.91B",
+        "mega_print_count": 1,
+        "print_count": 2
+      },
+      {
+        "ticker": "TSM",
+        "total_premium": 905164218.2,
+        "total_premium_fmt": "$905.2M",
+        "mega_print_count": 1,
+        "print_count": 2
+      }
+    ]
+  },
+  "presets": {
+    "available": true,
+    "counts": {
+      "deep_conviction_calls": 139,
+      "unusually_bullish": 98,
+      "unusually_bearish": 45,
+      "put_sells": 170,
+      "deep_conviction_puts": 38
+    },
+    "top_alerts": [
+      {
+        "ticker": "MSFT",
+        "premium": 45840495.0,
+        "premium_fmt": "$45.8M",
+        "type": "put",
+        "strike": 470.0,
+        "expiry": "2026-05-15",
+        "dte": 0,
+        "v_oi": 6.045819935691318,
+        "size": 0
+      },
+      {
+        "ticker": "MSFT",
+        "premium": 40107048.0,
+        "premium_fmt": "$40.1M",
+        "type": "call",
+        "strike": 415.0,
+        "expiry": "2026-05-15",
+        "dte": 0,
+        "v_oi": 3.092294554292846,
+        "size": 0
+      },
+      {
+        "ticker": "SPY",
+        "premium": 38532438.0,
+        "premium_fmt": "$38.5M",
+        "type": "put",
+        "strike": 740.0,
+        "expiry": "2026-05-15",
+        "dte": 0,
+        "v_oi": 16.19588424437299,
+        "size": 0
+      }
+    ],
+    "total_alerts_scanned": 1266
+  },
+  "data_quality": {
+    "endpoints_ok": 7,
+    "endpoints_failed": 1,
+    "sources_used": [
+      "yfinance_sector_etfs",
+      "yfinance_option_chains",
+      "yfinance_market_totals_synth",
+      "yfinance_vix",
+      "finra_ats_weekly_t14",
+      "sec_edgar_form4",
+      "repo_mpi_json"
+    ],
+    "sources_failed": [
+      "cboe_equity_pc_csv_403"
+    ],
+    "degraded": true,
+    "elapsed_seconds": 25.66
+  },
+  "generated_at_iso": "2026-05-15T16:42:49.545526Z",
+  "headline_metric": {
+    "label": "MPI",
+    "value": 59
+  },
+  "methodology_footnote": "Data sources: yfinance EOD options chain - CBOE Daily Volume Summary - FINRA OTC Transparency (T-14) - SEC EDGAR Form 4 - Not investment advice."
+}
