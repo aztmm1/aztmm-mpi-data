@@ -1,8 +1,8 @@
 {
   "date": "2026-05-14",
-  "started_at": "2026-05-14T21:32:38.752616Z",
+  "started_at": "2026-05-15T00:13:10.595963Z",
   "dry_run": false,
-  "force_publish": true,
+  "force_publish": false,
   "steps": [
     {
       "step": "fetch",
@@ -13,7 +13,7 @@
     {
       "step": "fetch_prev",
       "ok": true,
-      "endpoints_ok": 18
+      "endpoints_ok": 9
     },
     {
       "step": "aggregate",
@@ -30,7 +30,7 @@
     {
       "step": "render",
       "ok": true,
-      "html_bytes": 30950
+      "html_bytes": 30554
     },
     {
       "step": "brand_check",
@@ -41,7 +41,7 @@
   "payload": {
     "title": "Daily Pulse \u2014 2026-05-14 \u2014 BULL",
     "excerpt": "Risk-on tape: broad participation, conviction flow leans long.",
-    "status": "publish",
+    "status": "draft",
     "categories": [
       "Daily Pulse"
     ],
@@ -50,7 +50,7 @@
       "scenario-bull"
     ],
     "slug": "daily-pulse-2026-05-14",
-    "content_bytes": 30950
+    "content_bytes": 30554
   },
   "status": "payload_emitted"
 }
