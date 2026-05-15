@@ -3,6 +3,7 @@
   "computed_at": "2026-05-15T15:29:09Z",
   "asOf": "2026-05-15",
   "stale_threshold_hours": 18,
+  "data_quality": "degraded",
   "data": {
     "mpi_score": 59,
     "mpi_label": "Bull",
@@ -68,10 +69,12 @@
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 50.0
+        "score": 50.0,
+        "error": "no t10y2y"
       },
       "credit": {
-        "score": 50.0
+        "score": 50.0,
+        "error": "no hy_oas"
       },
       "sentiment": {
         "score": 64.9,
@@ -95,7 +98,22 @@
       }
     }
   },
+  "warnings": [
+    "DEGRADED: FRED_API_KEY not set; macro sleeve will use last-good",
+    "CBOE put/call fetch failed"
+  ],
   "source_versions": {
-    "schema": "2.0"
+    "schema": "2.0",
+    "weights": {
+      "trend": 0.15,
+      "breadth": 0.1,
+      "volatility": 0.15,
+      "yield_curve": 0.1,
+      "credit": 0.1,
+      "sentiment": 0.15,
+      "rotation": 0.1,
+      "currency": 0.05,
+      "liquidity": 0.1
+    }
   }
 }
