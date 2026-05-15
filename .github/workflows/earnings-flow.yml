@@ -1,18 +1,16 @@
 # === PATH A LOCKED 2026-05-15 ===
-# Auto-cron permanently disabled. This pipeline produced posts/snapshots that
-# violated UW TOS (personal-use-only data on a public surface).
-# DO NOT re-enable schedule until pipeline is rebuilt on free sources only
-# (FINRA OTC, CBOE, yfinance, EDGAR).
-# Manual workflow_dispatch retained for archive/testing use only.
+# Earnings Flow rebuilt on free sources only (yfinance EOD options chain +
+# earnings calendar). NO Unusual Whales. Auto-cron re-enabled with this
+# rebuild. Old UW fetcher preserved at fetcher.uw.disabled.py.
 
 name: AZTMM Earnings Flow Flag
 
 # Schedule: weekday 5 PM ET (both DST + EST entries; idempotency guard
 # prevents double-runs across the DST boundary).
 on:
-  # schedule:
-  #   - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
-  #   - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
   workflow_dispatch:
     inputs:
       date:
@@ -30,10 +28,6 @@ jobs:
   earnings-flow:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-
-    env:
-      UW_API_KEY: ${{ secrets.UW_API_KEY }}
-      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
 
     steps:
       - name: Checkout
@@ -67,10 +61,8 @@ jobs:
         if: steps.guard.outputs.already_ran == 'false'
         working-directory: earnings-flow-flag-tracker
         run: |
-          ARGS=""
-          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
-          python run.py $ARGS
+          # PATH A LOCKED 2026-05-15: free-source fetcher only.
+          python yf_fetcher.py --universe-size 50 --sleep 0.3
 
       - name: Refresh latest.{html,json} via filename-date sort
         if: always()

@@ -1,3 +1,7 @@
+# === PATH A LOCKED 2026-05-15 ===
+# DISABLED: This fetcher used Unusual Whales data and violated TOS for
+# public surfaces. Renamed to .uw.disabled. New fetcher: yf_fetcher.py
+# (yfinance EOD options chain + earnings calendar — free sources only).
 """
 AZTMM Earnings Flow Flag — fetcher
 
