@@ -1,21 +1,28 @@
 name: MPI + HMM Auto-Update
 
-# Runs Mon-Fri at 09:15 ET and 16:30 ET.
+# Runs Mon-Fri at 09:15 ET (prior-session close) and 18:00 ET (post-close EOD).
+#
 # Note: GitHub Actions cron is in UTC and ET DST shifts ±1h.
 # We list both EST (UTC-5) and EDT (UTC-4) cron lines; the script self-gates
 # on the actual NY clock so duplicate fires no-op cleanly.
+#
+# Post-close cron moved to 18:00 ET to ensure EOD bars from CBOE/SA are
+# published before MPI computes. Prior 16:30 ET was too early (cf.
+# data-staleness incident 2026-05-14 — mpi.json reported the prior session's
+# closes because SA had not yet rolled the EOD bar and CBOE CSV updates
+# ~21:51 ET).
 on:
   schedule:
-    # 09:15 ET  -> 14:15 UTC (EST) and 13:15 UTC (EDT)
+    # 09:15 ET (prior-session close) -> 14:15 UTC (EST) and 13:15 UTC (EDT)
     - cron: "15 14 * * 1-5"
     - cron: "15 13 * * 1-5"
-    # 16:30 ET  -> 21:30 UTC (EST) and 20:30 UTC (EDT) 
-    - cron: "30 21 * * 1-5"
-    - cron: "30 20 * * 1-5"
+    # 18:00 ET (post-close EOD) -> 23:00 UTC (EST) and 22:00 UTC (EDT)
+    - cron: "0 23 * * 1-5"
+    - cron: "0 22 * * 1-5"
   workflow_dispatch:
     inputs:
       force:
-        description: "Run even if outside the 09:15 / 16:30 ET window"
+        description: "Run even if outside the 09:15 / 18:00 ET window"
         required: false
         default: "false"
       mock:

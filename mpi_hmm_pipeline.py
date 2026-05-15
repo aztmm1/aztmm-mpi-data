@@ -76,7 +76,10 @@ except Exception:
 NY_TZ = ZoneInfo("America/New_York")
 UTC = timezone.utc
 
-WINDOWS_ET = [(9, 0, 9, 30), (16, 0, 16, 50)]  # (h_lo, m_lo, h_hi, m_hi)
+# Run windows (ET). Morning 09:00-09:30 uses prior-session close.
+# Evening 17:55-18:30 is the post-close EOD slot (moved from 16:00-16:50
+# on 2026-05-14 because SA/CBOE EOD bars publish ~17:30-21:51 ET).
+WINDOWS_ET = [(9, 0, 9, 30), (17, 55, 18, 30)]  # (h_lo, m_lo, h_hi, m_hi)
 
 # FRED series IDs — see https://fred.stlouisfed.org/
 FRED_SERIES = {
@@ -437,6 +440,28 @@ def _load_market_data(ctx: RunContext) -> Dict[str, Any]:
             continue
         frames[label] = df
         time.sleep(0.15)  # gentle pacing
+
+    # --- Date-freshness assertion (post-close EOD bar must be published) ---
+    # If the close-of-day MPI run fires (>=17:00 ET) but SPY's last bar is
+    # still yesterday, StockAnalysis hasn't rolled the EOD bar yet. Abort
+    # cleanly so we publish nothing stale; the next cron slot will retry.
+    # (Morning run at 09:15 ET is exempt — it intentionally uses prior
+    # session close.) Added 2026-05-14 after data-staleness incident.
+    if "SPY" in frames and pd is not None:
+        try:
+            spy_last_date = pd.Timestamp(frames["SPY"].index[-1]).date()
+            today_et = ctx.now_et.date()
+            if ctx.now_et.hour >= 17 and spy_last_date < today_et:
+                ctx.degrade(
+                    f"market-data: SPY EOD not yet published "
+                    f"(frame ends {spy_last_date}, today is {today_et}). "
+                    f"Aborting close-of-day MPI run to avoid stale snapshot."
+                )
+                raise SystemExit(0)  # graceful exit; cron will retry next slot
+        except SystemExit:
+            raise
+        except Exception as _e:  # noqa: BLE001
+            ctx.warn(f"market-data: SPY date-freshness check skipped ({_e})")
 
     # --- CBOE EOD CSV (VIX, VIX3M) ---
     vix_df = _cboe_index_history(CBOE_VIX_URL)
@@ -1159,6 +1184,37 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
         vrp = round(vix - rv20, 2)
     except Exception:
         rv20 = None
+
+    # --- Flat-penny SPY+VIX soft-warn (stale-fetch canary) ---
+    # If both SPY and VIX are essentially unchanged day-over-day, that's a
+    # strong signal that today's fetch returned yesterday's bar (the failure
+    # mode behind the 2026-05-14 incident). Compare to the prior session's
+    # close from the loaded frames (iloc[-2]).
+    try:
+        raw = yfd.get("raw")
+        if raw is not None and spy and vix:
+            spy_close = raw["SPY"]["Close"].dropna()
+            vix_close = raw["^VIX"]["Close"].dropna()
+            if len(spy_close) >= 2 and len(vix_close) >= 2:
+                spy_yest = float(spy_close.iloc[-2])
+                vix_yest = float(vix_close.iloc[-2])
+                spy_delta_pct = abs(spy - spy_yest) / spy_yest if spy_yest else 0.0
+                vix_delta_pct = abs(vix - vix_yest) / max(vix_yest, 0.01)
+                if spy_delta_pct < 0.0005 and vix_delta_pct < 0.005:
+                    import sys
+                    print(
+                        f"WARN: SPY+VIX both ~flat day-over-day "
+                        f"(SPY Δ{spy_delta_pct*100:.3f}%, "
+                        f"VIX Δ{vix_delta_pct*100:.3f}%). "
+                        f"Possible stale-data fetch. Check pipeline logs.",
+                        file=sys.stderr,
+                    )
+                    ctx.warn(
+                        f"stale-data canary: SPY+VIX both flat dod "
+                        f"(SPY {spy_delta_pct*100:.3f}%, VIX {vix_delta_pct*100:.3f}%)"
+                    )
+    except Exception as _e:  # noqa: BLE001
+        ctx.warn(f"flat-penny canary skipped ({_e})")
 
     term_shape = d_vol.get("term_shape", "n/a")
 
