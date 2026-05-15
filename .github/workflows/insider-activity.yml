@@ -1,11 +1,18 @@
+# === PATH A LOCKED 2026-05-15 ===
+# Auto-cron permanently disabled. This pipeline produced posts/snapshots that
+# violated UW TOS (personal-use-only data on a public surface).
+# DO NOT re-enable schedule until pipeline is rebuilt on free sources only
+# (FINRA OTC, CBOE, yfinance, EDGAR).
+# Manual workflow_dispatch retained for archive/testing use only.
+
 name: AZTMM Insider Activity
 
 # Schedule: Friday 5 PM ET (both DST + EST entries; idempotency guard
 # prevents double-runs across the DST boundary).
 on:
-  schedule:
-    - cron: '0 21 * * 5'   # 5 PM ET Friday during EDT
-    - cron: '0 22 * * 5'   # 5 PM ET Friday during EST
+  # schedule:
+  #   - cron: '0 21 * * 5'   # 5 PM ET Friday during EDT
+  #   - cron: '0 22 * * 5'   # 5 PM ET Friday during EST
   workflow_dispatch:
     inputs:
       week_ending:

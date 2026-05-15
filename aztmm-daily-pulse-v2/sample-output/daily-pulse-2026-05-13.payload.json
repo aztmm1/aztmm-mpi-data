@@ -1,7 +1,5 @@
 {
-  "status": "dry_run_ok",
-  "date": "2026-05-13",
-  "scenario": "BASE (BULL TILT)",
-  "headline": "Mixed tape with a slight risk-on lean.",
-  "html_bytes": 31313
+  "status": "offline",
+  "message": "Tracker temporarily offline. Migrating to free-source data feed.",
+  "removed_2026_05_15": true
 }

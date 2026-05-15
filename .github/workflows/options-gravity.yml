@@ -1,3 +1,10 @@
+# === PATH A LOCKED 2026-05-15 ===
+# Auto-cron permanently disabled. This pipeline produced posts/snapshots that
+# violated UW TOS (personal-use-only data on a public surface).
+# DO NOT re-enable schedule until pipeline is rebuilt on free sources only
+# (FINRA OTC, CBOE, yfinance, EDGAR).
+# Manual workflow_dispatch retained for archive/testing use only.
+
 name: AZTMM Options Gravity (NOPE & Max-Pain)
 
 # Schedule: 5 PM ET, Mon–Fri.
@@ -6,9 +13,9 @@ name: AZTMM Options Gravity (NOPE & Max-Pain)
 # Both cron lines fire; the idempotency guard skips if the run log for the
 # date already exists with a terminal status.
 on:
-  schedule:
-    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
-    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  # schedule:
+  #   - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
+  #   - cron: '0 22 * * 1-5'   # 5 PM ET during EST
   workflow_dispatch:
     inputs:
       date:

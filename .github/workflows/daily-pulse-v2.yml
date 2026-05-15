@@ -1,3 +1,10 @@
+# === PATH A LOCKED 2026-05-15 ===
+# Auto-cron permanently disabled. This pipeline produced posts/snapshots that
+# violated UW TOS (personal-use-only data on a public surface).
+# DO NOT re-enable schedule until pipeline is rebuilt on free sources only
+# (FINRA OTC, CBOE, yfinance, EDGAR).
+# Manual workflow_dispatch retained for archive/testing use only.
+
 name: AZTMM Daily Pulse v2
 
 # Schedule: 5 PM ET, Mon–Fri (CURRENTLY HALTED 2026-05-14).

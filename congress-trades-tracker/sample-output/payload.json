@@ -1,10 +1,5 @@
 {
-  "_action": "wpcom.upsert_page",
-  "payload": {
-    "title": "Congress Watch",
-    "status": "draft",
-    "slug": "congress-watch",
-    "excerpt": "End-of-session snapshot of recent congressional trade disclosures. As of 2026-05-15 5:00 PM ET."
-  },
-  "content_bytes": 4445
+  "status": "offline",
+  "message": "Tracker temporarily offline. Migrating to free-source data feed.",
+  "removed_2026_05_15": true
 }
