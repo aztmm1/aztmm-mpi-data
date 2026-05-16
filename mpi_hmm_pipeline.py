@@ -451,13 +451,22 @@ def _load_market_data(ctx: RunContext) -> Dict[str, Any]:
         try:
             spy_last_date = pd.Timestamp(frames["SPY"].index[-1]).date()
             today_et = ctx.now_et.date()
-            if ctx.now_et.hour >= 17 and spy_last_date < today_et:
+            # Weekend-aware: expected last bar is most recent trading day (Mon-Fri).
+            # If today is Sat/Sun, expected is the prior Friday.
+            expected_last = today_et
+            while expected_last.weekday() >= 5:  # 5=Sat, 6=Sun
+                expected_last -= timedelta(days=1)
+            # Honor --force: skip the assert entirely so manual reruns aren't blocked
+            force_mode = bool(getattr(ctx, "force", False))
+            if (not force_mode) and ctx.now_et.hour >= 17 and spy_last_date < expected_last:
                 ctx.degrade(
                     f"market-data: SPY EOD not yet published "
-                    f"(frame ends {spy_last_date}, today is {today_et}). "
+                    f"(frame ends {spy_last_date}, expected last trading day {expected_last}). "
                     f"Aborting close-of-day MPI run to avoid stale snapshot."
                 )
                 raise SystemExit(0)  # graceful exit; cron will retry next slot
+            if spy_last_date < expected_last:
+                ctx.warn(f"market-data: SPY frame ends {spy_last_date}, expected {expected_last} (force=on, proceeding)")
         except SystemExit:
             raise
         except Exception as _e:  # noqa: BLE001
