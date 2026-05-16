@@ -1,204 +1,320 @@
 {# ============================================================
-   AZTMM Daily Pulse v3 — Email-Safe Post Body
-   Ported from daily-pulse-v3-PROFORMA-2026-05-14-v2.html
+   AZTMM Daily/Weekly Pulse v4 ‚Äî Dark-Theme Web Component
    ------------------------------------------------------------
-   Rules:
-     * NO references to data vendor names (brand_check enforces)
-     * "TODAY'S TELL" is DESCRIPTIVE only — no entry / target /
-       stop / conviction-score. Conviction is the internal gate
-       that decides whether a name surfaces (>=80), never shown.
-     * All <style>/<script> blocks MUST be wrapped in
-       <!-- wp:html -->...<!-- /wp:html --> for WP Gutenberg.
-     * Email-safe: 600px max-width table, inline CSS,
-       NO flex / NO grid, all tables for layout.
+   Rewrite of v3 email-card layout for native dark-theme + mobile.
+   - Mobile-first: 6-KPI grid stacks to 1 col below 640px
+   - Responsive sector / concentration / dark-pool tables
+   - Renders ALL aggregator fields (market_totals, sector, tide,
+     concentration, darkpool, data_quality)
+   - Brand-policy compliant: no UW/HMM/BlackBox refs, no
+     prescriptive verbs, methodology footnote whitelisted
+   - All <style> wrapped in wp:html block for Gutenberg
    ============================================================ #}
-<div style="max-width:1300px;margin:0 auto;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<!-- wp:html -->
+<style>
+.azt-pulse{--bg:#0a0e1a;--surface:rgba(15,23,42,.7);--surface-2:rgba(30,41,59,.5);--border:rgba(148,163,184,.18);--border-strong:rgba(148,163,184,.32);--text:#e2e8f0;--text-soft:#cbd5e1;--text-mute:#94a3b8;--text-faint:#64748b;--bull:#10b981;--bear:#fb7185;--info:#0ea5e9;--accent:#00d4aa;--brand:#00d4aa;--amber:#fbbf24;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;color:var(--text);max-width:920px;margin:0 auto;padding:8px 0 24px;line-height:1.65;}
+.azt-pulse *{box-sizing:border-box}
+.azt-pulse .eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+.azt-pulse .hero{background:linear-gradient(180deg,rgba(15,23,42,.85),rgba(15,23,42,.55));border:1px solid var(--border);border-left:4px solid {{ hero_underline_color | default('#10b981') }};border-radius:14px;padding:28px 26px;margin:0 0 12px;}
+.azt-pulse .hero h1{margin:0;font-size:1.5rem;line-height:1.32;letter-spacing:-.01em;color:var(--text);font-weight:600;}
+.azt-pulse .hero .sub{margin:14px 0 0;color:var(--text-mute);font-size:.92rem;}
+.azt-pulse .honest{background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.22);border-left:3px solid var(--accent);border-radius:10px;padding:14px 18px;margin:18px 0 24px;font-size:.88rem;color:var(--text-soft);line-height:1.6;}
+.azt-pulse .honest strong{color:var(--accent);}
+.azt-pulse details{background:rgba(14,165,233,.05);border:1px solid rgba(14,165,233,.22);border-radius:10px;padding:12px 18px;margin:0 0 24px;}
+.azt-pulse details summary{cursor:pointer;color:var(--info);font-weight:600;font-size:.92rem;list-style:none;}
+.azt-pulse details summary::-webkit-details-marker{display:none}
+.azt-pulse details summary::after{content:' ‚Üí';transition:transform .15s}
+.azt-pulse details[open] summary::after{content:' ‚Üì'}
+.azt-pulse details p{margin:.7rem 0 0;color:var(--text-soft);font-size:.88rem;line-height:1.65;}
+.azt-pulse .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0 8px;}
+.azt-pulse .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 14px;text-align:center;position:relative;overflow:hidden;}
+.azt-pulse .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--info));}
+.azt-pulse .kpi.bullbar::before{background:linear-gradient(90deg,var(--bull),var(--accent));}
+.azt-pulse .kpi.bearbar::before{background:linear-gradient(90deg,var(--bear),var(--amber));}
+.azt-pulse .kpi-label{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mute);margin:0 0 7px;}
+.azt-pulse .kpi-value{font-size:1.55rem;font-weight:700;color:var(--text);margin:0 0 4px;line-height:1;font-variant-numeric:tabular-nums;}
+.azt-pulse .kpi-value.mid{font-size:1rem;font-weight:600;line-height:1.2;padding:6px 0;}
+.azt-pulse .kpi-pill{display:inline-block;font-size:9.5px;letter-spacing:.08em;font-weight:600;padding:3px 8px;border-radius:999px;}
+.azt-pulse .kpi-pill.bull{background:rgba(16,185,129,.15);color:var(--bull);}
+.azt-pulse .kpi-pill.info{background:rgba(14,165,233,.15);color:var(--info);}
+.azt-pulse .kpi-pill.amber{background:rgba(251,191,36,.15);color:var(--amber);}
+.azt-pulse .kpi-pill.bear{background:rgba(251,113,133,.15);color:var(--bear);}
+.azt-pulse .kpi-pill.muted{background:rgba(148,163,184,.12);color:var(--text-mute);}
+.azt-pulse .section{margin:32px 0 0;}
+.azt-pulse h2.section-title{font-size:1.05rem;color:var(--text);margin:0 0 14px;padding:0 0 8px;border-bottom:1px solid var(--border);font-weight:600;letter-spacing:-.005em;display:flex;align-items:baseline;gap:10px;}
+.azt-pulse h2.section-title small{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-mute);letter-spacing:.14em;text-transform:uppercase;font-weight:500;}
+.azt-pulse h2.section-title::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,var(--accent),var(--info));border-radius:2px;margin-right:2px;}
+.azt-pulse h2.section-title.warn{border-bottom-color:rgba(251,113,133,.3);}
+.azt-pulse h2.section-title.warn::before{background:linear-gradient(180deg,var(--bear),var(--amber));}
+.azt-pulse .tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.azt-pulse .tbl th{background:rgba(15,23,42,.6);color:var(--text-mute);text-align:left;padding:11px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.14em;border-bottom:1px solid var(--border);font-weight:600;}
+.azt-pulse .tbl th.num{text-align:right;}
+.azt-pulse .tbl td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);font-variant-numeric:tabular-nums;}
+.azt-pulse .tbl tr:last-child td{border-bottom:0;}
+.azt-pulse .tbl td.num{text-align:right;color:var(--text);font-weight:500;}
+.azt-pulse .tbl tr.pos td:first-child{border-left:3px solid var(--bull);}
+.azt-pulse .tbl tr.neg td:first-child{border-left:3px solid var(--bear);}
+.azt-pulse .tbl tr.neu td:first-child{border-left:3px solid var(--text-faint);}
+.azt-pulse .tbl .ticker{color:var(--text);font-weight:600;}
+.azt-pulse .tbl .net.pos{color:var(--bull);font-weight:600;}
+.azt-pulse .tbl .net.neg{color:var(--bear);font-weight:600;}
+.azt-pulse .conc{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.azt-pulse .conc-col h4{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mute);margin:0 0 10px;font-weight:600;}
+.azt-pulse .conc-list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.azt-pulse .conc-list li{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);font-size:.88rem;}
+.azt-pulse .conc-list li:last-child{border-bottom:0;}
+.azt-pulse .conc-list .t{font-weight:600;color:var(--text);}
+.azt-pulse .conc-list .v{font-variant-numeric:tabular-nums;font-weight:500;}
+.azt-pulse .conc-list .v.pos{color:var(--bull);}
+.azt-pulse .conc-list .v.neg{color:var(--bear);}
+.azt-pulse .tell{background:var(--surface);border:1px solid var(--border);border-left:4px solid {{ (tells[0].accent_color if tells and tells|length > 0 else '#10b981') | default('#10b981') }};border-radius:12px;padding:20px 22px;margin:0 0 12px;}
+.azt-pulse .tell:last-child{margin-bottom:0}
+.azt-pulse .tell .row1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px;}
+.azt-pulse .tell .ticker{font-size:1.3rem;font-weight:700;color:var(--text);}
+.azt-pulse .tell .sub{font-size:.85rem;color:var(--text-mute);}
+.azt-pulse .tell p{margin:0;color:var(--text-soft);font-size:.96rem;line-height:1.72;}
+.azt-pulse .tell strong{color:var(--text);}
+.azt-pulse .quiet{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);border-left:4px solid var(--amber);border-radius:12px;padding:22px 24px;text-align:center;}
+.azt-pulse .quiet h4{margin:0 0 10px;color:var(--amber);font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.azt-pulse .quiet p{margin:0;color:var(--text-soft);font-size:.95rem;line-height:1.6;}
+.azt-pulse .quiet p:first-of-type{color:var(--text);font-size:1.1rem;font-weight:600;margin-bottom:8px;}
+.azt-pulse .changes{list-style:none;margin:0;padding:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+.azt-pulse .changes li{padding:14px 18px;display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--border);color:var(--text-soft);font-size:.92rem;line-height:1.65;}
+.azt-pulse .changes li:last-child{border-bottom:0;}
+.azt-pulse .changes .arrow{flex:0 0 16px;font-weight:700;font-size:.95rem;}
+.azt-pulse .changes strong{color:var(--text);}
+.azt-pulse .catalysts{background:linear-gradient(180deg,rgba(251,113,133,.08),rgba(251,113,133,.02));border:1px solid rgba(251,113,133,.3);border-left:4px solid var(--bear);border-radius:12px;padding:18px 22px;}
+.azt-pulse .catalysts p{margin:0 0 12px;color:var(--text-soft);font-size:.92rem;line-height:1.65;}
+.azt-pulse .catalysts p:last-child{margin:0;}
+.azt-pulse .catalysts strong{color:var(--text);}
+.azt-pulse .method{background:rgba(255,255,255,.02);border:1px dashed var(--border);border-radius:10px;padding:14px 18px;margin:0 0 10px;font-size:.84rem;color:var(--text-mute);line-height:1.7;}
+.azt-pulse .method strong{color:var(--text-soft);}
+.azt-pulse .source-strip{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;}
+.azt-pulse .source-strip span{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;padding:4px 10px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--text-mute);}
+.azt-pulse .source-strip span.fail{border-color:rgba(251,113,133,.4);color:var(--bear);background:rgba(251,113,133,.06);}
+.azt-pulse .disclaim{background:linear-gradient(90deg,rgba(251,191,36,.05),rgba(251,113,133,.02));border:1px solid rgba(251,191,36,.22);border-left:3px solid var(--amber);border-radius:0 10px 10px 0;padding:14px 18px;margin:24px 0 0;font-size:.82rem;color:var(--text-mute);line-height:1.7;}
+.azt-pulse .disclaim strong{color:var(--amber);}
+.azt-pulse .appendix-cta{margin:28px 0 0;text-align:center;}
+.azt-pulse .appendix-cta a{display:inline-block;background:linear-gradient(90deg,var(--accent),var(--info));color:#0a0e1a;text-decoration:none;padding:13px 28px;border-radius:8px;font-size:.92rem;font-weight:600;letter-spacing:.02em;transition:filter .15s;}
+.azt-pulse .appendix-cta a:hover{filter:brightness(1.1);}
+.azt-pulse .appendix-cta p{margin:10px 0 0;color:var(--text-mute);font-size:.78rem;}
+@media (max-width:640px){
+  .azt-pulse{padding:4px 0 16px;}
+  .azt-pulse .hero{padding:22px 18px;}
+  .azt-pulse .hero h1{font-size:1.18rem;line-height:1.38;}
+  .azt-pulse .kpis{grid-template-columns:1fr;gap:8px;}
+  .azt-pulse .kpi-value{font-size:1.5rem;}
+  .azt-pulse .conc{grid-template-columns:1fr;}
+  .azt-pulse .tbl{font-size:.8rem;}
+  .azt-pulse .tbl th,.azt-pulse .tbl td{padding:9px 10px;}
+  .azt-pulse .tell{padding:18px;}
+  .azt-pulse .tell .ticker{font-size:1.15rem;}
+  .azt-pulse .section{margin:26px 0 0;}
+  .azt-pulse .catalysts{padding:16px 18px;}
+}
+</style>
+<div class="azt-pulse">
+  <p class="eyebrow">Closing Pulse ¬∑ {{ post_date_display }} ¬∑ Free-source build</p>
+  <div class="hero">
+    <h1>{{ headline }}</h1>
+  </div>
 
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f1f5f9;padding:32px 0;border-radius:8px;">
-  <tr>
-    <td align="center">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;width:100%;background:#ffffff;border-radius:10px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:1px solid #e2e8f0;">
+  <div class="honest"><strong>Honest framing.</strong> Retrospective read on closing positioning. Not a forecast, not a recommendation. Where readings are degraded, the data-quality strip and footnote flag it.</div>
 
-        {# -------- View-on-web strip -------- #}
-        <tr>
-          <td style="background:#f8fafc;padding:10px 28px;border-bottom:1px solid #e2e8f0;text-align:right;">
-            <a href="{{ appendix_url }}" style="color:#64748b;font-size:11px;text-decoration:none;letter-spacing:0.2px;">View on web &rarr;</a>
-          </td>
+  <details>
+    <summary>How to read this Pulse</summary>
+    <p><strong>KPI strip</strong> ‚Üí <strong>Sector tape</strong> ‚Üí <strong>Concentration</strong> (top single-name net premium) ‚Üí <strong>Today's Tell</strong> ‚Üí <strong>Dark-pool prints</strong> (FINRA T-14) ‚Üí <strong>What changed</strong> ‚Üí <strong>Next session catalysts</strong> ‚Üí <strong>Data quality + methodology + disclaimer</strong>. The KPI strip carries the headline reads; the rest is the structure beneath them.</p>
+  </details>
+
+  {# -------- 6-KPI strip -------- #}
+  <div class="kpis">
+    <div class="kpi bullbar">
+      <p class="kpi-label">MPI</p>
+      <p class="kpi-value">{{ mpi_score }}</p>
+      <span class="kpi-pill bull">‚ñ≤ {{ mpi_label }}</span>
+    </div>
+    <div class="kpi bullbar">
+      <p class="kpi-label">Regime</p>
+      <p class="kpi-value mid">{{ regime_short }}</p>
+      <span class="kpi-pill bull">{{ regime_confidence_label }}</span>
+    </div>
+    <div class="kpi">
+      <p class="kpi-label">{{ key_metric_label }}</p>
+      <p class="kpi-value mid">{{ key_metric_value }}</p>
+      <span class="kpi-pill info">{{ key_metric_caption }}</span>
+    </div>
+    {% if market_totals and market_totals.available %}
+    <div class="kpi">
+      <p class="kpi-label">Call Premium</p>
+      <p class="kpi-value">{{ market_totals.call_premium_fmt }}</p>
+      <span class="kpi-pill info">vs Put {{ market_totals.put_premium_fmt }}</span>
+    </div>
+    <div class="kpi">
+      <p class="kpi-label">P/C Volume</p>
+      <p class="kpi-value">{{ market_totals.pc_ratio_fmt }}</p>
+      <span class="kpi-pill {% if market_totals.pc_ratio and market_totals.pc_ratio < 0.9 %}bull{% elif market_totals.pc_ratio and market_totals.pc_ratio > 1.1 %}bear{% else %}muted{% endif %}">ratio</span>
+    </div>
+    {% endif %}
+    {% if tide and tide.available %}
+    <div class="kpi {% if tide.direction == 'positive' %}bullbar{% elif tide.direction == 'negative' %}bearbar{% endif %}">
+      <p class="kpi-label">EOD Tide</p>
+      <p class="kpi-value mid">{% if tide.eod_net_call_premium and tide.eod_net_call_premium > 0 %}+{{ tide.eod_net_call_premium_fmt }}{% else %}{{ tide.eod_net_put_premium_fmt }}{% endif %}</p>
+      <span class="kpi-pill {% if tide.direction == 'positive' %}bull{% else %}bear{% endif %}">{{ tide.shape }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {# -------- Sector tape -------- #}
+  {% if sector and sector.rows and sector.rows|length > 0 %}
+  <div class="section">
+    <h2 class="section-title">Sector Tape<small>Close ¬∑ net options premium</small></h2>
+    <table class="tbl">
+      <thead><tr><th>ETF ¬∑ Sector</th><th class="num">Day %</th><th class="num">Call prem</th><th class="num">Put prem</th><th class="num">Net</th></tr></thead>
+      <tbody>
+        {% for row in sector.rows %}
+        <tr class="{% if row.net_premium and row.net_premium > 0 %}pos{% elif row.net_premium and row.net_premium < 0 %}neg{% else %}neu{% endif %}">
+          <td><span class="ticker">{{ row.ticker }}</span> {{ row.name }}</td>
+          <td class="num">{{ row.change_pct_fmt }}</td>
+          <td class="num">{{ row.call_premium_fmt }}</td>
+          <td class="num">{{ row.put_premium_fmt }}</td>
+          <td class="num net {% if row.net_premium and row.net_premium > 0 %}pos{% elif row.net_premium and row.net_premium < 0 %}neg{% endif %}">{{ row.net_premium_fmt }}</td>
         </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
 
-        {# -------- Hero band -------- #}
-        <tr>
-          <td style="background:#0f172a;padding:32px 28px;border-bottom:3px solid {{ hero_underline_color }};">
-            <p style="margin:0 0 12px 0;color:#94a3b8;font-size:10px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;line-height:1.4;">
-              Live &middot; {{ post_date_display }} &middot; Closing Pulse
-            </p>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;line-height:1.4;font-weight:600;letter-spacing:-0.2px;">
-              {{ headline }}
-            </h1>
-          </td>
+  {# -------- Concentration -------- #}
+  {% if concentration and concentration.available %}
+  <div class="section">
+    <h2 class="section-title">Concentration<small>Top single-name net premium</small></h2>
+    <div class="conc">
+      {% if concentration.tech and concentration.tech|length > 0 %}
+      <div class="conc-col">
+        <h4>Tech anchors</h4>
+        <ul class="conc-list">
+          {% for t in concentration.tech %}
+          <li><span class="t">{{ t.ticker }}</span><span class="v {% if t.net_premium and t.net_premium > 0 %}pos{% elif t.net_premium and t.net_premium < 0 %}neg{% endif %}">{% if t.net_premium and t.net_premium > 0 %}+{% endif %}{{ t.net_premium_fmt }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if concentration.non_tech and concentration.non_tech|length > 0 %}
+      <div class="conc-col">
+        <h4>Non-tech anchors</h4>
+        <ul class="conc-list">
+          {% for t in concentration.non_tech %}
+          <li><span class="t">{{ t.ticker }}</span><span class="v {% if t.net_premium and t.net_premium > 0 %}pos{% elif t.net_premium and t.net_premium < 0 %}neg{% endif %}">{% if t.net_premium and t.net_premium > 0 %}+{% endif %}{{ t.net_premium_fmt }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Today's Tell -------- #}
+  <div class="section">
+    <h2 class="section-title">Today's Tell<small>Standout single-name positioning</small></h2>
+    {% if tells and tells|length > 0 %}
+      {% for tell in tells %}
+      <div class="tell" style="border-left-color:{{ tell.accent_color | default('#10b981') }};">
+        <div class="row1">
+          <span class="ticker">{{ tell.ticker }}</span>
+          <span class="sub">{{ tell.sub_header }}</span>
+        </div>
+        <p>{{ tell.observation|safe }}</p>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="quiet">
+        <h4>Quiet Tape</h4>
+        <p>No standout single-name positioning today.</p>
+        <p>Flow distributed evenly across index products. No single ticker accumulated the kind of one-sided ask-side imbalance or concentrated dark-pool absorption that draws institutional attention. Tape stayed in observation mode.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  {# -------- Dark-Pool Tells -------- #}
+  {% if darkpool and darkpool.available and darkpool.rows and darkpool.rows|length > 0 %}
+  <div class="section">
+    <h2 class="section-title">Dark-Pool Tells<small>FINRA OTC ATS ¬∑ T-14 lag</small></h2>
+    <table class="tbl">
+      <thead><tr><th>Ticker</th><th class="num">Total premium</th><th class="num">Mega-prints (‚â•100K)</th><th class="num">Print count</th></tr></thead>
+      <tbody>
+        {% for r in darkpool.rows %}
+        <tr class="neu">
+          <td><span class="ticker">{{ r.ticker }}</span></td>
+          <td class="num">{{ r.total_premium_fmt }}</td>
+          <td class="num">{{ r.mega_print_count }}</td>
+          <td class="num">{{ r.print_count }}</td>
         </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p style="margin:10px 0 0;color:var(--text-mute);font-size:.82rem;line-height:1.6;">FINRA ATS publishes with a T-14 lag ‚Äî the off-exchange tape here reflects institutional activity two weeks ago, not the current session.</p>
+  </div>
+  {% endif %}
 
-        {# -------- 3-strip regime card -------- #}
-        <tr>
-          <td style="padding:32px 28px 8px 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-              <tr>
-                <td style="padding:20px 6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;width:33%;vertical-align:top;">
-                  <p style="margin:0;color:#64748b;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">MPI</p>
-                  <p style="margin:10px 0 4px 0;color:#0f172a;font-size:28px;font-weight:700;line-height:1;">{{ mpi_score }}</p>
-                  <p style="margin:0;color:#10b981;font-size:11px;font-weight:600;letter-spacing:0.3px;">&#9650; {{ mpi_label }}</p>
-                </td>
-                <td style="width:10px;"></td>
-                <td style="padding:20px 6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;width:33%;vertical-align:top;">
-                  <p style="margin:0;color:#64748b;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Regime</p>
-                  <p style="margin:10px 0 4px 0;color:#0f172a;font-size:15px;font-weight:600;line-height:1.3;">{{ regime_short }}</p>
-                  <p style="margin:0;color:#10b981;font-size:11px;font-weight:600;letter-spacing:0.3px;">{{ regime_confidence_label }}</p>
-                </td>
-                <td style="width:10px;"></td>
-                <td style="padding:20px 6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;width:33%;vertical-align:top;">
-                  <p style="margin:0;color:#64748b;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">{{ key_metric_label }}</p>
-                  <p style="margin:10px 0 4px 0;color:#0f172a;font-size:15px;font-weight:600;line-height:1.3;">{{ key_metric_value }}</p>
-                  <p style="margin:0;color:#0ea5e9;font-size:11px;font-weight:600;letter-spacing:0.3px;">{{ key_metric_caption }}</p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+  {# -------- What Changed -------- #}
+  {% if changes and changes|length > 0 %}
+  <div class="section">
+    <h2 class="section-title">What Changed<small>Session deltas</small></h2>
+    <ul class="changes">
+      {% for change in changes %}
+      <li>
+        <span class="arrow" style="color:{{ change.arrow_color }};">{{ change.arrow }}</span>
+        <span>{{ change.text|safe }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
-        {# -------- TODAY'S TELL -------- #}
-        <tr>
-          <td style="padding:32px 28px 8px 28px;">
-            <p style="margin:0 0 18px 0;color:#0f172a;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;border-bottom:2px solid #0ea5e9;padding-bottom:8px;display:inline-block;">
-              Today's Tell
-            </p>
+  {# -------- Next session catalysts -------- #}
+  {% if catalysts and catalysts|length > 0 %}
+  <div class="section">
+    <h2 class="section-title warn">Next Session Catalysts<small>Eyes on the tape</small></h2>
+    <div class="catalysts">
+      {% for catalyst in catalysts %}
+      <p>{{ catalyst.text|safe }}</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
-            {% if tells and tells|length > 0 %}
-              {% for tell in tells %}
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#ffffff;border:1px solid #e2e8f0;border-left:4px solid {{ tell.accent_color }};border-radius:8px;margin-bottom:16px;">
-                <tr>
-                  <td style="padding:24px 24px 8px 24px;">
-                    <p style="margin:0;color:#0f172a;font-size:18px;font-weight:700;letter-spacing:0.3px;line-height:1.2;">{{ tell.ticker }}</p>
-                    <p style="margin:4px 0 0 0;color:#64748b;font-size:11px;letter-spacing:0.3px;">{{ tell.sub_header }}</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:8px 24px 24px 24px;">
-                    <p style="margin:0;color:#334155;font-size:13px;line-height:1.7;">
-                      {{ tell.observation|safe }}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              {% endfor %}
-            {% else %}
-              {# Quiet Tape panel — no name scored >=80 #}
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;">
-                <tr>
-                  <td style="padding:32px 28px;text-align:center;">
-                    <p style="margin:0 0 12px 0;color:#92400e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Quiet Tape</p>
-                    <p style="margin:0 0 18px 0;color:#78350f;font-size:18px;line-height:1.5;font-weight:700;">No standout single-name positioning today.</p>
-                    <p style="margin:0;color:#92400e;font-size:13px;line-height:1.65;">
-                      Flow distributed evenly across index products. No single ticker accumulated the kind of one-sided ask-side imbalance or concentrated dark-pool absorption that draws institutional attention. Tape stayed in observation mode.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:18px 0 0 0;color:#64748b;font-size:11px;line-height:1.6;font-style:italic;text-align:center;">
-                Some sessions reveal positioning. This one didn't.
-              </p>
-            {% endif %}
-          </td>
-        </tr>
+  {# -------- Appendix CTA -------- #}
+  {% if appendix_url %}
+  <div class="appendix-cta">
+    <a href="{{ appendix_url }}">View full data appendix ‚Üí</a>
+    <p>Sector heatmap ¬∑ Concentration ¬∑ Dark pool ¬∑ By-the-numbers</p>
+  </div>
+  {% endif %}
 
-        {# -------- What Changed -------- #}
-        <tr>
-          <td style="padding:32px 28px 8px 28px;">
-            <p style="margin:0 0 18px 0;color:#0f172a;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;border-bottom:2px solid #0ea5e9;padding-bottom:8px;display:inline-block;">
-              What Changed
-            </p>
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-              {% for change in changes %}
-              <tr>
-                <td style="padding:14px 0;{% if not loop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
-                  <p style="margin:0;color:#334155;font-size:13px;line-height:1.65;">
-                    <span style="display:inline-block;width:20px;color:{{ change.arrow_color }};font-weight:700;">{{ change.arrow }}</span>
-                    {{ change.text|safe }}
-                  </p>
-                </td>
-              </tr>
-              {% endfor %}
-            </table>
-          </td>
-        </tr>
+  {# -------- Data Quality + Methodology -------- #}
+  <div class="section">
+    <h2 class="section-title">Data Quality &amp; Methodology<small>Open by design</small></h2>
+    <div class="method"><strong>Free-source pipeline.</strong> Built on yfinance EOD option chains, CBOE daily volume summary, FINRA OTC Transparency (T-14 lag), SEC EDGAR Form 4, and our own MPI snapshot. Zero proprietary data dependency.</div>
+    {% if data_quality %}
+    <div class="source-strip">
+      {% if data_quality.sources_used %}
+        {% for src in data_quality.sources_used %}<span>{{ src }}</span>{% endfor %}
+      {% endif %}
+      {% if data_quality.sources_failed %}
+        {% for src in data_quality.sources_failed %}<span class="fail">{{ src }} ‚Äî fail</span>{% endfor %}
+      {% endif %}
+    </div>
+    {% if data_quality.degraded %}
+    <div class="method" style="margin-top:14px;"><strong>Degraded mode.</strong> {{ data_quality.endpoints_failed }} upstream endpoint{{ 's' if data_quality.endpoints_failed != 1 else '' }} unavailable for this session. Read with appropriate caution.</div>
+    {% endif %}
+    {% endif %}
+    {% if methodology_footnote %}
+    <div class="method">{{ methodology_footnote }}</div>
+    {% endif %}
+    <div class="method"><strong>Honest framing.</strong> No model weights, lookback windows, or methodology internals are exposed. Model confidence framing reflects internal consistency across inputs, not a probabilistic forecast of any specific outcome.</div>
+  </div>
 
-        {# -------- Tomorrow's Catalyst -------- #}
-        {% if catalysts and catalysts|length > 0 %}
-        <tr>
-          <td style="padding:32px 28px 8px 28px;">
-            <p style="margin:0 0 18px 0;color:#0f172a;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;border-bottom:2px solid #fb7185;padding-bottom:8px;display:inline-block;">
-              Tomorrow's Catalyst
-            </p>
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fef2f2;border-left:3px solid #fb7185;border-radius:6px;">
-              <tr>
-                <td style="padding:20px 22px;">
-                  {% for catalyst in catalysts %}
-                  <p style="margin:0{% if not loop.last %} 0 14px 0{% endif %};color:#7f1d1d;font-size:13px;line-height:1.65;">
-                    {{ catalyst.text|safe }}
-                  </p>
-                  {% endfor %}
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        {% endif %}
-
-        {# -------- Appendix link -------- #}
-        <tr>
-          <td style="padding:32px 28px 36px 28px;text-align:center;">
-            <a href="{{ appendix_url }}" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:13px;font-weight:600;letter-spacing:0.3px;">
-              View full data appendix &rarr;
-            </a>
-            <p style="margin:14px 0 0 0;color:#64748b;font-size:11px;line-height:1.6;">
-              Sector heatmap &middot; Top-15 flow &middot; Dark pool &middot; By-the-numbers &middot; Observations
-            </p>
-          </td>
-        </tr>
-
-        {# -------- Footer -------- #}
-        <tr>
-          <td style="background:#0f172a;padding:28px 28px;text-align:center;">
-            <p style="margin:0 0 6px 0;color:#ffffff;font-size:14px;font-weight:600;letter-spacing:0.2px;">AZTMM Research</p>
-            <p style="margin:0 0 20px 0;color:#94a3b8;font-size:11px;line-height:1.6;">
-              Closing-bell research on options flow + regime
-            </p>
-            <p style="margin:0 0 10px 0;color:#64748b;font-size:10px;line-height:1.65;">
-              Not investment advice. Past patterns do not predict future moves.
-            </p>
-            <p style="margin:0;color:#64748b;font-size:10px;line-height:1.65;">
-              <a href="https://aztmm.com/manage-preferences/" style="color:#0ea5e9;text-decoration:none;">Manage preferences</a> &middot;
-              <a href="mailto:nikhilkothari@aztmm.com" style="color:#0ea5e9;text-decoration:none;">nikhilkothari@aztmm.com</a> &middot;
-              <a href="https://aztmm.com/" style="color:#0ea5e9;text-decoration:none;">aztmm.com</a>
-            </p>
-          </td>
-        </tr>
-
-      </table>
-    </td>
-  </tr>
-</table>
-
+  <div class="disclaim"><strong>Disclaimer.</strong> Retrospective quantitative research for informational purposes only. Not investment advice, not a recommendation, not a solicitation. Past patterns are not indicative of future price behavior. AZTMM HLDGS LLC is not a registered broker-dealer, investment adviser, or FINRA member. Options trading involves substantial risk and can result in losses exceeding initial investment.</div>
 </div>
-{# Methodology footnote (always rendered when present) #}
-{% if methodology_footnote %}
-<p style="max-width:600px;margin:18px auto 0 auto;color:#94a3b8;font-size:10px;line-height:1.6;text-align:center;font-style:italic;">
-  {{ methodology_footnote }}
-</p>
-{% endif %}
-{# Data-quality footnote (rendered outside email card) #}
-{% if data_quality and data_quality.degraded %}
-<p style="max-width:600px;margin:18px auto;color:#64748b;font-size:11px;line-height:1.6;font-style:italic;text-align:center;">
-  Data quality note: one or more upstream feeds were degraded for this session
-  ({{ data_quality.endpoints_failed }} endpoint{{ 's' if data_quality.endpoints_failed != 1 else '' }} unavailable). Read with appropriate caution.
-</p>
-{% endif %}
+<!-- /wp:html -->
