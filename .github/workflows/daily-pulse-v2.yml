@@ -1,25 +1,22 @@
-# === PATH A LOCKED 2026-05-15 ===
-# Auto-cron permanently disabled. This pipeline produced posts/snapshots that
-# violated UW TOS (personal-use-only data on a public surface).
-# DO NOT re-enable schedule until pipeline is rebuilt on free sources only
-# (FINRA OTC, CBOE, yfinance, EDGAR).
-# Manual workflow_dispatch retained for archive/testing use only.
+# === FREE-SOURCE PIPELINE — AUTO-CRON ENABLED 2026-05-15 ===
+# Path A compliant: yfinance EOD chains + FINRA OTC ATS weekly + SEC EDGAR
+# Form 4 + repo data/mpi.json. Zero UW dependency.
+# Aggregator: commit 70d53233. Conviction gate >=80 internal-only.
+# Daily 5 PM ET cron Mon-Fri.
 
 name: AZTMM Daily Pulse v2
 
-# Schedule: 5 PM ET, Mon–Fri (CURRENTLY HALTED 2026-05-14).
+# Schedule: 5 PM ET, Mon–Fri (LIVE since 2026-05-15).
 # - During EDT (Mar–Nov): 21:00 UTC
 # - During EST (Nov–Mar): 22:00 UTC
-# Auto-cron is commented out below pending v3 template verification.
+# Auto-cron is active. Pipeline is idempotent — re-running same date is safe.
 # Manual triggers via workflow_dispatch still work.
 # The script idempotently skips if the run-log for the date already exists
 # with status=='payload_emitted' or 'dry_run_ok'.
 on:
-  # AUTO-CRON HALTED 2026-05-14 pending v3 template verification.
-  # Re-enable both lines (uncomment) after test sends pass.
-  # schedule:
-  #   - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
-  #   - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+  schedule:
+    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT (Mar-Nov)
+    - cron: '0 22 * * 1-5'   # 5 PM ET during EST (Nov-Mar)
   workflow_dispatch:
     inputs:
       date:
@@ -43,7 +40,6 @@ jobs:
     timeout-minutes: 20
 
     env:
-      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
       WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
       WP_SITE: ${{ secrets.WP_SITE }}
       WP_USERNAME: ${{ secrets.WP_USERNAME }}
