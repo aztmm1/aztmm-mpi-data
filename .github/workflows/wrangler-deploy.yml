@@ -1,0 +1,29 @@
+# Auto-deploy CF Worker on push to worker.js
+# REQUIRES one-time secret setup (see DEPLOY-GUIDE.md):
+#   - CLOUDFLARE_API_TOKEN: Workers Scripts:Edit, Account.Workers Scripts:Edit
+#   - CLOUDFLARE_ACCOUNT_ID: efa4b9934df9f218c1effa9c895627ea
+
+name: Deploy CF Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare-cron-trigger/worker.js'
+      - 'cloudflare-cron-trigger/wrangler.toml'
+      - '.github/workflows/wrangler-deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy via wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare-cron-trigger
+          command: deploy
