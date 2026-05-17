@@ -11,6 +11,25 @@
    - All <style> wrapped in wp:html block for Gutenberg
    ============================================================ #}
 <!-- wp:html -->
+{# JSON-LD Article schema for Google rich snippets (v2.1) #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AnalysisNewsArticle",
+  "headline": "{{ headline | replace('"', '\\"') }}",
+  "datePublished": "{{ date }}",
+  "dateModified": "{{ generated_at_iso }}",
+  "author": {"@type": "Organization", "name": "AZTMM Research", "url": "https://aztmm.com"},
+  "publisher": {"@type": "Organization", "name": "AZTMM HLDGS LLC", "url": "https://aztmm.com"},
+  "mainEntityOfPage": "{{ appendix_url }}",
+  "about": [
+    {"@type": "Thing", "name": "Market Pulse Index"},
+    {"@type": "Thing", "name": "Options Flow Analysis"},
+    {"@type": "Thing", "name": "Institutional Dark Pool Activity"}
+  ],
+  "isAccessibleForFree": true
+}
+</script>
 <style>
 .azt-pulse{--bg:#0d1b2a;--surface:#1b263b;--surface-2:#243447;--border:rgba(224,168,90,.18);--border-strong:rgba(224,168,90,.32);--text:#ece9e4;--text-soft:#d4d1cc;--text-mute:#9ca3af;--text-faint:#6e7280;--bull:#95d5b2;--bear:#e07a5f;--info:#7eb6c4;--accent:#e0a85a;--accent-2:#d99dad;--brand:#e0a85a;--amber:#e0a85a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;color:var(--text);max-width:920px;margin:0 auto;padding:8px 0 24px;line-height:1.65;}
 .azt-pulse *{box-sizing:border-box}
@@ -98,6 +117,31 @@
 .azt-pulse .appendix-cta a{display:inline-block;background:linear-gradient(90deg,var(--accent),var(--info));color:#0a0e1a;text-decoration:none;padding:13px 28px;border-radius:8px;font-size:.92rem;font-weight:600;letter-spacing:.02em;transition:filter .15s;}
 .azt-pulse .appendix-cta a:hover{filter:brightness(1.1);}
 .azt-pulse .appendix-cta p{margin:10px 0 0;color:var(--text-mute);font-size:.78rem;}
+/* v2.1 additions: KPI category color-coding + insider heatmap + yield curve + sticky bar */
+.azt-pulse .kpi-cat-flow::before{background:linear-gradient(90deg,var(--accent),var(--amber))!important;}
+.azt-pulse .kpi-cat-regime::before{background:linear-gradient(90deg,var(--bull),var(--accent-2))!important;}
+.azt-pulse .kpi-cat-tape::before{background:linear-gradient(90deg,var(--accent-2),var(--bear))!important;}
+.azt-pulse .regime-bar{position:sticky;top:0;z-index:50;background:rgba(13,27,42,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:8px 16px;margin:-8px -8px 16px;display:flex;gap:18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--text-mute);}
+.azt-pulse .regime-bar strong{color:var(--accent);font-weight:600;}
+.azt-pulse .yield-snap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;font-family:'JetBrains Mono',monospace;}
+.azt-pulse .yield-snap-cell{text-align:center;}
+.azt-pulse .yield-snap-cell .y-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mute);font-weight:600;margin-bottom:4px;}
+.azt-pulse .yield-snap-cell .y-value{font-size:1.2rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
+.azt-pulse .yield-snap-cell .y-value.normal{color:var(--bull);}
+.azt-pulse .yield-snap-cell .y-value.inverted{color:var(--bear);}
+.azt-pulse .yield-snap-cell .y-value.flat{color:var(--amber);}
+.azt-pulse .insider-hm{display:grid;grid-template-columns:1fr;gap:6px;}
+.azt-pulse .insider-hm-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.88rem;}
+.azt-pulse .insider-hm-row.buying{border-left:3px solid var(--bull);}
+.azt-pulse .insider-hm-row.selling{border-left:3px solid var(--bear);}
+.azt-pulse .insider-hm-row.flat{border-left:3px solid var(--text-faint);}
+.azt-pulse .insider-hm-sector{color:var(--text);font-weight:500;}
+.azt-pulse .insider-hm-net{font-variant-numeric:tabular-nums;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.azt-pulse .insider-hm-net.buying{color:var(--bull);}
+.azt-pulse .insider-hm-net.selling{color:var(--bear);}
+.azt-pulse .insider-hm-net.flat{color:var(--text-mute);}
+.azt-pulse .insider-hm-tag{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute);padding:3px 8px;border-radius:4px;background:rgba(224,168,90,.08);}
+.azt-pulse .sparkbar-axis{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);margin:8px 4px 0;letter-spacing:.1em;}
 @media (max-width:960px){
   .azt-pulse .kpis{grid-template-columns:repeat(2,1fr);}
 }
@@ -120,8 +164,15 @@
   .azt-pulse .kpis{grid-template-columns:1fr;}
 }
 </style>
-<div class="azt-pulse">
-  <p class="eyebrow">Closing Pulse ¬∑ {{ post_date_display }} ¬∑ Free-source build</p>
+<div class="azt-pulse" role="article" aria-label="AZTMM Closing Pulse Report">
+  {# v2.1: sticky regime context bar (mobile + desktop) #}
+  <div class="regime-bar" role="region" aria-label="Regime context strip">
+    <span>MPI <strong>{{ mpi_score }}</strong></span>
+    <span>{{ regime_short }} - {{ regime_confidence_label }}</span>
+    {% if yield_curve and yield_curve.spread_bps is not none %}<span>10Y-2Y <strong>{{ yield_curve.spread_bps }}bps</strong></span>{% endif %}
+    {% if smds and smds.score is not none %}<span>SMDS <strong>{{ smds.score }}</strong></span>{% endif %}
+  </div>
+  <p class="eyebrow">Closing Pulse - {{ post_date_display }} - Free-source build</p>
   <div class="hero">
     <h1>{{ headline }}</h1>
   </div>
@@ -261,6 +312,68 @@
       </tbody>
     </table>
     <p style="margin:10px 0 0;color:var(--text-mute);font-size:.82rem;line-height:1.6;">FINRA ATS publishes with a T-14 lag ‚Äî the off-exchange tape here reflects institutional activity two weeks ago, not the current session.</p>
+  </div>
+  {% endif %}
+
+  {# -------- v2.1: Cross-Sector Insider Heatmap (conditional, renders only when fetcher pulls UW insider data) -------- #}
+  {% if insider_heatmap and insider_heatmap.rows and insider_heatmap.rows|length > 0 %}
+  <div class="section" aria-label="Cross-sector insider flow heatmap">
+    <h2 class="section-title">Cross-Sector Insider Heatmap<small>SEC Form 4 net flow - last 5 sessions</small></h2>
+    <div class="insider-hm">
+      {% for row in insider_heatmap.rows %}
+      <div class="insider-hm-row {{ row.direction }}">
+        <span class="insider-hm-sector">{{ row.sector }}</span>
+        <span class="insider-hm-net {{ row.direction }}">
+          {%- if row.net_5d >= 1000000000 %}{{ '%.1fB'|format(row.net_5d / 1000000000) }}
+          {%- elif row.net_5d >= 1000000 %}{{ '%.0fM'|format(row.net_5d / 1000000) }}
+          {%- elif row.net_5d <= -1000000000 %}-{{ '%.1fB'|format(-row.net_5d / 1000000000) }}
+          {%- elif row.net_5d <= -1000000 %}-{{ '%.0fM'|format(-row.net_5d / 1000000) }}
+          {%- else %}{{ '%.0fK'|format(row.net_5d / 1000) }}{% endif %}
+        </span>
+        <span class="insider-hm-tag">{{ row.direction }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if insider_heatmap.biggest_seller or insider_heatmap.biggest_buyer %}
+    <p style="margin:14px 0 0;color:var(--text-mute);font-size:.85rem;line-height:1.6;">
+      {% if insider_heatmap.sectors_net_buying > 0 %}{{ insider_heatmap.sectors_net_buying }} of 11 sectors net-buying. {% endif %}
+      {% if insider_heatmap.biggest_seller %}Heaviest selling in <strong>{{ insider_heatmap.biggest_seller.sector }}</strong>. {% endif %}
+      {% if insider_heatmap.biggest_buyer %}Net buying in <strong>{{ insider_heatmap.biggest_buyer.sector }}</strong>. {% endif %}
+    </p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# -------- v2.1: Yield Curve Snapshot (conditional) -------- #}
+  {% if yield_curve and yield_curve.y10 is not none and yield_curve.y2 is not none %}
+  <div class="section" aria-label="Treasury yield curve snapshot">
+    <h2 class="section-title">Yield Curve Snapshot<small>10Y / 2Y / spread - macro regime context</small></h2>
+    <div class="yield-snap">
+      <div class="yield-snap-cell">
+        <div class="y-label">2Y Treasury</div>
+        <div class="y-value">{{ yield_curve.y2 }}%</div>
+      </div>
+      <div class="yield-snap-cell">
+        <div class="y-label">10Y Treasury</div>
+        <div class="y-value">{{ yield_curve.y10 }}%</div>
+      </div>
+      <div class="yield-snap-cell">
+        <div class="y-label">10Y-2Y Spread</div>
+        <div class="y-value {{ yield_curve.shape }}">
+          {%- if yield_curve.spread_bps >= 0 %}+{% endif %}{{ yield_curve.spread_bps }}bps
+        </div>
+      </div>
+      <div class="yield-snap-cell">
+        <div class="y-label">Shape</div>
+        <div class="y-value {{ yield_curve.shape }}">{{ yield_curve.shape|upper }}</div>
+      </div>
+    </div>
+    <p style="margin:12px 0 0;color:var(--text-mute);font-size:.85rem;line-height:1.6;">
+      {% if yield_curve.shape == 'normal' %}Normal upward curve - typical Bull-regime context.
+      {% elif yield_curve.shape == 'inverted' %}Inverted curve - historical recession leading indicator.
+      {% elif yield_curve.shape == 'flat' %}Flat curve - growth concerns or late-cycle regime.
+      {% else %}Curve shape inconclusive.{% endif %}
+    </p>
   </div>
   {% endif %}
 
