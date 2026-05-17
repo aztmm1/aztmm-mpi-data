@@ -1,6 +1,6 @@
 {
   "tracker": "aztmm-daily-pulse-v2",
-  "headline_metric_label": "Scenario score",
+  "headline_metric_label": "MPI",
   "points": [
     {
       "date": "2026-05-12",
@@ -13,6 +13,10 @@
     {
       "date": "2026-05-14",
       "value": 4.0
+    },
+    {
+      "date": "2026-05-15",
+      "value": 50.0
     }
   ]
 }
