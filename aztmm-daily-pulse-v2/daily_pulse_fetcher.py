@@ -152,6 +152,36 @@ def fetch_dark_pool(ticker: str, date_str: str, limit: int = 500) -> FetchResult
     return _get(f"/api/darkpool/{ticker}", {"date": date_str, "limit": limit})
 
 
+# --- v2.1 additions: smart-money + macro signals ---
+# Paths confirmed via UW OpenAPI docs (insider, analysts, economy/treasury-yield).
+# Other paths are best-guess; if a 404 fires, data_quality.failures captures it
+# and the aggregator simply skips that block.
+
+ALL_SECTORS = [
+    "Basic Materials", "Communication Services", "Consumer Cyclical",
+    "Consumer Defensive", "Energy", "Financial Services", "Healthcare",
+    "Industrials", "Real Estate", "Technology", "Utilities",
+]
+
+
+def fetch_insider_sector_flow(sector: str, limit: int = 14) -> FetchResult:
+    """Insider buy/sell per sector — last `limit` days."""
+    return _get(f"/api/insider/{sector}/sector-flow", {"limit": limit})
+
+
+def fetch_analyst_ratings(ticker: str | None = None, limit: int = 50) -> FetchResult:
+    """Analyst ratings — optionally filtered by ticker."""
+    params: dict[str, Any] = {"limit": limit}
+    if ticker:
+        params["ticker"] = ticker
+    return _get("/api/screener/analysts", params)
+
+
+def fetch_yield_curve_maturity(maturity: str = "10year") -> FetchResult:
+    """Treasury yield series for one maturity. Advanced+ tier."""
+    return _get(f"/api/economy/treasury-yield", {"maturity": maturity, "interval": "daily"})
+
+
 # ---------------------------------------------------------------------------
 # Top-level: pull everything for one date
 # ---------------------------------------------------------------------------
@@ -269,6 +299,43 @@ def fetch_daily_data(date_str: str) -> dict[str, Any]:
             out["darkpool"][tkr] = payload if isinstance(payload, list) else []
         else:
             out["darkpool"][tkr] = []
+
+    # --- v2.1: insider sector flow (11 sectors)
+    out["insider_sector_flow"] = {}
+    for sector in ALL_SECTORS:
+        r = fetch_insider_sector_flow(sector, limit=14)
+        _record(r)
+        if r.ok:
+            payload = r.data.get("data") if isinstance(r.data, dict) else r.data
+            out["insider_sector_flow"][sector] = payload if isinstance(payload, list) else []
+        else:
+            out["insider_sector_flow"][sector] = []
+
+    # --- v2.1: analyst ratings (market-wide, last 50)
+    r = fetch_analyst_ratings(limit=50)
+    _record(r)
+    out["analyst_ratings"] = []
+    if r.ok:
+        payload = r.data.get("data") if isinstance(r.data, dict) else r.data
+        out["analyst_ratings"] = payload if isinstance(payload, list) else []
+
+    # --- v2.1: yield curve (one canonical maturity — 10Y for now)
+    # Advanced+ tier endpoint; expect 403 on lower tiers. data_quality.failures captures it.
+    r = fetch_yield_curve_maturity("10year")
+    _record(r)
+    out["yield_10y"] = None
+    if r.ok:
+        payload = r.data.get("data") if isinstance(r.data, dict) else r.data
+        if isinstance(payload, list) and payload:
+            out["yield_10y"] = payload[-1]  # latest data point
+
+    r = fetch_yield_curve_maturity("2year")
+    _record(r)
+    out["yield_2y"] = None
+    if r.ok:
+        payload = r.data.get("data") if isinstance(r.data, dict) else r.data
+        if isinstance(payload, list) and payload:
+            out["yield_2y"] = payload[-1]
 
     dq["degraded"] = dq["endpoints_failed"] > 0
     return out
