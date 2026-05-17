@@ -43,6 +43,7 @@ jobs:
       WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
       WP_SITE: ${{ secrets.WP_SITE }}
       WP_USERNAME: ${{ secrets.WP_USERNAME }}
+       UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
 
     steps:
       - name: Checkout
