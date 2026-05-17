@@ -41,6 +41,7 @@ import logging
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any
+from aggregator_v2_addon import apply_v2_fields
 
 logger = logging.getLogger("daily_pulse.aggregator")
 
@@ -1089,7 +1090,8 @@ def aggregate(raw: dict, prev_raw: dict | None = None) -> dict:
             "Not investment advice."
         )),
     }
-    return out
+    out = apply_v2_fields(out, raw, mpi_score)
+        return out
 
 
 # ---------------------------------------------------------------------------
