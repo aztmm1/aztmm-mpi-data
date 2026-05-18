@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-05-16T22:03:39Z",
-  "asOf": "2026-05-16",
+  "computed_at": "2026-05-18T13:01:25Z",
+  "asOf": "2026-05-18",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 57,
+    "mpi_score": 63,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 52,
-      "ci_high": 62
+      "ci_low": 58,
+      "ci_high": 68
     },
     "signal": {
       "bias": "Bullish",
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4188,
-      "probability_up": 0.4188,
+      "confidence": 0.4376,
+      "probability_up": 0.4376,
       "probability_flat": 0.3539,
-      "probability_down": 0.2274
+      "probability_down": 0.2086
     },
     "hmm": {
       "state": "Sideways",
@@ -68,10 +68,15 @@
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 50.0
+        "score": 70.0,
+        "t10y2y_pct": 0.5,
+        "dgs10": 4.47,
+        "dgs2": 4.0
       },
       "credit": {
-        "score": 50.0
+        "score": 86.9,
+        "hy_oas_pct": 2.76,
+        "ig_oas_pct": 0.76
       },
       "sentiment": {
         "score": 62.9,
@@ -90,8 +95,9 @@
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
-        "score": 50.0,
-        "note": "M2 unavailable; using neutral 50"
+        "score": 55.0,
+        "m2_latest": 22686.0,
+        "note": "trend proxy"
       }
     }
   },
