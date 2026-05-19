@@ -1091,7 +1091,7 @@ def aggregate(raw: dict, prev_raw: dict | None = None) -> dict:
         )),
     }
     out = apply_v2_fields(out, raw, mpi_score)
-        return out
+    return out
 
 
 # ---------------------------------------------------------------------------
