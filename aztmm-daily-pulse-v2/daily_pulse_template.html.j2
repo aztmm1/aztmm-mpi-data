@@ -1,5 +1,5 @@
 {# ============================================================
-   AZTMM Daily/Weekly Pulse v4 ‚Äî Dark-Theme Web Component
+   AZTMM Daily/Weekly Pulse v4 — Dark-Theme Web Component
    ------------------------------------------------------------
    Rewrite of v3 email-card layout for native dark-theme + mobile.
    - Mobile-first: 6-KPI grid stacks to 1 col below 640px
@@ -42,8 +42,8 @@
 .azt-pulse details{background:rgba(126,182,196,.05);border:1px solid rgba(126,182,196,.22);border-radius:10px;padding:12px 18px;margin:0 0 24px;}
 .azt-pulse details summary{cursor:pointer;color:var(--info);font-weight:600;font-size:.92rem;list-style:none;}
 .azt-pulse details summary::-webkit-details-marker{display:none}
-.azt-pulse details summary::after{content:' ‚Üí';transition:transform .15s}
-.azt-pulse details[open] summary::after{content:' ‚Üì'}
+.azt-pulse details summary::after{content:' →';transition:transform .15s}
+.azt-pulse details[open] summary::after{content:' ↓'}
 .azt-pulse details p{margin:.7rem 0 0;color:var(--text-soft);font-size:.88rem;line-height:1.65;}
 .azt-pulse .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0 8px;}
 .azt-pulse .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 14px;text-align:center;position:relative;overflow:hidden;}
@@ -181,7 +181,7 @@
 
   <details>
     <summary>How to read this Pulse</summary>
-    <p><strong>KPI strip</strong> ‚Üí <strong>Sector tape</strong> ‚Üí <strong>Concentration</strong> (top single-name net premium) ‚Üí <strong>Today's Tell</strong> ‚Üí <strong>Dark-pool prints</strong> (FINRA T-14) ‚Üí <strong>What changed</strong> ‚Üí <strong>Next session catalysts</strong> ‚Üí <strong>Data quality + methodology + disclaimer</strong>. The KPI strip carries the headline reads; the rest is the structure beneath them.</p>
+    <p><strong>KPI strip</strong> → <strong>Sector tape</strong> → <strong>Concentration</strong> (top single-name net premium) → <strong>Today's Tell</strong> → <strong>Dark-pool prints</strong> (FINRA T-14) → <strong>What changed</strong> → <strong>Next session catalysts</strong> → <strong>Data quality + methodology + disclaimer</strong>. The KPI strip carries the headline reads; the rest is the structure beneath them.</p>
   </details>
 
   {# -------- 6-KPI strip -------- #}
@@ -299,7 +299,7 @@
   <div class="section">
     <h2 class="section-title">Dark-Pool Tells<small>FINRA OTC ATS ¬∑ T-14 lag</small></h2>
     <table class="tbl">
-      <thead><tr><th>Ticker</th><th class="num">Total premium</th><th class="num">Mega-prints (‚â•100K)</th><th class="num">Print count</th></tr></thead>
+      <thead><tr><th>Ticker</th><th class="num">Total premium</th><th class="num">Mega-prints (≥100K)</th><th class="num">Print count</th></tr></thead>
       <tbody>
         {% for r in darkpool.rows %}
         <tr class="neu">
@@ -311,7 +311,7 @@
         {% endfor %}
       </tbody>
     </table>
-    <p style="margin:10px 0 0;color:var(--text-mute);font-size:.82rem;line-height:1.6;">FINRA ATS publishes with a T-14 lag ‚Äî the off-exchange tape here reflects institutional activity two weeks ago, not the current session.</p>
+    <p style="margin:10px 0 0;color:var(--text-mute);font-size:.82rem;line-height:1.6;">FINRA ATS publishes with a T-14 lag — the off-exchange tape here reflects institutional activity two weeks ago, not the current session.</p>
   </div>
   {% endif %}
 
@@ -407,7 +407,7 @@
   {# -------- Appendix CTA -------- #}
   {% if appendix_url %}
   <div class="appendix-cta">
-    <a href="{{ appendix_url }}">View full data appendix ‚Üí</a>
+    <a href="{{ appendix_url }}">View full data appendix →</a>
     <p>Sector heatmap ¬∑ Concentration ¬∑ Dark pool ¬∑ By-the-numbers</p>
   </div>
   {% endif %}
@@ -422,7 +422,7 @@
         {% for src in data_quality.sources_used %}<span>{{ src }}</span>{% endfor %}
       {% endif %}
       {% if data_quality.sources_failed %}
-        {% for src in data_quality.sources_failed %}<span class="fail">{{ src }} ‚Äî fail</span>{% endfor %}
+        {% for src in data_quality.sources_failed %}<span class="fail">{{ src }} — fail</span>{% endfor %}
       {% endif %}
     </div>
     {% if data_quality.degraded %}
