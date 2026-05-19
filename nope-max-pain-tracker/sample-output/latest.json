@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-19T21:15:43Z",
+  "generated_at": "2026-05-19T21:30:54Z",
   "as_of_date": "2026-05-19",
   "methodology": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100",
   "source": "yfinance",
