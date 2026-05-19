@@ -1,0 +1,55 @@
+{
+  "date": "2026-05-19",
+  "started_at": "2026-05-19T07:06:43.649529Z",
+  "dry_run": false,
+  "force_publish": true,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "endpoints_ok": 29,
+      "endpoints_failed": 3
+    },
+    {
+      "step": "fetch_prev",
+      "ok": true,
+      "endpoints_ok": 30
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "scenario": "BASE (BULL TILT)",
+      "score": 1
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 5,
+      "sparkline_available": true
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 29815
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    }
+  ],
+  "payload": {
+    "title": "AZTMM Closing Pulse \u00b7 Tuesday May 19, 2026",
+    "excerpt": "Tape stayed mixed; Materials led (+0.00%); no single-name positioning stood out.",
+    "status": "publish",
+    "categories": [
+      "Daily Pulse"
+    ],
+    "tags": [
+      "daily-pulse"
+    ],
+    "slug": "daily-pulse-options-flow-dark-pool-2026-05-19",
+    "content_bytes": 29815
+  },
+  "status": "payload_emitted"
+}
