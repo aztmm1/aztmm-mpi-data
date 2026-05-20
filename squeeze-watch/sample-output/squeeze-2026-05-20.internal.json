@@ -1,0 +1,148 @@
+{
+  "date": "2026-05-20",
+  "as_of": "2026-05-20 5:00 PM ET",
+  "scoring_weights": {
+    "short_interest_pct_float": 0.25,
+    "days_to_cover": 0.2,
+    "options_volume_ratio": 0.2,
+    "call_put_volume_ratio": 0.15,
+    "gamma_context": 0.2
+  },
+  "normalisation_caps": {
+    "short_interest_pct_cap": 30.0,
+    "days_to_cover_cap": 10.0,
+    "options_vol_ratio_cap": 5.0,
+    "call_put_ratio_cap": 3.0,
+    "gex_negative_cap": -1000000000.0
+  },
+  "rows": [],
+  "filtered_tickers": [
+    {
+      "ticker": "CVNA",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "UPST",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "PLTR",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "GME",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "MSTR",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "HOOD",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "SMCI",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "SOFI",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "CHWY",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "COIN",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "SNAP",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "RDDT",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "RIVN",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "LCID",
+      "reason": "no_info"
+    },
+    {
+      "ticker": "AFRM",
+      "reason": "no_info"
+    }
+  ],
+  "data_quality": {
+    "endpoints_ok": 0,
+    "endpoints_failed": 0,
+    "tickers_filtered": [
+      {
+        "ticker": "CVNA",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "UPST",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "PLTR",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "GME",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "MSTR",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "HOOD",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "SMCI",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "SOFI",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "CHWY",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "COIN",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "SNAP",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "RDDT",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "RIVN",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "LCID",
+        "reason": "no_info"
+      },
+      {
+        "ticker": "AFRM",
+        "reason": "no_info"
+      }
+    ]
+  },
+  "names_evaluated": 0
+}
