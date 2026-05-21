@@ -53,7 +53,7 @@ def main() -> int:
         "title": payload["title"],
         "content": payload["content"],
         "excerpt": payload.get("excerpt", ""),
-        "status": payload.get("status", "draft"),
+        "status": payload.get("status", "publish"),
         "slug": payload.get("slug"),
         "featured_media": payload.get("featured_media", DEFAULT_FEATURED_MEDIA),
     }, timeout=30)
