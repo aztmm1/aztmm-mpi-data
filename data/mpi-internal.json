@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-05-16T22:03:39Z",
-  "asOf": "2026-05-16",
+  "computed_at": "2026-05-21T19:47:00Z",
+  "asOf": "2026-05-21",
   "stale_threshold_hours": 18,
   "data_quality": "degraded",
   "data": {
@@ -19,53 +19,53 @@
       "strength": "Medium"
     },
     "market": {
-      "spy_spot": 739.17,
-      "expected_move_1sigma": 8.58,
-      "expected_move_pct": 0.0116
+      "spy_spot": 741.25,
+      "expected_move_1sigma": 8.14,
+      "expected_move_pct": 0.011
     },
     "volatility": {
-      "vix": 18.43,
-      "vix3m": 21.36,
-      "vrp": 7.7,
+      "vix": 17.44,
+      "vix3m": 20.76,
+      "vrp": 6.74,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 10.73
+      "realized_vol_20d_pct": 10.7
     },
     "compass": {
-      "bias": "Neutral",
-      "confidence": 0.4188,
-      "probability_up": 0.4188,
-      "probability_flat": 0.3539,
-      "probability_down": 0.2274
+      "bias": "Bullish",
+      "confidence": 0.5338,
+      "probability_up": 0.5338,
+      "probability_flat": 0.2507,
+      "probability_down": 0.2154
     },
     "hmm": {
-      "state": "Sideways",
-      "confidence": 0.7467,
+      "state": "Bull",
+      "confidence": 0.9987,
       "probs": {
-        "Bull": 0.2505,
-        "Sideways": 0.7467,
-        "Bear": 0.0028
+        "Bull": 0.9987,
+        "Sideways": 0.0013,
+        "Bear": 0.0
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 64.5,
-        "spy_close": 739.17,
-        "ma50": 690.04,
-        "ma200": 676.07,
-        "cross_ratio_pct": 2.066,
-        "ma50_slope_pct": 1.444
+        "score": 66.5,
+        "spy_close": 741.25,
+        "ma50": 693.76,
+        "ma200": 677.72,
+        "cross_ratio_pct": 2.367,
+        "ma50_slope_pct": 1.642
       },
       "breadth": {
-        "score": 86.3,
-        "cyclical_defensive_ratio": 1.4125,
-        "cyc_def_percentile_1y": 97.2,
-        "iwm_spy_percentile_1y": 69.8
+        "score": 86.7,
+        "cyclical_defensive_ratio": 1.4003,
+        "cyc_def_percentile_1y": 96.4,
+        "iwm_spy_percentile_1y": 72.2
       },
       "volatility": {
-        "score": 44.6,
-        "vix": 18.43,
-        "vix3m": 21.36,
-        "vix_percentile_1y": 66.3,
+        "score": 53.5,
+        "vix": 17.44,
+        "vix3m": 20.76,
+        "vix_percentile_1y": 53.6,
         "term_shape": "Contango"
       },
       "yield_curve": {
@@ -77,19 +77,19 @@
         "error": "no hy_oas"
       },
       "sentiment": {
-        "score": 62.9,
-        "cnn_fg": 62.9
+        "score": 58.2,
+        "cnn_fg": 58.2
       },
       "rotation": {
-        "score": 53.6,
-        "xlu_xly_ratio": 0.3765,
-        "xlu_xly_percentile_1y": 46.4
+        "score": 49.2,
+        "xlu_xly_ratio": 0.3774,
+        "xlu_xly_percentile_1y": 50.8
       },
       "currency": {
-        "score": 40.6,
-        "uup": 27.77,
-        "uup_50d_ma": 27.562,
-        "uup_vs_ma_pct": 0.755,
+        "score": 43.1,
+        "uup": 27.73,
+        "uup_50d_ma": 27.579,
+        "uup_vs_ma_pct": 0.548,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
@@ -100,6 +100,7 @@
   },
   "warnings": [
     "DEGRADED: FRED_API_KEY not set; macro sleeve will use last-good",
+    "market-data: SPY frame ends 2026-05-20, expected 2026-05-21 (force=on, proceeding)",
     "CBOE put/call fetch failed"
   ],
   "source_versions": {
