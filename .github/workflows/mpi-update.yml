@@ -19,9 +19,9 @@ on:
     # 18:00 ET (post-close EOD) -> 23:00 UTC (EST) and 22:00 UTC (EDT)
     - cron: "0 23 * * 1-5"
     - cron: "0 22 * * 1-5"
-        # Post-SA-settle backup (SA EOD bar rolls ~21:51 ET — these catch the late settle window)
-            - cron: "0 2 * * 2-6"   # 02:00 UTC Tue-Sat = 22:00 ET EDT (Mon-Fri NY), after SA settle
-                - cron: "0 3 * * 2-6"   # 03:00 UTC Tue-Sat = 22:00 ET EST (Mon-Fri NY), after SA settle
+    # 22:00 ET safety-net (after SA EOD bar settles ~21:51 ET) — 02:00 UTC EDT / 03:00 UTC EST, Tue-Sat for Mon-Fri NY
+    - cron: "0 2 * * 2-6"
+    - cron: "0 3 * * 2-6"
   workflow_dispatch:
     inputs:
       force:
