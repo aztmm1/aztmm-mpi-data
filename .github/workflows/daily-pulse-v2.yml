@@ -87,7 +87,7 @@ jobs:
 
       - name: Publish to WordPress (REST API)
         if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true' && env.WP_APP_PASSWORD != ''
-        continue-on-error: true
+        continue-on-error: false
         working-directory: aztmm-daily-pulse-v2
         run: |
           python publish_to_wp.py publish-artifacts/payload.json || echo "WP publish failed — payload still committed to repo for manual review"
