@@ -75,16 +75,16 @@
         "tilt": "tilted toward acquisitions"
       },
       {
-        "ticker": "T",
-        "sector": "Communication Services",
+        "ticker": "V",
+        "sector": "Financials",
         "member_count": 2,
         "members": [
-          "Josh Gottheimer",
-          "Tim Moore"
+          "David Taylor",
+          "Jonathan Jackson"
         ],
         "filings_in_window": 2,
-        "window_start": "2026-05-05",
-        "window_end": "2026-05-18",
+        "window_start": "2026-05-01",
+        "window_end": "2026-05-08",
         "tilt": "balanced"
       }
     ],
@@ -102,6 +102,13 @@
         "filings_in_window": 5,
         "window_start": "2026-03-31",
         "window_end": "2026-05-07"
+      },
+      {
+        "sector": "Financials",
+        "member_count": 3,
+        "filings_in_window": 4,
+        "window_start": "2026-05-01",
+        "window_end": "2026-05-08"
       }
     ],
     "large_filings": [],
@@ -109,7 +116,7 @@
   },
   "commentary": [
     "HD drew 3 distinct members inside the last 30 days (4 filings, balanced). That kind of cluster is worth noting - not chasing.",
-    "Other tickers showing multi-member activity in the same window: PANW, AMD, STE, T.",
+    "Other tickers showing multi-member activity in the same window: PANW, AMD, STE, V.",
     "4 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
   ],
   "data_quality": {
@@ -119,5 +126,5 @@
     "source": "House Clerk PTR feed (free, public)",
     "senate_status": "phase 2 - efdsearch.senate.gov scraper pending"
   },
-  "generated_at": "2026-05-28T21:31:40Z"
+  "generated_at": "2026-05-28T21:46:38Z"
 }
