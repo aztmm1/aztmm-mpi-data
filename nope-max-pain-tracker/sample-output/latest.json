@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-01T21:16:16Z",
+  "generated_at": "2026-06-01T21:31:47Z",
   "as_of_date": "2026-06-01",
   "methodology": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100",
   "source": "yfinance",
@@ -14,7 +14,7 @@
       "ticker": "SPY",
       "spot": 758.54,
       "share_volume": 38439176,
-      "nope_score": 0.142,
+      "nope_score": 0.141,
       "expiries": [
         {
           "expiry": "2026-06-02",
@@ -44,7 +44,7 @@
       "ticker": "SPX",
       "spot": 758.54,
       "share_volume": 38439176,
-      "nope_score": 0.142,
+      "nope_score": 0.141,
       "expiries": [
         {
           "expiry": "2026-06-02",
