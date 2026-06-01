@@ -22,20 +22,6 @@
   "notable": {
     "ticker_clusters": [
       {
-        "ticker": "AAPL",
-        "sector": "Technology",
-        "member_count": 3,
-        "members": [
-          "David Taylor",
-          "Ed Case",
-          "John McGuire"
-        ],
-        "filings_in_window": 4,
-        "window_start": "2026-05-01",
-        "window_end": "2026-05-31",
-        "tilt": "balanced"
-      },
-      {
         "ticker": "T",
         "sector": "Communication Services",
         "member_count": 3,
@@ -61,6 +47,19 @@
         "window_start": "2026-05-01",
         "window_end": "2026-05-28",
         "tilt": "tilted toward acquisitions"
+      },
+      {
+        "ticker": "AAPL",
+        "sector": "Technology",
+        "member_count": 2,
+        "members": [
+          "David Taylor",
+          "John McGuire"
+        ],
+        "filings_in_window": 3,
+        "window_start": "2026-05-01",
+        "window_end": "2026-05-28",
+        "tilt": "tilted toward dispositions"
       },
       {
         "ticker": "AMD",
@@ -92,10 +91,10 @@
     "sector_clusters": [
       {
         "sector": "Technology",
-        "member_count": 6,
-        "filings_in_window": 10,
+        "member_count": 5,
+        "filings_in_window": 9,
         "window_start": "2026-05-01",
-        "window_end": "2026-05-31"
+        "window_end": "2026-05-28"
       },
       {
         "sector": "Consumer Discretionary",
@@ -123,16 +122,16 @@
     "late_filings": []
   },
   "commentary": [
-    "AAPL drew 3 distinct members inside the last 30 days (4 filings, balanced). That kind of cluster is worth noting - not chasing.",
-    "Other tickers showing multi-member activity in the same window: T, HD, AMD, STE.",
-    "6 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
+    "T drew 3 distinct members inside the last 30 days (4 filings, tilted toward acquisitions). That kind of cluster is worth noting - not chasing.",
+    "Other tickers showing multi-member activity in the same window: HD, AAPL, AMD, STE.",
+    "5 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
   ],
   "data_quality": {
     "degraded": false,
-    "endpoints_ok": 50,
+    "endpoints_ok": 49,
     "endpoints_failed": 0,
     "source": "House Clerk PTR feed (free, public)",
     "senate_status": "phase 2 - efdsearch.senate.gov scraper pending"
   },
-  "generated_at": "2026-06-01T21:31:18Z"
+  "generated_at": "2026-06-01T21:46:18Z"
 }
