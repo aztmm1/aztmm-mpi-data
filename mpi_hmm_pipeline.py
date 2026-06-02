@@ -479,6 +479,8 @@ def _load_market_data(ctx: RunContext) -> Dict[str, Any]:
     if "SPY" in frames and pd is not None:
         try:
             spy_last_date = pd.Timestamp(frames["SPY"].index[-1]).date()
+            try: ctx.market_asof = spy_last_date.strftime("%Y-%m-%d")
+            except Exception: pass
             today_et = ctx.now_et.date()
             # Weekend-aware: expected last bar is most recent trading day (Mon-Fri).
             # If today is Sat/Sun, expected is the prior Friday.
@@ -1160,6 +1162,26 @@ def load_last_good(path: Path) -> Optional[Dict[str, Any]]:
         return None
 
 
+def _resolve_asof(ctx) -> str:
+    """Return YYYY-MM-DD for the latest closed trading day this run reflects.
+    Priority: ctx.market_asof (set during market-data load) > most recent weekday
+    on/before today's ET date. Prevents post-midnight runs from labeling next day."""
+    try:
+        d = getattr(ctx, "market_asof", None)
+        if d:
+            return d if isinstance(d, str) else d.strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    et = ctx.now_et.date()
+    # walk back to most recent weekday (Mon-Fri)
+    while et.weekday() >= 5:
+        et = et.replace(day=et.day-1) if et.day > 1 else et
+        from datetime import timedelta as _td
+        et = et - _td(days=1)
+    return et.strftime("%Y-%m-%d")
+
+
+
 def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
     """Run all loaders + scorers, return final payload dict."""
     if mock:
@@ -1268,7 +1290,7 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
     payload: Dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "computed_at":    ctx.now_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "asOf":           ctx.now_et.strftime("%Y-%m-%d"),
+        "asOf":           _resolve_asof(ctx),
         "stale_threshold_hours": STALE_THRESHOLD_HOURS,
         "data_quality":   _compute_data_quality(ctx),
         "data": {
@@ -1337,7 +1359,7 @@ def _mock_payload(ctx: RunContext) -> Dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "computed_at":    ctx.now_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "asOf":           ctx.now_et.strftime("%Y-%m-%d"),
+        "asOf":           _resolve_asof(ctx),
         "stale_threshold_hours": STALE_THRESHOLD_HOURS,
         "data_quality":   "ok",
         "data": {

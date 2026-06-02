@@ -1,14 +1,14 @@
 {
   "schema_version": "2.0",
   "computed_at": "2026-06-02T04:25:34Z",
-  "asOf": "2026-06-02",
+  "asOf": "2026-06-01",
   "stale_threshold_hours": 18,
   "data_quality": "degraded",
   "data": {
     "mpi_score": 65,
     "mpi_label": "Bull",
     "regime": "Bull",
-    "regime_label": "Bull · early",
+    "regime_label": "Bull \u00b7 early",
     "confidence": {
       "ci_level": "85%",
       "ci_low": 60,
