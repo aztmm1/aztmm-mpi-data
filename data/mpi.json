@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-06-02T21:41:36Z",
+  "computed_at": "2026-06-02T22:14:03Z",
   "asOf": "2026-06-02",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 71,
+    "mpi_score": 70,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 66,
-      "ci_high": 76
+      "ci_low": 65,
+      "ci_high": 75
     },
     "signal": {
       "bias": "Bullish",
@@ -24,17 +24,17 @@
     },
     "volatility": {
       "vix": 16.05,
-      "vix3m": 19.43,
+      "vix3m": 19.49,
       "vrp": 6.57,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 9.48
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5272,
-      "probability_up": 0.5272,
+      "confidence": 0.5238,
+      "probability_up": 0.5238,
       "probability_flat": 0.2993,
-      "probability_down": 0.1736
+      "probability_down": 0.177
     },
     "hmm": {
       "state": "Bull",
@@ -55,15 +55,15 @@
         "ma50_slope_pct": 2.383
       },
       "breadth": {
-        "score": 93.4,
-        "cyclical_defensive_ratio": 1.4776,
-        "cyc_def_percentile_1y": 99.6,
+        "score": 92.0,
+        "cyclical_defensive_ratio": 1.4313,
+        "cyc_def_percentile_1y": 97.2,
         "iwm_spy_percentile_1y": 84.1
       },
       "volatility": {
         "score": 74.1,
         "vix": 16.05,
-        "vix3m": 19.43,
+        "vix3m": 19.49,
         "vix_percentile_1y": 24.2,
         "term_shape": "Contango"
       },
@@ -95,9 +95,8 @@
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
-        "score": 55.0,
-        "m2_latest": 22804.5,
-        "note": "trend proxy"
+        "score": 50.0,
+        "note": "M2 unavailable; using neutral 50"
       }
     }
   },
