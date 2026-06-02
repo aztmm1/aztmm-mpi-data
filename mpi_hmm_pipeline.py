@@ -262,6 +262,35 @@ logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO"),
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
+def _tg_notify(text: str) -> None:
+    """Best-effort Telegram notification — never raises. Reads creds from env or
+    a local .telegram_creds file. Silently no-ops if creds missing."""
+    try:
+        import os as _os, urllib.parse as _up, urllib.request as _ur
+        token = _os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+        chat = _os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+        if not token or not chat:
+            # Try loading from a sibling file path (GitHub Actions can write it)
+            for cred_path in (".telegram_creds", _os.path.expanduser("~/.telegram_creds")):
+                if _os.path.isfile(cred_path):
+                    with open(cred_path) as _f:
+                        for line in _f:
+                            if line.startswith("TELEGRAM_BOT_TOKEN="):
+                                token = line.split("=", 1)[1].strip()
+                            elif line.startswith("TELEGRAM_CHAT_ID="):
+                                chat = line.split("=", 1)[1].strip()
+                    if token and chat:
+                        break
+        if not token or not chat:
+            return  # silent no-op when no creds
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        data = _up.urlencode({"chat_id": chat, "text": text}).encode()
+        req = _ur.Request(url, data=data, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        _ur.urlopen(req, timeout=5).read()
+    except Exception:
+        pass  # never raise from notification path
+
+
 log = logging.getLogger("mpi_hmm")
 
 
@@ -1361,6 +1390,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if not gate_clock(ctx, args.force or args.dry_run or args.mock):
         log.info("gate closed; exiting cleanly")
+        _tg_notify(f"ℹ️ MPI cron gate-closed at {ctx.now_et.strftime('%a %H:%M ET')} (weekend/holiday/window) — no commit, normal")
         return 0
 
     out_path = Path(args.output).resolve()
@@ -1457,9 +1487,41 @@ def main(argv: Optional[List[str]] = None) -> int:
     prior_internal_str = internal_path.read_text() if internal_path.exists() else ""
     internal_changed = _strip_volatile(internal_str) != _strip_volatile(prior_internal_str)
 
-    if not public_changed and not internal_changed:
-        log.info("payload unchanged from prior; skipping write to save commit")
+    # Force-rewrite if asOf changed (new calendar day) OR prior is stale (>4h old)
+    # — prevents the silent no-op when scheduled runs land on identical-looking data.
+    force_rewrite = False
+    try:
+        import json as _json
+        cur_asof = _json.loads(out_str).get("asOf")
+        prior_obj = _json.loads(prior_str) if prior_str else {}
+        prior_asof = prior_obj.get("asOf")
+        prior_computed = prior_obj.get("computed_at", "")
+        if cur_asof and prior_asof and cur_asof != prior_asof:
+            force_rewrite = True
+            log.info("dedup-override: asOf changed %s -> %s; forcing rewrite", prior_asof, cur_asof)
+        elif prior_computed:
+            from datetime import datetime as _dt, timezone as _tz
+            try:
+                prior_ts = _dt.fromisoformat(prior_computed.replace("Z", "+00:00"))
+                age_h = (_dt.now(_tz.utc) - prior_ts).total_seconds() / 3600
+                if age_h > 4:
+                    force_rewrite = True
+                    log.info("dedup-override: prior payload age=%.1fh > 4h; forcing rewrite", age_h)
+            except Exception:
+                pass
+    except Exception as _e:
+        log.warning("dedup-override check failed: %s", _e)
+
+    if not public_changed and not internal_changed and not force_rewrite:
+        log.info("payload unchanged from prior AND prior is fresh (<4h); skipping write to save commit")
+        # Telegram notify so we know this happened
+        _tg_notify("ℹ️ MPI cron skipped: payload unchanged + prior <4h old")
         return 0
+
+    # If force_rewrite triggered, mark BOTH as changed so writes happen
+    if force_rewrite:
+        public_changed = True
+        internal_changed = True
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     if public_changed:
