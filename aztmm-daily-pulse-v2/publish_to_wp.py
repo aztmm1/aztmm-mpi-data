@@ -41,9 +41,9 @@ def main() -> int:
         print("empty payload", file=sys.stderr)
         return 2
 
-    site = os.environ.get("WP_SITE", DEFAULT_SITE)
-    user = os.environ.get("WP_USERNAME")
-    pw = os.environ.get("WP_APP_PASSWORD")
+    site = os.environ.get("WP_SITE", DEFAULT_SITE).strip()
+    user = (os.environ.get("WP_USERNAME") or "").strip()
+    pw = (os.environ.get("WP_APP_PASSWORD") or "").strip()
     if not (user and pw):
         print("WP_USERNAME / WP_APP_PASSWORD not set", file=sys.stderr)
         return 3

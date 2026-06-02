@@ -489,7 +489,7 @@ def _load_market_data(ctx: RunContext) -> Dict[str, Any]:
                 expected_last -= timedelta(days=1)
             # Honor --force: skip the assert entirely so manual reruns aren't blocked
             force_mode = bool(getattr(ctx, "force", False))
-            if (not force_mode) and ctx.now_et.hour >= 17 and spy_last_date < expected_last:
+            if (not force_mode) and ctx.now_et.hour >= 18 and spy_last_date < expected_last:
                 ctx.degrade(
                     f"market-data: SPY EOD not yet published "
                     f"(frame ends {spy_last_date}, expected last trading day {expected_last}). "
