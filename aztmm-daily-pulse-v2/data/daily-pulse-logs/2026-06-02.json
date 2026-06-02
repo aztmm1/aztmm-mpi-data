@@ -1,8 +1,8 @@
 {
   "date": "2026-06-02",
-  "started_at": "2026-06-02T21:41:31.735727Z",
+  "started_at": "2026-06-02T21:45:46.113262Z",
   "dry_run": false,
-  "force_publish": true,
+  "force_publish": false,
   "steps": [
     {
       "step": "fetch",
@@ -41,7 +41,7 @@
   "payload": {
     "title": "AZTMM Closing Pulse \u00b7 Tuesday June 2, 2026",
     "excerpt": "Put-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
-    "status": "publish",
+    "status": "draft",
     "categories": [
       "Daily Pulse"
     ],
