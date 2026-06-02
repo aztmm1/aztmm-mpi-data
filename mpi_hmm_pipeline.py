@@ -79,7 +79,7 @@ UTC = timezone.utc
 # Run windows (ET). Morning 09:00-09:30 uses prior-session close.
 # Evening 17:55-18:30 is the post-close EOD slot (moved from 16:00-16:50
 # on 2026-05-14 because SA/CBOE EOD bars publish ~17:30-21:51 ET).
-WINDOWS_ET = [(9, 0, 9, 30), (17, 55, 18, 30)]  # (h_lo, m_lo, h_hi, m_hi)
+WINDOWS_ET = [(8, 0, 10, 30), (13, 0, 19, 30)]  # widened 2026-06-02: covers AM cron (8-10 ET) and PM cron + EDT/EST drift (13-19 ET)
 
 # FRED series IDs — see https://fred.stlouisfed.org/
 FRED_SERIES = {
