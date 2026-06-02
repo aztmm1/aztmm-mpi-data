@@ -490,12 +490,14 @@ def _load_market_data(ctx: RunContext) -> Dict[str, Any]:
             # Honor --force: skip the assert entirely so manual reruns aren't blocked
             force_mode = bool(getattr(ctx, "force", False))
             if (not force_mode) and ctx.now_et.hour >= 18 and spy_last_date < expected_last:
-                ctx.degrade(
+                # 2026-06-02 fix: was raising SystemExit which produced silent skips.
+                # Now: warn loudly but CONTINUE — write file with the latest available frame,
+                # fresh computed_at, let dedup-override force write so git sees a diff.
+                ctx.warn(
                     f"market-data: SPY EOD not yet published "
                     f"(frame ends {spy_last_date}, expected last trading day {expected_last}). "
-                    f"Aborting close-of-day MPI run to avoid stale snapshot."
+                    f"Proceeding with last-good SPY data — asOf will reflect frame's last date."
                 )
-                raise SystemExit(0)  # graceful exit; cron will retry next slot
             if spy_last_date < expected_last:
                 ctx.warn(f"market-data: SPY frame ends {spy_last_date}, expected {expected_last} (force=on, proceeding)")
         except SystemExit:
