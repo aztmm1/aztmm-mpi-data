@@ -1,6 +1,6 @@
 {
   "date": "2026-06-03",
-  "started_at": "2026-06-03T14:17:28.795582Z",
+  "started_at": "2026-06-03T15:56:17.433715Z",
   "dry_run": false,
   "force_publish": false,
   "steps": [
@@ -18,8 +18,8 @@
     {
       "step": "aggregate",
       "ok": true,
-      "scenario": "BASE",
-      "score": 0
+      "scenario": "BASE (BEAR TILT)",
+      "score": -1
     },
     {
       "step": "update_history",
@@ -30,7 +30,7 @@
     {
       "step": "render",
       "ok": true,
-      "html_bytes": 29997
+      "html_bytes": 30008
     },
     {
       "step": "brand_check",
@@ -49,7 +49,7 @@
       "daily-pulse"
     ],
     "slug": "daily-pulse-options-flow-dark-pool-2026-06-03",
-    "content_bytes": 29997
+    "content_bytes": 30008
   },
   "status": "payload_emitted"
 }
