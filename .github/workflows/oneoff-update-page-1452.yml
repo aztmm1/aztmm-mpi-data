@@ -9,13 +9,11 @@ jobs:
       - name: Update page 1452
         env:
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
-          WP_SITE: ${{ secrets.WP_SITE }}
           WP_USERNAME: ${{ secrets.WP_USERNAME }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import os, json, base64, urllib.request, urllib.error
-          site = os.environ["WP_SITE"].rstrip("/")
           user = os.environ["WP_USERNAME"]
           pw = os.environ["WP_APP_PASSWORD"]
           token = base64.b64encode(f"{user}:{pw}".encode()).decode()
@@ -23,12 +21,13 @@ jobs:
               content = f.read()
           body = {"content": content}
           req = urllib.request.Request(
-              f"{site}/wp-json/wp/v2/pages/1452",
+              "https://aztmm.com/wp-json/wp/v2/pages/1452",
               data=json.dumps(body).encode(),
               method="POST",
               headers={
                   "Authorization": f"Basic {token}",
                   "Content-Type": "application/json",
+                  "User-Agent": "aztmm-mpi-oneoff/1.0",
               }
           )
           try:
@@ -37,6 +36,8 @@ jobs:
                   print("modified:", d.get("modified"))
                   print("link:", d.get("link"))
                   print("status:", d.get("status"))
+                  cw = d.get("_content_warnings")
+                  if cw: print("WARNINGS:", cw)
           except urllib.error.HTTPError as e:
               print("HTTP error:", e.code, e.read().decode()[:1000])
               raise SystemExit(1)
