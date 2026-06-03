@@ -1,8 +1,8 @@
 {
   "date": "2026-06-03",
-  "started_at": "2026-06-03T21:45:45.102677Z",
+  "started_at": "2026-06-03T22:09:02.581679Z",
   "dry_run": false,
-  "force_publish": false,
+  "force_publish": true,
   "steps": [
     {
       "step": "fetch",
@@ -30,7 +30,7 @@
     {
       "step": "render",
       "ok": true,
-      "html_bytes": 29994
+      "html_bytes": 29995
     },
     {
       "step": "brand_check",
@@ -41,7 +41,7 @@
   "payload": {
     "title": "AZTMM Closing Pulse \u00b7 Wednesday June 3, 2026",
     "excerpt": "Put-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
-    "status": "draft",
+    "status": "publish",
     "categories": [
       "Daily Pulse"
     ],
@@ -49,7 +49,7 @@
       "daily-pulse"
     ],
     "slug": "daily-pulse-options-flow-dark-pool-2026-06-03",
-    "content_bytes": 29994
+    "content_bytes": 29995
   },
   "status": "payload_emitted"
 }
