@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-06-03T22:08:49Z",
-  "asOf": "2026-06-02",
+  "computed_at": "2026-06-03T22:32:11Z",
+  "asOf": "2026-06-03",
   "stale_threshold_hours": 18,
   "data": {
     "mpi_score": 69,
@@ -18,47 +18,47 @@
       "strength": "High"
     },
     "market": {
-      "spy_spot": 759.57,
-      "expected_move_1sigma": 7.55,
+      "spy_spot": 754.24,
+      "expected_move_1sigma": 7.49,
       "expected_move_pct": 0.0099
     },
     "volatility": {
       "vix": 15.77,
       "vix3m": 19.76,
-      "vrp": 6.29,
+      "vrp": 5.88,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 9.48
+      "realized_vol_20d_pct": 9.89
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5203,
-      "probability_up": 0.5203,
-      "probability_flat": 0.2993,
-      "probability_down": 0.1804
+      "confidence": 0.5147,
+      "probability_up": 0.5147,
+      "probability_flat": 0.304,
+      "probability_down": 0.1812
     },
     "hmm": {
       "state": "Bull",
-      "confidence": 0.6727,
+      "confidence": 0.6382,
       "probs": {
-        "Bull": 0.6727,
-        "Sideways": 0.3249,
-        "Bear": 0.0024
+        "Bull": 0.6382,
+        "Sideways": 0.359,
+        "Bear": 0.0028
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 75.2,
-        "spy_close": 759.57,
-        "ma50": 707.84,
-        "ma200": 682.31,
-        "cross_ratio_pct": 3.741,
-        "ma50_slope_pct": 2.383
+        "score": 76.6,
+        "spy_close": 754.24,
+        "ma50": 709.82,
+        "ma200": 682.87,
+        "cross_ratio_pct": 3.947,
+        "ma50_slope_pct": 2.505
       },
       "breadth": {
-        "score": 92.9,
+        "score": 89.9,
         "cyclical_defensive_ratio": 1.4754,
         "cyc_def_percentile_1y": 98.8,
-        "iwm_spy_percentile_1y": 84.1
+        "iwm_spy_percentile_1y": 76.6
       },
       "volatility": {
         "score": 76.6,
