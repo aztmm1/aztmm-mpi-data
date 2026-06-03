@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-06-03T20:31:02Z",
+  "computed_at": "2026-06-03T22:08:49Z",
   "asOf": "2026-06-02",
   "stale_threshold_hours": 18,
   "data": {
@@ -24,7 +24,7 @@
     },
     "volatility": {
       "vix": 15.77,
-      "vix3m": 19.49,
+      "vix3m": 19.76,
       "vrp": 6.29,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 9.48
@@ -55,15 +55,15 @@
         "ma50_slope_pct": 2.383
       },
       "breadth": {
-        "score": 93.4,
-        "cyclical_defensive_ratio": 1.4923,
-        "cyc_def_percentile_1y": 99.6,
+        "score": 92.9,
+        "cyclical_defensive_ratio": 1.4754,
+        "cyc_def_percentile_1y": 98.8,
         "iwm_spy_percentile_1y": 84.1
       },
       "volatility": {
         "score": 76.6,
         "vix": 15.77,
-        "vix3m": 19.49,
+        "vix3m": 19.76,
         "vix_percentile_1y": 20.6,
         "term_shape": "Contango"
       },
@@ -83,15 +83,15 @@
         "cnn_fg": 54.0
       },
       "rotation": {
-        "score": 62.3,
-        "xlu_xly_ratio": 0.3733,
-        "xlu_xly_percentile_1y": 37.7
+        "score": 57.1,
+        "xlu_xly_ratio": 0.3745,
+        "xlu_xly_percentile_1y": 42.9
       },
       "currency": {
-        "score": 42.0,
-        "uup": 27.76,
-        "uup_50d_ma": 27.584,
-        "uup_vs_ma_pct": 0.64,
+        "score": 37.7,
+        "uup": 27.86,
+        "uup_50d_ma": 27.59,
+        "uup_vs_ma_pct": 0.98,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
