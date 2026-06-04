@@ -99,3 +99,21 @@ jobs:
             echo "  push attempt $i failed — sleeping $((i*3))s"
             sleep $((i*3))
           done
+
+      - name: Regenerate WP page HTML + update via REST
+        if: always()
+        env:
+          WP_SITE: ${{ secrets.WP_SITE }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+        run: |
+          if [ -f squeeze-watch/sample-output/latest.json ]; then
+            python3 scripts/rebuild_tracker_html.py \
+              --tracker squeeze \
+              --page-id 2626 \
+              --input-json squeeze-watch/sample-output/latest.json \
+              --update-wp
+          else
+            echo "no latest.json; skipping WP update"
+          fi
+
