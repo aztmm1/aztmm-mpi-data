@@ -24,16 +24,18 @@
       {
         "ticker": "AAPL",
         "sector": "Technology",
-        "member_count": 3,
+        "member_count": 5,
         "members": [
+          "Cleo Fields",
           "David Taylor",
           "Ed Case",
-          "John McGuire"
+          "John McGuire",
+          "Tim Walberg"
         ],
-        "filings_in_window": 4,
+        "filings_in_window": 6,
         "window_start": "2026-05-01",
         "window_end": "2026-05-31",
-        "tilt": "balanced"
+        "tilt": "tilted toward acquisitions"
       },
       {
         "ticker": "T",
@@ -70,9 +72,9 @@
           "Gilbert Cisneros",
           "Josh Gottheimer"
         ],
-        "filings_in_window": 3,
+        "filings_in_window": 4,
         "window_start": "2026-05-05",
-        "window_end": "2026-05-07",
+        "window_end": "2026-06-02",
         "tilt": "tilted toward acquisitions"
       },
       {
@@ -92,10 +94,10 @@
     "sector_clusters": [
       {
         "sector": "Technology",
-        "member_count": 6,
-        "filings_in_window": 10,
+        "member_count": 8,
+        "filings_in_window": 13,
         "window_start": "2026-05-01",
-        "window_end": "2026-05-31"
+        "window_end": "2026-06-02"
       },
       {
         "sector": "Consumer Discretionary",
@@ -103,6 +105,13 @@
         "filings_in_window": 6,
         "window_start": "2026-05-01",
         "window_end": "2026-05-28"
+      },
+      {
+        "sector": "Health Care",
+        "member_count": 3,
+        "filings_in_window": 4,
+        "window_start": "2026-05-01",
+        "window_end": "2026-06-02"
       },
       {
         "sector": "Communication Services",
@@ -123,9 +132,9 @@
     "late_filings": []
   },
   "commentary": [
-    "AAPL drew 3 distinct members inside the last 30 days (4 filings, balanced). That kind of cluster is worth noting - not chasing.",
+    "AAPL drew 5 distinct members inside the last 30 days (6 filings, tilted toward acquisitions). That kind of cluster is worth noting - not chasing.",
     "Other tickers showing multi-member activity in the same window: T, HD, AMD, STE.",
-    "6 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
+    "8 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
   ],
   "data_quality": {
     "degraded": false,
@@ -134,5 +143,5 @@
     "source": "House Clerk PTR feed (free, public)",
     "senate_status": "phase 2 - efdsearch.senate.gov scraper pending"
   },
-  "generated_at": "2026-06-04T16:39:58Z"
+  "generated_at": "2026-06-04T21:16:10Z"
 }
