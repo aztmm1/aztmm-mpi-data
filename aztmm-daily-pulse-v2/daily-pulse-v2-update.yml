@@ -1,14 +1,20 @@
+# === FREE-SOURCE PIPELINE — AUTO-CRON ENABLED 2026-05-15 ===
+# Path A compliant: yfinance EOD chains + FINRA OTC ATS weekly + SEC EDGAR
+# Form 4 + repo data/mpi.json. Zero UW dependency.
+# Aggregator: commit 70d53233. Conviction gate >=80 internal-only.
+# Daily 22:30 ET cron Mon-Fri (moved from 17:00 ET 2026-06-04 — CBOE settle race).
+
 name: AZTMM Daily Pulse v2
 
-# Schedule: 5 PM ET, Mon–Fri.
-# - During EDT (Mar–Nov): 21:00 UTC
-# - During EST (Nov–Mar): 22:00 UTC
-# Both cron lines fire; the script idempotently skips if the run-log for the
-# date already exists with status=='payload_emitted' or 'dry_run_ok'.
+# Schedule: 22:30 ET, Mon–Fri (moved from 17:00 ET on 2026-06-04).
+# 22:30 ET (02:30 UTC next-day) — AFTER CBOE 21:51 ET option close + safety net for late settles.
+# Previous 17:00 ET cron fired before CBOE settled, triggering degraded-mode publishes.
+# Auto-cron is active. Pipeline is idempotent — re-running same date is safe.
+# Manual triggers via workflow_dispatch still work.
+# The script idempotently skips if a WP post for the target date already exists.
 on:
   schedule:
-    - cron: '0 21 * * 1-5'   # 5 PM ET during EDT
-    - cron: '0 22 * * 1-5'   # 5 PM ET during EST
+    - cron: '30 2 * * 2-6'   # 22:30 ET (02:30 UTC next-day Tue-Sat = 22:30 ET prev-day Mon-Fri) — AFTER CBOE 21:51 ET option close + safety net for late settles
   workflow_dispatch:
     inputs:
       date:
@@ -32,10 +38,10 @@ jobs:
     timeout-minutes: 20
 
     env:
-      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
       WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
       WP_SITE: ${{ secrets.WP_SITE }}
       WP_USERNAME: ${{ secrets.WP_USERNAME }}
+      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
 
     steps:
       - name: Checkout
@@ -59,10 +65,17 @@ jobs:
           DATE="${{ github.event.inputs.date }}"
           if [ -z "$DATE" ]; then DATE=$(date -u +%F); fi
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
-          LOG="data/daily-pulse-logs/$DATE.json"
-          if [ -f "$LOG" ] && grep -qE '"status":\s*"(payload_emitted|dry_run_ok)"' "$LOG"; then
+          # WINDOW-AWARE IDEMPOTENCY (patched 2026-06-02):
+          # Only skip if a PUBLISHED WordPress post already exists for this date.
+          # Local run-logs don't count — AM aggregator runs shouldn't block PM publish.
+          DATE_MMDD=$(echo "$DATE" | awk -F- '{printf "%s-%s", $2, $3}')
+          # Query WP REST for posts in daily-pulse category (730419628) on this date
+          EXISTING=$(curl -fsS "https://aztmm.com/wp-json/wp/v2/posts?categories=730419628&after=${DATE}T00:00:00&before=${DATE}T23:59:59&per_page=1&_fields=id,date,slug" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))" 2>/dev/null || echo "0")
+          if [ "$EXISTING" -ge "1" ]; then
+            echo "Post for $DATE already published — skipping"
             echo "already_ran=true" >> "$GITHUB_OUTPUT"
           else
+            echo "No post for $DATE yet — proceeding"
             echo "already_ran=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -79,10 +92,39 @@ jobs:
 
       - name: Publish to WordPress (REST API)
         if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true' && env.WP_APP_PASSWORD != ''
-        continue-on-error: true
+        continue-on-error: false
         working-directory: aztmm-daily-pulse-v2
         run: |
-          python publish_to_wp.py publish-artifacts/payload.json || echo "WP publish failed — payload still committed to repo for manual review"
+          set +e
+          python publish_to_wp.py publish-artifacts/payload.json
+          rc=$?
+          set -e
+          case "$rc" in
+            0)
+              echo "publish ok"
+              ;;
+            2)
+              echo "::warning::vendor-leak linter (exit 2) — payload preserved for manual review, not marking job failed"
+              ;;
+            3)
+              echo "::notice::DEGRADED MODE (exit 3) — upstream data not settled. Skipping publish, will retry on next cron tick. NOT a failure."
+              ;;
+            4)
+              echo "::warning::ENCODING ISSUES detected (exit 4) — payload preserved for manual review, not marking job failed"
+              ;;
+            5)
+              echo "::error::WP credentials missing (exit 5) — secrets not configured"
+              exit "$rc"
+              ;;
+            6)
+              echo "::error::WP REST POST failed (exit 6) — see logs above"
+              exit "$rc"
+              ;;
+            *)
+              echo "WP publish failed with exit code $rc — payload still committed to repo for manual review"
+              exit "$rc"
+              ;;
+          esac
 
       - name: Commit run logs
         if: always()
@@ -97,8 +139,8 @@ jobs:
           fi
           # Stable URLs: latest.{json,html} copies for jsDelivr to serve
           cd aztmm-daily-pulse-v2/sample-output/ 2>/dev/null && {
-            LATEST_JSON=$(ls -t daily-pulse-*.payload.json 2>/dev/null | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
-            LATEST_HTML=$(ls -t daily-pulse-*.html 2>/dev/null | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
+            LATEST_JSON=$(ls daily-pulse-*.payload.json 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_JSON" ] && cp -f "$LATEST_JSON" latest.json
+            LATEST_HTML=$(ls daily-pulse-*.html 2>/dev/null | sort -r | head -1) && [ -n "$LATEST_HTML" ] && cp -f "$LATEST_HTML" latest.html
             cd - >/dev/null
           } || true
 

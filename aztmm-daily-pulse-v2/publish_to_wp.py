@@ -32,6 +32,10 @@ import requests
 DEFAULT_SITE = "aztmm.com"
 DEFAULT_FEATURED_MEDIA = 1033  # AZTMM HLDGS green seal
 
+# Category defaults — eliminate the "lands in Uncategorized" regression.
+DEFAULT_CATEGORY_DAILY = 730419628   # Daily Pulse
+DEFAULT_CATEGORY_WEEKLY = 730419629  # Weekly Pulse
+
 
 # -----------------------------------------------------------------------------
 # Vendor-leak linter
@@ -101,6 +105,79 @@ def lint_for_vendor_leaks(content: str) -> list[str]:
     return hits
 
 
+# -----------------------------------------------------------------------------
+# Degraded-mode guard
+# -----------------------------------------------------------------------------
+def check_degraded_mode(payload_dict: dict) -> bool:
+    """Refuse to publish if upstream data is degraded. Return True if degraded.
+
+    Heuristics:
+      - explicit `degraded_mode: true` flag on the payload, OR
+      - every sector day_change_pct is effectively zero (CBOE/SA settle race —
+        the 17:00 ET cron fired before EOD bars settled, leaving us with flat
+        zeros across the board). True zero-change across all sectors is
+        practically impossible on a live trading day.
+    """
+    if not isinstance(payload_dict, dict):
+        return False
+    if payload_dict.get("degraded_mode") is True:
+        return True
+    sectors = payload_dict.get("sectors", [])
+    if sectors and all(abs(float(s.get("day_change_pct", 0) or 0)) < 0.001 for s in sectors):
+        return True
+    return False
+
+
+# -----------------------------------------------------------------------------
+# Encoding / mojibake linter
+# -----------------------------------------------------------------------------
+# Patterns that appear when UTF-8 bytes get decoded under the wrong codec
+# (commonly MacRoman or Latin-1) and then re-emitted as UTF-8. We refuse to
+# publish if any of these are present — they're a tell that the payload was
+# corrupted somewhere upstream.
+MOJIBAKE_PATTERNS: list[tuple[str, str]] = [
+    # ¬∑ -> · (middot, UTF-8 decoded as MacRoman)
+    ("\u00ac\u2211",                      "· (middot, UTF-8 -> MacRoman)"),
+    # ‚ñ≤ -> ▲ (up triangle, UTF-8 -> MacRoman)
+    ("\u201a\u00f1\u2264",               "▲ (up triangle, UTF-8 -> MacRoman)"),
+    # ‚ñº -> ▼ (down triangle, UTF-8 -> MacRoman)
+    ("\u201a\u00f1\u00ba",               "▼ (down triangle, UTF-8 -> MacRoman)"),
+    # ‚Äô -> ’ (right single quote, UTF-8 -> MacRoman)
+    ("\u201a\u00c4\u00f4",               "’ (right single quote, UTF-8 -> MacRoman)"),
+    # ‚Äú -> “ (left double quote, UTF-8 -> MacRoman)
+    ("\u201a\u00c4\u00fa",               "“ (left double quote, UTF-8 -> MacRoman)"),
+    # ‚Äù -> ” (right double quote, UTF-8 -> MacRoman)
+    ("\u201a\u00c4\u00f9",               "” (right double quote, UTF-8 -> MacRoman)"),
+    # ‚Äî -> — (em dash, UTF-8 -> MacRoman)
+    ("\u201a\u00c4\u00ee",               "— (em dash, UTF-8 -> MacRoman)"),
+    # â€™ -> ’ (right single quote, UTF-8 -> Latin1)
+    ("\u00e2\u20ac\u2122",               "’ (right single quote, UTF-8 -> Latin1)"),
+    # â€œ -> “ (left double quote, UTF-8 -> Latin1)
+    ("\u00e2\u20ac\u0153",               "“ (left double quote, UTF-8 -> Latin1)"),
+    # â€\x9d -> ” (right double quote, UTF-8 -> Latin1)
+    ("\u00e2\u20ac\x9d",                 "” (right double quote, UTF-8 -> Latin1)"),
+    # � replacement char (any encoding loss)
+    ("\ufffd",                             "Replacement character (encoding loss)"),
+]
+
+
+def lint_for_encoding_issues(content: str) -> list[str]:
+    """Scan post content for mojibake / encoding-loss markers.
+
+    Returns a list of human-readable error strings. Empty list = clean.
+    """
+    findings: list[str] = []
+    if not content:
+        return findings
+    for pattern, description in MOJIBAKE_PATTERNS:
+        for match in re.finditer(pattern, content):
+            line_no = content[: match.start()].count("\n") + 1
+            findings.append(
+                f"[encoding] line {line_no}: matched {match.group()!r} -> should be {description}"
+            )
+    return findings
+
+
 def main() -> int:
     if len(sys.argv) < 2:
         print("usage: publish_to_wp.py PAYLOAD.json", file=sys.stderr)
@@ -134,12 +211,47 @@ def main() -> int:
         )
         return 2
 
+    # -------------------------------------------------------------------------
+    # Degraded-mode guard — refuse to publish if upstream data hasn't settled.
+    # -------------------------------------------------------------------------
+    if check_degraded_mode(payload):
+        print(
+            "[publish_to_wp] DEGRADED MODE detected — refusing to publish. "
+            "Will retry on next cron tick.",
+            file=sys.stderr,
+        )
+        return 3  # exit code 3 = degraded, distinct from 2=linter
+
+    # -------------------------------------------------------------------------
+    # Encoding / mojibake linter — refuse to publish on UTF-8 corruption.
+    # -------------------------------------------------------------------------
+    encoding_issues = lint_for_encoding_issues(scan_blob)
+    if encoding_issues:
+        print("[publish_to_wp] ENCODING ISSUES detected — refusing to publish.", file=sys.stderr)
+        for issue in encoding_issues:
+            print(f"  {issue}", file=sys.stderr)
+        print(
+            "[publish_to_wp] payload preserved for manual review; exiting 4",
+            file=sys.stderr,
+        )
+        return 4  # exit code 4 = encoding
+
     site = os.environ.get("WP_SITE", DEFAULT_SITE).strip()
     user = (os.environ.get("WP_USERNAME") or "").strip()
     pw = (os.environ.get("WP_APP_PASSWORD") or "").strip()
     if not (user and pw):
         print("WP_USERNAME / WP_APP_PASSWORD not set", file=sys.stderr)
-        return 3
+        return 5
+
+    # Category default — eliminate the "lands in Uncategorized" regression.
+    # Payload may set `post_type` to "daily" (default) or "weekly", or may
+    # explicitly set `categories` to override.
+    post_type = (payload.get("post_type") or "daily").lower()
+    if post_type == "weekly":
+        default_cats = [DEFAULT_CATEGORY_WEEKLY]
+    else:
+        default_cats = [DEFAULT_CATEGORY_DAILY]  # safe default for unknown types
+    payload_categories = payload.get("categories") or default_cats
 
     url = f"https://{site}/wp-json/wp/v2/posts"
     r = requests.post(url, auth=(user, pw), json={
@@ -149,10 +261,11 @@ def main() -> int:
         "status": payload.get("status", "publish"),
         "slug": payload.get("slug"),
         "featured_media": payload.get("featured_media", DEFAULT_FEATURED_MEDIA),
+        "categories": payload_categories,
     }, timeout=30)
     if r.status_code not in (200, 201):
         print(f"wp publish failed: {r.status_code} {r.text[:400]}", file=sys.stderr)
-        return 4
+        return 6
     body = r.json()
     print(json.dumps({
         "status": "ok",
