@@ -5,7 +5,7 @@ calendar + yfinance EOD options chain.
 """
 from __future__ import annotations
 import argparse, json, math, sys, time
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from pathlib import Path
 import yfinance as yf
 
@@ -215,7 +215,11 @@ def main():
             records.append(rec)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    public = {"asof": asof, "source": "yfinance",
+    now_utc = datetime.now(timezone.utc)
+    public = {"asof": asof, "as_of": asof, "as_of_date": asof, "date": asof,
+              "computed_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "generated_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "source": "yfinance",
               "universe_size": len(universe), "window_days": args.window_days,
               "count": len(records), "records": records,
               "path_a_locked": "2026-05-15"}
