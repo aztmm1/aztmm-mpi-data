@@ -3,10 +3,16 @@ main = "worker.js"
 compatibility_date = "2024-12-01"
 
 # Cron runs in UTC. Worker logic gates on ET windows internally.
-# Every 15 minutes, weekdays only, between 13:00 UTC (≈ 8 AM ET in EST/9 AM ET in EDT)
-# and 23:59 UTC (covers 5–6 PM ET in both EDT and EST).
+# - Mon-Fri 13:00-23:59 UTC: daytime + MPI + EOD daily pulse window (08-19 ET roughly)
+# - Tue-Sat 00:00-04:59 UTC: late-night watchdog window (covers Mon-Fri 20:00-23:59 ET
+#   when GH Actions cron runs and may need a 23:00 ET retry)
+# - Sat 13:00-14:59 UTC: weekly pulse window + 09:45 ET watchdog
 [triggers]
-crons = ["*/15 13-23 * * 1-5"]
+crons = [
+  "*/15 13-23 * * 1-5",
+  "*/15 0-4 * * 2-6",
+  "*/15 13-14 * * 6"
+]
 
 # KV namespace for trigger log (last 200 events).
 # Namespace in CF dashboard is named "aztmm-cron-log".

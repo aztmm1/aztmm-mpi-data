@@ -13,12 +13,13 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 
 var GH_OWNER = "aztmm1";
 var GH_REPO = "aztmm-mpi-data";
-var USER_AGENT = "AZTMM-CF-Worker/2.3";
+var USER_AGENT = "AZTMM-CF-Worker/2.4";
 var RAW_BASE = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
 
 var WORKFLOWS = {
   mpi: "mpi-update.yml",
   dailyPulse: "daily-pulse-v2.yml",
+  weeklyPulse: "weekly-pulse.yml",
   congress: "congress-watch.yml",
   optionsGravity: "options-gravity.yml",
   squeeze: "squeeze-watch.yml",
@@ -231,11 +232,19 @@ async function pingHealthchecks(env, suffix = "") {
 
 function selectWorkflows(et) {
   const { hour, minute, dow } = et;
+  const selected = [];
+  // Saturday morning weekly pulse — 09:00-09:30 ET window
+  if (dow === 6 && hour === 9 && minute < 30) {
+    selected.push(WORKFLOWS.weeklyPulse);
+    return selected;
+  }
   const isWeekday = dow >= 1 && dow <= 5;
   if (!isWeekday) return [];
-  const selected = [];
   if (hour === 9 && minute < 30) selected.push(WORKFLOWS.mpi);
   if (hour === 16 && minute >= 30) selected.push(WORKFLOWS.mpi);
+  // Primary daily-pulse dispatch window — kept at 17:10–17:50 ET for backwards
+  // compatibility, but the GH Actions cron now fires at 22:30 ET so this is a
+  // BACKUP that just hits the idempotency guard if the GH cron already ran.
   if (hour === 17 && minute >= 10 && minute < 50) {
     selected.push(WORKFLOWS.dailyPulse, WORKFLOWS.congress, WORKFLOWS.optionsGravity, WORKFLOWS.squeeze, WORKFLOWS.earningsFlow);
   }
@@ -345,6 +354,52 @@ async function runFreshnessWatch(env, etDate) {
   return results;
 }
 
+async function checkWordPressPostExists(categoryId, dateStr) {
+  // Probe WP REST for a published post in the given category on this date.
+  const url = `https://aztmm.com/wp-json/wp/v2/posts?categories=${categoryId}&after=${dateStr}T00:00:00&before=${dateStr}T23:59:59&per_page=1&_fields=id`;
+  try {
+    const r = await fetch(url, { headers: { "user-agent": USER_AGENT } });
+    if (!r.ok) return null; // unknown
+    const arr = await r.json();
+    return Array.isArray(arr) && arr.length > 0;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function runLateNightDailyPulseWatchdog(env, etDate) {
+  // Daily Pulse category = 730419628. If no published post for today, dispatch.
+  const exists = await checkWordPressPostExists(730419628, etDate);
+  const stamp = new Date().toISOString();
+  if (exists === true) {
+    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] OK — post exists`);
+    return;
+  }
+  if (exists === null) {
+    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] WP probe failed (unknown) — dispatching anyway as safety`);
+  } else {
+    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] MISSING daily pulse for ${etDate} — AUTO-RETRY dispatch`);
+  }
+  const r = await dispatchWorkflow(env, WORKFLOWS.dailyPulse);
+  await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] DISPATCH daily-pulse -> ${r.status}`);
+  await pingHealthchecks(env, exists === false ? "/fail" : "");
+}
+
+async function runWeeklyPulseWatchdog(env, etDate) {
+  // Weekly Pulse category = 730419629. Slug = weekly-pulse-{mon}-to-{fri}.
+  // Just probe by category in the last 24h window.
+  const exists = await checkWordPressPostExists(730419629, etDate);
+  const stamp = new Date().toISOString();
+  if (exists === true) {
+    await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45] OK — post exists`);
+    return;
+  }
+  await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45] MISSING weekly pulse for ${etDate} — AUTO-RETRY dispatch`);
+  const r = await dispatchWorkflow(env, WORKFLOWS.weeklyPulse);
+  await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45] DISPATCH weekly-pulse -> ${r.status}`);
+  await pingHealthchecks(env, "/fail");
+}
+
 async function runTick(env, source = "cron") {
   const now = new Date();
   const et = getETParts(now);
@@ -352,6 +407,17 @@ async function runTick(env, source = "cron") {
   const stamp = now.toISOString();
   if (et.dow >= 1 && et.dow <= 5 && et.hour === 17 && et.minute >= 50 && et.minute < 60) {
     await runFreshnessWatch(env, etDate);
+  }
+  // Late-night watchdog (Mon-Fri 23:00-23:15 ET): if GH Actions cron at 22:30 ET
+  // didn't fire (queue delay) or failed, AUTO-RETRY the daily pulse here. This
+  // is the safety net for the 2026-06-06 recurring-failure incident.
+  if (et.dow >= 1 && et.dow <= 5 && et.hour === 23 && et.minute < 30) {
+    await runLateNightDailyPulseWatchdog(env, etDate);
+  }
+  // Saturday weekly-pulse watchdog at 09:45 ET: if 09:00 ET GH cron missed,
+  // dispatch via Worker as backup.
+  if (et.dow === 6 && et.hour === 9 && et.minute >= 30 && et.minute < 60) {
+    await runWeeklyPulseWatchdog(env, etDate);
   }
   const workflows = selectWorkflows(et);
   const result = { timestamp: stamp, etDate, etHour: et.hour, etMinute: et.minute, dow: et.dow, source, workflowsTriggered: [], workflowsSkipped: [] };
@@ -409,11 +475,11 @@ export default {
       return Response.json({
         ok: true,
         worker: "aztmm-cron",
-        version: "2.3",
+        version: "2.4",
         utc: now.toISOString(),
         etDate, etHour: et.hour, etMinute: et.minute, weekday: et.dow,
         wouldDispatchRightNow: next,
-        info: "POST /run?token=... with body { workflow?: 'name.yml' } for manual trigger. GET /log for last 200 events. GET /freshness for date+data freshness audit."
+        info: "POST /run?token=... with body { workflow?: 'name.yml' } for manual trigger. GET /log for last 200 events. GET /freshness for JSON freshness audit. GET /status for HTML pipeline status page."
       });
     }
 
@@ -432,6 +498,31 @@ export default {
       return new Response(JSON.stringify({ etDate, elapsedMs, results: r }), {
         status: 200,
         headers: { "content-type": "application/json", ...corsHeaders() }
+      });
+    }
+
+    if (url.pathname === "/status" || url.pathname === "/health") {
+      // Human-readable HTML status page — visible pipeline health without API calls.
+      const now = new Date();
+      const etDate = getETDateStr(now);
+      const t0 = Date.now();
+      const r = await runFreshnessWatch(env, etDate);
+      const elapsedMs = Date.now() - t0;
+      const overall = r.every((x) => x.status === "fresh") ? "OK" : "DEGRADED";
+      const color = overall === "OK" ? "#10b981" : "#ef4444";
+      const rows = r.map((x) => {
+        const dot = x.status === "fresh" ? "[green]" : "[red]";
+        return `<tr><td>${dot}</td><td>${x.slug}</td><td>${x.status}</td><td>${x.foundDate || "—"}</td><td>${x.code || ""}</td></tr>`;
+      }).join("");
+      const html = `<!doctype html><meta charset="utf-8"><title>AZTMM Pipeline Status</title>
+<style>body{font-family:ui-sans-serif,system-ui;background:#0b1020;color:#e6e9ff;padding:24px;max-width:880px;margin:auto;}h1{color:${color};margin:0 0 8px;}table{width:100%;border-collapse:collapse;margin-top:16px;}th,td{padding:8px 10px;border-bottom:1px solid #243049;text-align:left;font-size:14px;}th{color:#7f8aa8;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:11px;}small{color:#7f8aa8;}</style>
+<h1>${overall}</h1>
+<small>AZTMM data pipeline status, as of ${etDate} ET (probe ${elapsedMs}ms)</small>
+<table><thead><tr><th></th><th>Tracker</th><th>Status</th><th>asOf</th><th>Code</th></tr></thead><tbody>${rows}</tbody></table>
+<p><small>Endpoints: <a style="color:#7f8aa8" href="/freshness">/freshness (JSON)</a> &middot; <a style="color:#7f8aa8" href="/log">/log</a> &middot; <a style="color:#7f8aa8" href="/">/</a></small></p>`;
+      return new Response(html, {
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8", ...corsHeaders() }
       });
     }
 
