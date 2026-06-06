@@ -1,0 +1,8 @@
+{
+  "date": "2026-06-07",
+  "started_at": "2026-06-06T21:40:42.660208Z",
+  "dry_run": false,
+  "force_publish": true,
+  "steps": [],
+  "status": "skipped_non_market_day"
+}
