@@ -108,10 +108,8 @@ jobs:
           echo "See logs above; common causes: FRED_API_KEY missing, Yahoo throttle, CNN endpoint change."
           exit 1
 
-      - name: Notify outcome (email via Resend)
+      - name: Notify outcome (log-only; GH Actions failure email handles alerting)
         if: always()
-        env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           MPI_VAL=""
           if [ -f data/mpi.json ]; then

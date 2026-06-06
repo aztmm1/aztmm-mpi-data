@@ -105,7 +105,6 @@ jobs:
         env:
           REUSE_DRAFT_ID: ${{ github.event.inputs.reuse_draft_id }}
           WATCHDOG_RETRY: ${{ github.event.inputs.watchdog_retry }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           set +e
           python publish_to_wp.py publish-artifacts/payload.json
@@ -176,10 +175,8 @@ jobs:
             sleep $((i*3))
           done
 
-      - name: Notify outcome (email via Resend)
+      - name: Notify outcome (log-only; GH Actions failure email handles alerting)
         if: always()
-        env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           if [ "${{ job.status }}" = "success" ]; then
             python3 aztmm-daily-pulse-v2/notify_email.py ok "Daily Pulse" \

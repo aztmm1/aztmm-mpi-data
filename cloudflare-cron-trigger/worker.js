@@ -298,39 +298,116 @@ async function runFreshnessWatch(env, etDate) {
 // ============================================================================
 
 async function fetchDraftQueue() {
-  // Held drafts in daily/weekly categories. Authenticated via Application
-  // Password not required because /wp-json/wp/v2/posts?status=draft requires
-  // authentication. We hit the unauthenticated default which only lists
-  // published; instead use the public categories endpoint with status filter.
-  // For status=draft, WP REST DOES require auth. We work around by hitting
-  // the WP REST with a HEAD or relying on the workflow run-logs.
+  // Held-drafts queue. Two paths:
   //
-  // Practical approach: rely on auth via Basic header in headers. The CF
-  // Worker can read env.WP_BASIC_AUTH if configured ("user:apppassword").
-  // If not configured, return empty array — operator will see "no auth".
-  const auth = (globalThis.__WORKER_ENV__ && globalThis.__WORKER_ENV__.WP_BASIC_AUTH) || "";
-  if (!auth) return { ok: false, error: "WP_BASIC_AUTH secret not set on worker", drafts: [] };
+  // (A) Authenticated path: if env.WP_BASIC_AUTH is set ("user:apppassword"),
+  //     query WP REST directly for status=draft posts in daily/weekly
+  //     categories. Canonical source. Lets the watchdog pass reuse_draft_id.
+  //
+  // (B) GH-API fallback: if WP_BASIC_AUTH is NOT set, derive "potential
+  //     held drafts" by scanning recent GH Actions runs of the two pulse
+  //     workflows for the "QUALITY GATE FAILED (exit 7|8)" annotation.
+  //     Informational only - the watchdog will dispatch fresh (no reuse_id).
+  //
+  // Goal: zero setup. User doesn't need to add WP_BASIC_AUTH to CF Worker.
+  // GH_PAT (already required for other panels) carries the load.
+  const env = globalThis.__WORKER_ENV__ || {};
+  const auth = env.WP_BASIC_AUTH || "";
+  if (auth) {
+    // Path A: authenticated WP query
+    const drafts = [];
+    for (const catId of [DAILY_PULSE_CAT, WEEKLY_PULSE_CAT]) {
+      const u = `https://${WP_SITE}/wp-json/wp/v2/posts?status=draft&categories=${catId}&per_page=20&_fields=id,date,modified,link,title,status,categories`;
+      try {
+        const r = await fetch(u, { headers: { "user-agent": USER_AGENT, Authorization: `Basic ${btoa(auth)}` } });
+        if (!r.ok) continue;
+        const arr = await r.json();
+        for (const p of Array.isArray(arr) ? arr : []) {
+          drafts.push({
+            id: p.id,
+            link: p.link,
+            title: (p.title && (p.title.rendered || p.title)) || "(no title)",
+            modified: p.modified,
+            date: p.date,
+            category_id: catId,
+            category_label: catId === DAILY_PULSE_CAT ? "daily" : "weekly",
+            source: "wp"
+          });
+        }
+      } catch (_) {}
+    }
+    return { ok: true, drafts, source: "wp" };
+  }
+  // Path B: GH-API fallback (no WP auth needed)
+  return await fetchHeldDraftsFromGH(env);
+}
+
+async function fetchHeldDraftsFromGH(env) {
+  // Scan recent runs of daily-pulse-v2.yml + weekly-pulse.yml for
+  // "QUALITY GATE FAILED (exit 7|8)" annotations (the held-draft markers
+  // from the publish-step warning emitted by publish_to_wp.py).
+  if (!env.GH_PAT) {
+    return { ok: false, error: "no WP_BASIC_AUTH and no GH_PAT - set GH_PAT to enable GH-API fallback", drafts: [], source: "none" };
+  }
+  const headers = {
+    Authorization: `Bearer ${env.GH_PAT}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": USER_AGENT
+  };
   const drafts = [];
-  for (const catId of [DAILY_PULSE_CAT, WEEKLY_PULSE_CAT]) {
-    const u = `https://${WP_SITE}/wp-json/wp/v2/posts?status=draft&categories=${catId}&per_page=20&_fields=id,date,modified,link,title,status,categories`;
+  const workflows = [
+    { file: "daily-pulse-v2.yml", category_label: "daily" },
+    { file: "weekly-pulse.yml", category_label: "weekly" }
+  ];
+  for (const wf of workflows) {
     try {
-      const r = await fetch(u, { headers: { "user-agent": USER_AGENT, Authorization: `Basic ${btoa(auth)}` } });
-      if (!r.ok) continue;
-      const arr = await r.json();
-      for (const p of Array.isArray(arr) ? arr : []) {
-        drafts.push({
-          id: p.id,
-          link: p.link,
-          title: (p.title && (p.title.rendered || p.title)) || "(no title)",
-          modified: p.modified,
-          date: p.date,
-          category_id: catId,
-          category_label: catId === DAILY_PULSE_CAT ? "daily" : "weekly"
-        });
+      const runsUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${wf.file}/runs?per_page=8`;
+      const rr = await fetch(runsUrl, { headers });
+      if (!rr.ok) continue;
+      const runsData = await rr.json();
+      const runs = (runsData.workflow_runs || []).slice(0, 5);
+      for (const run of runs) {
+        try {
+          const jobsUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/runs/${run.id}/jobs?per_page=5`;
+          const jr = await fetch(jobsUrl, { headers });
+          if (!jr.ok) continue;
+          const jData = await jr.json();
+          let held = false;
+          let heldMsg = "";
+          for (const job of (jData.jobs || [])) {
+            const annoUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/check-runs/${job.id}/annotations`;
+            const ar = await fetch(annoUrl, { headers });
+            if (!ar.ok) continue;
+            const annos = await ar.json();
+            for (const a of (Array.isArray(annos) ? annos : [])) {
+              const msg = (a.message || "") + " " + (a.title || "");
+              if (/QUALITY GATE FAILED.*exit\s*[78]/i.test(msg)) {
+                held = true;
+                heldMsg = msg.slice(0, 200);
+                break;
+              }
+            }
+            if (held) break;
+          }
+          if (held) {
+            drafts.push({
+              id: `run-${run.id}`,
+              link: run.html_url,
+              title: `${wf.category_label} pulse held (run #${run.run_number})`,
+              modified: run.updated_at || run.created_at,
+              date: run.created_at,
+              category_id: wf.category_label === "daily" ? DAILY_PULSE_CAT : WEEKLY_PULSE_CAT,
+              category_label: wf.category_label,
+              source: "gh-annotation",
+              warning: heldMsg
+            });
+          }
+        } catch (_) {}
       }
     } catch (_) {}
   }
-  return { ok: true, drafts };
+  return { ok: true, drafts, source: "gh-annotations" };
 }
 
 async function fetchRecentPublishes() {
@@ -511,16 +588,28 @@ function renderStatusPage(ctx) {
   }).join("") || `<tr><td colspan="4" style="color:#7f8aa8">No recent publishes</td></tr>`;
 
   let draftRows = "";
+  let draftSourceNote = "";
   if (!draftQueue.ok) {
-    draftRows = `<tr><td colspan="5" style="color:#f59e0b">Cannot list drafts: ${escapeHtml(draftQueue.error || "auth missing")}. Configure WP_BASIC_AUTH (user:apppassword) on the CF worker.</td></tr>`;
+    draftRows = `<tr><td colspan="5" style="color:#f59e0b">Cannot list held drafts: ${escapeHtml(draftQueue.error || "no signal source")}.</td></tr>`;
   } else if (heldDraftCount === 0) {
-    draftRows = `<tr><td colspan="5" style="color:#7f8aa8">No held drafts (queue empty)</td></tr>`;
+    if (draftQueue.source === "gh-annotations") {
+      draftRows = `<tr><td colspan="5" style="color:#7f8aa8">No held drafts detected in recent GH runs (GH-API fallback mode)</td></tr>`;
+      draftSourceNote = " <small style='color:#7f8aa8'>(source: GH annotations - WP_BASIC_AUTH not set)</small>";
+    } else {
+      draftRows = `<tr><td colspan="5" style="color:#7f8aa8">No held drafts (queue empty)</td></tr>`;
+    }
   } else {
+    if (draftQueue.source === "gh-annotations") {
+      draftSourceNote = " <small style='color:#f59e0b'>(source: GH annotations - WP_BASIC_AUTH not set; IDs are GH run IDs not WP post IDs)</small>";
+    }
     draftRows = draftQueue.drafts.map((d) => {
       const age = d.modified ? ageString(d.modified) : "-";
-      const editUrl = `https://${WP_SITE}/wp-admin/post.php?post=${d.id}&action=edit`;
-      const retryUrl = `https://${WP_SITE}/?p=${d.id}&preview=true`;
-      return `<tr><td>${d.id}</td><td>${escapeHtml(d.title)}</td><td>${d.category_label}</td><td>${age}</td><td><a href="${editUrl}" target="_blank">edit</a> &middot; <a href="${retryUrl}" target="_blank">preview</a></td></tr>`;
+      const isWp = d.source !== "gh-annotation";
+      const editUrl = isWp ? `https://${WP_SITE}/wp-admin/post.php?post=${d.id}&action=edit` : d.link;
+      const retryUrl = isWp ? `https://${WP_SITE}/?p=${d.id}&preview=true` : d.link;
+      const editLabel = isWp ? "edit" : "view run";
+      const retryLabel = isWp ? "preview" : "rerun";
+      return `<tr><td><code style="font-size:11px">${escapeHtml(String(d.id))}</code></td><td>${escapeHtml(d.title)}</td><td>${d.category_label}</td><td>${age}</td><td><a href="${editUrl}" target="_blank">${editLabel}</a> &middot; <a href="${retryUrl}" target="_blank">${retryLabel}</a></td></tr>`;
     }).join("");
   }
 
@@ -584,7 +673,7 @@ function renderStatusPage(ctx) {
 </div>
 
 <section class="panel">
-  <h2>Held drafts queue ${heldDraftCount > 0 ? `<span style="color:#f59e0b">(${heldDraftCount})</span>` : ""}</h2>
+  <h2>Held drafts queue ${heldDraftCount > 0 ? `<span style="color:#f59e0b">(${heldDraftCount})</span>` : ""}${draftSourceNote}</h2>
   <small>Drafts that failed the quality gate. Watchdog retries automatically at 23:00 ET (daily) / Sat 09:45 ET (weekly).</small>
   <table><thead><tr><th>ID</th><th>Title</th><th>Cat</th><th>Age</th><th>Actions</th></tr></thead><tbody>${draftRows}</tbody></table>
 </section>
@@ -613,7 +702,7 @@ function renderStatusPage(ctx) {
 
 <footer>
   Endpoints: <a href="/">/</a> &middot; <a href="/freshness">/freshness</a> &middot; <a href="/draft-queue">/draft-queue</a> &middot; <a href="/log">/log</a>
-  <br>aztmm-cron-v2 worker.js v2.5 &middot; two-phase publish architecture
+  <br>aztmm-cron-v2 worker.js v2.6 &middot; two-phase publish + GH-API fallback (no WP_BASIC_AUTH needed)
 </footer>`;
 }
 
