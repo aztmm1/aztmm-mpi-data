@@ -105,7 +105,9 @@ def main(argv=None) -> int:
     if args.out_dir:
         out = Path(args.out_dir)
         out.mkdir(parents=True, exist_ok=True)
-        (out / "payload.json").write_text(json.dumps(wrapped, indent=2, default=str))
+        # NOTE: we deliberately do NOT write payload.json here — the GH Actions
+        # workflow redirects stdout into payload.json. Writing both produced a
+        # double-JSON-object file (see incident 2026-06-06).
         (out / f"weekly-pulse-{monday}-to-{friday}.html").write_text(html)
         (out / f"weekly-pulse-{monday}-to-{friday}.payload.json").write_text(
             json.dumps(wrapped, indent=2, default=str))
