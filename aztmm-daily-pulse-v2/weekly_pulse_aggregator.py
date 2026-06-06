@@ -206,7 +206,7 @@ def aggregate_week(week_ending: str, *, from_fixture: Path | None = None) -> dic
         # Live fetch path — runs the full daily fetcher for Friday only
         # (single snapshot, full mode for tell-scoring quality).
         from daily_pulse_fetcher import fetch_daily_data
-        raw = fetch_daily_data(trading_days[-1], fast=False)
+        raw = fetch_daily_data(trading_days[-1])
         agg = aggregate(raw, prev_raw=None)
 
     # Override weekly framing
