@@ -107,3 +107,22 @@ jobs:
           echo "Pipeline step failed; last-good remains in data/mpi.json (if any)."
           echo "See logs above; common causes: FRED_API_KEY missing, Yahoo throttle, CNN endpoint change."
           exit 1
+
+      - name: Notify outcome (email via Resend)
+        if: always()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          MPI_VAL=""
+          if [ -f data/mpi.json ]; then
+            MPI_VAL=$(python3 -c "import json; d=json.load(open('data/mpi.json')); print(d.get('mpi', d.get('score','?')))" 2>/dev/null || echo "")
+          fi
+          if [ "${{ steps.run.outcome }}" = "success" ]; then
+            python3 aztmm-daily-pulse-v2/notify_email.py ok "MPI Update" \
+              --mpi "${MPI_VAL:-n/a}" \
+              --post "https://cdn.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/data/mpi.json"
+          else
+            python3 aztmm-daily-pulse-v2/notify_email.py fail "MPI Update" \
+              --mpi "${MPI_VAL:-n/a}" \
+              --err "Pipeline step outcome: ${{ steps.run.outcome }} - see https://github.com/aztmm1/aztmm-mpi-data/actions/runs/${{ github.run_id }}"
+          fi

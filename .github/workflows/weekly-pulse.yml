@@ -143,3 +143,16 @@ jobs:
             fi
             sleep $((i*3))
           done
+
+      - name: Notify outcome (email via Resend)
+        if: always()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            python3 aztmm-daily-pulse-v2/notify_email.py ok "Weekly Pulse" \
+              --post "https://aztmm.com/category/weekly-pulse/"
+          else
+            python3 aztmm-daily-pulse-v2/notify_email.py fail "Weekly Pulse" \
+              --err "Job status: ${{ job.status }} - see https://github.com/aztmm1/aztmm-mpi-data/actions/runs/${{ github.run_id }}"
+          fi
