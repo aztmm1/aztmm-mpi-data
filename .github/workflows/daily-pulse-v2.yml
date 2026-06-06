@@ -25,7 +25,15 @@ on:
         required: false
         default: 'false'
       force_publish:
-        description: 'Force status=publish (else draft)'
+        description: 'Force status=publish (else draft) - LEGACY, ignored under two-phase publish'
+        required: false
+        default: 'false'
+      reuse_draft_id:
+        description: 'Watchdog: replace this WP draft post id instead of creating a new one'
+        required: false
+        default: ''
+      watchdog_retry:
+        description: 'Watchdog: mark this run as the retry. On quality-gate fail, exit 8 (human approval) instead of 7.'
         required: false
         default: 'false'
 
@@ -90,10 +98,14 @@ jobs:
           if [ "${{ github.event.inputs.force_publish }}" = "true" ]; then ARGS="$ARGS --force-publish"; fi
           python run_daily_pulse.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
 
-      - name: Publish to WordPress (REST API)
+      - name: Publish to WordPress (REST API) - TWO-PHASE
         if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true' && env.WP_APP_PASSWORD != ''
         continue-on-error: false
         working-directory: aztmm-daily-pulse-v2
+        env:
+          REUSE_DRAFT_ID: ${{ github.event.inputs.reuse_draft_id }}
+          WATCHDOG_RETRY: ${{ github.event.inputs.watchdog_retry }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           set +e
           python publish_to_wp.py publish-artifacts/payload.json
@@ -101,27 +113,34 @@ jobs:
           set -e
           case "$rc" in
             0)
-              echo "publish ok"
+              echo "publish ok - subscribers will be emailed (quality gate passed, draft promoted to publish)"
               ;;
             2)
-              echo "::warning::vendor-leak linter (exit 2) — payload preserved for manual review, not marking job failed"
+              echo "::warning::vendor-leak linter (exit 2) - payload preserved for manual review, not marking job failed"
               ;;
             3)
-              echo "::notice::DEGRADED MODE (exit 3) — upstream data not settled. Skipping publish, will retry on next cron tick. NOT a failure."
+              echo "::notice::DEGRADED MODE (exit 3) - upstream data not settled. Skipping publish, will retry on next cron tick. NOT a failure."
               ;;
             4)
-              echo "::warning::ENCODING ISSUES detected (exit 4) — payload preserved for manual review, not marking job failed"
+              echo "::warning::ENCODING ISSUES detected (exit 4) - payload preserved for manual review, not marking job failed"
               ;;
             5)
-              echo "::error::WP credentials missing (exit 5) — secrets not configured"
+              echo "::error::WP credentials missing (exit 5) - secrets not configured"
               exit "$rc"
               ;;
             6)
-              echo "::error::WP REST POST failed (exit 6) — see logs above"
+              echo "::error::WP REST POST/PATCH failed (exit 6) - see logs above"
               exit "$rc"
               ;;
+            7)
+              echo "::warning::QUALITY GATE FAILED (exit 7) - post HELD AS DRAFT. CF Worker watchdog will retry on next tick (23:00 ET / Sat 09:45 ET). NOT a failure - subscribers were NOT emailed."
+              ;;
+            8)
+              echo "::error::QUALITY GATE FAILED AGAIN (exit 8) on watchdog retry. Post still HELD AS DRAFT - needs HUMAN APPROVAL. Subscribers were NOT emailed."
+              # Exit 8 is intentional human-approval signal - exit cleanly so we can review the draft in /status
+              ;;
             *)
-              echo "WP publish failed with exit code $rc — payload still committed to repo for manual review"
+              echo "WP publish failed with exit code $rc - payload still committed to repo for manual review"
               exit "$rc"
               ;;
           esac

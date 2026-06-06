@@ -18,9 +18,17 @@ on:
         required: false
         default: 'false'
       status:
-        description: 'WP post status: publish or draft'
+        description: 'WP post status: publish or draft (LEGACY - ignored under two-phase publish)'
         required: false
         default: 'publish'
+      reuse_draft_id:
+        description: 'Watchdog: replace this WP draft post id instead of creating a new one'
+        required: false
+        default: ''
+      watchdog_retry:
+        description: 'Watchdog: mark this run as the retry. On quality-gate fail, exit 8 (human approval) instead of 7.'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -107,22 +115,28 @@ jobs:
           if [ "${{ github.event.inputs.status }}" = "draft" ]; then ARGS="$ARGS --status draft"; fi
           python run_weekly_pulse.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
 
-      - name: Publish to WordPress (REST API)
+      - name: Publish to WordPress (REST API) - TWO-PHASE
         if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true' && env.WP_APP_PASSWORD != ''
         working-directory: aztmm-daily-pulse-v2
+        env:
+          REUSE_DRAFT_ID: ${{ github.event.inputs.reuse_draft_id }}
+          WATCHDOG_RETRY: ${{ github.event.inputs.watchdog_retry }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           set +e
           python publish_to_wp.py publish-artifacts/payload.json
           rc=$?
           set -e
           case "$rc" in
-            0) echo "publish ok" ;;
-            2) echo "::warning::vendor-leak linter (exit 2) — payload preserved for manual review" ;;
-            3) echo "::notice::DEGRADED MODE (exit 3) — upstream not settled, will retry" ;;
-            4) echo "::warning::ENCODING ISSUES (exit 4) — payload preserved for manual review" ;;
+            0) echo "publish ok - subscribers will be emailed" ;;
+            2) echo "::warning::vendor-leak linter (exit 2) - payload preserved" ;;
+            3) echo "::notice::DEGRADED MODE (exit 3) - will retry" ;;
+            4) echo "::warning::ENCODING ISSUES (exit 4) - payload preserved" ;;
             5) echo "::error::WP credentials missing (exit 5)" ; exit "$rc" ;;
-            6) echo "::error::WP REST POST failed (exit 6)" ; exit "$rc" ;;
-            *) echo "WP publish failed (exit $rc) — payload still committed" ; exit "$rc" ;;
+            6) echo "::error::WP REST POST/PATCH failed (exit 6)" ; exit "$rc" ;;
+            7) echo "::warning::QUALITY GATE FAILED (exit 7) - HELD as DRAFT, watchdog will retry. Subscribers NOT emailed." ;;
+            8) echo "::error::QUALITY GATE FAILED AGAIN (exit 8) on watchdog retry - HUMAN APPROVAL needed. Subscribers NOT emailed." ;;
+            *) echo "WP publish failed (exit $rc) - payload still committed" ; exit "$rc" ;;
           esac
 
       - name: Commit run artifacts

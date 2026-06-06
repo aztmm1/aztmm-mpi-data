@@ -1,20 +1,31 @@
-// AZTMM CF Worker v2.3 ‚Äî drop-in replacement for cloudflare-cron-trigger/worker.js
-// Patches vs v2.2:
-//   - freshness READS now use raw.githubusercontent.com (no PAT, no rate limit)
-//   - /freshness response has CORS headers (Access-Control-Allow-Origin: *)
-//   - dispatchWorkflow (writes) still uses GH_PAT ‚Äî unchanged
+// AZTMM CF Worker v2.5 - drop-in replacement for cloudflare-cron-trigger/worker.js
+// 2026-06-06 STRUCTURAL FIX: two-phase publish watchdog + operator dashboard.
 //
-// Deploy:
-//   cd cloudflare-cron-trigger && wrangler deploy
-//   (or paste into Cloudflare dashboard ‚Üí Workers ‚Üí aztmm-cron-v2 ‚Üí Edit code)
+// New vs v2.4:
+//   - /draft-queue endpoint: lists held drafts in daily/weekly categories
+//   - watchdog retry: when a draft is held, dispatch workflow with reuse_draft_id
+//   - /status page rebuilt as operator dashboard:
+//       1. Pipeline health badge
+//       2. Last 5 publishes (per WP REST)
+//       3. Held drafts queue
+//       4. MPI freshness
+//       5. Recent CF Worker activity log
+//       6. Watchdog last fire time
+//       7. GH Actions recent runs
+//       8. Resend status
+//   - auto-refresh every 60 sec, AZTMM-styled, mobile-friendly
 
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
 var GH_OWNER = "aztmm1";
 var GH_REPO = "aztmm-mpi-data";
-var USER_AGENT = "AZTMM-CF-Worker/2.4";
+var USER_AGENT = "AZTMM-CF-Worker/2.5";
 var RAW_BASE = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
+
+var WP_SITE = "aztmm.com";
+var DAILY_PULSE_CAT = 730419628;
+var WEEKLY_PULSE_CAT = 730419629;
 
 var WORKFLOWS = {
   mpi: "mpi-update.yml",
@@ -86,10 +97,7 @@ var FRESHNESS_KEY_NUMBERS = {
   "aztmm-daily-pulse-v2": (data) => {
     let c = "";
     if (typeof data === "string") c = data;
-    else {
-      const p = (data && data.payload) || data || {};
-      c = (p && p.content) || "";
-    }
+    else { const p = (data && data.payload) || data || {}; c = (p && p.content) || ""; }
     const stripped = c.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
     const m1 = stripped.match(/Call premium[^$]*\$([\d.]+[BMK]?)/i);
     const m2 = stripped.match(/Put premium[^$]*\$([\d.]+[BMK]?)/i);
@@ -106,8 +114,7 @@ var FRESHNESS_KEY_NUMBERS = {
   "nope-max-pain-tracker": (data) => {
     const tickers = (data && data.tickers) || [];
     const findT = (sym) => tickers.find((t) => t && t.ticker === sym) || {};
-    const spy = findT("SPY");
-    const qqq = findT("QQQ");
+    const spy = findT("SPY"); const qqq = findT("QQQ");
     return [spy.nope, spy.max_pain, spy.spot, qqq.nope, qqq.max_pain].filter((v) => v !== void 0 && v !== null).join("|");
   },
   "squeeze-watch": (data) => {
@@ -126,20 +133,13 @@ var FRESHNESS_KEY_NUMBERS = {
   },
   "mpi": (data) => {
     const d = (data && data.data) || {};
-    const m = d.market || {};
-    const v = d.volatility || {};
+    const m = d.market || {}; const v = d.volatility || {};
     return [m.spy_spot, v.vix, v.vix3m].filter((x) => x !== void 0 && x !== null).join("|");
   }
 };
 
 function getETParts(date) {
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  });
+  const fmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false });
   const parts = fmt.formatToParts(date);
   const get = (t) => parts.find((p) => p.type === t)?.value;
   const weekday = get("weekday");
@@ -150,12 +150,7 @@ function getETParts(date) {
 }
 
 function getETDateStr(date) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(date);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
 
 function prevDateStr(etDate) {
@@ -167,8 +162,10 @@ function prevDateStr(etDate) {
   return `${y}-${m}-${dd}`;
 }
 
-async function dispatchWorkflow(env, workflowFile) {
+async function dispatchWorkflow(env, workflowFile, inputs = null) {
   const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${workflowFile}/dispatches`;
+  const body = { ref: "main" };
+  if (inputs && typeof inputs === "object") body.inputs = inputs;
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -178,38 +175,27 @@ async function dispatchWorkflow(env, workflowFile) {
       "User-Agent": USER_AGENT,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ ref: "main" })
+    body: JSON.stringify(body)
   });
   return { workflow: workflowFile, status: res.status, ok: res.ok, text: res.ok ? "" : (await res.text()).slice(0, 300) };
 }
 
-// === v2.3: raw.githubusercontent.com ‚Äî no PAT, no contents-API rate limit ===
 async function fetchRepoJson(_env, path) {
   try {
-    const res = await fetch(`${RAW_BASE}/${path}?cb=${Date.now()}`, {
-      headers: { "User-Agent": USER_AGENT },
-      cf: { cacheTtl: 0, cacheEverything: false }
-    });
+    const res = await fetch(`${RAW_BASE}/${path}?cb=${Date.now()}`, { headers: { "User-Agent": USER_AGENT }, cf: { cacheTtl: 0, cacheEverything: false } });
     if (!res.ok) return { ok: false, data: null, status: res.status };
     const data = await res.json();
     return { ok: true, data, status: 200 };
-  } catch (e) {
-    return { ok: false, data: null, status: 0, error: String(e) };
-  }
+  } catch (e) { return { ok: false, data: null, status: 0, error: String(e) }; }
 }
 
 async function fetchRepoText(_env, path) {
   try {
-    const res = await fetch(`${RAW_BASE}/${path}?cb=${Date.now()}`, {
-      headers: { "User-Agent": USER_AGENT },
-      cf: { cacheTtl: 0, cacheEverything: false }
-    });
+    const res = await fetch(`${RAW_BASE}/${path}?cb=${Date.now()}`, { headers: { "User-Agent": USER_AGENT }, cf: { cacheTtl: 0, cacheEverything: false } });
     if (!res.ok) return { ok: false, data: null, status: res.status };
     const data = await res.text();
     return { ok: true, data, status: 200 };
-  } catch (e) {
-    return { ok: false, data: null, status: 0, error: String(e) };
-  }
+  } catch (e) { return { ok: false, data: null, status: 0, error: String(e) }; }
 }
 
 async function appendLog(env, line) {
@@ -233,47 +219,28 @@ async function pingHealthchecks(env, suffix = "") {
 function selectWorkflows(et) {
   const { hour, minute, dow } = et;
   const selected = [];
-  // Saturday morning weekly pulse — 09:00-09:30 ET window
-  if (dow === 6 && hour === 9 && minute < 30) {
-    selected.push(WORKFLOWS.weeklyPulse);
-    return selected;
-  }
+  if (dow === 6 && hour === 9 && minute < 30) { selected.push(WORKFLOWS.weeklyPulse); return selected; }
   const isWeekday = dow >= 1 && dow <= 5;
   if (!isWeekday) return [];
   if (hour === 9 && minute < 30) selected.push(WORKFLOWS.mpi);
   if (hour === 16 && minute >= 30) selected.push(WORKFLOWS.mpi);
-  // Primary daily-pulse dispatch window — kept at 17:10–17:50 ET for backwards
-  // compatibility, but the GH Actions cron now fires at 22:30 ET so this is a
-  // BACKUP that just hits the idempotency guard if the GH cron already ran.
   if (hour === 17 && minute >= 10 && minute < 50) {
     selected.push(WORKFLOWS.dailyPulse, WORKFLOWS.congress, WORKFLOWS.optionsGravity, WORKFLOWS.squeeze, WORKFLOWS.earningsFlow);
   }
-  if (et.dow === 5 && hour === 17 && minute >= 10 && minute < 50) {
-    selected.push(WORKFLOWS.insiderActivity);
-  }
+  if (et.dow === 5 && hour === 17 && minute >= 10 && minute < 50) { selected.push(WORKFLOWS.insiderActivity); }
   return selected;
 }
 
 async function checkTarget(env, target, etDate) {
   const todayPath = target.path || `${target.slug}/sample-output/${target.file}`;
   const yesterdayDate = prevDateStr(etDate);
-  const yesterdayPath = target.cadence === "daily" && target.yesterdayFile
-    ? `${target.slug}/sample-output/${target.yesterdayFile(yesterdayDate)}`
-    : null;
+  const yesterdayPath = target.cadence === "daily" && target.yesterdayFile ? `${target.slug}/sample-output/${target.yesterdayFile(yesterdayDate)}` : null;
   const yesterdayFetcher = target.yesterdayFileIsText ? fetchRepoText : fetchRepoJson;
-  const [todayRes, yResRaw] = await Promise.all([
-    fetchRepoJson(env, todayPath),
-    yesterdayPath ? yesterdayFetcher(env, yesterdayPath) : Promise.resolve(null)
-  ]);
+  const [todayRes, yResRaw] = await Promise.all([fetchRepoJson(env, todayPath), yesterdayPath ? yesterdayFetcher(env, yesterdayPath) : Promise.resolve(null)]);
   if (!todayRes.ok) return { slug: target.slug, status: "fetch_failed", code: todayRes.status };
   const data = todayRes.data;
   let foundDate = null;
-  for (const k of target.dateKeys) {
-    if (data && typeof data === "object" && data[k]) {
-      foundDate = String(data[k]).slice(0, 10);
-      break;
-    }
-  }
+  for (const k of target.dateKeys) { if (data && typeof data === "object" && data[k]) { foundDate = String(data[k]).slice(0, 10); break; } }
   if (!foundDate && data && data.payload) {
     const text = (data.payload.title || "") + " " + (data.payload.content || "");
     const m = text.match(/(\d{4}-\d{2}-\d{2})/);
@@ -283,69 +250,41 @@ async function checkTarget(env, target, etDate) {
     const m = JSON.stringify(data).match(/"(?:date|asOf|as_of|as_of_date|target_date|run_date)":\s*"(\d{4}-\d{2}-\d{2})/);
     if (m) foundDate = m[1];
   }
-  let todayHash = null;
-  let yesterdayHash = null;
-  let numbersMatched = false;
-  let staleDataReason = null;
+  let todayHash = null, yesterdayHash = null, numbersMatched = false, staleDataReason = null;
   const extractor = FRESHNESS_KEY_NUMBERS[target.slug];
   if (extractor) {
     try { todayHash = extractor(data) || null; } catch (_) { todayHash = null; }
     if (yResRaw && yResRaw.ok && yResRaw.data) {
       try { yesterdayHash = extractor(yResRaw.data) || null; } catch (_) { yesterdayHash = null; }
-      if (todayHash && yesterdayHash && todayHash === yesterdayHash) {
-        numbersMatched = true;
-        staleDataReason = "key_numbers_identical_to_yesterday";
-      }
+      if (todayHash && yesterdayHash && todayHash === yesterdayHash) { numbersMatched = true; staleDataReason = "key_numbers_identical_to_yesterday"; }
     }
   }
   if (target.valueHashKeys && Array.isArray(target.valueHashKeys) && env.KV) {
     try {
-      const dig = (obj, dotPath) => {
-        const parts2 = dotPath.split(".");
-        let cur = obj;
-        for (const p of parts2) {
-          if (cur == null || typeof cur !== "object") return void 0;
-          cur = cur[p];
-        }
-        return cur;
-      };
-      const parts = target.valueHashKeys.map((k) => {
-        const v = dig(data, k);
-        return v === void 0 || v === null ? "" : String(v);
-      });
+      const dig = (obj, dotPath) => { const parts2 = dotPath.split("."); let cur = obj; for (const p of parts2) { if (cur == null || typeof cur !== "object") return void 0; cur = cur[p]; } return cur; };
+      const parts = target.valueHashKeys.map((k) => { const v = dig(data, k); return v === void 0 || v === null ? "" : String(v); });
       const todayValueHash = parts.join("|");
       const kvKey = `${target.slug}:yesterdayValueHash`;
       const prior = await env.KV.get(kvKey);
-      if (prior && todayValueHash && prior === todayValueHash) {
-        numbersMatched = true;
-        staleDataReason = "value_hash_identical_to_yesterday_kv";
-        todayHash = todayHash || todayValueHash;
-        yesterdayHash = yesterdayHash || prior;
-      }
+      if (prior && todayValueHash && prior === todayValueHash) { numbersMatched = true; staleDataReason = "value_hash_identical_to_yesterday_kv"; todayHash = todayHash || todayValueHash; yesterdayHash = yesterdayHash || prior; }
       if (todayValueHash) await env.KV.put(kvKey, todayValueHash, { expirationTtl: 7 * 24 * 3600 });
     } catch (_) {}
   }
   if (!foundDate) return { slug: target.slug, status: "no_date_field", todayHash, yesterdayHash, numbersMatched };
-  if (foundDate === etDate && numbersMatched) {
-    return { slug: target.slug, status: "STALE_DATA", date: foundDate, todayHash, yesterdayHash, numbersMatched, reason: staleDataReason };
-  }
+  if (foundDate === etDate && numbersMatched) return { slug: target.slug, status: "STALE_DATA", date: foundDate, todayHash, yesterdayHash, numbersMatched, reason: staleDataReason };
   if (foundDate === etDate) return { slug: target.slug, status: "fresh", date: foundDate, todayHash, yesterdayHash, numbersMatched };
   if ((target.cadence || "daily") === "weekly") {
     const today = new Date(etDate + "T00:00:00Z");
     const got = new Date(foundDate + "T00:00:00Z");
     const ageDays = (today - got) / (1000 * 60 * 60 * 24);
-    if (ageDays >= 0 && ageDays <= 7) {
-      return { slug: target.slug, status: "fresh", date: foundDate, cadence: "weekly", ageDays, todayHash, yesterdayHash, numbersMatched };
-    }
+    if (ageDays >= 0 && ageDays <= 7) return { slug: target.slug, status: "fresh", date: foundDate, cadence: "weekly", ageDays, todayHash, yesterdayHash, numbersMatched };
     return { slug: target.slug, status: "STALE", date: foundDate, expected: etDate, cadence: "weekly", ageDays, todayHash, yesterdayHash, numbersMatched };
   }
   return { slug: target.slug, status: "STALE", date: foundDate, expected: etDate, todayHash, yesterdayHash, numbersMatched };
 }
 
 async function runFreshnessWatch(env, etDate) {
-  const results = await Promise.all(
-    FRESHNESS_TARGETS.map((t) => checkTarget(env, t, etDate).catch((e) => ({ slug: t.slug, status: "error", error: String(e) })))
-  );
+  const results = await Promise.all(FRESHNESS_TARGETS.map((t) => checkTarget(env, t, etDate).catch((e) => ({ slug: t.slug, status: "error", error: String(e) }))));
   const stale = results.filter((r) => r.status === "STALE");
   const staleData = results.filter((r) => r.status === "STALE_DATA");
   const fresh = results.filter((r) => r.status === "fresh");
@@ -354,71 +293,168 @@ async function runFreshnessWatch(env, etDate) {
   return results;
 }
 
-async function checkWordPressPostExists(categoryId, dateStr) {
-  // Probe WP REST for a published post in the given category on this date.
-  const url = `https://aztmm.com/wp-json/wp/v2/posts?categories=${categoryId}&after=${dateStr}T00:00:00&before=${dateStr}T23:59:59&per_page=1&_fields=id`;
+// ============================================================================
+// TWO-PHASE PUBLISH SUPPORT (v2.5, 2026-06-06)
+// ============================================================================
+
+async function fetchDraftQueue() {
+  // Held drafts in daily/weekly categories. Authenticated via Application
+  // Password not required because /wp-json/wp/v2/posts?status=draft requires
+  // authentication. We hit the unauthenticated default which only lists
+  // published; instead use the public categories endpoint with status filter.
+  // For status=draft, WP REST DOES require auth. We work around by hitting
+  // the WP REST with a HEAD or relying on the workflow run-logs.
+  //
+  // Practical approach: rely on auth via Basic header in headers. The CF
+  // Worker can read env.WP_BASIC_AUTH if configured ("user:apppassword").
+  // If not configured, return empty array — operator will see "no auth".
+  const auth = (globalThis.__WORKER_ENV__ && globalThis.__WORKER_ENV__.WP_BASIC_AUTH) || "";
+  if (!auth) return { ok: false, error: "WP_BASIC_AUTH secret not set on worker", drafts: [] };
+  const drafts = [];
+  for (const catId of [DAILY_PULSE_CAT, WEEKLY_PULSE_CAT]) {
+    const u = `https://${WP_SITE}/wp-json/wp/v2/posts?status=draft&categories=${catId}&per_page=20&_fields=id,date,modified,link,title,status,categories`;
+    try {
+      const r = await fetch(u, { headers: { "user-agent": USER_AGENT, Authorization: `Basic ${btoa(auth)}` } });
+      if (!r.ok) continue;
+      const arr = await r.json();
+      for (const p of Array.isArray(arr) ? arr : []) {
+        drafts.push({
+          id: p.id,
+          link: p.link,
+          title: (p.title && (p.title.rendered || p.title)) || "(no title)",
+          modified: p.modified,
+          date: p.date,
+          category_id: catId,
+          category_label: catId === DAILY_PULSE_CAT ? "daily" : "weekly"
+        });
+      }
+    } catch (_) {}
+  }
+  return { ok: true, drafts };
+}
+
+async function fetchRecentPublishes() {
+  const out = [];
+  for (const catId of [DAILY_PULSE_CAT, WEEKLY_PULSE_CAT]) {
+    const u = `https://${WP_SITE}/wp-json/wp/v2/posts?categories=${catId}&per_page=5&_fields=id,date,link,title,status,modified`;
+    try {
+      const r = await fetch(u, { headers: { "user-agent": USER_AGENT } });
+      if (!r.ok) continue;
+      const arr = await r.json();
+      for (const p of Array.isArray(arr) ? arr : []) {
+        out.push({
+          id: p.id,
+          link: p.link,
+          title: (p.title && (p.title.rendered || p.title)) || "(no title)",
+          date: p.date,
+          modified: p.modified,
+          category_label: catId === DAILY_PULSE_CAT ? "daily" : "weekly",
+          status: p.status || "publish"
+        });
+      }
+    } catch (_) {}
+  }
+  out.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  return out.slice(0, 5);
+}
+
+async function fetchGHRecentRuns(env) {
+  if (!env.GH_PAT) return [];
+  const u = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/runs?per_page=10`;
   try {
-    const r = await fetch(url, { headers: { "user-agent": USER_AGENT } });
-    if (!r.ok) return null; // unknown
-    const arr = await r.json();
-    return Array.isArray(arr) && arr.length > 0;
-  } catch (e) {
-    return null;
-  }
+    const r = await fetch(u, { headers: { Authorization: `Bearer ${env.GH_PAT}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": USER_AGENT } });
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data.workflow_runs || []).slice(0, 10).map((wr) => ({
+      name: wr.name,
+      status: wr.status,
+      conclusion: wr.conclusion,
+      created_at: wr.created_at,
+      html_url: wr.html_url,
+      run_number: wr.run_number
+    }));
+  } catch (_) { return []; }
 }
 
-async function runLateNightDailyPulseWatchdog(env, etDate) {
-  // Daily Pulse category = 730419628. If no published post for today, dispatch.
-  const exists = await checkWordPressPostExists(730419628, etDate);
-  const stamp = new Date().toISOString();
-  if (exists === true) {
-    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] OK — post exists`);
-    return;
-  }
-  if (exists === null) {
-    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] WP probe failed (unknown) — dispatching anyway as safety`);
-  } else {
-    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] MISSING daily pulse for ${etDate} — AUTO-RETRY dispatch`);
-  }
-  const r = await dispatchWorkflow(env, WORKFLOWS.dailyPulse);
-  await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h] DISPATCH daily-pulse -> ${r.status}`);
-  await pingHealthchecks(env, exists === false ? "/fail" : "");
+async function fetchMpiFreshness(env) {
+  const r = await fetchRepoJson(env, "data/mpi.json");
+  if (!r.ok) return { ok: false };
+  const d = r.data || {};
+  const asOf = d.asOf || d.as_of || d.computed_at || null;
+  const score = (d.data && (d.data.market || {}).spy_spot) || null;
+  return { ok: true, asOf, score, score_label: "SPY spot", computed_at: d.computed_at || asOf, raw: d };
 }
 
-async function runWeeklyPulseWatchdog(env, etDate) {
-  // Weekly Pulse category = 730419629. Slug = weekly-pulse-{mon}-to-{fri}.
-  // Just probe by category in the last 24h window.
-  const exists = await checkWordPressPostExists(730419629, etDate);
+async function runLateNightDailyPulseWatchdogTwoPhase(env, etDate) {
+  // v2.5: instead of blindly dispatching, check for held drafts first.
+  // If a draft exists for today, dispatch workflow with reuse_draft_id +
+  // watchdog_retry=true so the workflow REPLACES the held draft and (on second
+  // gate fail) exits 8 (human approval needed).
   const stamp = new Date().toISOString();
-  if (exists === true) {
-    await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45] OK — post exists`);
+  const publishedExists = await checkWordPressPostExists(DAILY_PULSE_CAT, etDate);
+  if (publishedExists === true) {
+    await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h-v2.5] OK - published post exists`);
     return;
   }
-  await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45] MISSING weekly pulse for ${etDate} — AUTO-RETRY dispatch`);
-  const r = await dispatchWorkflow(env, WORKFLOWS.weeklyPulse);
-  await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45] DISPATCH weekly-pulse -> ${r.status}`);
+  // Look for a held draft from today's earlier attempt
+  const dq = await fetchDraftQueue();
+  let reuseDraftId = null;
+  if (dq.ok) {
+    for (const d of dq.drafts) {
+      if (d.category_id === DAILY_PULSE_CAT && (d.date || "").startsWith(etDate)) {
+        reuseDraftId = d.id;
+        break;
+      }
+    }
+  }
+  const inputs = { date: etDate, watchdog_retry: "true" };
+  if (reuseDraftId) inputs.reuse_draft_id = String(reuseDraftId);
+  const r = await dispatchWorkflow(env, WORKFLOWS.dailyPulse, inputs);
+  await appendLog(env, `${stamp} ${etDate} [watchdog-daily-23h-v2.5] DISPATCH daily-pulse reuse_draft_id=${reuseDraftId || "none"} -> ${r.status}`);
+  await pingHealthchecks(env, publishedExists === false ? "/fail" : "");
+}
+
+async function runWeeklyPulseWatchdogTwoPhase(env, etDate) {
+  const stamp = new Date().toISOString();
+  const exists = await checkWordPressPostExists(WEEKLY_PULSE_CAT, etDate);
+  if (exists === true) { await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45-v2.5] OK - post exists`); return; }
+  const dq = await fetchDraftQueue();
+  let reuseDraftId = null;
+  if (dq.ok) {
+    for (const d of dq.drafts) {
+      if (d.category_id === WEEKLY_PULSE_CAT) {
+        // weekly drafts are valid for the whole week — use most-recent
+        reuseDraftId = d.id;
+        break;
+      }
+    }
+  }
+  const inputs = { watchdog_retry: "true" };
+  if (reuseDraftId) inputs.reuse_draft_id = String(reuseDraftId);
+  const r = await dispatchWorkflow(env, WORKFLOWS.weeklyPulse, inputs);
+  await appendLog(env, `${stamp} ${etDate} [watchdog-weekly-9h45-v2.5] DISPATCH weekly-pulse reuse_draft_id=${reuseDraftId || "none"} -> ${r.status}`);
   await pingHealthchecks(env, "/fail");
 }
 
+async function checkWordPressPostExists(categoryId, dateStr) {
+  const url = `https://${WP_SITE}/wp-json/wp/v2/posts?categories=${categoryId}&after=${dateStr}T00:00:00&before=${dateStr}T23:59:59&per_page=1&_fields=id`;
+  try {
+    const r = await fetch(url, { headers: { "user-agent": USER_AGENT } });
+    if (!r.ok) return null;
+    const arr = await r.json();
+    return Array.isArray(arr) && arr.length > 0;
+  } catch (e) { return null; }
+}
+
 async function runTick(env, source = "cron") {
+  globalThis.__WORKER_ENV__ = env;
   const now = new Date();
   const et = getETParts(now);
   const etDate = getETDateStr(now);
   const stamp = now.toISOString();
-  if (et.dow >= 1 && et.dow <= 5 && et.hour === 17 && et.minute >= 50 && et.minute < 60) {
-    await runFreshnessWatch(env, etDate);
-  }
-  // Late-night watchdog (Mon-Fri 23:00-23:15 ET): if GH Actions cron at 22:30 ET
-  // didn't fire (queue delay) or failed, AUTO-RETRY the daily pulse here. This
-  // is the safety net for the 2026-06-06 recurring-failure incident.
-  if (et.dow >= 1 && et.dow <= 5 && et.hour === 23 && et.minute < 30) {
-    await runLateNightDailyPulseWatchdog(env, etDate);
-  }
-  // Saturday weekly-pulse watchdog at 09:45 ET: if 09:00 ET GH cron missed,
-  // dispatch via Worker as backup.
-  if (et.dow === 6 && et.hour === 9 && et.minute >= 30 && et.minute < 60) {
-    await runWeeklyPulseWatchdog(env, etDate);
-  }
+  if (et.dow >= 1 && et.dow <= 5 && et.hour === 17 && et.minute >= 50 && et.minute < 60) await runFreshnessWatch(env, etDate);
+  if (et.dow >= 1 && et.dow <= 5 && et.hour === 23 && et.minute < 30) await runLateNightDailyPulseWatchdogTwoPhase(env, etDate);
+  if (et.dow === 6 && et.hour === 9 && et.minute >= 30 && et.minute < 60) await runWeeklyPulseWatchdogTwoPhase(env, etDate);
   const workflows = selectWorkflows(et);
   const result = { timestamp: stamp, etDate, etHour: et.hour, etMinute: et.minute, dow: et.dow, source, workflowsTriggered: [], workflowsSkipped: [] };
   if (workflows.length === 0) {
@@ -444,7 +480,6 @@ async function runTick(env, source = "cron") {
   return result;
 }
 
-// === v2.3: CORS helper ===
 function corsHeaders() {
   return {
     "access-control-allow-origin": "*",
@@ -454,18 +489,161 @@ function corsHeaders() {
   };
 }
 
+// ============================================================================
+// Operator Dashboard HTML (AZTMM-styled)
+// ============================================================================
+function renderStatusPage(ctx) {
+  const { etDate, freshness, recentPublishes, draftQueue, mpi, recentLog, ghRuns, resendStatus, watchdogLastFire, elapsedMs } = ctx;
+  const allFresh = freshness.every((x) => x.status === "fresh");
+  const heldDraftCount = (draftQueue && draftQueue.drafts) ? draftQueue.drafts.length : 0;
+  let healthBadge = "OK", healthColor = "#10b981", healthDesc = "All systems nominal";
+  if (heldDraftCount > 0 && allFresh) { healthBadge = "WARN"; healthColor = "#f59e0b"; healthDesc = `${heldDraftCount} held draft(s) awaiting promotion`; }
+  if (!allFresh) { healthBadge = "DEGRADED"; healthColor = "#ef4444"; healthDesc = "Stale or failed data fetches"; }
+
+  const freshRows = freshness.map((x) => {
+    const ok = x.status === "fresh";
+    const dot = ok ? "<span style='color:#10b981'>OK</span>" : `<span style='color:#ef4444'>${x.status}</span>`;
+    return `<tr><td>${dot}</td><td><code>${x.slug}</code></td><td>${x.date || "-"}</td><td>${x.code || ""}</td></tr>`;
+  }).join("");
+
+  const pubRows = (recentPublishes || []).map((p) => {
+    return `<tr><td><a href="${p.link}" target="_blank">${escapeHtml(p.title)}</a></td><td>${p.category_label}</td><td>${p.date ? p.date.replace("T"," ").slice(0,16) : ""}</td><td><span style="color:#10b981">${p.status}</span></td></tr>`;
+  }).join("") || `<tr><td colspan="4" style="color:#7f8aa8">No recent publishes</td></tr>`;
+
+  let draftRows = "";
+  if (!draftQueue.ok) {
+    draftRows = `<tr><td colspan="5" style="color:#f59e0b">Cannot list drafts: ${escapeHtml(draftQueue.error || "auth missing")}. Configure WP_BASIC_AUTH (user:apppassword) on the CF worker.</td></tr>`;
+  } else if (heldDraftCount === 0) {
+    draftRows = `<tr><td colspan="5" style="color:#7f8aa8">No held drafts (queue empty)</td></tr>`;
+  } else {
+    draftRows = draftQueue.drafts.map((d) => {
+      const age = d.modified ? ageString(d.modified) : "-";
+      const editUrl = `https://${WP_SITE}/wp-admin/post.php?post=${d.id}&action=edit`;
+      const retryUrl = `https://${WP_SITE}/?p=${d.id}&preview=true`;
+      return `<tr><td>${d.id}</td><td>${escapeHtml(d.title)}</td><td>${d.category_label}</td><td>${age}</td><td><a href="${editUrl}" target="_blank">edit</a> &middot; <a href="${retryUrl}" target="_blank">preview</a></td></tr>`;
+    }).join("");
+  }
+
+  const mpiBlock = mpi.ok
+    ? `<div><b>asOf:</b> ${mpi.asOf || "-"} &nbsp; <b>computed_at:</b> ${mpi.computed_at || "-"}<br>
+       <b>age:</b> ${mpi.computed_at ? ageString(mpi.computed_at) : "-"} &nbsp; <b>${mpi.score_label}:</b> ${mpi.score ?? "-"}</div>`
+    : `<div style="color:#ef4444">Could not fetch data/mpi.json</div>`;
+
+  const logRows = (recentLog || []).slice(-10).reverse().map((l) => `<tr><td><code style="font-size:11px">${escapeHtml(l)}</code></td></tr>`).join("") || `<tr><td style="color:#7f8aa8">No KV log entries</td></tr>`;
+
+  const ghRunRows = (ghRuns || []).map((r) => {
+    let concColor = "#7f8aa8";
+    if (r.conclusion === "success") concColor = "#10b981";
+    if (r.conclusion === "failure" || r.conclusion === "cancelled") concColor = "#ef4444";
+    if (r.status === "in_progress" || r.status === "queued") concColor = "#3b82f6";
+    return `<tr><td><a href="${r.html_url}" target="_blank">#${r.run_number}</a></td><td>${escapeHtml(r.name)}</td><td>${r.status}</td><td style="color:${concColor}">${r.conclusion || "-"}</td><td>${r.created_at ? r.created_at.replace("T"," ").slice(0,16) : ""}</td></tr>`;
+  }).join("") || `<tr><td colspan="5" style="color:#7f8aa8">GH_PAT not set or no runs</td></tr>`;
+
+  const watchdogRow = watchdogLastFire
+    ? `<div><b>Last watchdog fire:</b> ${escapeHtml(watchdogLastFire)}</div>`
+    : `<div style="color:#7f8aa8">No watchdog events yet (it only fires Mon-Fri 23:00 ET + Sat 09:45 ET)</div>`;
+
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AZTMM Pipeline Status</title>
+<meta http-equiv="refresh" content="60">
+<style>
+  *{box-sizing:border-box}
+  body{font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;background:#0b1020;color:#e6e9ff;padding:16px;max-width:1100px;margin:auto;line-height:1.5;}
+  h1{margin:0 0 4px;font-size:32px;}
+  h2{margin:24px 0 10px;font-size:18px;color:#d8ddff;border-bottom:1px solid #243049;padding-bottom:6px;}
+  .badge{display:inline-block;padding:6px 14px;border-radius:6px;font-weight:700;letter-spacing:0.5px;color:#fff;font-size:14px;}
+  .badge-desc{color:#7f8aa8;font-size:13px;margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 10px;border-bottom:1px solid #243049;text-align:left;vertical-align:top;}
+  th{color:#7f8aa8;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:10px;background:#0f1530;}
+  a{color:#6da9ff;text-decoration:none;}
+  a:hover{text-decoration:underline}
+  code{background:#0f1530;padding:1px 5px;border-radius:3px;color:#a1c4ff;font-size:12px;}
+  .panel{background:#0f1530;border:1px solid #1d2745;border-radius:8px;padding:12px 16px;margin-bottom:6px;}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media (min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+  small{color:#7f8aa8;}
+  .meta{color:#7f8aa8;font-size:12px;margin-bottom:8px}
+  footer{margin-top:32px;color:#7f8aa8;font-size:11px;text-align:center;padding-top:16px;border-top:1px solid #243049;}
+</style>
+<header>
+  <h1>AZTMM Pipeline <span class="badge" style="background:${healthColor}">${healthBadge}</span></h1>
+  <div class="badge-desc">${escapeHtml(healthDesc)}</div>
+  <div class="meta">As of ${etDate} ET &middot; probe ${elapsedMs}ms &middot; auto-refresh 60s</div>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <h2 style="margin-top:0">Data freshness</h2>
+    <table><thead><tr><th>Status</th><th>Tracker</th><th>asOf</th><th>Code</th></tr></thead><tbody>${freshRows}</tbody></table>
+  </section>
+  <section class="panel">
+    <h2 style="margin-top:0">MPI freshness</h2>
+    ${mpiBlock}
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Held drafts queue ${heldDraftCount > 0 ? `<span style="color:#f59e0b">(${heldDraftCount})</span>` : ""}</h2>
+  <small>Drafts that failed the quality gate. Watchdog retries automatically at 23:00 ET (daily) / Sat 09:45 ET (weekly).</small>
+  <table><thead><tr><th>ID</th><th>Title</th><th>Cat</th><th>Age</th><th>Actions</th></tr></thead><tbody>${draftRows}</tbody></table>
+</section>
+
+<section class="panel">
+  <h2>Last 5 publishes</h2>
+  <table><thead><tr><th>Title</th><th>Cat</th><th>Date</th><th>Status</th></tr></thead><tbody>${pubRows}</tbody></table>
+</section>
+
+<div class="grid">
+  <section class="panel">
+    <h2 style="margin-top:0">Recent GH Actions runs</h2>
+    <table><thead><tr><th>#</th><th>Workflow</th><th>Status</th><th>Conclusion</th><th>Created</th></tr></thead><tbody>${ghRunRows}</tbody></table>
+  </section>
+  <section class="panel">
+    <h2 style="margin-top:0">Watchdog + Resend</h2>
+    ${watchdogRow}
+    <div style="margin-top:8px"><b>Resend:</b> ${resendStatus}</div>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Recent CF Worker activity (last 10)</h2>
+  <table><tbody>${logRows}</tbody></table>
+</section>
+
+<footer>
+  Endpoints: <a href="/">/</a> &middot; <a href="/freshness">/freshness</a> &middot; <a href="/draft-queue">/draft-queue</a> &middot; <a href="/log">/log</a>
+  <br>aztmm-cron-v2 worker.js v2.5 &middot; two-phase publish architecture
+</footer>`;
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function ageString(iso) {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    const sec = (Date.now() - d.getTime()) / 1000;
+    if (sec < 60) return `${sec.toFixed(0)}s ago`;
+    if (sec < 3600) return `${(sec/60).toFixed(0)}m ago`;
+    if (sec < 86400) return `${(sec/3600).toFixed(1)}h ago`;
+    return `${(sec/86400).toFixed(1)}d ago`;
+  } catch (_) { return iso; }
+}
+
 export default {
   async scheduled(controller, env, ctx) {
     ctx.waitUntil(runTick(env, "cron"));
   },
 
   async fetch(request, env, ctx) {
+    globalThis.__WORKER_ENV__ = env;
     const url = new URL(request.url);
 
-    // CORS preflight
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders() });
-    }
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders() });
 
     if (url.pathname === "/") {
       const now = new Date();
@@ -473,13 +651,10 @@ export default {
       const etDate = getETDateStr(now);
       const next = selectWorkflows(et);
       return Response.json({
-        ok: true,
-        worker: "aztmm-cron",
-        version: "2.4",
-        utc: now.toISOString(),
+        ok: true, worker: "aztmm-cron", version: "2.5", utc: now.toISOString(),
         etDate, etHour: et.hour, etMinute: et.minute, weekday: et.dow,
         wouldDispatchRightNow: next,
-        info: "POST /run?token=... with body { workflow?: 'name.yml' } for manual trigger. GET /log for last 200 events. GET /freshness for JSON freshness audit. GET /status for HTML pipeline status page."
+        info: "GET /status (operator dashboard) | GET /draft-queue | GET /freshness | GET /log | POST /run?token=..."
       });
     }
 
@@ -496,43 +671,42 @@ export default {
       const r = await runFreshnessWatch(env, etDate);
       const elapsedMs = Date.now() - t0;
       return new Response(JSON.stringify({ etDate, elapsedMs, results: r }), {
-        status: 200,
-        headers: { "content-type": "application/json", ...corsHeaders() }
+        status: 200, headers: { "content-type": "application/json", ...corsHeaders() }
       });
+    }
+
+    if (url.pathname === "/draft-queue") {
+      const dq = await fetchDraftQueue();
+      return new Response(JSON.stringify(dq, null, 2), { status: 200, headers: { "content-type": "application/json", ...corsHeaders() } });
     }
 
     if (url.pathname === "/status" || url.pathname === "/health") {
-      // Human-readable HTML status page — visible pipeline health without API calls.
       const now = new Date();
       const etDate = getETDateStr(now);
       const t0 = Date.now();
-      const r = await runFreshnessWatch(env, etDate);
+      const [freshness, recentPublishes, draftQueue, mpi, ghRuns, kvLog] = await Promise.all([
+        runFreshnessWatch(env, etDate),
+        fetchRecentPublishes(),
+        fetchDraftQueue(),
+        fetchMpiFreshness(env),
+        fetchGHRecentRuns(env),
+        env.KV ? env.KV.get("triggers") : Promise.resolve("")
+      ]);
       const elapsedMs = Date.now() - t0;
-      const overall = r.every((x) => x.status === "fresh") ? "OK" : "DEGRADED";
-      const color = overall === "OK" ? "#10b981" : "#ef4444";
-      const rows = r.map((x) => {
-        const dot = x.status === "fresh" ? "[green]" : "[red]";
-        return `<tr><td>${dot}</td><td>${x.slug}</td><td>${x.status}</td><td>${x.foundDate || "—"}</td><td>${x.code || ""}</td></tr>`;
-      }).join("");
-      const html = `<!doctype html><meta charset="utf-8"><title>AZTMM Pipeline Status</title>
-<style>body{font-family:ui-sans-serif,system-ui;background:#0b1020;color:#e6e9ff;padding:24px;max-width:880px;margin:auto;}h1{color:${color};margin:0 0 8px;}table{width:100%;border-collapse:collapse;margin-top:16px;}th,td{padding:8px 10px;border-bottom:1px solid #243049;text-align:left;font-size:14px;}th{color:#7f8aa8;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:11px;}small{color:#7f8aa8;}</style>
-<h1>${overall}</h1>
-<small>AZTMM data pipeline status, as of ${etDate} ET (probe ${elapsedMs}ms)</small>
-<table><thead><tr><th></th><th>Tracker</th><th>Status</th><th>asOf</th><th>Code</th></tr></thead><tbody>${rows}</tbody></table>
-<p><small>Endpoints: <a style="color:#7f8aa8" href="/freshness">/freshness (JSON)</a> &middot; <a style="color:#7f8aa8" href="/log">/log</a> &middot; <a style="color:#7f8aa8" href="/">/</a></small></p>`;
-      return new Response(html, {
-        status: 200,
-        headers: { "content-type": "text/html; charset=utf-8", ...corsHeaders() }
+      const recentLog = (kvLog || "").split("\n").filter(Boolean);
+      const watchdogLastFire = recentLog.slice().reverse().find((l) => l.includes("[watchdog-")) || null;
+      const resendStatus = env.RESEND_API_KEY ? "<span style='color:#10b981'>configured</span>" : "<span style='color:#f59e0b'>not configured on worker</span> (only GH Actions has it)";
+      const html = renderStatusPage({
+        etDate, freshness, recentPublishes, draftQueue, mpi, recentLog, ghRuns, resendStatus, watchdogLastFire, elapsedMs
       });
+      return new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8", ...corsHeaders() } });
     }
 
     if (url.pathname === "/run" && request.method === "POST") {
-      if (env.MANUAL_TOKEN && url.searchParams.get("token") !== env.MANUAL_TOKEN) {
-        return new Response("forbidden", { status: 403 });
-      }
+      if (env.MANUAL_TOKEN && url.searchParams.get("token") !== env.MANUAL_TOKEN) return new Response("forbidden", { status: 403 });
       const body = await request.json().catch(() => ({}));
       if (body.workflow) {
-        const r2 = await dispatchWorkflow(env, body.workflow);
+        const r2 = await dispatchWorkflow(env, body.workflow, body.inputs || null);
         return Response.json(r2);
       }
       const r = await runTick(env, "manual");
