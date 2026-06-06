@@ -63,13 +63,26 @@ def _is_market_day(d: datetime) -> bool:
 
 
 def _today_utc() -> str:
-    # ET date — aligns with 5 PM ET publishing cadence
+    # ET date — aligns with EOD publishing cadence
     try:
         from zoneinfo import ZoneInfo
         return datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
     except ImportError:
         from datetime import timedelta
         return (datetime.now(timezone.utc) - timedelta(hours=4)).strftime("%Y-%m-%d")
+
+
+def _last_market_day(d: datetime) -> datetime:
+    """Roll a date back to the most recent weekday (Mon-Fri).
+
+    Fixes the GH-Actions-cron-late issue: when the 22:30 ET Friday cron
+    actually fires Saturday morning ET due to runner queue delay, the
+    "target date" should still be Friday, not Saturday.
+    """
+    from datetime import timedelta
+    while d.weekday() >= 5:  # 5=Sat, 6=Sun
+        d -= timedelta(days=1)
+    return d
 
 
 # ---------------------------------------------------------------------------
@@ -136,12 +149,31 @@ def main() -> int:
         "steps": [],
     }
 
-    # 0. Skip if not a market day (best-effort weekday check)
+    # 0. If target lands on Sat/Sun (cron-late or manual error), roll back to
+    #    last Friday. This is the single most common ops issue — GH Actions
+    #    cron is regularly delayed several hours, so a "22:30 ET Friday" job
+    #    can fire after midnight ET when the runner queue is busy.
     d = datetime.strptime(target_date, "%Y-%m-%d")
-    if not _is_market_day(d):
+    if not _is_market_day(d) and not args.date:
+        # Only auto-roll when date was NOT explicitly passed by the caller.
+        d = _last_market_day(d)
+        target_date = d.strftime("%Y-%m-%d")
+        log["date"] = target_date
+        log["auto_rolled_to_last_market_day"] = True
+        logger.info("non-market day at cron tick — rolled back to last market day %s",
+                    target_date)
+    elif not _is_market_day(d):
+        # Caller explicitly asked for a weekend date — emit a valid sentinel
+        # payload so the downstream JSON parser doesn't crash on empty stdin.
+        sentinel = {
+            "_action": "noop",
+            "reason": "non_market_day",
+            "date": target_date,
+        }
+        print(json.dumps(sentinel))
         log["status"] = "skipped_non_market_day"
         write_run_log(target_date, log)
-        logger.info("non-market day %s — skipping", target_date)
+        logger.info("non-market day %s — emitting sentinel and exiting", target_date)
         return 0
 
     # 1. Fetch

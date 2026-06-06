@@ -1,0 +1,145 @@
+# === AZTMM Weekly Pulse — auto-cron added 2026-06-06 (incident response) ===
+# Saturday 09:00 ET = 13:00 UTC — runs after Friday EOD is fully settled.
+# Gracefully handles GH Actions cron delay: orchestrator auto-rolls the
+# week-ending date back to the most recent Friday in ET.
+
+name: AZTMM Weekly Pulse
+
+on:
+  schedule:
+    - cron: '0 13 * * 6'   # Saturday 09:00 ET = 13:00 UTC
+  workflow_dispatch:
+    inputs:
+      week_ending:
+        description: 'Friday date YYYY-MM-DD (default: most recent Friday in ET)'
+        required: false
+      dry_run:
+        description: 'Dry run only (no publish)'
+        required: false
+        default: 'false'
+      status:
+        description: 'WP post status: publish or draft'
+        required: false
+        default: 'publish'
+
+permissions:
+  contents: write
+
+jobs:
+  weekly-pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      WP_SITE: ${{ secrets.WP_SITE }}
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+      UW_API_TOKEN: ${{ secrets.UW_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        working-directory: aztmm-daily-pulse-v2
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Resolve target week-ending Friday
+        id: target
+        working-directory: aztmm-daily-pulse-v2
+        run: |
+          INPUT="${{ github.event.inputs.week_ending }}"
+          if [ -n "$INPUT" ]; then
+            WE="$INPUT"
+          else
+            # Auto-detect most recent Friday in ET — works even if cron fires late.
+            WE=$(python3 -c "
+          from datetime import datetime, timedelta
+          try:
+              from zoneinfo import ZoneInfo
+              now = datetime.now(ZoneInfo('America/New_York'))
+          except ImportError:
+              from datetime import timezone
+              now = datetime.now(timezone.utc) - timedelta(hours=4)
+          d = now.date()
+          while d.weekday() != 4:
+              d -= timedelta(days=1)
+          print(d.strftime('%Y-%m-%d'))
+          ")
+          fi
+          echo "week_ending=$WE" >> "$GITHUB_OUTPUT"
+          echo "Resolved week-ending Friday: $WE"
+
+      - name: Idempotency guard (check WP for existing weekly post)
+        id: guard
+        run: |
+          WE="${{ steps.target.outputs.week_ending }}"
+          MON=$(python3 -c "
+          from datetime import datetime, timedelta
+          d = datetime.strptime('$WE', '%Y-%m-%d') - timedelta(days=4)
+          print(d.strftime('%Y-%m-%d'))
+          ")
+          SLUG="weekly-pulse-${MON}-to-${WE}"
+          # Query WP REST for an exact-slug match in weekly category.
+          EXISTING=$(curl -fsS "https://aztmm.com/wp-json/wp/v2/posts?categories=730419629&slug=${SLUG}&per_page=1&_fields=id" 2>/dev/null \
+            | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+          if [ "$EXISTING" -ge "1" ]; then
+            echo "Weekly post for $SLUG already published — skipping"
+            echo "already_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No weekly post for $SLUG — proceeding"
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run weekly pipeline (emit payload)
+        if: steps.guard.outputs.already_ran == 'false'
+        working-directory: aztmm-daily-pulse-v2
+        run: |
+          mkdir -p publish-artifacts/
+          ARGS="--week-ending ${{ steps.target.outputs.week_ending }}"
+          if [ "${{ github.event.inputs.status }}" = "draft" ]; then ARGS="$ARGS --status draft"; fi
+          python run_weekly_pulse.py $ARGS --out-dir publish-artifacts/ > publish-artifacts/payload.json
+
+      - name: Publish to WordPress (REST API)
+        if: steps.guard.outputs.already_ran == 'false' && github.event.inputs.dry_run != 'true' && env.WP_APP_PASSWORD != ''
+        working-directory: aztmm-daily-pulse-v2
+        run: |
+          set +e
+          python publish_to_wp.py publish-artifacts/payload.json
+          rc=$?
+          set -e
+          case "$rc" in
+            0) echo "publish ok" ;;
+            2) echo "::warning::vendor-leak linter (exit 2) — payload preserved for manual review" ;;
+            3) echo "::notice::DEGRADED MODE (exit 3) — upstream not settled, will retry" ;;
+            4) echo "::warning::ENCODING ISSUES (exit 4) — payload preserved for manual review" ;;
+            5) echo "::error::WP credentials missing (exit 5)" ; exit "$rc" ;;
+            6) echo "::error::WP REST POST failed (exit 6)" ; exit "$rc" ;;
+            *) echo "WP publish failed (exit $rc) — payload still committed" ; exit "$rc" ;;
+          esac
+
+      - name: Commit run artifacts
+        if: always()
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          mkdir -p aztmm-daily-pulse-v2/sample-output/
+          if [ -d aztmm-daily-pulse-v2/publish-artifacts/ ]; then
+            cp -f aztmm-daily-pulse-v2/publish-artifacts/*.html aztmm-daily-pulse-v2/sample-output/ 2>/dev/null || true
+            cp -f aztmm-daily-pulse-v2/publish-artifacts/*.payload.json aztmm-daily-pulse-v2/sample-output/ 2>/dev/null || true
+          fi
+          git add aztmm-daily-pulse-v2/sample-output/ || true
+          git diff --cached --quiet || git commit -m "weekly-pulse: log run ${{ steps.target.outputs.week_ending }}"
+          for i in 1 2 3 4; do
+            if git pull --rebase origin main >/dev/null 2>&1; then
+              if git push origin main; then echo "push ok on attempt $i"; break; fi
+            fi
+            sleep $((i*3))
+          done

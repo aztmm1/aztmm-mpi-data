@@ -189,7 +189,7 @@
     <div class="kpi bullbar">
       <p class="kpi-label">MPI</p>
       <p class="kpi-value">{{ mpi_score }}</p>
-      <span class="kpi-pill bull">‚ñ≤ {{ mpi_label }}</span>
+      <span class="kpi-pill bull">▲ {{ mpi_label }}</span>
     </div>
     <div class="kpi bullbar">
       <p class="kpi-label">Regime</p>
@@ -225,9 +225,9 @@
   {# -------- Sector tape -------- #}
   {% if sector and sector.rows and sector.rows|length > 0 %}
   <div class="section">
-    <h2 class="section-title">Sector Tape<small>Close ¬∑ net options premium</small></h2>
+    <h2 class="section-title">Sector Tape<small>Close · net options premium</small></h2>
     <table class="tbl">
-      <thead><tr><th>ETF ¬∑ Sector</th><th class="num">Day %</th><th class="num">Call prem</th><th class="num">Put prem</th><th class="num">Net</th></tr></thead>
+      <thead><tr><th>ETF · Sector</th><th class="num">Day %</th><th class="num">Call prem</th><th class="num">Put prem</th><th class="num">Net</th></tr></thead>
       <tbody>
         {% for row in sector.rows %}
         <tr class="{% if row.net_premium and row.net_premium > 0 %}pos{% elif row.net_premium and row.net_premium < 0 %}neg{% else %}neu{% endif %}">
@@ -297,7 +297,7 @@
   {# -------- Dark-Pool Tells -------- #}
   {% if darkpool and darkpool.available and darkpool.rows and darkpool.rows|length > 0 %}
   <div class="section">
-    <h2 class="section-title">Dark-Pool Tells<small>FINRA OTC ATS ¬∑ T-14 lag</small></h2>
+    <h2 class="section-title">Dark-Pool Tells<small>FINRA OTC ATS · T-14 lag</small></h2>
     <table class="tbl">
       <thead><tr><th>Ticker</th><th class="num">Total premium</th><th class="num">Mega-prints (≥100K)</th><th class="num">Print count</th></tr></thead>
       <tbody>
@@ -408,7 +408,7 @@
   {% if appendix_url %}
   <div class="appendix-cta">
     <a href="{{ appendix_url }}">View full data appendix →</a>
-    <p>Sector heatmap ¬∑ Concentration ¬∑ Dark pool ¬∑ By-the-numbers</p>
+    <p>Sector heatmap · Concentration · Dark pool · By-the-numbers</p>
   </div>
   {% endif %}
 

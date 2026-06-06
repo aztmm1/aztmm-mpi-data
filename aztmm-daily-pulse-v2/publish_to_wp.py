@@ -182,8 +182,31 @@ def main() -> int:
     if len(sys.argv) < 2:
         print("usage: publish_to_wp.py PAYLOAD.json", file=sys.stderr)
         return 1
-    with open(sys.argv[1]) as f:
-        blob = json.load(f)
+    try:
+        with open(sys.argv[1]) as f:
+            raw = f.read().strip()
+    except OSError as e:
+        print(f"cannot read payload file: {e}", file=sys.stderr)
+        return 1
+
+    if not raw:
+        # Empty payload typically means run_daily_pulse skipped (non-market day,
+        # cron fired late). Treat as a controlled skip, not a hard error.
+        print("[publish_to_wp] empty payload — treating as skipped run", file=sys.stderr)
+        return 0
+
+    try:
+        blob = json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(f"[publish_to_wp] payload is not valid JSON: {e}", file=sys.stderr)
+        return 1
+
+    if isinstance(blob, dict) and blob.get("_action") == "noop":
+        print(f"[publish_to_wp] sentinel noop received "
+              f"(reason={blob.get('reason')}, date={blob.get('date')}) — skipping",
+              file=sys.stderr)
+        return 0
+
     if isinstance(blob, dict) and "_action" in blob:
         payload = blob.get("payload") or {}
     else:
@@ -223,18 +246,45 @@ def main() -> int:
         return 3  # exit code 3 = degraded, distinct from 2=linter
 
     # -------------------------------------------------------------------------
-    # Encoding / mojibake linter — refuse to publish on UTF-8 corruption.
-    # -------------------------------------------------------------------------
-    encoding_issues = lint_for_encoding_issues(scan_blob)
-    if encoding_issues:
-        print("[publish_to_wp] ENCODING ISSUES detected — refusing to publish.", file=sys.stderr)
-        for issue in encoding_issues:
-            print(f"  {issue}", file=sys.stderr)
-        print(
-            "[publish_to_wp] payload preserved for manual review; exiting 4",
-            file=sys.stderr,
-        )
-        return 4  # exit code 4 = encoding
+    # Encoding / mojibake linter — AUTO-REPAIR known patterns, then re-scan.
+    # ------------------------------------------------------------------------
+    # Policy update 2026-06-06: refusing to publish on mojibake silently breaks
+    # the entire daily/weekly publish pipeline (see incident 2026-06-06). We
+    # now auto-repair the known mojibake patterns in-place, log the repairs,
+    # and only refuse to publish if UNKNOWN encoding loss (e.g. U+FFFD) remains.
+    initial_issues = lint_for_encoding_issues(scan_blob)
+    if initial_issues:
+        print(f"[publish_to_wp] {len(initial_issues)} encoding issue(s) detected — attempting auto-repair", file=sys.stderr)
+        repaired = 0
+        for field in ("title", "content", "excerpt", "slug"):
+            if field not in payload or not isinstance(payload[field], str):
+                continue
+            v = payload[field]
+            for bad, good_desc in MOJIBAKE_PATTERNS:
+                if bad == "�":
+                    # U+FFFD is genuine encoding loss — cannot recover, leave as-is
+                    continue
+                if bad in v:
+                    # Map to the proper Unicode codepoint based on description.
+                    fix = {
+                        "·": "·", "▲": "▲", "▼": "▼",
+                        "’": "’", "“": "“", "”": "”",
+                        "—": "—",
+                    }
+                    # description string starts with the good char + " (..."
+                    good_char = good_desc.split(" ")[0]
+                    v = v.replace(bad, good_char)
+                    repaired += 1
+            payload[field] = v
+        # Re-scan after repair
+        scan_blob = "\n".join(str(payload.get(k, "") or "") for k in ("title", "content", "excerpt", "slug"))
+        residual = lint_for_encoding_issues(scan_blob)
+        print(f"[publish_to_wp] auto-repaired {repaired} pattern occurrence(s); {len(residual)} residual issue(s)", file=sys.stderr)
+        if residual:
+            print("[publish_to_wp] residual ENCODING ISSUES (U+FFFD or unmapped) — refusing to publish", file=sys.stderr)
+            for issue in residual:
+                print(f"  {issue}", file=sys.stderr)
+            return 4
 
     site = os.environ.get("WP_SITE", DEFAULT_SITE).strip()
     user = (os.environ.get("WP_USERNAME") or "").strip()
