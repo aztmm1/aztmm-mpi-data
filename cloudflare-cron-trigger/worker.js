@@ -162,6 +162,28 @@ function prevDateStr(etDate) {
   return `${y}-${m}-${dd}`;
 }
 
+// Returns the most recent NYSE trading day (Mon-Fri) on/before etDate.
+// Saturday -> previous Friday; Sunday -> previous Friday; Mon-Fri -> same day.
+// (Holiday calendar not modeled — acceptable false-positives on US bank holidays.)
+function lastTradingDayStr(etDate) {
+  // etDate is "YYYY-MM-DD" in ET. Use noon UTC anchor to avoid TZ drift.
+  let d = new Date(etDate + "T12:00:00Z");
+  // getUTCDay: 0=Sun, 6=Sat
+  while (d.getUTCDay() === 0 || d.getUTCDay() === 6) {
+    d.setUTCDate(d.getUTCDate() - 1);
+  }
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
+function isWeekendET(etDate) {
+  const d = new Date(etDate + "T12:00:00Z");
+  const dow = d.getUTCDay();
+  return dow === 0 || dow === 6;
+}
+
 async function dispatchWorkflow(env, workflowFile, inputs = null) {
   const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${workflowFile}/dispatches`;
   const body = { ref: "main" };
@@ -271,8 +293,20 @@ async function checkTarget(env, target, etDate) {
     } catch (_) {}
   }
   if (!foundDate) return { slug: target.slug, status: "no_date_field", todayHash, yesterdayHash, numbersMatched };
-  if (foundDate === etDate && numbersMatched) return { slug: target.slug, status: "STALE_DATA", date: foundDate, todayHash, yesterdayHash, numbersMatched, reason: staleDataReason };
-  if (foundDate === etDate) return { slug: target.slug, status: "fresh", date: foundDate, todayHash, yesterdayHash, numbersMatched };
+  // Sentinel: pipelines can write {"_action":"noop","reason":"non_market_day",...}
+  // on weekends/holidays to indicate "intentionally no new run". Treat as fresh.
+  if (data && typeof data === "object" && data._action === "noop") {
+    return { slug: target.slug, status: "fresh", date: foundDate, expected: foundDate, noop: true, reason: data.reason || "noop", todayHash, yesterdayHash, numbersMatched };
+  }
+  // Weekend-aware expected date for daily-cadence trackers.
+  // On Sat/Sun, market is closed; daily trackers carry Friday data. That is NOT stale —
+  // the dashboard /status was historically marking all daily trackers DEGRADED on weekends.
+  // Fix: treat foundDate === lastTradingDay (Friday on Sat/Sun) as fresh.
+  const lastTd = lastTradingDayStr(etDate);
+  const weekendSkip = isWeekendET(etDate) && (target.cadence || "daily") === "daily";
+  const dailyAccepted = foundDate === etDate || (weekendSkip && foundDate === lastTd);
+  if (dailyAccepted && numbersMatched) return { slug: target.slug, status: "STALE_DATA", date: foundDate, expected: weekendSkip ? lastTd : etDate, weekendSkip, todayHash, yesterdayHash, numbersMatched, reason: staleDataReason };
+  if (dailyAccepted) return { slug: target.slug, status: "fresh", date: foundDate, expected: weekendSkip ? lastTd : etDate, weekendSkip, todayHash, yesterdayHash, numbersMatched };
   if ((target.cadence || "daily") === "weekly") {
     const today = new Date(etDate + "T00:00:00Z");
     const got = new Date(foundDate + "T00:00:00Z");
@@ -280,7 +314,7 @@ async function checkTarget(env, target, etDate) {
     if (ageDays >= 0 && ageDays <= 7) return { slug: target.slug, status: "fresh", date: foundDate, cadence: "weekly", ageDays, todayHash, yesterdayHash, numbersMatched };
     return { slug: target.slug, status: "STALE", date: foundDate, expected: etDate, cadence: "weekly", ageDays, todayHash, yesterdayHash, numbersMatched };
   }
-  return { slug: target.slug, status: "STALE", date: foundDate, expected: etDate, todayHash, yesterdayHash, numbersMatched };
+  return { slug: target.slug, status: "STALE", date: foundDate, expected: weekendSkip ? lastTd : etDate, weekendSkip, todayHash, yesterdayHash, numbersMatched };
 }
 
 async function runFreshnessWatch(env, etDate) {
@@ -573,7 +607,8 @@ function renderStatusPage(ctx) {
   const { etDate, freshness, recentPublishes, draftQueue, mpi, recentLog, ghRuns, resendStatus, watchdogLastFire, elapsedMs } = ctx;
   const allFresh = freshness.every((x) => x.status === "fresh");
   const heldDraftCount = (draftQueue && draftQueue.drafts) ? draftQueue.drafts.length : 0;
-  let healthBadge = "OK", healthColor = "#10b981", healthDesc = "All systems nominal";
+  const weekendNow = isWeekendET(etDate);
+  let healthBadge = "OK", healthColor = "#10b981", healthDesc = weekendNow ? "All systems nominal (weekend-skip)" : "All systems nominal";
   if (heldDraftCount > 0 && allFresh) { healthBadge = "WARN"; healthColor = "#f59e0b"; healthDesc = `${heldDraftCount} held draft(s) awaiting promotion`; }
   if (!allFresh) { healthBadge = "DEGRADED"; healthColor = "#ef4444"; healthDesc = "Stale or failed data fetches"; }
 
