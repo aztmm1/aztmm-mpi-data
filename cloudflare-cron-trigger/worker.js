@@ -304,8 +304,13 @@ async function checkTarget(env, target, etDate) {
   // Fix: treat foundDate === lastTradingDay (Friday on Sat/Sun) as fresh.
   const lastTd = lastTradingDayStr(etDate);
   const weekendSkip = isWeekendET(etDate) && (target.cadence || "daily") === "daily";
-  const dailyAccepted = foundDate === etDate || (weekendSkip && foundDate === lastTd);
-  if (dailyAccepted && numbersMatched) return { slug: target.slug, status: "STALE_DATA", date: foundDate, expected: weekendSkip ? lastTd : etDate, weekendSkip, todayHash, yesterdayHash, numbersMatched, reason: staleDataReason };
+  // On weekends, accept foundDate that is either the last trading day OR a forward date
+  // (some scripts e.g. yfinance label snapshots by next trading day on weekends).
+  const isForwardDate = weekendSkip && foundDate >= etDate;
+  const dailyAccepted = foundDate === etDate || (weekendSkip && (foundDate === lastTd || isForwardDate));
+  // On weekends, key-numbers identical to yesterday's is NORMAL (markets closed,
+  // SPY/VIX/etc. unchanged from Friday close). Suppress STALE_DATA on weekend-skip.
+  if (dailyAccepted && numbersMatched && !weekendSkip) return { slug: target.slug, status: "STALE_DATA", date: foundDate, expected: etDate, todayHash, yesterdayHash, numbersMatched, reason: staleDataReason };
   if (dailyAccepted) return { slug: target.slug, status: "fresh", date: foundDate, expected: weekendSkip ? lastTd : etDate, weekendSkip, todayHash, yesterdayHash, numbersMatched };
   if ((target.cadence || "daily") === "weekly") {
     const today = new Date(etDate + "T00:00:00Z");
