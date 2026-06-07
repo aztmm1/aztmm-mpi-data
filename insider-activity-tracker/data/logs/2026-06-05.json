@@ -1,0 +1,44 @@
+{
+  "week_ending": "2026-06-05",
+  "started_at": "2026-06-07T02:15:21.680689Z",
+  "dry_run": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "raw_transactions": 40,
+      "window_start": "2026-05-30",
+      "window_end": "2026-06-05",
+      "fallback_used": true,
+      "endpoints_ok": 0,
+      "endpoints_failed": 1
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "buyers_public": 0,
+      "sellers_public": 0,
+      "qualifying_filings": 0
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 4418
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    },
+    {
+      "step": "write_outputs",
+      "ok": true,
+      "paths": {
+        "public_json": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/insider-activity-tracker/sample-output/insider-2026-06-05.public.json",
+        "internal_json": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/insider-activity-tracker/sample-output/insider-2026-06-05.internal.json",
+        "html": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/insider-activity-tracker/sample-output/insider-2026-06-05.html"
+      }
+    }
+  ],
+  "status": "payload_emitted"
+}

@@ -1,0 +1,51 @@
+{
+  "week_ending": "2026-06-05",
+  "window_start": "2026-05-30",
+  "window_end": "2026-06-05",
+  "as_of": "2026-06-05 5:00 PM ET",
+  "thresholds": {
+    "min_marketcap_usd": 300000000,
+    "min_transaction_value": 25000,
+    "top_buyers_public": 10,
+    "top_sellers_public": 10,
+    "top_buyers_internal": 50,
+    "top_sellers_internal": 50,
+    "commentary_top_n": 3,
+    "sector_top_n": 5
+  },
+  "transaction_codes": {
+    "buys": [
+      "P"
+    ],
+    "sells": [
+      "S"
+    ],
+    "all_tracked": [
+      "P",
+      "S",
+      "A",
+      "M",
+      "D",
+      "F",
+      "G",
+      "X"
+    ]
+  },
+  "raw_row_count": 40,
+  "qualifying_row_count": 0,
+  "ticker_count": 0,
+  "buyers": [],
+  "sellers": [],
+  "sectors": [],
+  "totals": {
+    "total_buy_value": 0,
+    "total_sell_value": 0,
+    "net_value": 0,
+    "n_filings": 0
+  },
+  "fallback_used": true,
+  "data_quality": {
+    "endpoints_ok": 0,
+    "endpoints_failed": 1
+  }
+}
