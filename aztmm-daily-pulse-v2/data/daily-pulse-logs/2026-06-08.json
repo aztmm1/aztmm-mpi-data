@@ -1,6 +1,6 @@
 {
   "date": "2026-06-08",
-  "started_at": "2026-06-08T21:30:31.776402Z",
+  "started_at": "2026-06-08T21:45:30.614152Z",
   "dry_run": false,
   "force_publish": false,
   "steps": [
@@ -30,7 +30,7 @@
     {
       "step": "render",
       "ok": true,
-      "html_bytes": 29965
+      "html_bytes": 29966
     },
     {
       "step": "brand_check",
@@ -49,7 +49,7 @@
       "daily-pulse"
     ],
     "slug": "daily-pulse-options-flow-dark-pool-2026-06-08",
-    "content_bytes": 29965
+    "content_bytes": 29966
   },
   "status": "payload_emitted"
 }
