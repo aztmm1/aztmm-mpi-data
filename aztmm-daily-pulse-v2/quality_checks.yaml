@@ -1,0 +1,122 @@
+# =============================================================================
+# AZTMM Quality Gate — Config-Driven Checks (Tier 1C)
+# =============================================================================
+# Read by publish_to_wp.py:quality_gate_v2(). Each check entry below selects an
+# interpreter via `type` and runs against (post_id, content, payload).
+#
+# Severities:
+#   block — failure holds the draft (exit 7/8, Resend alert fires)
+#   warn  — surfaced in stderr + held-draft email if any block-severity fails,
+#           but does NOT itself hold the draft
+#   log   — surfaced in stderr only; never alerts
+#
+# Adding a new check of a supported `type` is a YAML-only edit. To add a new
+# `type`, add an `elif check_type == "..."` branch in publish_to_wp.py.
+# =============================================================================
+
+schema_version: 1.0
+
+checks:
+  # ===========================================================================
+  # Original 5 hardcoded checks, now config-driven
+  # ===========================================================================
+
+  - name: degraded_mode
+    type: payload_field
+    field: degraded_mode
+    op: neq
+    expected: true
+    severity: block
+    enabled: true
+
+  - name: vendor_leaks
+    type: regex_absence
+    patterns:
+      - '\bUnusual\s+Whales\b'
+      - '\bBlackBox\s*Stocks?\b'
+      - '\bBlack\s*Box\b'
+      - '\bFlowAlgo\b'
+      - '\bCheddar\s*Flow\b'
+      - '\bCheddar\b(?!\s+cheese)'
+      - 'Trade Alert\s*®'
+      - '\btrade[\- ]alert\.com\b'
+      - 'polygon\.io'
+      - '\bBBS\s'
+      - '\byfinance\b'
+      - 'Settings\s*(?:->|→|&rarr;|&#8594;)'
+      - '\bwp[-‐‑]admin\b'
+    severity: block
+    enabled: true
+
+  - name: encoding_mojibake
+    type: regex_absence
+    patterns:
+      - '¬∑'
+      - '‚ñ≤'
+      - '‚ñº'
+      - '‚Äô'
+      - '‚Äú'
+      - '‚Äù'
+      - '‚Äî'
+      - 'â€™'
+      - 'â€œ'
+      - "â€\x9d"
+      - "�"
+    severity: block
+    enabled: true
+
+  - name: sector_data_sanity
+    type: sector_sanity
+    min_nonzero_pct: 33
+    severity: block
+    enabled: true
+
+  - name: mpi_freshness
+    type: freshness
+    field: mpi
+    max_age_hours: 24
+    severity: block
+    enabled: true
+
+  # ===========================================================================
+  # NEW Tier 1C checks
+  # ===========================================================================
+
+  - name: word_count_sanity
+    type: word_count
+    min: 400
+    max: 8000
+    severity: block
+    enabled: true
+
+  - name: degraded_text_orphan
+    # Catches the case where the payload says degraded_mode=false but the
+    # rendered post still contains the literal degraded-mode banner text
+    # (an orphan we shipped twice in May 2026).
+    type: regex_absence
+    patterns:
+      - '\bdegraded\s+mode\b'
+      - 'upstream\s+endpoints?\s+unavailable'
+      - 'upstream\s+EOD\s+endpoints?'
+    severity: block
+    enabled: true
+
+  - name: structural_anomaly
+    # Compares <h1>/<h2>/<h3> count vs. median of last 10 published posts in
+    # the same category. Starts in warn-mode while we observe; promote to
+    # `block` after a couple of weeks of clean signal.
+    type: anomaly_structure
+    compare_n: 10
+    max_section_drop: 2
+    severity: warn
+    enabled: true
+
+  - name: mpi_numerical_anomaly
+    # Rolling z-score on mpi.score. History persisted in data/anomaly_history.json
+    # which the workflow's commit step pushes back to the repo.
+    type: anomaly_numerical
+    field: mpi.score
+    compare_n: 10
+    max_z_score: 3.0
+    severity: warn
+    enabled: true
