@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-09T14:29:18Z",
+  "generated_at": "2026-06-09T14:33:09Z",
   "mpi": {
     "score": 60,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 6.01
   },
   "latest_daily_pulse": {
-    "id": 2879,
-    "url": "https://aztmm.com/2026/06/05/daily-pulse-options-flow-dark-pool-5-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 June 2026",
-    "date": "2026-06-05",
-    "snippet": "A clean risk-off Friday \u2014 SPY -2.58%, QQQ -4.80%, NVDA -6.20% and VIX up ~40% to 21.51 \u2014 but the composite held Bull \u00b7 early as trend, breadth and credit stayed intact; we read it as a leadership shakeout, not a regime break.",
+    "id": 2903,
+    "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-2026-06-08/",
+    "title": "AZTMM Closing Pulse \u00b7 Monday June 8, 2026",
+    "date": "2026-06-09",
+    "snippet": "Call-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 2903,
+      "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-2026-06-08/",
+      "title": "AZTMM Closing Pulse \u00b7 Monday June 8, 2026",
+      "date": "2026-06-09",
+      "snippet": "Call-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
+      "kind": "daily"
+    },
     {
       "id": 2880,
       "url": "https://aztmm.com/2026/06/06/weekly-pulse-2026-06-01-to-2026-06-05/",
@@ -65,14 +73,6 @@
       "title": "AZTMM Closing Pulse \u00b7 Wednesday June 3, 2026",
       "date": "2026-06-03",
       "snippet": "Put-heavy tape; Energy led (+1.29%); no single-name positioning stood out.",
-      "kind": "daily"
-    },
-    {
-      "id": 2812,
-      "url": "https://aztmm.com/2026/06/02/daily-pulse-options-flow-dark-pool-2026-06-02/",
-      "title": "AZTMM Closing Pulse \u00b7 Tuesday June 2, 2026",
-      "date": "2026-06-02",
-      "snippet": "Put-heavy tape; Utilities led (+1.86%); no single-name positioning stood out.",
       "kind": "daily"
     }
   ],
