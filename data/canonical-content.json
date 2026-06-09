@@ -2,8 +2,8 @@
   "schema_version": "1.0",
   "generated_at": "2026-06-09T14:03:46Z",
   "mpi": {
-    "score": 57,
-    "regime": "Bull \u00b7 early",
+    "score": 99,
+    "regime": "SMOKE-TEST",
     "as_of": "2026-06-08",
     "computed_at": "2026-06-08T23:12:41Z",
     "confidence": 0.85,
