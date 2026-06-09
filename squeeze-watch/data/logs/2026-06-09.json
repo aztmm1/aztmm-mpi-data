@@ -1,0 +1,47 @@
+{
+  "date": "2026-06-09",
+  "started_at": "2026-06-09T21:15:49.811267Z",
+  "dry_run": false,
+  "steps": [
+    {
+      "step": "fetch",
+      "ok": true,
+      "tickers_kept": 0,
+      "tickers_filtered": 15,
+      "endpoints_ok": 0,
+      "endpoints_failed": 0
+    },
+    {
+      "step": "aggregate",
+      "ok": true,
+      "rows_public": 0,
+      "rows_internal": 0
+    },
+    {
+      "step": "update_history",
+      "ok": true,
+      "points": 19,
+      "sparkline_available": true
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "html_bytes": 3179
+    },
+    {
+      "step": "brand_check",
+      "ok": true,
+      "hits": []
+    },
+    {
+      "step": "write_outputs",
+      "ok": true,
+      "paths": {
+        "public_json": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/squeeze-watch/sample-output/squeeze-2026-06-09.public.json",
+        "internal_json": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/squeeze-watch/sample-output/squeeze-2026-06-09.internal.json",
+        "html": "/home/runner/work/aztmm-mpi-data/aztmm-mpi-data/squeeze-watch/sample-output/squeeze-2026-06-09.html"
+      }
+    }
+  ],
+  "status": "payload_emitted"
+}
