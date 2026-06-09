@@ -1085,7 +1085,7 @@ def aggregate(raw: dict, prev_raw: dict | None = None) -> dict:
         },
         # v3 free-source: methodology footnote piped from fetcher
         "methodology_footnote": raw.get("methodology_footnote", (
-            "Data sources: yfinance EOD options chain - CBOE Daily Volume "
+            "Public data inputs: end-of-day option chains - CBOE Daily Volume "
             "Summary - FINRA OTC Transparency (T-14) - SEC EDGAR Form 4 - "
             "Not investment advice."
         )),

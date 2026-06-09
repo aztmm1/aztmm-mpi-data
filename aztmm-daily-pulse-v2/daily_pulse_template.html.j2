@@ -415,7 +415,7 @@
   {# -------- Data Quality + Methodology -------- #}
   <div class="section">
     <h2 class="section-title">Data Quality &amp; Methodology<small>Open by design</small></h2>
-    <div class="method"><strong>Free-source pipeline.</strong> Built on yfinance EOD option chains, CBOE daily volume summary, FINRA OTC Transparency (T-14 lag), SEC EDGAR Form 4, and our own MPI snapshot. Zero proprietary data dependency.</div>
+    <div class="method"><strong>Public-source pipeline.</strong> Built on end-of-day option chains, CBOE daily volume summary, FINRA OTC Transparency (T-14 lag), SEC EDGAR Form 4 filings, and our internal MPI snapshot. Zero proprietary data dependency.</div>
     {% if data_quality %}
     <div class="source-strip">
       {% if data_quality.sources_used %}
@@ -426,7 +426,7 @@
       {% endif %}
     </div>
     {% if data_quality.degraded %}
-    <div class="method" style="margin-top:14px;"><strong>Degraded mode.</strong> {{ data_quality.endpoints_failed }} upstream endpoint{{ 's' if data_quality.endpoints_failed != 1 else '' }} unavailable for this session. Read with appropriate caution.</div>
+    <div class="method" style="margin-top:14px;"><strong>Reduced-input session.</strong> {{ data_quality.endpoints_failed }} input source{{ 's' if data_quality.endpoints_failed != 1 else '' }} not available for this session. Read with appropriate caution.</div>
     {% endif %}
     {% endif %}
     {% if methodology_footnote %}
