@@ -52,19 +52,6 @@
         "tilt": "tilted toward acquisitions"
       },
       {
-        "ticker": "AMD",
-        "sector": "Technology",
-        "member_count": 2,
-        "members": [
-          "Gilbert Cisneros",
-          "Josh Gottheimer"
-        ],
-        "filings_in_window": 5,
-        "window_start": "2026-05-05",
-        "window_end": "2026-06-05",
-        "tilt": "tilted toward acquisitions"
-      },
-      {
         "ticker": "INTU",
         "sector": "Technology",
         "member_count": 2,
@@ -89,15 +76,28 @@
         "window_start": "2026-05-05",
         "window_end": "2026-05-28",
         "tilt": "tilted toward acquisitions"
+      },
+      {
+        "ticker": "PG",
+        "sector": "Consumer Staples",
+        "member_count": 2,
+        "members": [
+          "Lloyd Doggett",
+          "Richard Allen"
+        ],
+        "filings_in_window": 2,
+        "window_start": "2026-05-04",
+        "window_end": "2026-06-04",
+        "tilt": "balanced"
       }
     ],
     "sector_clusters": [
       {
         "sector": "Technology",
-        "member_count": 9,
-        "filings_in_window": 14,
+        "member_count": 8,
+        "filings_in_window": 12,
         "window_start": "2026-05-01",
-        "window_end": "2026-06-05"
+        "window_end": "2026-06-02"
       },
       {
         "sector": "Communication Services",
@@ -105,13 +105,6 @@
         "filings_in_window": 6,
         "window_start": "2026-05-05",
         "window_end": "2026-06-04"
-      },
-      {
-        "sector": "Consumer Discretionary",
-        "member_count": 3,
-        "filings_in_window": 4,
-        "window_start": "2026-05-05",
-        "window_end": "2026-06-05"
       }
     ],
     "large_filings": [],
@@ -119,15 +112,15 @@
   },
   "commentary": [
     "AAPL drew 5 distinct members inside the last 30 days (6 filings, tilted toward acquisitions). That kind of cluster is worth noting - not chasing.",
-    "Other tickers showing multi-member activity in the same window: T, AMD, INTU, HD.",
-    "9 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
+    "Other tickers showing multi-member activity in the same window: T, INTU, HD, PG.",
+    "8 members disclosed trades in Technology this window - a sector-level cluster I'll keep an eye on."
   ],
   "data_quality": {
     "degraded": false,
-    "endpoints_ok": 45,
+    "endpoints_ok": 43,
     "endpoints_failed": 0,
     "source": "House Clerk PTR feed (free, public)",
     "senate_status": "phase 2 - efdsearch.senate.gov scraper pending"
   },
-  "generated_at": "2026-06-09T21:31:29Z"
+  "generated_at": "2026-06-09T21:46:25Z"
 }
