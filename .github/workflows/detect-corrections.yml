@@ -1,0 +1,61 @@
+name: AZTMM Correction Detection
+
+# Tier 1B — Runs daily at 02:00 UTC, diffs LIVE WP content vs stored hash,
+# appends correction_events to data/versions/{date}.json, commits the manifest.
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 02:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: 'How many days back to scan'
+        required: false
+        default: '7'
+      dry_run:
+        description: 'Skip WP meta writes + git push'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      WP_SITE:         ${{ secrets.WP_SITE }}
+      WP_USERNAME:     ${{ secrets.WP_USERNAME }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Detect corrections
+        working-directory: aztmm-versioning
+        run: |
+          ARGS="--lookback-days ${{ github.event.inputs.lookback_days || '7' }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          AZTMM_REPO_ROOT="${{ github.workspace }}" python detect_corrections.py $ARGS | tee detect-result.json
+
+      - name: Commit manifest changes
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "aztmm-bot"
+          git config user.email "bot@aztmm.local"
+          git add aztmm-daily-pulse-v2/data/versions/ || true
+          git diff --cached --quiet || git commit -m "versioning: append correction_events $(date -u +%F)"
+          for i in 1 2 3 4; do
+            if git pull --rebase origin main >/dev/null 2>&1; then
+              if git push origin main; then echo "push ok on attempt $i"; break; fi
+            fi
+            echo "push attempt $i failed - sleeping $((i*3))s"; sleep $((i*3))
+          done
