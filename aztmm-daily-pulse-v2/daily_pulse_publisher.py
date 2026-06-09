@@ -116,7 +116,7 @@ def build_post_payload(agg: dict, html: str, status: str = "draft") -> dict:
         "content": html,
         "excerpt": excerpt,
         "status": status,
-        "categories": ["Daily Pulse"],
+        "categories": [730419628],  # "Daily Pulse" — int ID required by WP REST since 2026-06-07
         "tags": ["daily-pulse"],
         "slug": f"daily-pulse-options-flow-dark-pool-{date}",
     }

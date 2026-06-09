@@ -840,6 +840,38 @@ def main() -> int:
         default_cats = [DEFAULT_CATEGORY_DAILY]
     payload_categories = payload.get("categories") or default_cats
 
+    # 2026-06-09 FIX: Coerce string category names -> integer IDs.
+    # WP REST started strictly rejecting non-int categories around 2026-06-07,
+    # causing every Daily Pulse v2 run since 6/8 to fail with:
+    #   "categories[0] is not of type integer."
+    # Aggregator emits ["Daily Pulse"] / ["Weekly Pulse"]; map those + any
+    # numeric strings, drop unknowns to default_cats.
+    _CATEGORY_NAME_TO_ID = {
+        "daily pulse": DEFAULT_CATEGORY_DAILY,
+        "weekly pulse": DEFAULT_CATEGORY_WEEKLY,
+    }
+    _coerced_cats = []
+    for c in payload_categories:
+        if isinstance(c, int):
+            _coerced_cats.append(c)
+        elif isinstance(c, str) and c.strip().isdigit():
+            _coerced_cats.append(int(c.strip()))
+        elif isinstance(c, str):
+            cid = _CATEGORY_NAME_TO_ID.get(c.strip().lower())
+            if cid is not None:
+                _coerced_cats.append(cid)
+            else:
+                print(f"[publish_to_wp] WARN: unknown category name {c!r} - falling back to default", file=sys.stderr)
+                _coerced_cats.extend(default_cats)
+        else:
+            print(f"[publish_to_wp] WARN: unrecognized category value {c!r} - falling back to default", file=sys.stderr)
+            _coerced_cats.extend(default_cats)
+    _seen = set(); _final = []
+    for c in _coerced_cats:
+        if c not in _seen:
+            _seen.add(c); _final.append(c)
+    payload_categories = _final or default_cats
+
     # ------------------------------------------------------------------
     # PHASE 1 — POST as DRAFT (or PATCH a reused draft).
     # Jetpack does NOT email subscribers for status=draft.
