@@ -1,0 +1,30 @@
+{
+  "post_id": 2879,
+  "trading_date": "2026-06-09",
+  "publish_event": {
+    "version_id": "20260609-140440-2c259f1c",
+    "published_at": "2026-06-09T14:04:40.234373Z",
+    "content_hash": "2c259f1c1ae6521f",
+    "payload_hash": "7e7e7fcccf16b4f5",
+    "quality_gate_passed": true,
+    "run_id": "27123456789",
+    "meta_written": "6/6"
+  },
+  "correction_events": [
+    {
+      "corrected_at": "2026-06-09T18:04:40.236325Z",
+      "version_id_before": "20260609-140440-2c259f1c",
+      "version_id_after": "20260609-180423-8f26aa1c",
+      "content_hash_before": "2c259f1c1ae6521f",
+      "content_hash_after": "8f26aa1cfcbad6dd",
+      "materiality": "material",
+      "materiality_reasons": [
+        "material:MPI value",
+        "material:sector / pct delta",
+        "material:heading content"
+      ],
+      "diff_summary": "1 line(s) added, 1 line(s) removed; examples: - <h2>Daily Pulse</h2><p>MPI: 58 today</p><ul><li>XLF: +0.42%</li></ul> | + <h2>Daily Pulse</h2><p>MPI: 62 today</p><ul><li>XLF: +0.42%</li></ul>",
+      "subscriber_notification_recommended": true
+    }
+  ]
+}
