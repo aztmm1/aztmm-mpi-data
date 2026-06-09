@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-09T21:16:05Z",
+  "generated_at": "2026-06-09T21:16:11Z",
   "mpi": {
     "score": 59,
     "regime": "Bull \u00b7 early",
@@ -94,7 +94,7 @@
       "snippet": "This week's Form 4 tape was quiet \u2014 no company cleared the bar for inclusion in the rollup."
     },
     "squeeze_watch": {
-      "as_of": "2026-06-08 5:00 PM ET",
+      "as_of": "2026-06-09 5:00 PM ET",
       "snippet": "Tonight's screen turned up no names with the combination of elevated short pressure and options interest."
     }
   }
