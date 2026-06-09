@@ -167,3 +167,23 @@ jobs:
             python3 aztmm-daily-pulse-v2/notify_email.py fail "Weekly Pulse" \
               --err "Job status: ${{ job.status }} - see https://github.com/aztmm1/aztmm-mpi-data/actions/runs/${{ github.run_id }}"
           fi
+
+      - name: Regenerate canonical-content.json
+        # canonical-content-api-step
+        if: always()
+        run: |
+          python3 aztmm-content-api/build_canonical.py --repo-root . --output data/canonical-content.json || true
+          if ! git diff --quiet -- data/canonical-content.json; then
+            git config user.name  "aztmm-bot"
+            git config user.email "aztmm-bot@users.noreply.github.com"
+            git add data/canonical-content.json
+            git commit -m "auto: refresh canonical-content.json"
+            for i in 1 2 3 4; do
+              if git pull --rebase origin main >/dev/null 2>&1 && git push origin main; then
+                echo "  canonical push ok on attempt $i"; break
+              fi
+              echo "  canonical push attempt $i failed - sleeping $((i*3))s"; sleep $((i*3))
+            done
+          else
+            echo "canonical-content.json unchanged"
+          fi
