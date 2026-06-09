@@ -35,8 +35,10 @@ Reads (env):
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import pathlib
 import re
 import sys
 import urllib.request
@@ -150,15 +152,337 @@ def lint_for_encoding_issues(content: str) -> list[str]:
     return findings
 
 
+# =============================================================================
+# TIER 1C — EXTENSIBLE QUALITY GATE
+# =============================================================================
+# Architecture:
+#   * quality_checks.yaml lives next to this file. Each entry is one check with
+#     a `type` selecting a small interpreter below. Adding a check of a known
+#     type is a single-file YAML edit; no Python edits required.
+#   * Anomaly history (rolling window of numerical metrics) is persisted in
+#     data/anomaly_history.json which the workflow's "Commit run logs" step
+#     already adds to git, so history accumulates run-over-run.
+#   * Backward compatible: if quality_checks.yaml is missing OR PyYAML cannot
+#     be imported, quality_gate() falls back to the original hardcoded 5 checks.
+#   * Severity model: only severity=='block' failures fail the gate. 'warn' and
+#     'log' surface in stderr but do not hold the draft — promote-then-observe.
+# =============================================================================
+
+_QUALITY_CHECKS_YAML = os.path.join(os.path.dirname(__file__), "quality_checks.yaml")
+_ANOMALY_HISTORY_JSON = os.path.join(os.path.dirname(__file__), "data", "anomaly_history.json")
+
+
+def load_quality_checks() -> dict | None:
+    """Load YAML config. Returns None if missing or yaml unavailable."""
+    if not os.path.exists(_QUALITY_CHECKS_YAML):
+        return None
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        print(
+            "[publish_to_wp] PyYAML not installed; quality_checks.yaml ignored, "
+            "falling back to hardcoded 5-check gate",
+            file=sys.stderr,
+        )
+        return None
+    try:
+        with open(_QUALITY_CHECKS_YAML) as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception as e:
+        print(f"[publish_to_wp] failed to parse quality_checks.yaml: {e}", file=sys.stderr)
+        return None
+    if not isinstance(cfg, dict) or "checks" not in cfg:
+        return None
+    return cfg
+
+
+def _walk_dotted(obj, path: str):
+    cur = obj
+    for key in (path or "").split("."):
+        if cur is None:
+            return None
+        if isinstance(cur, dict):
+            cur = cur.get(key)
+        else:
+            return None
+    return cur
+
+
+def _load_anomaly_history() -> dict:
+    if not os.path.exists(_ANOMALY_HISTORY_JSON):
+        return {}
+    try:
+        with open(_ANOMALY_HISTORY_JSON) as f:
+            return json.load(f) or {}
+    except Exception:
+        return {}
+
+
+def _save_anomaly_history(history: dict) -> None:
+    try:
+        os.makedirs(os.path.dirname(_ANOMALY_HISTORY_JSON), exist_ok=True)
+        with open(_ANOMALY_HISTORY_JSON, "w") as f:
+            json.dump(history, f, indent=2, sort_keys=True)
+    except Exception as e:
+        print(f"[publish_to_wp] failed to write anomaly_history.json: {e}", file=sys.stderr)
+
+
+def detect_structural_anomaly(post_id, content: str, payload: dict, check: dict) -> str | None:
+    """Compare current section count to median of last N published posts.
+
+    Returns a description string when the new draft has dropped >= max_section_drop
+    sections relative to the median of the last N posts in the same category.
+    Returns None on insufficient history or no anomaly.
+    """
+    n = int(check.get("compare_n", 10))
+    post_type = (payload.get("post_type") or "daily").lower()
+    cat_id = DEFAULT_CATEGORY_DAILY if post_type != "weekly" else DEFAULT_CATEGORY_WEEKLY
+    site = os.environ.get("WP_SITE", DEFAULT_SITE).strip() or DEFAULT_SITE
+
+    url = (
+        f"https://{site}/wp-json/wp/v2/posts"
+        f"?categories={cat_id}&per_page={n}&status=publish&_fields=id,content"
+    )
+    try:
+        r = requests.get(url, timeout=20)
+        if r.status_code != 200:
+            return None
+        recent_posts = r.json()
+    except Exception:
+        return None
+
+    if not isinstance(recent_posts, list) or len(recent_posts) < 3:
+        return None  # not enough history yet
+
+    def count_sections(html: str) -> int:
+        if not html:
+            return 0
+        return len(re.findall(r"<h[1-3]\b", html, re.IGNORECASE))
+
+    section_counts = sorted(
+        count_sections(((p.get("content") or {}).get("rendered")) or "")
+        for p in recent_posts
+    )
+    median_sections = section_counts[len(section_counts) // 2]
+
+    current_sections = count_sections(content or "")
+    drop = median_sections - current_sections
+    max_drop = int(check.get("max_section_drop", 2))
+
+    if drop >= max_drop:
+        return (
+            f"section count anomaly: current={current_sections}, "
+            f"median(last {len(section_counts)})={median_sections}, drop={drop}"
+        )
+    return None
+
+
+def detect_numerical_anomaly(payload: dict, check: dict, persist: bool = True) -> str | None:
+    """Z-score check against last N values stored in data/anomaly_history.json.
+
+    Always appends the current value to the rolling window when persist=True
+    so future runs have history. Returns an anomaly string only when |z| > max_z
+    with enough history (>=5 prior samples).
+    """
+    field_path = check.get("field") or ""
+    if not field_path:
+        return None
+    n = int(check.get("compare_n", 10))
+    max_z = float(check.get("max_z_score", 3.0))
+
+    current_value = _walk_dotted(payload, field_path)
+    if not isinstance(current_value, (int, float)):
+        return None
+
+    history = _load_anomaly_history()
+    field_history = list(history.get(field_path, []))
+
+    anomaly_msg: str | None = None
+    if len(field_history) >= 5:
+        window = field_history[-n:]
+        mean = sum(window) / len(window)
+        variance = sum((v - mean) ** 2 for v in window) / len(window)
+        stddev = variance ** 0.5
+        if stddev > 0:
+            z = abs((float(current_value) - mean) / stddev)
+            if z > max_z:
+                anomaly_msg = (
+                    f"{field_path}={current_value} is {z:.2f}σ from mean "
+                    f"{mean:.2f} (last {len(window)} values, stddev={stddev:.2f})"
+                )
+
+    if persist:
+        field_history.append(float(current_value))
+        history[field_path] = field_history[-n:]
+        _save_anomaly_history(history)
+
+    return anomaly_msg
+
+
+def quality_gate_v2(post_id, content: str, payload: dict, config: dict) -> tuple[bool, list[dict]]:
+    """Config-driven quality gate.
+
+    Returns (passed, structured_failures). Each failure is
+    {check, severity, detail}. Only severity=='block' counts against the gate.
+    """
+    failures: list[dict] = []
+
+    for check in config.get("checks", []):
+        if not isinstance(check, dict):
+            continue
+        check_name = check.get("name", "<unnamed>")
+        check_type = check.get("type", "")
+        severity = check.get("severity", "block")
+        if not check.get("enabled", True):
+            continue
+
+        try:
+            if check_type == "regex_absence":
+                for pattern in check.get("patterns", []):
+                    matches = re.findall(pattern, content or "", re.IGNORECASE)
+                    if matches:
+                        failures.append({
+                            "check": check_name,
+                            "severity": severity,
+                            "detail": (
+                                f"pattern {pattern!r} matched {len(matches)}x; "
+                                f"sample={matches[:3]}"
+                            ),
+                        })
+
+            elif check_type == "payload_field":
+                field = check.get("field")
+                expected = check.get("expected")
+                op = check.get("op", "eq")
+                actual = _walk_dotted(payload, field) if field else None
+                fail = False
+                if op == "eq" and actual != expected:
+                    fail = True
+                elif op == "neq" and actual == expected:
+                    fail = True
+                elif op == "gt" and not (isinstance(actual, (int, float)) and actual > expected):
+                    fail = True
+                elif op == "lt" and not (isinstance(actual, (int, float)) and actual < expected):
+                    fail = True
+                if fail:
+                    failures.append({
+                        "check": check_name,
+                        "severity": severity,
+                        "detail": f"{field}={actual!r} op={op} expected={expected!r}",
+                    })
+
+            elif check_type == "sector_sanity":
+                sectors = payload.get("sectors", []) if isinstance(payload, dict) else []
+                if sectors:
+                    pct = float(check.get("min_nonzero_pct", 33))
+                    required = max(1, int(pct * len(sectors) / 100))
+                    nonzero = sum(
+                        1 for s in sectors
+                        if abs(float(s.get("day_change_pct", 0) or 0)) >= 0.01
+                    )
+                    if nonzero < required:
+                        failures.append({
+                            "check": check_name,
+                            "severity": severity,
+                            "detail": (
+                                f"only {nonzero}/{len(sectors)} sectors nonzero "
+                                f"(need >= {required})"
+                            ),
+                        })
+
+            elif check_type == "freshness":
+                field = check.get("field", "mpi")
+                max_age = float(check.get("max_age_hours", 24))
+                block = payload.get(field, {}) if isinstance(payload, dict) else {}
+                ts_str = ""
+                if isinstance(block, dict):
+                    ts_str = str(block.get("computed_at") or block.get("asOf") or "")
+                if ts_str:
+                    try:
+                        ca = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                        if ca.tzinfo is None:
+                            ca = ca.replace(tzinfo=timezone.utc)
+                        age_hours = (datetime.now(timezone.utc) - ca).total_seconds() / 3600.0
+                        if age_hours > max_age:
+                            failures.append({
+                                "check": check_name,
+                                "severity": severity,
+                                "detail": f"{field} stale: {age_hours:.1f}h (max {max_age:.1f}h)",
+                            })
+                    except Exception as e:
+                        failures.append({
+                            "check": check_name,
+                            "severity": "warn",
+                            "detail": f"freshness parse error: {e}",
+                        })
+
+            elif check_type == "anomaly_structure":
+                msg = detect_structural_anomaly(post_id, content or "", payload, check)
+                if msg:
+                    failures.append({"check": check_name, "severity": severity, "detail": msg})
+
+            elif check_type == "anomaly_numerical":
+                msg = detect_numerical_anomaly(payload, check, persist=True)
+                if msg:
+                    failures.append({"check": check_name, "severity": severity, "detail": msg})
+
+            elif check_type == "word_count":
+                stripped = re.sub(r"<[^>]+>", " ", content or "")
+                word_count = len(re.findall(r"\w+", stripped))
+                min_words = int(check.get("min", 200))
+                max_words = int(check.get("max", 8000))
+                if word_count < min_words:
+                    failures.append({
+                        "check": check_name,
+                        "severity": severity,
+                        "detail": f"too short: {word_count} words (min {min_words})",
+                    })
+                elif word_count > max_words:
+                    failures.append({
+                        "check": check_name,
+                        "severity": severity,
+                        "detail": f"too long: {word_count} words (max {max_words})",
+                    })
+
+            else:
+                failures.append({
+                    "check": check_name,
+                    "severity": "warn",
+                    "detail": f"unknown check type {check_type!r}",
+                })
+
+        except Exception as e:
+            failures.append({
+                "check": check_name,
+                "severity": "warn",
+                "detail": f"check error: {e}",
+            })
+
+    blocking = [f for f in failures if f.get("severity") == "block"]
+    return (len(blocking) == 0, failures)
+
+
 # -----------------------------------------------------------------------------
-# QUALITY GATE — five checks. Returns (passed, failures).
+# QUALITY GATE — legacy 5-check shim + v2 dispatcher (backwards compatible).
 # -----------------------------------------------------------------------------
 def quality_gate(post_id, content: str, payload: dict) -> tuple[bool, list[str]]:
-    """
-    Five-check quality gate run on the LIVE draft post content + source payload.
+    """Returns (passed: bool, failures: list[str]).
 
-    Returns (passed: bool, failures: list[str]).
+    If quality_checks.yaml + PyYAML are available, delegates to quality_gate_v2
+    and flattens structured failures into legacy string form (tagged with
+    severity). Otherwise runs the original hardcoded five checks unchanged.
     """
+    config = load_quality_checks()
+    if config is not None:
+        passed, structured = quality_gate_v2(post_id, content, payload, config)
+        flat: list[str] = []
+        for f in structured:
+            flat.append(
+                f"[{f.get('severity','?').upper()}] {f.get('check','?')}: {f.get('detail','')}"
+            )
+        return (passed, flat)
+
+    # ------------------ Fallback: original 5-check gate ------------------
     failures: list[str] = []
 
     # Check 1: degraded_mode flag
@@ -232,6 +556,130 @@ def promote_to_publish(site: str, user: str, pw: str, post_id: int) -> tuple[boo
     except Exception:
         body = {"raw": r.text[:400]}
     return (r.status_code in (200, 201), body)
+
+
+# -----------------------------------------------------------------------------
+# Tier 1B — Versioned publishing + version manifest
+# -----------------------------------------------------------------------------
+# Every promote-to-publish writes an immutable version snapshot to:
+#   - WP custom post meta (aztmm_* keys, show_in_rest=False)
+#   - Git-tracked manifest at aztmm-daily-pulse-v2/data/versions/{YYYY-MM-DD}.json
+#
+# Hashes use SHA256. Version IDs are append-only. The data/versions manifest
+# accumulates correction events later (see aztmm-versioning/detect_corrections.py).
+def _sha256_short(s: str, n: int = 16) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()[:n]
+
+
+def wp_set_post_meta(site: str, user: str, pw: str, post_id: int, key: str, value) -> bool:
+    """Set a single custom post meta via WP REST API. Returns success bool."""
+    url = f"https://{site}/wp-json/wp/v2/posts/{post_id}"
+    try:
+        r = requests.post(
+            url, auth=(user, pw),
+            json={"meta": {key: value}},
+            timeout=20,
+        )
+        if r.status_code not in (200, 201):
+            print(f"[publish_to_wp] wp_set_post_meta {key} -> HTTP {r.status_code}: {r.text[:200]}", file=sys.stderr)
+            return False
+        return True
+    except Exception as e:
+        print(f"[publish_to_wp] wp_set_post_meta {key} failed: {e}", file=sys.stderr)
+        return False
+
+
+def write_version_metadata(site: str, user: str, pw: str, post_id: int,
+                           payload: dict, content_html: str,
+                           manifest_dir: str = None) -> dict:
+    """
+    Write immutable version metadata to:
+      1. WP custom post meta (aztmm_version_id, aztmm_content_hash, etc.)
+      2. Git-tracked version manifest data/versions/{YYYY-MM-DD}.json
+
+    Returns a dict with the version_event for downstream logging.
+    """
+    now = datetime.now(timezone.utc)
+    content_hash = _sha256_short(content_html or "", 16)
+    payload_hash = _sha256_short(
+        json.dumps(payload, sort_keys=True, default=str), 16
+    )
+    version_id = now.strftime("%Y%m%d-%H%M%S") + "-" + content_hash[:8]
+    run_id = os.environ.get("GITHUB_RUN_ID", "manual")
+
+    meta_keys = {
+        "aztmm_version_id":          version_id,
+        "aztmm_content_hash":        content_hash,
+        "aztmm_payload_hash":        payload_hash,
+        "aztmm_published_at":        now.isoformat().replace("+00:00", "Z"),
+        "aztmm_quality_gate_passed": "true",
+        "aztmm_publish_run_id":      str(run_id),
+    }
+
+    meta_written = 0
+    for k, v in meta_keys.items():
+        if wp_set_post_meta(site, user, pw, post_id, k, v):
+            meta_written += 1
+
+    print(
+        f"[publish_to_wp] version_id={version_id} content_hash={content_hash} "
+        f"payload_hash={payload_hash} meta_written={meta_written}/{len(meta_keys)}",
+        file=sys.stderr,
+    )
+
+    publish_event = {
+        "version_id":          version_id,
+        "published_at":        meta_keys["aztmm_published_at"],
+        "content_hash":        content_hash,
+        "payload_hash":        payload_hash,
+        "quality_gate_passed": True,
+        "run_id":              str(run_id),
+        "meta_written":        f"{meta_written}/{len(meta_keys)}",
+    }
+
+    # Write/append to repo manifest data/versions/{YYYY-MM-DD}.json.
+    # Daily Pulse "date" is the trading date inside the payload; fall back to
+    # today UTC if not present.
+    target_date = None
+    if isinstance(payload, dict):
+        target_date = payload.get("date") or payload.get("trading_date")
+    if not target_date:
+        target_date = now.strftime("%Y-%m-%d")
+    target_date = str(target_date)[:10]
+
+    if manifest_dir is None:
+        # Default location relative to this file (works in CI checkout).
+        script_dir = pathlib.Path(__file__).resolve().parent
+        manifest_dir = str(script_dir / "data" / "versions")
+
+    manifest_path = pathlib.Path(manifest_dir) / f"{target_date}.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    manifest = {
+        "post_id": post_id,
+        "trading_date": target_date,
+        "publish_event": publish_event,
+        "correction_events": [],
+    }
+
+    # If a manifest already exists (re-publish, watchdog retry), preserve
+    # the original publish_event under a `superseded_publish_events` list and
+    # append correction_events through.
+    if manifest_path.exists():
+        try:
+            prior = json.loads(manifest_path.read_text())
+            superseded = prior.get("superseded_publish_events", [])
+            if prior.get("publish_event"):
+                superseded.append(prior["publish_event"])
+            manifest["superseded_publish_events"] = superseded
+            manifest["correction_events"] = prior.get("correction_events", [])
+        except Exception as e:
+            print(f"[publish_to_wp] prior manifest unreadable, overwriting: {e}", file=sys.stderr)
+
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=False) + "\n")
+    print(f"[publish_to_wp] version manifest written: {manifest_path}", file=sys.stderr)
+
+    return publish_event
 
 
 # -----------------------------------------------------------------------------
@@ -452,7 +900,16 @@ def main() -> int:
         }, indent=2))
         return 8 if watchdog_retry else 7
 
-    print(f"[publish_to_wp] PHASE 2 OK — quality gate passed (0 failures)", file=sys.stderr)
+    # Even when passed, surface any non-blocking notices (warn / log).
+    if failures:
+        print(
+            f"[publish_to_wp] PHASE 2 OK — gate passed with {len(failures)} non-blocking notice(s):",
+            file=sys.stderr,
+        )
+        for f_ in failures:
+            print(f"  - {f_}", file=sys.stderr)
+    else:
+        print(f"[publish_to_wp] PHASE 2 OK — quality gate passed (0 failures)", file=sys.stderr)
 
     # ------------------------------------------------------------------
     # PHASE 3 — Promote draft -> publish. THIS triggers Jetpack subscriber emails.
@@ -465,6 +922,26 @@ def main() -> int:
         notify_held_for_review(post_id, draft_link, [f"PHASE 3 PATCH publish failed: {str(promote_body)[:300]}"], reason="promote_failed")
         return 6
 
+    # ------------------------------------------------------------------
+    # PHASE 4 (Tier 1B) — Write immutable version metadata.
+    # Best-effort: failure here does NOT undo the publish.
+    # ------------------------------------------------------------------
+    publish_event = {}
+    try:
+        # Prefer the final live HTML returned by promote (rendered) over the
+        # draft snapshot, so the content_hash matches what subscribers see.
+        final_content = (
+            promote_body.get("content", {}).get("raw")
+            or promote_body.get("content", {}).get("rendered")
+            or live_content
+            or payload.get("content", "")
+        )
+        publish_event = write_version_metadata(
+            site, user, pw, post_id, payload, final_content,
+        )
+    except Exception as e:
+        print(f"[publish_to_wp] PHASE 4 version metadata FAILED (non-fatal): {e}", file=sys.stderr)
+
     print(json.dumps({
         "status": "ok",
         "post_id": post_id,
@@ -472,6 +949,7 @@ def main() -> int:
         "wp_status": promote_body.get("status"),
         "phase": "promoted",
         "quality_gate": "passed",
+        "version_event": publish_event,
     }, indent=2))
     return 0
 
