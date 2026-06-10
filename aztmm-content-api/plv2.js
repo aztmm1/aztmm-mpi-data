@@ -347,16 +347,16 @@
     return "M " + p0[0].toFixed(2) + " " + p0[1].toFixed(2) + " A " + r + " " + r + " 0 " + ((a1 - a0) > 180 ? 1 : 0) + " 1 " + p1[0].toFixed(2) + " " + p1[1].toFixed(2);
   }
   function regimeAngle(label, score) {
+    /* The needle's ZONE is decided by the regime label (the model's call);
+       the position INSIDE the zone is nudged by the MPI score. The label wins —
+       a "Bull" call must point at BULL even when the composite is mid-range. */
     var s = String(label || "").toLowerCase();
-    var base = 90; /* neutral center */
-    if (s.indexOf("crisis") > -1 || s.indexOf("bear") > -1) base = 30;
-    else if (s.indexOf("bull") > -1) base = 150;
-    if (score != null && !isNaN(score)) {
-      /* nudge needle inside its zone by MPI position */
-      var t = Math.max(0, Math.min(100, score)) / 100; /* 0..1 */
-      base = 18 + t * 144; /* 18deg..162deg across the dial */
-    }
-    return base;
+    var zone = 1; /* neutral */
+    if (s.indexOf("crisis") > -1 || s.indexOf("bear") > -1) zone = 0;
+    else if (s.indexOf("bull") > -1) zone = 2;
+    var t = (score != null && !isNaN(score)) ? Math.max(0, Math.min(100, score)) / 100 : 0.5;
+    var start = [8, 68, 128][zone];
+    return start + t * 44;
   }
   function drawDial(mount, regimeLabel, score, confText) {
     if (!mount) return;
@@ -394,7 +394,7 @@
     for (var i = 0; i < zones.length; i++) {
       var z = zones[i];
       sv("rect", { x: X(z[0]), y: y, width: X(z[1]) - X(z[0]) - 2, height: h, rx: 4, fill: z[2], opacity: 0.32 }, s);
-      var t = sv("text", { x: (X(z[0]) + X(z[1])) / 2, y: y + h + 18, "text-anchor": "middle", "font-size": 9, fill: z[2], "font-family": "JetBrains Mono, Menlo, monospace", "letter-spacing": "1" }, s);
+      var t = sv("text", { x: (X(z[0]) + X(z[1])) / 2, y: y + h + (i % 2 ? 30 : 18), "text-anchor": "middle", "font-size": 9, fill: z[2], "font-family": "JetBrains Mono, Menlo, monospace", "letter-spacing": "1" }, s);
       t.textContent = z[3];
     }
     if (lo != null && hi != null && !isNaN(lo) && !isNaN(hi)) {
