@@ -35,12 +35,20 @@ var WORKFLOWS = {
   optionsGravity: "options-gravity.yml",
   squeeze: "squeeze-watch.yml",
   insiderActivity: "insider-activity.yml",
-  earningsFlow: "earnings-flow.yml"
+  earningsFlow: "earnings-flow.yml",
+  ledger: "ledger-score.yml"
 };
 
 var FRESHNESS_TARGETS = [
   // 2026-06-10: aztmm-daily-pulse-v2 target removed — Pipeline B daily retired;
   // Daily Pulse now published by the UW/MCP scheduled task (Pipeline A).
+  {
+    slug: "accountability-ledger",
+    file: "latest.json",
+    dateKeys: ["as_of", "date"],
+    cadence: "daily",
+    yesterdayFile: null
+  },
   {
     slug: "congress-trades-tracker",
     file: "latest.json",
@@ -318,8 +326,28 @@ async function checkTarget(env, target, etDate) {
   return { slug: target.slug, status: "STALE", date: foundDate, expected: weekendSkip ? lastTd : etDate, weekendSkip, todayHash, yesterdayHash, numbersMatched };
 }
 
+async function checkSiteWiring(env) {
+  // 2026-06-10: reader-facing check — the homepage must carry the v2 hydrator and canonical keys,
+  // and the canonical feed it reads must be reachable. Catches wiring regressions the repo checks can't see.
+  try {
+    const [pageRes, canonRes] = await Promise.all([
+      fetch(`https://${WP_SITE}/?nocache=${Date.now()}`, { headers: { "User-Agent": USER_AGENT } }),
+      fetchRepoJson(env, "data/canonical-content.json")
+    ]);
+    if (!pageRes.ok) return { slug: "site-wiring", status: "STALE", error: "home HTTP " + pageRes.status };
+    const html = await pageRes.text();
+    const hasV2 = html.indexOf("__aztmmCanonicalHydrator") !== -1 && html.indexOf('"2.0"') !== -1;
+    const hasKeys = html.indexOf("data-canonical-key") !== -1;
+    const canonOk = canonRes.ok && canonRes.data && canonRes.data.mpi && canonRes.data.mpi.as_of;
+    if (hasV2 && hasKeys && canonOk) return { slug: "site-wiring", status: "fresh", date: canonRes.data.mpi.as_of };
+    return { slug: "site-wiring", status: "STALE", error: `v2:${hasV2} keys:${hasKeys} canonical:${!!canonOk}` };
+  } catch (e) {
+    return { slug: "site-wiring", status: "error", error: String(e) };
+  }
+}
+__name(checkSiteWiring, "checkSiteWiring");
 async function runFreshnessWatch(env, etDate) {
-  const results = await Promise.all(FRESHNESS_TARGETS.map((t) => checkTarget(env, t, etDate).catch((e) => ({ slug: t.slug, status: "error", error: String(e) }))));
+  const results = await Promise.all([...FRESHNESS_TARGETS.map((t) => checkTarget(env, t, etDate).catch((e) => ({ slug: t.slug, status: "error", error: String(e) }))), checkSiteWiring(env)]);
   const stale = results.filter((r) => r.status === "STALE");
   const staleData = results.filter((r) => r.status === "STALE_DATA");
   const fresh = results.filter((r) => r.status === "fresh");
