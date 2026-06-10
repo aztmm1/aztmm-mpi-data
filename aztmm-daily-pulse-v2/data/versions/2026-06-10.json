@@ -1,0 +1,14 @@
+{
+  "post_id": 2907,
+  "trading_date": "2026-06-10",
+  "publish_event": {
+    "version_id": "20260610-064944-2ad7a7c1",
+    "published_at": "2026-06-10T06:49:44.518978Z",
+    "content_hash": "2ad7a7c1a3b2a467",
+    "payload_hash": "b8a7f6c395234202",
+    "quality_gate_passed": true,
+    "run_id": "27258589448",
+    "meta_written": "6/6"
+  },
+  "correction_events": []
+}
