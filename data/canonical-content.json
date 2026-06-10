@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T20:24:58Z",
+  "generated_at": "2026-06-10T21:15:58Z",
   "mpi": {
     "score": 57,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-06-09",
-    "computed_at": "2026-06-10T17:35:28Z",
+    "computed_at": "2026-06-10T20:31:23Z",
     "confidence": 0.85,
     "confidence_band": [
       52,
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-06-09",
+      "as_of": "2026-06-10",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
