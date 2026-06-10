@@ -39,14 +39,8 @@ var WORKFLOWS = {
 };
 
 var FRESHNESS_TARGETS = [
-  {
-    slug: "aztmm-daily-pulse-v2",
-    file: "latest.json",
-    dateKeys: ["date", "asOf", "as_of"],
-    cadence: "daily",
-    yesterdayFile: (d) => `daily-pulse-${d}.html`,
-    yesterdayFileIsText: true
-  },
+  // 2026-06-10: aztmm-daily-pulse-v2 target removed — Pipeline B daily retired;
+  // Daily Pulse now published by the UW/MCP scheduled task (Pipeline A).
   {
     slug: "congress-trades-tracker",
     file: "latest.json",
@@ -247,7 +241,9 @@ function selectWorkflows(et) {
   if (hour === 9 && minute < 30) selected.push(WORKFLOWS.mpi);
   if (hour === 16 && minute >= 30) selected.push(WORKFLOWS.mpi);
   if (hour === 17 && minute >= 10 && minute < 50) {
-    selected.push(WORKFLOWS.dailyPulse, WORKFLOWS.congress, WORKFLOWS.optionsGravity, WORKFLOWS.squeeze, WORKFLOWS.earningsFlow);
+    // 2026-06-10: WORKFLOWS.dailyPulse removed — Pipeline B daily retired (workflow disabled);
+    // Daily Pulse is owned by the UW/MCP scheduled task (Pipeline A, 5:05 PM ET).
+    selected.push(WORKFLOWS.congress, WORKFLOWS.optionsGravity, WORKFLOWS.squeeze, WORKFLOWS.earningsFlow);
   }
   if (et.dow === 5 && hour === 17 && minute >= 10 && minute < 50) { selected.push(WORKFLOWS.insiderActivity); }
   return selected;
@@ -569,7 +565,7 @@ async function runTick(env, source = "cron") {
   const etDate = getETDateStr(now);
   const stamp = now.toISOString();
   if (et.dow >= 1 && et.dow <= 5 && et.hour === 17 && et.minute >= 50 && et.minute < 60) await runFreshnessWatch(env, etDate);
-  if (et.dow >= 1 && et.dow <= 5 && et.hour === 23 && et.minute < 30) await runLateNightDailyPulseWatchdogTwoPhase(env, etDate);
+  // 2026-06-10: 23:00 ET daily watchdog disabled — it dispatched Pipeline B (retired).
   if (et.dow === 6 && et.hour === 9 && et.minute >= 30 && et.minute < 60) await runWeeklyPulseWatchdogTwoPhase(env, etDate);
   const workflows = selectWorkflows(et);
   const result = { timestamp: stamp, etDate, etHour: et.hour, etMinute: et.minute, dow: et.dow, source, workflowsTriggered: [], workflowsSkipped: [] };
