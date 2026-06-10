@@ -124,10 +124,10 @@
   ],
   "data_quality": {
     "degraded": false,
-    "endpoints_ok": 45,
+    "endpoints_ok": 47,
     "endpoints_failed": 0,
     "source": "House Clerk PTR feed (free, public)",
     "senate_status": "phase 2 - efdsearch.senate.gov scraper pending"
   },
-  "generated_at": "2026-06-10T09:45:31Z"
+  "generated_at": "2026-06-10T21:16:07Z"
 }
