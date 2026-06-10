@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T06:49:49Z",
+  "generated_at": "2026-06-10T07:08:44Z",
   "mpi": {
     "score": 59,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 6.01
   },
   "latest_daily_pulse": {
-    "id": 2903,
-    "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-2026-06-08/",
-    "title": "AZTMM Closing Pulse \u00b7 Monday June 8, 2026",
-    "date": "2026-06-09",
-    "snippet": "Call-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
+    "id": 2907,
+    "url": "https://aztmm.com/2026/06/10/daily-pulse-options-flow-dark-pool-2026-06-10/",
+    "title": "AZTMM Closing Pulse \u00b7 Wednesday June 10, 2026",
+    "date": "2026-06-10",
+    "snippet": "Tape stayed mixed; Materials led (+0.00%); no single-name positioning stood out.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 2907,
+      "url": "https://aztmm.com/2026/06/10/daily-pulse-options-flow-dark-pool-2026-06-10/",
+      "title": "AZTMM Closing Pulse \u00b7 Wednesday June 10, 2026",
+      "date": "2026-06-10",
+      "snippet": "Tape stayed mixed; Materials led (+0.00%); no single-name positioning stood out.",
+      "kind": "daily"
+    },
     {
       "id": 2903,
       "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-2026-06-08/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 4 June 2026",
       "date": "2026-06-04",
       "snippet": "SPY edged to a fresh high while the Nasdaq slipped \u2014 a split tape that left NVDA leading, small-caps hedging, and volatility bleeding back under 16.",
-      "kind": "daily"
-    },
-    {
-      "id": 2844,
-      "url": "https://aztmm.com/2026/06/03/daily-pulse-options-flow-dark-pool-2026-06-03-6/",
-      "title": "AZTMM Closing Pulse \u00b7 Wednesday June 3, 2026",
-      "date": "2026-06-03",
-      "snippet": "Put-heavy tape; Energy led (+1.29%); no single-name positioning stood out.",
       "kind": "daily"
     }
   ],
