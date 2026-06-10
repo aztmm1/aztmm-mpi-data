@@ -1,0 +1,80 @@
+name: AZTMM Accountability Ledger
+
+on:
+  schedule:
+    # 03:15 UTC Tue-Sat = 23:15 ET previous day Mon-Fri (after the 5 PM ET
+    # Daily Pulse publish + buffer). During EST (winter) this runs 22:15 ET,
+    # still safely after publish.
+    - cron: "15 3 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no writes, no commit)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aztmm-accountability-ledger
+  cancel-in-progress: false
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install yfinance beautifulsoup4
+
+      - name: Extract and score
+        run: |
+          set +e
+          ARGS="--repo-root ."
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python3 accountability-ledger/extract_and_score.py $ARGS
+          rc=$?
+          if [ "$rc" -eq 3 ]; then
+            echo "Nothing to do tonight (no new rows, no score changes)."
+            exit 0
+          fi
+          exit $rc
+
+      - name: Commit ledger updates
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name "aztmm-ledger-bot"
+          git config user.email "aztmm-ledger-bot@users.noreply.github.com"
+          git add data/calls.json accountability-ledger/sample-output/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No ledger changes to commit."
+          else
+            git commit -m "ledger: score $(date -u +%Y-%m-%d) [skip ci]"
+            git push
+          fi
+
+      - name: Regenerate canonical content (if builder present)
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          if [ -f aztmm-content-api/build_canonical.py ]; then
+            python3 aztmm-content-api/build_canonical.py --repo-root . || true
+            git add -A
+            if git diff --cached --quiet; then
+              echo "No canonical changes to commit."
+            else
+              git commit -m "ledger: canonical rebuild $(date -u +%Y-%m-%d) [skip ci]"
+              git push
+            fi
+          else
+            echo "aztmm-content-api/build_canonical.py not present; skipping."
+          fi
