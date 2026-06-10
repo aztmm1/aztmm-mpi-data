@@ -1,0 +1,10 @@
+{
+ "note": "MPI + regime by session. Appended nightly by ledger-score workflow since 2026-06-10. Never backfilled.",
+ "rows": [
+  {
+   "date": "2026-06-09",
+   "score": 57,
+   "regime": "Bull \u00b7 early"
+  }
+ ]
+}
