@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T21:45:59Z",
+  "generated_at": "2026-06-10T21:46:10Z",
   "mpi": {
     "score": 57,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 6.94
   },
   "latest_daily_pulse": {
-    "id": 2913,
-    "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-9-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 June 2026",
-    "date": "2026-06-09",
-    "snippet": "An intraday air pocket that closed mostly healed: SPY \u22120.29%, QQQ \u22121.15%, VIX back over 19, with index put hedging stacked over single-name call appetite in MU, VST, and AMZN.",
+    "id": 2925,
+    "url": "https://aztmm.com/2026/06/10/daily-pulse-options-flow-dark-pool-10-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 June 2026",
+    "date": "2026-06-10",
+    "snippet": "Indexes broke lower \u2014 SPY \u22121.58%, QQQ \u22122.00%, VIX back above 22 \u2014 while index put buying clustered at July strikes and the dark-pool tape printed huge blocks in MSFT, NVDA, and the semis.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 2925,
+      "url": "https://aztmm.com/2026/06/10/daily-pulse-options-flow-dark-pool-10-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 June 2026",
+      "date": "2026-06-10",
+      "snippet": "Indexes broke lower \u2014 SPY \u22121.58%, QQQ \u22122.00%, VIX back above 22 \u2014 while index put buying clustered at July strikes and the dark-pool tape printed huge blocks in MSFT, NVDA, and the semis.",
+      "kind": "daily"
+    },
     {
       "id": 2913,
       "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-9-june-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 June 2026",
       "date": "2026-06-05",
       "snippet": "A clean risk-off Friday \u2014 SPY -2.58%, QQQ -4.80%, NVDA -6.20% and VIX up ~40% to 21.51 \u2014 but the composite held Bull \u00b7 early as trend, breadth and credit stayed intact; we read it as a leadership shakeout, not a regime break.",
-      "kind": "daily"
-    },
-    {
-      "id": 2873,
-      "url": "https://aztmm.com/2026/06/04/daily-pulse-options-flow-dark-pool-4-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 4 June 2026",
-      "date": "2026-06-04",
-      "snippet": "SPY edged to a fresh high while the Nasdaq slipped \u2014 a split tape that left NVDA leading, small-caps hedging, and volatility bleeding back under 16.",
       "kind": "daily"
     }
   ],
