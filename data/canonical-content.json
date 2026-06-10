@@ -1,29 +1,29 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T09:45:35Z",
+  "generated_at": "2026-06-10T16:45:48Z",
   "mpi": {
-    "score": 59,
+    "score": 58,
     "regime": "Bull \u00b7 early",
-    "as_of": "2026-06-08",
-    "computed_at": "2026-06-09T20:30:54Z",
+    "as_of": "2026-06-09",
+    "computed_at": "2026-06-10T13:01:06Z",
     "confidence": 0.85,
     "confidence_band": [
-      54,
-      64
+      53,
+      63
     ]
   },
   "market": {
-    "spy_close": 739.22,
-    "vix": 18.92,
-    "rv_30d": 12.91,
-    "vrp": 6.01
+    "spy_close": 737.05,
+    "vix": 19.87,
+    "rv_30d": 12.93,
+    "vrp": 6.94
   },
   "latest_daily_pulse": {
-    "id": 2907,
-    "url": "https://aztmm.com/2026/06/10/daily-pulse-options-flow-dark-pool-2026-06-10/",
-    "title": "AZTMM Closing Pulse \u00b7 Wednesday June 10, 2026",
-    "date": "2026-06-10",
-    "snippet": "Tape stayed mixed; Materials led (+0.00%); no single-name positioning stood out.",
+    "id": 2913,
+    "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-9-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 June 2026",
+    "date": "2026-06-09",
+    "snippet": "An intraday air pocket that closed mostly healed: SPY \u22120.29%, QQQ \u22121.15%, VIX back over 19, with index put hedging stacked over single-name call appetite in MU, VST, and AMZN.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -36,11 +36,11 @@
   },
   "recent_pulses": [
     {
-      "id": 2907,
-      "url": "https://aztmm.com/2026/06/10/daily-pulse-options-flow-dark-pool-2026-06-10/",
-      "title": "AZTMM Closing Pulse \u00b7 Wednesday June 10, 2026",
-      "date": "2026-06-10",
-      "snippet": "Tape stayed mixed; Materials led (+0.00%); no single-name positioning stood out.",
+      "id": 2913,
+      "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-9-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 June 2026",
+      "date": "2026-06-09",
+      "snippet": "An intraday air pocket that closed mostly healed: SPY \u22120.29%, QQQ \u22121.15%, VIX back over 19, with index put hedging stacked over single-name call appetite in MU, VST, and AMZN.",
       "kind": "daily"
     },
     {
