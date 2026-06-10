@@ -50,12 +50,32 @@ jobs:
           fi
           exit $rc
 
+      - name: Append MPI history point (regime timeline)
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          mpi = json.load(open('data/mpi.json'))
+          row = {"date": mpi.get("asOf"), "score": mpi["data"]["mpi_score"], "regime": mpi["data"]["regime_label"]}
+          path = 'data/mpi-history.json'
+          hist = {"note": "MPI + regime by session. Appended nightly by ledger-score workflow since 2026-06-10. Never backfilled.", "rows": []}
+          if os.path.exists(path):
+              try: hist = json.load(open(path))
+              except Exception: pass
+          rows = [r for r in hist.get("rows", []) if r.get("date") != row["date"]]
+          rows.append(row)
+          rows.sort(key=lambda r: r.get("date") or "")
+          hist["rows"] = rows[-260:]
+          json.dump(hist, open(path, "w"), indent=1)
+          print("history rows:", len(hist["rows"]))
+          PY
+
       - name: Commit ledger updates
         if: ${{ inputs.dry_run != true }}
         run: |
           git config user.name "aztmm-ledger-bot"
           git config user.email "aztmm-ledger-bot@users.noreply.github.com"
-          git add data/calls.json accountability-ledger/sample-output/ 2>/dev/null || true
+          git add data/calls.json data/mpi-history.json accountability-ledger/sample-output/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No ledger changes to commit."
           else
