@@ -328,11 +328,13 @@
   var NS = "http://www.w3.org/2000/svg";
   var FMONO = "JetBrains Mono, Menlo, monospace";
   var FDISP = "Space Grotesk, Inter, sans-serif";
-  function svgEl(vb) {
+  function svgEl(vb, maxW) {
     var s = document.createElementNS(NS, "svg");
     s.setAttribute("viewBox", vb);
     s.setAttribute("width", "100%");
     s.style.display = "block";
+    s.style.maxWidth = (maxW || 560) + "px";
+    s.style.margin = "0 auto";
     return s;
   }
   function sv(tag, attrs, parent) {
@@ -443,7 +445,7 @@
       return;
     }
     if (note) note.textContent = "Each point is the MPI actually published that session, colored by that day's regime call. Reconstructed from committed snapshots; appended nightly; never revised.";
-    var s = svgEl("0 0 380 180");
+    var s = svgEl("0 0 380 180", 660);
     var x0 = 34, x1 = 366, y0 = 16, y1 = 128;
     var n = rows.length;
     var X = function (i) { return x0 + (x1 - x0) * (n === 1 ? 0.5 : i / (n - 1)); };
