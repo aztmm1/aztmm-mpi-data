@@ -386,12 +386,12 @@
       sv("path", { d: arcPath(cx, cy, R, zones[i][0], zones[i][1]), stroke: zones[i][2], "stroke-width": 7, fill: "none", "stroke-linecap": "round", opacity: 0.95 }, s);
     }
     /* zone labels — anchored outside, never clipped */
-    var pl = polar(cx, cy, R + 30, 30);
-    txt(s, pl[0] + 4, pl[1] + 14, "CRISIS", { size: 10, fill: "#fb7185", ls: "0.18em" });
-    var pn = polar(cx, cy, R + 30, 90);
+    var pl = polar(cx, cy, R + 44, 24);
+    txt(s, pl[0], pl[1] + 10, "CRISIS", { size: 10, fill: "#fb7185", ls: "0.18em" });
+    var pn = polar(cx, cy, R + 32, 90);
     txt(s, pn[0], pn[1] + 2, "NEUTRAL", { size: 10, fill: "#f59e0b", ls: "0.18em" });
-    var pb = polar(cx, cy, R + 30, 150);
-    txt(s, pb[0] - 4, pb[1] + 14, "BULL", { size: 10, fill: "#10b981", ls: "0.18em" });
+    var pb = polar(cx, cy, R + 44, 156);
+    txt(s, pb[0], pb[1] + 10, "BULL", { size: 10, fill: "#10b981", ls: "0.18em" });
     /* needle */
     var ang = regimeAngle(regimeLabel, score);
     var tip = polar(cx, cy, R - 16, ang);
@@ -408,21 +408,21 @@
   function drawZoneMap(mount, score, lo, hi) {
     if (!mount || score == null || isNaN(score)) return;
     mount.innerHTML = "";
-    var s = svgEl("0 0 380 120");
-    var x0 = 24, x1 = 356, y = 64, h = 10;
+    var s = svgEl("0 0 380 132");
+    var x0 = 24, x1 = 356, y = 60, h = 10;
     var X = function (v) { return x0 + (x1 - x0) * Math.max(0, Math.min(100, v)) / 100; };
     var zones = [[0, 30, "#fb7185", "BEAR"], [30, 50, "#f59e0b", "DEFENSIVE"], [50, 70, "#94a3b8", "MIXED"], [70, 100, "#10b981", "BULL"]];
     sv("rect", { x: x0 - 4, y: y - 4, width: x1 - x0 + 8, height: h + 8, rx: 9, fill: "#0d0f26", stroke: "#1e2244" }, s);
     for (var i = 0; i < zones.length; i++) {
       var z = zones[i];
       sv("rect", { x: X(z[0]) + 1, y: y, width: X(z[1]) - X(z[0]) - 2, height: h, rx: 5, fill: z[2], opacity: 0.55 }, s);
-      txt(s, (X(z[0]) + X(z[1])) / 2, y + 32, z[3], { size: 8.5, fill: z[2], ls: "0.14em" });
+      txt(s, (X(z[0]) + X(z[1])) / 2, y + (i % 2 ? 44 : 30), z[3], { size: 8.5, fill: z[2], ls: "0.14em" });
     }
     if (lo != null && hi != null && !isNaN(lo) && !isNaN(hi)) {
       sv("rect", { x: X(lo), y: y - 12, width: Math.max(2, X(hi) - X(lo)), height: h + 24, rx: 6, fill: "#a78bfa", opacity: 0.10 }, s);
       sv("line", { x1: X(lo), y1: y - 12, x2: X(lo), y2: y + h + 12, stroke: "#a78bfa", "stroke-width": 1, opacity: 0.55 }, s);
       sv("line", { x1: X(hi), y1: y - 12, x2: X(hi), y2: y + h + 12, stroke: "#a78bfa", "stroke-width": 1, opacity: 0.55 }, s);
-      txt(s, (X(lo) + X(hi)) / 2, y + 50, "CONFIDENCE BAND " + Math.round(lo) + "–" + Math.round(hi), { size: 8, fill: "#a78bfa", ls: "0.14em" });
+      txt(s, (X(lo) + X(hi)) / 2, y + 62, "CONFIDENCE BAND " + Math.round(lo) + "–" + Math.round(hi), { size: 8, fill: "#a78bfa", ls: "0.14em" });
     }
     /* score marker + pill */
     sv("line", { x1: X(score), y1: y - 16, x2: X(score), y2: y + h + 8, stroke: "#e6e9ff", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
