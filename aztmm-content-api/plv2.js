@@ -382,9 +382,14 @@
     /* zones — thin, luminous */
     var zones = [[6, 62, "#fb7185"], [66, 114, "#f59e0b"], [118, 174, "#10b981"]];
     for (var i = 0; i < zones.length; i++) {
-      sv("path", { d: arcPath(cx, cy, R, zones[i][0], zones[i][1]), stroke: zones[i][2], "stroke-width": 16, fill: "none", "stroke-linecap": "round", opacity: 0.16 }, s);
+      sv("path", { d: arcPath(cx, cy, R, zones[i][0], zones[i][1]), stroke: zones[i][2], "stroke-width": 14, fill: "none", "stroke-linecap": "round", opacity: 0.20 }, s);
       sv("path", { d: arcPath(cx, cy, R, zones[i][0], zones[i][1]), stroke: zones[i][2], "stroke-width": 7, fill: "none", "stroke-linecap": "round", opacity: 0.95 }, s);
     }
+    /* hairline ticks at zone boundaries */
+    [64, 116].forEach(function (bd) {
+      var t1 = polar(cx, cy, R - 12, bd), t2 = polar(cx, cy, R + 12, bd);
+      sv("line", { x1: t1[0], y1: t1[1], x2: t2[0], y2: t2[1], stroke: "#3e4682", "stroke-width": 1 }, s);
+    });
     /* zone labels — anchored outside, never clipped */
     var pl = polar(cx, cy, R + 44, 24);
     txt(s, pl[0], pl[1] + 10, "CRISIS", { size: 10, fill: "#fb7185", ls: "0.18em" });
@@ -399,6 +404,8 @@
     sv("line", { x1: tail[0], y1: tail[1], x2: tip[0], y2: tip[1], stroke: "#e6e9ff", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
     sv("circle", { cx: tip[0], cy: tip[1], r: 4.5, fill: "#e6e9ff" }, s);
     sv("circle", { cx: tip[0], cy: tip[1], r: 9, fill: "none", stroke: "#e6e9ff", "stroke-width": 1, opacity: 0.35 }, s);
+    var tail2 = polar(cx, cy, 18, ang + 180);
+    sv("line", { x1: cx, y1: cy, x2: tail2[0], y2: tail2[1], stroke: "#7e84b5", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
     sv("circle", { cx: cx, cy: cy, r: 6, fill: "#1a1e3f", stroke: "#e6e9ff", "stroke-width": 2 }, s);
     /* readout below pivot — needle never crosses it */
     txt(s, cx, cy + 34, regimeLabel || "—", { mono: false, size: 21, weight: "700", fill: "#e6e9ff", ls: "0" });
@@ -415,7 +422,7 @@
     sv("rect", { x: x0 - 4, y: y - 4, width: x1 - x0 + 8, height: h + 8, rx: 9, fill: "#0d0f26", stroke: "#1e2244" }, s);
     for (var i = 0; i < zones.length; i++) {
       var z = zones[i];
-      sv("rect", { x: X(z[0]) + 1, y: y, width: X(z[1]) - X(z[0]) - 2, height: h, rx: 5, fill: z[2], opacity: 0.55 }, s);
+      sv("rect", { x: X(z[0]) + 1, y: y, width: X(z[1]) - X(z[0]) - 2, height: h, rx: 4, fill: z[2], opacity: 0.55 }, s);
       txt(s, (X(z[0]) + X(z[1])) / 2, y + (i % 2 ? 44 : 30), z[3], { size: 8.5, fill: z[2], ls: "0.14em" });
     }
     if (lo != null && hi != null && !isNaN(lo) && !isNaN(hi)) {
@@ -425,6 +432,7 @@
       txt(s, (X(lo) + X(hi)) / 2, y + 62, "CONFIDENCE BAND " + Math.round(lo) + "–" + Math.round(hi), { size: 8, fill: "#a78bfa", ls: "0.14em" });
     }
     /* score marker + pill */
+    sv("line", { x1: X(score), y1: y - 16, x2: X(score), y2: y + h + 8, stroke: "#22d3ee", "stroke-width": 7, "stroke-linecap": "round", opacity: 0.22 }, s);
     sv("line", { x1: X(score), y1: y - 16, x2: X(score), y2: y + h + 8, stroke: "#e6e9ff", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
     var pw = 44, px = Math.max(x0 + pw / 2, Math.min(x1 - pw / 2, X(score)));
     sv("rect", { x: px - pw / 2, y: y - 44, width: pw, height: 24, rx: 12, fill: "#1a1e3f", stroke: "#3e4682" }, s);
@@ -468,10 +476,14 @@
     var areaGrad = defsGrad(s, gradId + "-a", [["0%", "#22d3ee", 0.20], ["100%", "#22d3ee", 0]], 0, 1);
     sv("path", { d: d + " L " + pts[n - 1][0].toFixed(1) + " " + y1 + " L " + pts[0][0].toFixed(1) + " " + y1 + " Z", fill: areaGrad }, s);
     sv("path", { d: d, stroke: lineGrad, "stroke-width": 2.2, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, s);
-    /* regime ribbon under axis */
+    /* faint per-session dots so individual readings are perceptible */
+    for (var di = 0; di < n - 1; di++) {
+      sv("circle", { cx: pts[di][0], cy: pts[di][1], r: 2, fill: "#22d3ee", opacity: 0.35 }, s);
+    }
+    /* regime ribbon under axis — full opacity with hairline outline for contrast */
     var seg = (x1 - x0) / n;
     for (var k = 0; k < n; k++) {
-      sv("rect", { x: x0 + k * seg + 0.5, y: y1 + 10, width: Math.max(1.5, seg - 1), height: 5, rx: 2.5, fill: regimeColor(rows[k].regime), opacity: 0.8 }, s);
+      sv("rect", { x: x0 + k * seg + 0.5, y: y1 + 10, width: Math.max(1.5, seg - 1), height: 5, rx: 2.5, fill: regimeColor(rows[k].regime), opacity: 1, stroke: "#0d0f26", "stroke-width": 0.5 }, s);
     }
     txt(s, x0, y1 + 32, "REGIME", { size: 7.5, fill: "#4f547a", anchor: "start", ls: "0.2em" });
     /* last point emphasis */
@@ -494,6 +506,8 @@
     var min = lo - pad, max = hi + pad;
     var X = function (v) { return x0 + (x1 - x0) * (v - min) / (max - min); };
     sv("line", { x1: x0 - 8, y1: y, x2: x1 + 8, y2: y, stroke: "#1e2244", "stroke-width": 1.5 }, s);
+    sv("line", { x1: x0 - 8, y1: y - 5, x2: x0 - 8, y2: y + 5, stroke: "#1e2244", "stroke-width": 1.5 }, s);
+    sv("line", { x1: x1 + 8, y1: y - 5, x2: x1 + 8, y2: y + 5, stroke: "#1e2244", "stroke-width": 1.5 }, s);
     var bandGrad = defsGrad(s, "plv2em-g", [["0%", "#22d3ee", 0.05], ["50%", "#22d3ee", 0.28], ["100%", "#22d3ee", 0.05]]);
     sv("rect", { x: X(lo), y: y - 9, width: X(hi) - X(lo), height: 18, rx: 9, fill: bandGrad }, s);
     sv("line", { x1: X(lo), y1: y - 13, x2: X(lo), y2: y + 13, stroke: "#22d3ee", "stroke-width": 1.5, opacity: 0.8 }, s);
@@ -522,7 +536,7 @@
       sv("rect", { x: x0, y: yy - 6, width: x1 - x0, height: 12, rx: 6, fill: "#0d0f26", stroke: "#1e2244" }, s);
       var g = defsGrad(s, "plv2vt" + j, [["0%", rowsV[j][2], 0.35], ["100%", rowsV[j][2], 0.95]]);
       sv("rect", { x: x0, y: yy - 6, width: Math.max(8, w), height: 12, rx: 6, fill: g }, s);
-      txt(s, x0 + Math.max(8, w) + 10, yy + 5, v.toFixed(1), { mono: false, size: 13, weight: "700", fill: "#e6e9ff", anchor: "start", ls: "0" }, s);
+      txt(s, x0 + Math.max(8, w) + 10, yy + 4.5, v.toFixed(1), { mono: false, size: 13, weight: "700", fill: "#e6e9ff", anchor: "start", ls: "0" });
       yy += rh;
     }
     if (term) {
