@@ -114,7 +114,18 @@
   {
    "date": "2026-06-09",
    "score": 57,
-   "regime": "Bull \u00b7 early"
+   "regime": "Bull \u00b7 early",
+   "subs": {
+    "trend": 80.8,
+    "breadth": 91.3,
+    "volatility": 35.7,
+    "yield_curve": 66.0,
+    "credit": 86.6,
+    "sentiment": 27.5,
+    "rotation": 40.5,
+    "currency": 31.8,
+    "liquidity": 55.0
+   }
   }
  ]
 }
