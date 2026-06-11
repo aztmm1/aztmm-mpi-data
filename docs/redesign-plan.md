@@ -1,3 +1,9 @@
+> # ⚠️ SUPERSEDED — 2026-06-11
+> This 5-sprint redesign plan (notably the Sprint-3 midnight-blue/cream/terracotta palette migration) is **retired**.
+> The shipped design system supersedes it: canonical `--az-*` tokens live in `aztmm-pulse-lab/modules/design.php` (`:root`),
+> documented in `aztmm-content-api/TOKENS.md`. Sprint-1 audit items (JSON-LD, mobile bugs) were resolved June 2026.
+> Do not implement anything below without re-validating against the live system.
+
 # AZTMM UI/UX Redesign — Project Plan
 
 **Project owner:** Nikhil Kothari (aztmm1)
