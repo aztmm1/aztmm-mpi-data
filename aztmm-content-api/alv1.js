@@ -120,10 +120,10 @@
         wrap.setAttribute("style", "margin:0 0 22px");
         var NS2 = "http://www.w3.org/2000/svg";
         var s2 = document.createElementNS(NS2, "svg");
-        s2.setAttribute("viewBox", "0 0 380 46"); s2.setAttribute("width", "100%");
+        s2.setAttribute("viewBox", "0 0 380 22"); s2.setAttribute("width", "100%");
         s2.style.maxWidth = "660px"; s2.style.display = "block"; s2.style.margin = "0 auto";
         var segs = [[H, "#10b981", "HIT"], [I, "#ef4444", "INVALIDATED"], [U, "#f59e0b", "UNRESOLVED"], [O, "#64748b", "OPEN"]];
-        var x = 16, w0 = 348, yb = 14;
+        var x = 16, w0 = 348, yb = 5;
         for (var si = 0; si < segs.length; si++) {
           var sw = w0 * segs[si][0] / tot;
           if (sw <= 0) continue;
@@ -133,20 +133,6 @@
           s2.appendChild(rect);
           x += sw;
         }
-        var legend = document.createElementNS(NS2, "text");
-        legend.setAttribute("x", "16"); legend.setAttribute("y", yb + 26); legend.setAttribute("text-anchor", "start");
-        legend.setAttribute("font-size", "7"); legend.setAttribute("fill", "#7e84b5");
-        legend.setAttribute("font-family", "JetBrains Mono, Menlo, monospace"); legend.setAttribute("letter-spacing", "0.1em");
-        var lp = [];
-        for (var li2 = 0; li2 < segs.length; li2++) { if (segs[li2][0] > 0) lp.push(segs[li2][2] + " " + segs[li2][0]); }
-        legend.textContent = lp.join("  ·  ");
-        s2.appendChild(legend);
-        var stamp = document.createElementNS(NS2, "text");
-        stamp.setAttribute("x", "364"); stamp.setAttribute("y", yb + 26); stamp.setAttribute("text-anchor", "end");
-        stamp.setAttribute("font-size", "7"); stamp.setAttribute("fill", "#4f547a");
-        stamp.setAttribute("font-family", "JetBrains Mono, Menlo, monospace"); stamp.setAttribute("letter-spacing", "0.18em");
-        stamp.textContent = "AZTMM · EOD · NEVER REVISED";
-        s2.appendChild(stamp);
         var ti2 = document.createElementNS(NS2, "title");
         ti2.textContent = "Ledger outcomes: " + H + " hit, " + I + " invalidated, " + U + " unresolved, " + O + " open";
         s2.insertBefore(ti2, s2.firstChild);
