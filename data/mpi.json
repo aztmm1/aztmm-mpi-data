@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-06-11T17:02:10Z",
+  "computed_at": "2026-06-11T17:47:20Z",
   "asOf": "2026-06-10",
   "stale_threshold_hours": 18,
   "data": {
@@ -79,8 +79,8 @@
         "ig_oas_pct": 0.75
       },
       "sentiment": {
-        "score": 27.2,
-        "cnn_fg": 27.2
+        "score": 28.5,
+        "cnn_fg": 28.5
       },
       "rotation": {
         "score": 27.4,
