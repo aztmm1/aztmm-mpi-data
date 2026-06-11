@@ -248,6 +248,11 @@ function selectWorkflows(et) {
   if (!isWeekday) return [];
   if (hour === 9 && minute < 30) selected.push(WORKFLOWS.mpi);
   if (hour === 16 && minute >= 30) selected.push(WORKFLOWS.mpi);
+  if (hour === 23 && minute >= 25 && minute < 55) {
+    /* 2026-06-11: backup dispatch for the Accountability Ledger — its own GH cron (23:15 ET)
+       drifts like all GH crons on this repo. The scorer is idempotent, so a double-fire is safe. */
+    selected.push(WORKFLOWS.ledger);
+  }
   if (hour === 17 && minute >= 10 && minute < 50) {
     // 2026-06-10: WORKFLOWS.dailyPulse removed — Pipeline B daily retired (workflow disabled);
     // Daily Pulse is owned by the UW/MCP scheduled task (Pipeline A, 5:05 PM ET).
