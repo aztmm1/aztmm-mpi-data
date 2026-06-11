@@ -56,7 +56,9 @@ jobs:
           python3 - <<'PY'
           import json, os
           mpi = json.load(open('data/mpi.json'))
-          row = {"date": mpi.get("asOf"), "score": mpi["data"]["mpi_score"], "regime": mpi["data"]["regime_label"]}
+          subs = mpi["data"].get("sub_indicators") or {}
+          row = {"date": mpi.get("asOf"), "score": mpi["data"]["mpi_score"], "regime": mpi["data"]["regime_label"],
+                 "subs": {k: (v.get("score") if isinstance(v, dict) else v) for k, v in subs.items()}}
           path = 'data/mpi-history.json'
           hist = {"note": "MPI + regime by session. Appended nightly by ledger-score workflow since 2026-06-10. Never backfilled.", "rows": []}
           if os.path.exists(path):
