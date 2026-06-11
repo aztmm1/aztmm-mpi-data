@@ -109,6 +109,54 @@
     setText("alv1-hr21", pct(payload.hit_rate_21d));
     setText("alv1-ra21", pct(payload.regime_alignment_21d));
 
+    /* v1.1: outcome stacked bar from totals (injected above the table) */
+    try {
+      var tt2 = payload.totals || {};
+      var H = tt2.hit || 0, I = tt2.invalidated || 0, U = tt2.unresolved || 0, O = tt2.open || 0;
+      var tot = H + I + U + O;
+      if (tot > 0 && !document.getElementById("alv1-outbar")) {
+        var wrap = document.createElement("div");
+        wrap.id = "alv1-outbar";
+        wrap.setAttribute("style", "margin:0 0 22px");
+        var NS2 = "http://www.w3.org/2000/svg";
+        var s2 = document.createElementNS(NS2, "svg");
+        s2.setAttribute("viewBox", "0 0 380 56"); s2.setAttribute("width", "100%");
+        s2.style.maxWidth = "660px"; s2.style.display = "block"; s2.style.margin = "0 auto";
+        var segs = [[H, "#10b981", "HIT"], [I, "#ef4444", "INVALIDATED"], [U, "#f59e0b", "UNRESOLVED"], [O, "#64748b", "OPEN"]];
+        var x = 16, w0 = 348, yb = 14;
+        for (var si = 0; si < segs.length; si++) {
+          var sw = w0 * segs[si][0] / tot;
+          if (sw <= 0) continue;
+          var rect = document.createElementNS(NS2, "rect");
+          rect.setAttribute("x", x); rect.setAttribute("y", yb); rect.setAttribute("width", Math.max(2, sw - 1.5)); rect.setAttribute("height", 12); rect.setAttribute("rx", 4);
+          rect.setAttribute("fill", segs[si][1]); rect.setAttribute("opacity", "0.85");
+          s2.appendChild(rect);
+          if (sw > 34) {
+            var tl = document.createElementNS(NS2, "text");
+            tl.setAttribute("x", x + sw / 2); tl.setAttribute("y", yb + 28); tl.setAttribute("text-anchor", "middle");
+            tl.setAttribute("font-size", "7.5"); tl.setAttribute("fill", segs[si][1]);
+            tl.setAttribute("font-family", "JetBrains Mono, Menlo, monospace"); tl.setAttribute("letter-spacing", "0.14em");
+            tl.textContent = segs[si][2] + " " + segs[si][0];
+            s2.appendChild(tl);
+          }
+          x += sw;
+        }
+        var stamp = document.createElementNS(NS2, "text");
+        stamp.setAttribute("x", "364"); stamp.setAttribute("y", "52"); stamp.setAttribute("text-anchor", "end");
+        stamp.setAttribute("font-size", "7"); stamp.setAttribute("fill", "#4f547a");
+        stamp.setAttribute("font-family", "JetBrains Mono, Menlo, monospace"); stamp.setAttribute("letter-spacing", "0.18em");
+        stamp.textContent = "AZTMM · EOD · NEVER REVISED";
+        s2.appendChild(stamp);
+        var ti2 = document.createElementNS(NS2, "title");
+        ti2.textContent = "Ledger outcomes: " + H + " hit, " + I + " invalidated, " + U + " unresolved, " + O + " open";
+        s2.insertBefore(ti2, s2.firstChild);
+        s2.setAttribute("role", "img"); s2.setAttribute("aria-label", ti2.textContent);
+        wrap.appendChild(s2);
+        var statsEl = document.querySelector(".alv1-stats");
+        if (statsEl && statsEl.parentNode) statsEl.parentNode.insertBefore(wrap, statsEl.nextSibling);
+      }
+    } catch (e) {}
+
     var rows = payload.rows;
     if (!rows || !rows.length) { showEmptyState(); return; }
 
@@ -122,7 +170,20 @@
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i] || {};
       var tr = document.createElement("tr");
-      tr.appendChild(td(fmtDMY(r.date) || r.date, "mono"));
+      var dcell = td(fmtDMY(r.date) || r.date, "mono");
+      try {
+        var slug = String(r.id || "").split(":")[0];
+        if (slug && slug.indexOf("pulse") > -1 && r.date) {
+          var dparts = String(r.date).slice(0, 10).split("-");
+          var a2 = document.createElement("a");
+          a2.href = "/" + dparts[0] + "/" + dparts[1] + "/" + dparts[2] + "/" + slug + "/";
+          a2.textContent = dcell.textContent;
+          a2.title = "View the original post (unedited)";
+          a2.setAttribute("style", "color:inherit;text-decoration:underline;text-decoration-color:rgba(34,211,238,0.4);text-underline-offset:3px");
+          dcell.textContent = ""; dcell.appendChild(a2);
+        }
+      } catch (e) {}
+      tr.appendChild(dcell);
       tr.appendChild(td(r.type));
       tr.appendChild(td(r.ticker, "tk"));
       tr.appendChild(td(r.statement));

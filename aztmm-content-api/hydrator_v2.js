@@ -12,7 +12,7 @@
   if (window.__aztmmHydratorV2) return;
   window.__aztmmHydratorV2 = true;
   /* Setting the v1 flag too, so a stray v1 snippet loaded later bails out. */
-  window.__aztmmCanonicalHydrator = "2.0";
+  window.__aztmmCanonicalHydrator = "2.1";
 
   var CANONICAL_URL = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main/data/canonical-content.json";
   var MPI_URL = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main/data/mpi.json";
@@ -141,7 +141,7 @@
       if (v == null) continue;
       if (f) v = fmtDate(v, f);
       el.textContent = String(v);
-      el.setAttribute("data-canonical-applied", "1");
+      el.setAttribute("data-canonical-applied", "1"); el.setAttribute("aria-live", "polite");
     }
     var hrefs = document.querySelectorAll("[data-canonical-href]");
     for (i = 0; i < hrefs.length; i++) {
@@ -177,6 +177,56 @@
       .catch(function () { return null; });
   }
 
+  function drawSparks() {
+    var els = document.querySelectorAll("[data-az-spark]");
+    if (!els.length) return;
+    var ts = Math.floor(Date.now() / (5 * 60 * 1000));
+    fetch("https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main/data/mpi-history.json?ts=" + ts, { cache: "default", credentials: "omit" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (hj) {
+        if (!hj || !hj.rows || hj.rows.length < 2) return;
+        var rows = hj.rows;
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          if (el.getAttribute("data-az-spark-applied")) continue;
+          var W = 110, H = 30, p = 3;
+          var NSx = "http://www.w3.org/2000/svg";
+          var s = document.createElementNS(NSx, "svg");
+          s.setAttribute("viewBox", "0 0 " + W + " " + H);
+          s.setAttribute("width", W); s.setAttribute("height", H);
+          s.style.display = "block";
+          var n = rows.length, min = 100, max = 0, k, v;
+          for (k = 0; k < n; k++) { v = rows[k].score; if (v < min) min = v; if (v > max) max = v; }
+          if (max - min < 8) { var mid = (max + min) / 2; min = mid - 4; max = mid + 4; }
+          function X(idx) { return p + (W - 2 * p) * idx / (n - 1); }
+          function Y(val) { return H - p - (H - 2 * p) * (val - min) / (max - min); }
+          var d = "";
+          for (var j = 0; j < n; j++) { d += (j ? " L " : "M ") + X(j).toFixed(1) + " " + Y(rows[j].score).toFixed(1); }
+          var defs = document.createElementNS(NSx, "defs");
+          var gid = "azspark" + i;
+          var lg = document.createElementNS(NSx, "linearGradient");
+          lg.setAttribute("id", gid); lg.setAttribute("x1", "0"); lg.setAttribute("y1", "0"); lg.setAttribute("x2", "1"); lg.setAttribute("y2", "0");
+          var st1 = document.createElementNS(NSx, "stop"); st1.setAttribute("offset", "0%"); st1.setAttribute("stop-color", "#22d3ee");
+          var st2 = document.createElementNS(NSx, "stop"); st2.setAttribute("offset", "100%"); st2.setAttribute("stop-color", "#a78bfa");
+          lg.appendChild(st1); lg.appendChild(st2); defs.appendChild(lg); s.appendChild(defs);
+          var path = document.createElementNS(NSx, "path");
+          path.setAttribute("d", d); path.setAttribute("stroke", "url(#" + gid + ")");
+          path.setAttribute("stroke-width", "1.6"); path.setAttribute("fill", "none");
+          path.setAttribute("stroke-linejoin", "round"); path.setAttribute("stroke-linecap", "round");
+          s.appendChild(path);
+          var dot = document.createElementNS(NSx, "circle");
+          dot.setAttribute("cx", X(n - 1)); dot.setAttribute("cy", Y(rows[n - 1].score)); dot.setAttribute("r", "2.2"); dot.setAttribute("fill", "#22d3ee");
+          s.appendChild(dot);
+          var ti = document.createElementNS(NSx, "title");
+          ti.textContent = "MPI last " + n + " sessions (" + rows[0].date + " to " + rows[n - 1].date + ")";
+          s.insertBefore(ti, s.firstChild);
+          s.setAttribute("role", "img"); s.setAttribute("aria-label", ti.textContent);
+          el.innerHTML = ""; el.appendChild(s);
+          el.setAttribute("data-az-spark-applied", "1");
+        }
+      }).catch(function () {});
+  }
+
   function dispatchReady(c, m) {
     var ev;
     var detail = { c: c, m: m };
@@ -197,6 +247,7 @@
         window.AZTMM_DATA = { c: c, m: m };
         try { walk(c, m); } catch (e) { /* never break the page */ }
         dispatchReady(c, m);
+        try { drawSparks(); } catch (e) { /* non-fatal */ }
       });
     } catch (e) { /* fetch/Promise unavailable: leave server-rendered defaults */ }
   }

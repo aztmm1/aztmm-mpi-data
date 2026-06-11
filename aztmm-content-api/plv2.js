@@ -180,6 +180,61 @@
     return parts.join(" ");
   }
 
+  /* ------- v2.4 additions: delta chip, copy-reading, desk stamp, a11y ------- */
+  function deskStamp(s, x, y, anchorMode) {
+    var t = sv("text", { x: x, y: y, "text-anchor": anchorMode || "end", "font-size": 7, fill: "#4f547a", "font-family": FMONO, "letter-spacing": "0.18em", opacity: 0.8 }, s);
+    t.textContent = "AZTMM · EOD · NEVER REVISED";
+    return t;
+  }
+  function svgA11y(s, titleStr, descStr) {
+    var ti = document.createElementNS(NS, "title"); ti.textContent = titleStr; s.insertBefore(ti, s.firstChild);
+    if (descStr) { var de = document.createElementNS(NS, "desc"); de.textContent = descStr; s.insertBefore(de, ti.nextSibling); }
+    s.setAttribute("role", "img");
+    s.setAttribute("aria-label", titleStr);
+  }
+  function addDeltaChip(score) {
+    try {
+      var ts = Math.floor(Date.now() / (5 * 60 * 1000));
+      fetch(HISTORY_URL + "?ts=" + ts, { cache: "default", credentials: "omit" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (h) {
+          if (!h || !h.rows || h.rows.length < 2) return;
+          var rows = h.rows, prev = rows[rows.length - 2].score, cur = rows[rows.length - 1].score;
+          if (score != null && Math.round(score) !== Math.round(cur)) { prev = cur; cur = score; }
+          var d = Math.round(cur) - Math.round(prev);
+          if (isNaN(d)) return;
+          var host = $("plv2-score-label"); if (!host || $("plv2-delta")) return;
+          var chip = document.createElement("span");
+          chip.id = "plv2-delta";
+          var col = d > 0 ? "#10b981" : (d < 0 ? "#fb7185" : "#94a3b8");
+          var sym = d > 0 ? "▲ +" + d : (d < 0 ? "▼ " + d : "● 0");
+          chip.setAttribute("style", "display:inline-block;margin-left:8px;font-family:JetBrains Mono,Menlo,monospace;font-size:0.62rem;letter-spacing:0.08em;padding:2px 9px;border-radius:100px;color:" + col + ";border:1px solid " + col + "44;background:" + col + "14;vertical-align:middle");
+          chip.title = "Change vs prior session (" + prev + " → " + cur + ")";
+          host.appendChild(chip);
+          chip.textContent = sym + " VS PRIOR";
+        }).catch(function () {});
+    } catch (e) {}
+  }
+  function addCopyReading(c, m) {
+    var strip = root.querySelector(".plv2-strip");
+    if (!strip || $("plv2-copyread")) return;
+    var score = g(m, "data.mpi_score"); var regime = g(m, "data.regime_label");
+    var lo = g(m, "data.confidence.ci_low"), hi = g(m, "data.confidence.ci_high");
+    var asOf = fmtDMY(g(m, "asOf") || g(c, "mpi.as_of"));
+    if (score == null) return;
+    var txtv = "MPI " + Math.round(score) + " · " + regime + (lo != null ? " · band " + Math.round(lo) + "–" + Math.round(hi) : "") + " · as of " + asOf + " — aztmm.com/pulse-lab";
+    var b = document.createElement("button");
+    b.type = "button"; b.id = "plv2-copyread"; b.textContent = "Copy reading";
+    b.setAttribute("aria-label", "Copy current MPI reading to clipboard");
+    b.setAttribute("style", "font-family:JetBrains Mono,Menlo,monospace !important;font-size:0.6rem !important;letter-spacing:0.1em !important;text-transform:uppercase !important;color:#7e84b5 !important;background:transparent !important;border:1px solid rgba(148,163,184,0.25) !important;border-radius:100px !important;padding:3px 12px !important;margin-left:10px !important;cursor:pointer;box-shadow:none !important;min-height:0 !important;line-height:1.5 !important");
+    b.addEventListener("click", function () {
+      function done() { b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = "Copy reading"; }, 1600); }
+      function fb() { var ta = document.createElement("textarea"); ta.value = txtv; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); done(); }
+      if (navigator.clipboard) { navigator.clipboard.writeText(txtv).then(done, fb); } else { fb(); }
+    });
+    strip.appendChild(b);
+  }
+
   /* ------- hydration ------- */
   var hydrated = false;
   function hydrate(data) {
@@ -297,6 +352,10 @@
     }
 
     if (m) { try { renderRegimeVisuals(m); } catch (e) {} }
+    try { addDeltaChip(score); } catch (e) {}
+    try { addCopyReading(c, m); } catch (e) {}
+    var lr = document.querySelectorAll(".plv2-strip strong, .plv2-gauge-num");
+    for (var li = 0; li < lr.length; li++) { lr[li].setAttribute("aria-live", "polite"); }
   }
 
   function fillPulseList(containerId, recents, kind, excludeId) {
@@ -410,6 +469,7 @@
     /* readout below pivot — needle never crosses it */
     txt(s, cx, cy + 34, regimeLabel || "—", { mono: false, size: 21, weight: "700", fill: "#e6e9ff", ls: "0" });
     if (confText) txt(s, cx, cy + 52, String(confText).toUpperCase(), { size: 9, fill: "#7e84b5", ls: "0.16em" });
+    deskStamp(s, 374, 226); svgA11y(s, "Regime dial: " + (regimeLabel || "no reading"), "Three-zone dial (Crisis, Neutral, Bull). Needle zone follows the regime call; position within zone follows the MPI score.");
     mount.appendChild(s);
   }
   function drawZoneMap(mount, score, lo, hi) {
@@ -437,6 +497,7 @@
     var pw = 44, px = Math.max(x0 + pw / 2, Math.min(x1 - pw / 2, X(score)));
     sv("rect", { x: px - pw / 2, y: y - 44, width: pw, height: 24, rx: 12, fill: "#1a1e3f", stroke: "#3e4682" }, s);
     txt(s, px, y - 27, String(Math.round(score)), { mono: false, size: 15, weight: "700", fill: "#e6e9ff", ls: "0" });
+    deskStamp(s, 374, 128); svgA11y(s, "MPI zone map: score " + Math.round(score), "0-100 band with Bear, Defensive, Mixed and Bull zones, current score marker and confidence band.");
     mount.appendChild(s);
   }
   function regimeColor(rg) {
@@ -495,6 +556,7 @@
     var fd = fmtDMY(rows[0].date) || rows[0].date, ld = fmtDMY(rows[n - 1].date) || rows[n - 1].date;
     txt(s, x0, 172, String(fd).toUpperCase(), { size: 8.5, fill: "#7e84b5", anchor: "start", ls: "0.1em" });
     txt(s, x1, 172, String(ld).toUpperCase(), { size: 8.5, fill: "#7e84b5", anchor: "end", ls: "0.1em" });
+    deskStamp(s, 374, 176); svgA11y(s, "MPI history, " + n + " sessions", "MPI by session with regime-colored ribbon. Reconstructed from committed snapshots, appended nightly, never revised.");
     mount.appendChild(s);
   }
   function drawExpectedMove(mount, spot, em) {
@@ -517,6 +579,7 @@
     txt(s, X(lo), y + 32, lo.toFixed(0), { size: 10, fill: "#7e84b5", ls: "0.05em" });
     txt(s, X(hi), y + 32, hi.toFixed(0), { size: 10, fill: "#7e84b5", ls: "0.05em" });
     txt(s, X(spot), y + 32, "±" + em.toFixed(2) + " · 1σ", { size: 9.5, fill: "#22d3ee", ls: "0.1em" });
+    deskStamp(s, 374, 92); svgA11y(s, "Expected one-sigma move", "SPY spot with the one-standard-deviation expected move band for the next session.");
     mount.appendChild(s);
   }
   function drawVolTerm(mount, vix, vix3m, rv, term) {
@@ -545,6 +608,7 @@
       txt(s, 380 - 24 - tw / 2, 124, String(term).toUpperCase(), { size: 9, fill: "#22d3ee", ls: "0.16em" });
       txt(s, 24, 124, "IMPLIED VS REALIZED", { size: 7.5, fill: "#4f547a", anchor: "start", ls: "0.18em" });
     }
+    deskStamp(s, 374, 128); svgA11y(s, "Volatility term structure", "VIX, VIX3M and 20-day realized volatility bars with term-shape label.");
     mount.appendChild(s);
   }
   var HISTORY_URL = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main/data/mpi-history.json";
