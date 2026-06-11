@@ -324,19 +324,34 @@
   }
 
 
-  /* ------- Regime visuals (v2.1, 2026-06-10): honest SVGs from current feed + growing history ------- */
-  function svgEl(w, h, vb) {
-    var s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    s.setAttribute("viewBox", vb || ("0 0 " + w + " " + h));
+  /* ------- Visuals v2.2 (2026-06-10): refined SVG components ------- */
+  var NS = "http://www.w3.org/2000/svg";
+  var FMONO = "JetBrains Mono, Menlo, monospace";
+  var FDISP = "Space Grotesk, Inter, sans-serif";
+  function svgEl(vb) {
+    var s = document.createElementNS(NS, "svg");
+    s.setAttribute("viewBox", vb);
     s.setAttribute("width", "100%");
     s.style.display = "block";
     return s;
   }
   function sv(tag, attrs, parent) {
-    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    var e = document.createElementNS(NS, tag);
     for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
     if (parent) parent.appendChild(e);
     return e;
+  }
+  function txt(parent, x, y, str, opts) {
+    opts = opts || {};
+    var t = sv("text", { x: x, y: y, "text-anchor": opts.anchor || "middle", "font-size": opts.size || 11, fill: opts.fill || "#7e84b5", "font-family": opts.mono === false ? FDISP : FMONO, "font-weight": opts.weight || "400", "letter-spacing": opts.ls || "0.08em" }, parent);
+    t.textContent = str;
+    return t;
+  }
+  function defsGrad(s, id, stops, x2, y2) {
+    var defs = s.querySelector("defs") || sv("defs", {}, s);
+    var g = sv("linearGradient", { id: id, x1: "0", y1: "0", x2: x2 == null ? "1" : x2, y2: y2 == null ? "0" : y2 }, defs);
+    for (var i = 0; i < stops.length; i++) sv("stop", { offset: stops[i][0], "stop-color": stops[i][1], "stop-opacity": stops[i][2] == null ? 1 : stops[i][2] }, g);
+    return "url(#" + id + ")";
   }
   function polar(cx, cy, r, deg) {
     var rad = (deg - 180) * Math.PI / 180;
@@ -347,144 +362,176 @@
     return "M " + p0[0].toFixed(2) + " " + p0[1].toFixed(2) + " A " + r + " " + r + " 0 " + ((a1 - a0) > 180 ? 1 : 0) + " 1 " + p1[0].toFixed(2) + " " + p1[1].toFixed(2);
   }
   function regimeAngle(label, score) {
-    /* The needle's ZONE is decided by the regime label (the model's call);
-       the position INSIDE the zone is nudged by the MPI score. The label wins —
-       a "Bull" call must point at BULL even when the composite is mid-range. */
     var s = String(label || "").toLowerCase();
-    var zone = 1; /* neutral */
+    var zone = 1;
     if (s.indexOf("crisis") > -1 || s.indexOf("bear") > -1) zone = 0;
     else if (s.indexOf("bull") > -1) zone = 2;
     var t = (score != null && !isNaN(score)) ? Math.max(0, Math.min(100, score)) / 100 : 0.5;
-    var start = [8, 68, 128][zone];
-    return start + t * 44;
+    var start = [10, 70, 130][zone];
+    return start + t * 40;
   }
   function drawDial(mount, regimeLabel, score, confText) {
     if (!mount) return;
     mount.innerHTML = "";
-    var s = svgEl(360, 200, "0 0 360 200");
-    var cx = 180, cy = 178, R = 140;
-    sv("path", { d: arcPath(cx, cy, R, 0, 60),   stroke: "#fb7185", "stroke-width": 18, fill: "none", "stroke-linecap": "round", opacity: 0.85 }, s);
-    sv("path", { d: arcPath(cx, cy, R, 62, 118), stroke: "#f59e0b", "stroke-width": 18, fill: "none", "stroke-linecap": "round", opacity: 0.85 }, s);
-    sv("path", { d: arcPath(cx, cy, R, 120, 180),stroke: "#10b981", "stroke-width": 18, fill: "none", "stroke-linecap": "round", opacity: 0.85 }, s);
-    var lbl = function (deg, txt, col) {
-      var p = polar(cx, cy, R + 26, deg);
-      var t = sv("text", { x: p[0], y: p[1], "text-anchor": "middle", "font-size": 11, fill: col, "font-family": "JetBrains Mono, Menlo, monospace", "letter-spacing": "1" }, s);
-      t.textContent = txt;
-    };
-    lbl(30, "CRISIS", "#fb7185"); lbl(90, "NEUTRAL", "#f59e0b"); lbl(150, "BULL", "#10b981");
-    var ang = regimeAngle(regimeLabel, score);
-    var tip = polar(cx, cy, R - 24, ang);
-    sv("line", { x1: cx, y1: cy, x2: tip[0], y2: tip[1], stroke: "#e6e9ff", "stroke-width": 3.5, "stroke-linecap": "round" }, s);
-    sv("circle", { cx: cx, cy: cy, r: 7, fill: "#e6e9ff" }, s);
-    var t2 = sv("text", { x: cx, y: cy - 38, "text-anchor": "middle", "font-size": 20, "font-weight": "700", fill: "#e6e9ff", "font-family": "Space Grotesk, sans-serif" }, s);
-    t2.textContent = regimeLabel || "—";
-    if (confText) {
-      var t3 = sv("text", { x: cx, y: cy - 16, "text-anchor": "middle", "font-size": 11, fill: "#7e84b5", "font-family": "JetBrains Mono, Menlo, monospace" }, s);
-      t3.textContent = confText;
+    var s = svgEl("0 0 380 230");
+    var cx = 190, cy = 168, R = 118;
+    /* soft halo */
+    sv("path", { d: arcPath(cx, cy, R, 4, 176), stroke: "#1e2244", "stroke-width": 26, fill: "none", "stroke-linecap": "round", opacity: 0.55 }, s);
+    /* zones — thin, luminous */
+    var zones = [[6, 62, "#fb7185"], [66, 114, "#f59e0b"], [118, 174, "#10b981"]];
+    for (var i = 0; i < zones.length; i++) {
+      sv("path", { d: arcPath(cx, cy, R, zones[i][0], zones[i][1]), stroke: zones[i][2], "stroke-width": 16, fill: "none", "stroke-linecap": "round", opacity: 0.16 }, s);
+      sv("path", { d: arcPath(cx, cy, R, zones[i][0], zones[i][1]), stroke: zones[i][2], "stroke-width": 7, fill: "none", "stroke-linecap": "round", opacity: 0.95 }, s);
     }
+    /* zone labels — anchored outside, never clipped */
+    var pl = polar(cx, cy, R + 30, 30);
+    txt(s, pl[0] + 4, pl[1] + 14, "CRISIS", { size: 10, fill: "#fb7185", ls: "0.18em" });
+    var pn = polar(cx, cy, R + 30, 90);
+    txt(s, pn[0], pn[1] + 2, "NEUTRAL", { size: 10, fill: "#f59e0b", ls: "0.18em" });
+    var pb = polar(cx, cy, R + 30, 150);
+    txt(s, pb[0] - 4, pb[1] + 14, "BULL", { size: 10, fill: "#10b981", ls: "0.18em" });
+    /* needle */
+    var ang = regimeAngle(regimeLabel, score);
+    var tip = polar(cx, cy, R - 16, ang);
+    var tail = polar(cx, cy, 14, ang + 180);
+    sv("line", { x1: tail[0], y1: tail[1], x2: tip[0], y2: tip[1], stroke: "#e6e9ff", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
+    sv("circle", { cx: tip[0], cy: tip[1], r: 4.5, fill: "#e6e9ff" }, s);
+    sv("circle", { cx: tip[0], cy: tip[1], r: 9, fill: "none", stroke: "#e6e9ff", "stroke-width": 1, opacity: 0.35 }, s);
+    sv("circle", { cx: cx, cy: cy, r: 6, fill: "#1a1e3f", stroke: "#e6e9ff", "stroke-width": 2 }, s);
+    /* readout below pivot — needle never crosses it */
+    txt(s, cx, cy + 34, regimeLabel || "—", { mono: false, size: 21, weight: "700", fill: "#e6e9ff", ls: "0" });
+    if (confText) txt(s, cx, cy + 52, String(confText).toUpperCase(), { size: 9, fill: "#7e84b5", ls: "0.16em" });
     mount.appendChild(s);
   }
   function drawZoneMap(mount, score, lo, hi) {
     if (!mount || score == null || isNaN(score)) return;
     mount.innerHTML = "";
-    var s = svgEl(360, 96, "0 0 360 96");
-    var x0 = 16, x1 = 344, y = 44, h = 14;
+    var s = svgEl("0 0 380 120");
+    var x0 = 24, x1 = 356, y = 64, h = 10;
     var X = function (v) { return x0 + (x1 - x0) * Math.max(0, Math.min(100, v)) / 100; };
     var zones = [[0, 30, "#fb7185", "BEAR"], [30, 50, "#f59e0b", "DEFENSIVE"], [50, 70, "#94a3b8", "MIXED"], [70, 100, "#10b981", "BULL"]];
+    sv("rect", { x: x0 - 4, y: y - 4, width: x1 - x0 + 8, height: h + 8, rx: 9, fill: "#0d0f26", stroke: "#1e2244" }, s);
     for (var i = 0; i < zones.length; i++) {
       var z = zones[i];
-      sv("rect", { x: X(z[0]), y: y, width: X(z[1]) - X(z[0]) - 2, height: h, rx: 4, fill: z[2], opacity: 0.32 }, s);
-      var t = sv("text", { x: (X(z[0]) + X(z[1])) / 2, y: y + h + (i % 2 ? 30 : 18), "text-anchor": "middle", "font-size": 9, fill: z[2], "font-family": "JetBrains Mono, Menlo, monospace", "letter-spacing": "1" }, s);
-      t.textContent = z[3];
+      sv("rect", { x: X(z[0]) + 1, y: y, width: X(z[1]) - X(z[0]) - 2, height: h, rx: 5, fill: z[2], opacity: 0.55 }, s);
+      txt(s, (X(z[0]) + X(z[1])) / 2, y + 32, z[3], { size: 8.5, fill: z[2], ls: "0.14em" });
     }
     if (lo != null && hi != null && !isNaN(lo) && !isNaN(hi)) {
-      sv("rect", { x: X(lo), y: y - 5, width: Math.max(2, X(hi) - X(lo)), height: h + 10, rx: 5, fill: "none", stroke: "#a78bfa", "stroke-width": 1.5, "stroke-dasharray": "4 3", opacity: 0.9 }, s);
+      sv("rect", { x: X(lo), y: y - 12, width: Math.max(2, X(hi) - X(lo)), height: h + 24, rx: 6, fill: "#a78bfa", opacity: 0.10 }, s);
+      sv("line", { x1: X(lo), y1: y - 12, x2: X(lo), y2: y + h + 12, stroke: "#a78bfa", "stroke-width": 1, opacity: 0.55 }, s);
+      sv("line", { x1: X(hi), y1: y - 12, x2: X(hi), y2: y + h + 12, stroke: "#a78bfa", "stroke-width": 1, opacity: 0.55 }, s);
+      txt(s, (X(lo) + X(hi)) / 2, y + 50, "CONFIDENCE BAND " + Math.round(lo) + "–" + Math.round(hi), { size: 8, fill: "#a78bfa", ls: "0.14em" });
     }
-    sv("line", { x1: X(score), y1: y - 12, x2: X(score), y2: y + h + 6, stroke: "#e6e9ff", "stroke-width": 3, "stroke-linecap": "round" }, s);
-    var tt = sv("text", { x: X(score), y: y - 18, "text-anchor": "middle", "font-size": 15, "font-weight": "700", fill: "#e6e9ff", "font-family": "Space Grotesk, sans-serif" }, s);
-    tt.textContent = Math.round(score);
+    /* score marker + pill */
+    sv("line", { x1: X(score), y1: y - 16, x2: X(score), y2: y + h + 8, stroke: "#e6e9ff", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
+    var pw = 44, px = Math.max(x0 + pw / 2, Math.min(x1 - pw / 2, X(score)));
+    sv("rect", { x: px - pw / 2, y: y - 44, width: pw, height: 24, rx: 12, fill: "#1a1e3f", stroke: "#3e4682" }, s);
+    txt(s, px, y - 27, String(Math.round(score)), { mono: false, size: 15, weight: "700", fill: "#e6e9ff", ls: "0" });
+    mount.appendChild(s);
+  }
+  function regimeColor(rg) {
+    var s = String(rg || "").toLowerCase();
+    if (s.indexOf("crisis") > -1 || s.indexOf("bear") > -1) return "#fb7185";
+    if (s.indexOf("bull") > -1) return "#10b981";
+    return "#f59e0b";
+  }
+  function drawHistory(mount, note, rows, gradId) {
+    if (!mount) return;
+    mount.innerHTML = "";
+    if (!rows || rows.length < 2) {
+      if (note) note.textContent = "Recording in progress — the chart draws once at least two sessions are on record.";
+      return;
+    }
+    if (note) note.textContent = "Each point is the MPI actually published that session, colored by that day's regime call. Reconstructed from committed snapshots; appended nightly; never revised.";
+    var s = svgEl("0 0 380 180");
+    var x0 = 34, x1 = 366, y0 = 16, y1 = 128;
+    var n = rows.length;
+    var X = function (i) { return x0 + (x1 - x0) * (n === 1 ? 0.5 : i / (n - 1)); };
+    var Y = function (v) { return y1 - (y1 - y0) * Math.max(0, Math.min(100, v)) / 100; };
+    var grid = [30, 50, 70];
+    for (var gI = 0; gI < grid.length; gI++) {
+      sv("line", { x1: x0, y1: Y(grid[gI]), x2: x1, y2: Y(grid[gI]), stroke: "#1e2244", "stroke-width": 1, "stroke-dasharray": "2 5" }, s);
+      txt(s, x0 - 8, Y(grid[gI]) + 3, String(grid[gI]), { size: 9, fill: "#4f547a", anchor: "end", ls: "0" });
+    }
+    /* smooth path (monotone-ish bezier) */
+    var pts = [];
+    for (var i2 = 0; i2 < n; i2++) pts.push([X(i2), Y(rows[i2].score)]);
+    var d = "M " + pts[0][0].toFixed(1) + " " + pts[0][1].toFixed(1);
+    for (var i3 = 1; i3 < n; i3++) {
+      var p0 = pts[i3 - 1], p1 = pts[i3];
+      var mx = (p0[0] + p1[0]) / 2;
+      d += " C " + mx.toFixed(1) + " " + p0[1].toFixed(1) + " " + mx.toFixed(1) + " " + p1[1].toFixed(1) + " " + p1[0].toFixed(1) + " " + p1[1].toFixed(1);
+    }
+    var lineGrad = defsGrad(s, gradId + "-l", [["0%", "#22d3ee"], ["100%", "#a78bfa"]]);
+    var areaGrad = defsGrad(s, gradId + "-a", [["0%", "#22d3ee", 0.20], ["100%", "#22d3ee", 0]], 0, 1);
+    sv("path", { d: d + " L " + pts[n - 1][0].toFixed(1) + " " + y1 + " L " + pts[0][0].toFixed(1) + " " + y1 + " Z", fill: areaGrad }, s);
+    sv("path", { d: d, stroke: lineGrad, "stroke-width": 2.2, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, s);
+    /* regime ribbon under axis */
+    var seg = (x1 - x0) / n;
+    for (var k = 0; k < n; k++) {
+      sv("rect", { x: x0 + k * seg + 0.5, y: y1 + 10, width: Math.max(1.5, seg - 1), height: 5, rx: 2.5, fill: regimeColor(rows[k].regime), opacity: 0.8 }, s);
+    }
+    txt(s, x0, y1 + 32, "REGIME", { size: 7.5, fill: "#4f547a", anchor: "start", ls: "0.2em" });
+    /* last point emphasis */
+    var lp = pts[n - 1];
+    sv("circle", { cx: lp[0], cy: lp[1], r: 4, fill: "#22d3ee" }, s);
+    sv("circle", { cx: lp[0], cy: lp[1], r: 8.5, fill: "none", stroke: "#22d3ee", "stroke-width": 1, opacity: 0.4 }, s);
+    txt(s, Math.min(lp[0], x1 - 14), lp[1] - 12, String(Math.round(rows[n - 1].score)), { mono: false, size: 13, weight: "700", fill: "#e6e9ff", ls: "0" });
+    /* date range */
+    var fd = fmtDMY(rows[0].date) || rows[0].date, ld = fmtDMY(rows[n - 1].date) || rows[n - 1].date;
+    txt(s, x0, 172, String(fd).toUpperCase(), { size: 8.5, fill: "#7e84b5", anchor: "start", ls: "0.1em" });
+    txt(s, x1, 172, String(ld).toUpperCase(), { size: 8.5, fill: "#7e84b5", anchor: "end", ls: "0.1em" });
     mount.appendChild(s);
   }
   function drawExpectedMove(mount, spot, em) {
     if (!mount || spot == null || em == null || isNaN(spot) || isNaN(em)) return;
     mount.innerHTML = "";
-    var s = svgEl(360, 92, "0 0 360 92");
-    var x0 = 26, x1 = 334, y = 40;
-    var lo = spot - em, hi = spot + em, pad = em * 0.45;
+    var s = svgEl("0 0 380 96");
+    var x0 = 36, x1 = 344, y = 50;
+    var lo = spot - em, hi = spot + em, pad = em * 0.5;
     var min = lo - pad, max = hi + pad;
     var X = function (v) { return x0 + (x1 - x0) * (v - min) / (max - min); };
-    sv("line", { x1: x0, y1: y, x2: x1, y2: y, stroke: "#2a3057", "stroke-width": 2 }, s);
-    sv("rect", { x: X(lo), y: y - 11, width: X(hi) - X(lo), height: 22, rx: 11, fill: "#22d3ee", opacity: 0.16 }, s);
-    sv("rect", { x: X(lo), y: y - 11, width: X(hi) - X(lo), height: 22, rx: 11, fill: "none", stroke: "#22d3ee", "stroke-width": 1, opacity: 0.5 }, s);
-    sv("line", { x1: X(spot), y1: y - 16, x2: X(spot), y2: y + 16, stroke: "#e6e9ff", "stroke-width": 3, "stroke-linecap": "round" }, s);
-    var lab = function (x, ytxt, txt, col, size, w) {
-      var t = sv("text", { x: x, y: ytxt, "text-anchor": "middle", "font-size": size || 11, fill: col, "font-family": "JetBrains Mono, Menlo, monospace", "font-weight": w || "400" }, s);
-      t.textContent = txt; return t;
-    };
-    lab(X(spot), y - 24, "SPY " + spot.toFixed(2), "#e6e9ff", 13, "700");
-    lab(X(lo), y + 34, lo.toFixed(0), "#7e84b5");
-    lab(X(hi), y + 34, hi.toFixed(0), "#7e84b5");
-    lab((x0 + x1) / 2, y + 34, "±" + em.toFixed(2) + " (1σ)", "#22d3ee");
+    sv("line", { x1: x0 - 8, y1: y, x2: x1 + 8, y2: y, stroke: "#1e2244", "stroke-width": 1.5 }, s);
+    var bandGrad = defsGrad(s, "plv2em-g", [["0%", "#22d3ee", 0.05], ["50%", "#22d3ee", 0.28], ["100%", "#22d3ee", 0.05]]);
+    sv("rect", { x: X(lo), y: y - 9, width: X(hi) - X(lo), height: 18, rx: 9, fill: bandGrad }, s);
+    sv("line", { x1: X(lo), y1: y - 13, x2: X(lo), y2: y + 13, stroke: "#22d3ee", "stroke-width": 1.5, opacity: 0.8 }, s);
+    sv("line", { x1: X(hi), y1: y - 13, x2: X(hi), y2: y + 13, stroke: "#22d3ee", "stroke-width": 1.5, opacity: 0.8 }, s);
+    sv("line", { x1: X(spot), y1: y - 17, x2: X(spot), y2: y + 17, stroke: "#e6e9ff", "stroke-width": 2.5, "stroke-linecap": "round" }, s);
+    txt(s, X(spot), y - 26, "SPY " + spot.toFixed(2), { mono: false, size: 14, weight: "700", fill: "#e6e9ff", ls: "0" });
+    txt(s, X(lo), y + 32, lo.toFixed(0), { size: 10, fill: "#7e84b5", ls: "0.05em" });
+    txt(s, X(hi), y + 32, hi.toFixed(0), { size: 10, fill: "#7e84b5", ls: "0.05em" });
+    txt(s, X(spot), y + 32, "±" + em.toFixed(2) + " · 1σ", { size: 9.5, fill: "#22d3ee", ls: "0.1em" });
     mount.appendChild(s);
   }
   function drawVolTerm(mount, vix, vix3m, rv, term) {
     if (!mount || vix == null || isNaN(vix)) return;
     mount.innerHTML = "";
-    var s = svgEl(360, 130, "0 0 360 130");
-    var vals = [["VIX", vix, "#fb7185"], ["VIX3M", vix3m, "#f59e0b"], ["RV 20D", rv, "#7e84b5"]];
+    var s = svgEl("0 0 380 132");
+    var rowsV = [["VIX", vix, "#fb7185"], ["VIX3M", vix3m, "#f59e0b"], ["RV 20D", rv, "#8b8fd8"]];
     var max = 0;
-    for (var i = 0; i < vals.length; i++) { if (vals[i][1] != null && vals[i][1] > max) max = vals[i][1]; }
-    max = max * 1.25 || 1;
-    var bw = 64, gap = 44, x = 42, base = 96;
-    for (var j = 0; j < vals.length; j++) {
-      var v = vals[j][1];
+    for (var i = 0; i < rowsV.length; i++) { if (rowsV[i][1] != null && rowsV[i][1] > max) max = rowsV[i][1]; }
+    max = max * 1.18 || 1;
+    var x0 = 78, x1 = 318, yy = 22, rh = 30;
+    for (var j = 0; j < rowsV.length; j++) {
+      var v = rowsV[j][1];
       if (v == null || isNaN(v)) continue;
-      var h = Math.max(4, 70 * v / max);
-      sv("rect", { x: x, y: base - h, width: bw, height: h, rx: 5, fill: vals[j][2], opacity: 0.78 }, s);
-      var t = sv("text", { x: x + bw / 2, y: base - h - 8, "text-anchor": "middle", "font-size": 13, "font-weight": "700", fill: "#e6e9ff", "font-family": "Space Grotesk, sans-serif" }, s);
-      t.textContent = v.toFixed(1);
-      var t2 = sv("text", { x: x + bw / 2, y: base + 16, "text-anchor": "middle", "font-size": 9, fill: "#7e84b5", "font-family": "JetBrains Mono, Menlo, monospace", "letter-spacing": "1" }, s);
-      t2.textContent = vals[j][0];
-      x += bw + gap;
+      var w = (x1 - x0) * v / max;
+      txt(s, x0 - 10, yy + 5, rowsV[j][0], { size: 9, fill: "#7e84b5", anchor: "end", ls: "0.12em" });
+      sv("rect", { x: x0, y: yy - 6, width: x1 - x0, height: 12, rx: 6, fill: "#0d0f26", stroke: "#1e2244" }, s);
+      var g = defsGrad(s, "plv2vt" + j, [["0%", rowsV[j][2], 0.35], ["100%", rowsV[j][2], 0.95]]);
+      sv("rect", { x: x0, y: yy - 6, width: Math.max(8, w), height: 12, rx: 6, fill: g }, s);
+      txt(s, x0 + Math.max(8, w) + 10, yy + 5, v.toFixed(1), { mono: false, size: 13, weight: "700", fill: "#e6e9ff", anchor: "start", ls: "0" }, s);
+      yy += rh;
     }
     if (term) {
-      var t3 = sv("text", { x: 180, y: 124, "text-anchor": "middle", "font-size": 10, fill: "#22d3ee", "font-family": "JetBrains Mono, Menlo, monospace", "letter-spacing": "1.5" }, s);
-      t3.textContent = String(term).toUpperCase();
+      var tw = String(term).length * 7.5 + 28;
+      sv("rect", { x: 380 - 24 - tw, y: 110, width: tw, height: 20, rx: 10, fill: "rgba(34,211,238,0.08)", stroke: "rgba(34,211,238,0.35)" }, s);
+      txt(s, 380 - 24 - tw / 2, 124, String(term).toUpperCase(), { size: 9, fill: "#22d3ee", ls: "0.16em" });
+      txt(s, 24, 124, "IMPLIED VS REALIZED", { size: 7.5, fill: "#4f547a", anchor: "start", ls: "0.18em" });
     }
     mount.appendChild(s);
   }
-  function drawHistory(mount, note, rows) {
-    if (!mount) return;
-    if (!rows || rows.length < 5) {
-      mount.innerHTML = "";
-      if (note) note.textContent = "Recording began 10 June 2026 — the regime timeline draws itself here once five sessions accumulate. No backfilled history, no hindsight.";
-      return;
-    }
-    mount.innerHTML = "";
-    if (note) note.textContent = "MPI by session, colored by that day's regime call. Recorded daily since 10 June 2026 — never backfilled.";
-    var s = svgEl(360, 140, "0 0 360 140");
-    var x0 = 30, x1 = 348, y0 = 14, y1 = 112;
-    var n = rows.length;
-    var X = function (i) { return x0 + (x1 - x0) * (n === 1 ? 0.5 : i / (n - 1)); };
-    var Y = function (v) { return y1 - (y1 - y0) * Math.max(0, Math.min(100, v)) / 100; };
-    [30, 50, 70].forEach(function (g) {
-      sv("line", { x1: x0, y1: Y(g), x2: x1, y2: Y(g), stroke: "#2a3057", "stroke-width": 1, "stroke-dasharray": "3 4" }, s);
-      var t = sv("text", { x: x0 - 6, y: Y(g) + 3, "text-anchor": "end", "font-size": 9, fill: "#4f547a", "font-family": "JetBrains Mono, Menlo, monospace" }, s);
-      t.textContent = g;
-    });
-    var d = "";
-    for (var i = 0; i < n; i++) { d += (i ? " L " : "M ") + X(i).toFixed(1) + " " + Y(rows[i].score).toFixed(1); }
-    sv("path", { d: d, stroke: "#22d3ee", "stroke-width": 2, fill: "none", "stroke-linejoin": "round" }, s);
-    for (var k = 0; k < n; k++) {
-      var rg = String(rows[k].regime || "").toLowerCase();
-      var col = rg.indexOf("crisis") > -1 || rg.indexOf("bear") > -1 ? "#fb7185" : (rg.indexOf("bull") > -1 ? "#10b981" : "#f59e0b");
-      sv("circle", { cx: X(k), cy: Y(rows[k].score), r: 3.4, fill: col }, s);
-    }
-    var first = rows[0].date, last = rows[n - 1].date;
-    var tA = sv("text", { x: x0, y: 132, "font-size": 9, fill: "#7e84b5", "font-family": "JetBrains Mono, Menlo, monospace" }, s); tA.textContent = first;
-    var tB = sv("text", { x: x1, y: 132, "text-anchor": "end", "font-size": 9, fill: "#7e84b5", "font-family": "JetBrains Mono, Menlo, monospace" }, s); tB.textContent = last;
-    mount.appendChild(s);
-  }
+  var HISTORY_URL = "https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main/data/mpi-history.json";
   function renderRegimeVisuals(m) {
     var regimeLabel = g(m, "data.regime_label");
     var score = g(m, "data.mpi_score");
@@ -494,17 +541,17 @@
     drawZoneMap($("plv2-rg-zone"), score, lo, hi);
     drawExpectedMove($("plv2-rg-em"), g(m, "data.market.spy_spot"), g(m, "data.market.expected_move_1sigma"));
     drawVolTerm($("plv2-rg-vol"), g(m, "data.volatility.vix"), g(m, "data.volatility.vix3m"), g(m, "data.volatility.realized_vol_20d_pct"), g(m, "data.volatility.term_shape"));
-    /* growing history (recorded nightly from 2026-06-10; tolerate absence) */
     try {
       var ts = Math.floor(Date.now() / (5 * 60 * 1000));
-      fetch("https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/main/data/mpi-history.json?ts=" + ts, { cache: "default", credentials: "omit" })
+      fetch(HISTORY_URL + "?ts=" + ts, { cache: "default", credentials: "omit" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (hjs) {
           var rows = (hjs && hjs.rows) || null;
-          drawHistory($("plv2-rg-hist"), $("plv2-rg-hist-note"), rows);
+          drawHistory($("plv2-rg-hist"), $("plv2-rg-hist-note"), rows, "plv2rgh");
+          drawHistory($("plv2-mpi-hist"), $("plv2-mpi-hist-note"), rows, "plv2mph");
         })
-        .catch(function () { drawHistory($("plv2-rg-hist"), $("plv2-rg-hist-note"), null); });
-    } catch (e) { drawHistory($("plv2-rg-hist"), $("plv2-rg-hist-note"), null); }
+        .catch(function () {});
+    } catch (e) {}
   }
 
   /* always show next-update date, even before data lands */
