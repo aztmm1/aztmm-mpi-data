@@ -85,6 +85,70 @@ jobs:
             git push
           fi
 
+# --- OG card generation steps -----------------------------------------------
+# Insert into an existing GitHub Actions job that has already run
+# actions/checkout (with a token allowed to push) and actions/setup-python
+# (3.11). Assumes render_og.py lives at scripts/render_og.py in the repo —
+# adjust RENDER_SCRIPT below if you place it elsewhere.
+
+      - name: Install OG card dependencies
+        run: pip install cairosvg
+
+      - name: Generate missing OG cards
+        env:
+          RENDER_SCRIPT: scripts/render_og.py
+          OG_DIR: aztmm-content-api/og
+        run: |
+          python3 - <<'PY'
+          import html, json, os, subprocess, sys, urllib.request
+
+          og_dir = os.environ["OG_DIR"]
+          script = os.environ["RENDER_SCRIPT"]
+          os.makedirs(og_dir, exist_ok=True)
+
+          def fetch(url):
+              req = urllib.request.Request(url, headers={"User-Agent": "aztmm-og-bot"})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.loads(r.read().decode("utf-8"))
+
+          posts = fetch("https://public-api.wordpress.com/wp/v2/sites/aztmm.com/posts"
+                        "?per_page=6&_fields=slug,title,date")
+          canon = fetch("https://raw.githubusercontent.com/aztmm1/aztmm-mpi-data/"
+                        "main/data/canonical-content.json")
+          mpi = canon.get("mpi", {})
+          score = str(mpi.get("score", "—"))
+          regime = str(mpi.get("regime", "—"))
+
+          failures = 0
+          for post in posts:
+              slug = post["slug"]
+              out = os.path.join(og_dir, f"{slug}.png")
+              if os.path.exists(out):
+                  print(f"[skip] {slug}")
+                  continue
+              title = html.unescape(post["title"]["rendered"])
+              date = post["date"][:10]  # YYYY-MM-DD
+              cmd = [sys.executable, script,
+                     "--slug", slug, "--title", title, "--date", date,
+                     "--mpi", score, "--regime", regime, "--outdir", og_dir]
+              if subprocess.run(cmd).returncode != 0:
+                  failures += 1
+                  print(f"[error] render failed for {slug}", file=sys.stderr)
+          sys.exit(1 if failures else 0)
+          PY
+
+      - name: Commit OG cards
+        run: |
+          git add aztmm-content-api/og
+          if git diff --cached --quiet; then
+            echo "No new OG cards — skipping commit."
+          else
+            git config user.name "aztmm-og-bot"
+            git config user.email "actions@github.com"
+            git commit -m "og: cards $(date -u +%F) [skip ci]"
+            git push
+          fi
+# --- end OG card generation steps --------------------------------------------
       - name: Regenerate canonical content (if builder present)
         if: ${{ inputs.dry_run != true }}
         run: |
