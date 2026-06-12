@@ -341,7 +341,7 @@ async function checkSiteWiring(env) {
     ]);
     if (!pageRes.ok) return { slug: "site-wiring", status: "STALE", error: "home HTTP " + pageRes.status };
     const html = await pageRes.text();
-    const hasV2 = html.indexOf("__aztmmCanonicalHydrator") !== -1 && html.indexOf('"2.0"') !== -1;
+    const hasV2 = html.indexOf("__aztmmCanonicalHydrator") !== -1 && html.indexOf('"2.') !== -1; /* any 2.x */
     const hasKeys = html.indexOf("data-canonical-key") !== -1;
     const canonOk = canonRes.ok && canonRes.data && canonRes.data.mpi && canonRes.data.mpi.as_of;
     if (hasV2 && hasKeys && canonOk) return { slug: "site-wiring", status: "fresh", date: canonRes.data.mpi.as_of };
