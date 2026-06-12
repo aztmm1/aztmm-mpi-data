@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T22:29:08Z",
+  "generated_at": "2026-06-12T23:07:03Z",
   "mpi": {
     "score": 59,
     "regime": "Bull \u00b7 early",
-    "as_of": "2026-06-11",
-    "computed_at": "2026-06-12T17:16:57Z",
+    "as_of": "2026-06-12",
+    "computed_at": "2026-06-12T22:40:41Z",
     "confidence": 0.85,
     "confidence_band": [
       54,
@@ -13,17 +13,17 @@
     ]
   },
   "market": {
-    "spy_close": 737.76,
+    "spy_close": 741.75,
     "vix": 19.44,
-    "rv_30d": 15.29,
-    "vrp": 4.15
+    "rv_30d": 15.14,
+    "vrp": 4.3
   },
   "latest_daily_pulse": {
-    "id": 2955,
-    "url": "https://aztmm.com/2026/06/11/daily-pulse-options-flow-dark-pool-11-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 June 2026",
-    "date": "2026-06-11",
-    "snippet": "Risk-on Thursday: QQQ ripped +3.4% and SPY +1.7% as VIX broke back under 20, while the flow tape showed call selling into strength, December SPX hedges getting built, and a $300M AVGO dark-pool block at the close.",
+    "id": 2963,
+    "url": "https://aztmm.com/2026/06/12/daily-pulse-options-flow-dark-pool-12-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 June 2026",
+    "date": "2026-06-12",
+    "snippet": "Indices grind higher into opex week as VIX breaks back to a 17-handle, market-wide flow leans call-heavy, and the dark-pool tape closes with size blocks in SPY, TSLA, and QQQ.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 2963,
+      "url": "https://aztmm.com/2026/06/12/daily-pulse-options-flow-dark-pool-12-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 June 2026",
+      "date": "2026-06-12",
+      "snippet": "Indices grind higher into opex week as VIX breaks back to a 17-handle, market-wide flow leans call-heavy, and the dark-pool tape closes with size blocks in SPY, TSLA, and QQQ.",
+      "kind": "daily"
+    },
     {
       "id": 2955,
       "url": "https://aztmm.com/2026/06/11/daily-pulse-options-flow-dark-pool-11-june-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-06-09",
       "snippet": "Call-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
       "kind": "daily"
-    },
-    {
-      "id": 2880,
-      "url": "https://aztmm.com/2026/06/06/weekly-pulse-2026-06-01-to-2026-06-05/",
-      "title": "Weekly Pulse \u2014 Week of June 1-5, 2026",
-      "date": "2026-06-06",
-      "snippet": "Bull \u00b7 early regime held while growth got sold. Energy and Health Care led, Discretionary and Tech lagged into Friday&#8217;s payrolls gap-down. SPY -2.50% on the week, MPI 64.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
