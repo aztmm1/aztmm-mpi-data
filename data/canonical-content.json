@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-13T14:57:55Z",
+  "generated_at": "2026-06-14T09:24:10Z",
   "mpi": {
     "score": 59,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 2880,
-    "url": "https://aztmm.com/2026/06/06/weekly-pulse-2026-06-01-to-2026-06-05/",
-    "title": "Weekly Pulse \u2014 Week of June 1-5, 2026",
-    "date": "2026-06-06",
-    "snippet": "Bull \u00b7 early regime held while growth got sold. Energy and Health Care led, Discretionary and Tech lagged into Friday&#8217;s payrolls gap-down. SPY -2.50% on the week, MPI 64.",
+    "id": 2967,
+    "url": "https://aztmm.com/2026/06/13/weekly-pulse-2026-06-08-to-2026-06-12/",
+    "title": "Weekly Pulse \u2014 Week of June 8\u201312, 2026",
+    "date": "2026-06-13",
+    "snippet": "Sideways regime held; net call premium 2.2x put across 5 sessions; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 2967,
+      "url": "https://aztmm.com/2026/06/13/weekly-pulse-2026-06-08-to-2026-06-12/",
+      "title": "Weekly Pulse \u2014 Week of June 8\u201312, 2026",
+      "date": "2026-06-13",
+      "snippet": "Sideways regime held; net call premium 2.2x put across 5 sessions; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 2963,
       "url": "https://aztmm.com/2026/06/12/daily-pulse-options-flow-dark-pool-12-june-2026/",
@@ -66,19 +74,11 @@
       "date": "2026-06-09",
       "snippet": "An intraday air pocket that closed mostly healed: SPY \u22120.29%, QQQ \u22121.15%, VIX back over 19, with index put hedging stacked over single-name call appetite in MU, VST, and AMZN.",
       "kind": "daily"
-    },
-    {
-      "id": 2903,
-      "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-2026-06-08/",
-      "title": "AZTMM Closing Pulse \u00b7 Monday June 8, 2026",
-      "date": "2026-06-09",
-      "snippet": "Call-heavy tape; Materials led (+0.00%); no single-name positioning stood out.",
-      "kind": "daily"
     }
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-06-13 5:00 PM ET",
+      "as_of": "2026-06-14 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
