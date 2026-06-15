@@ -385,11 +385,26 @@ async function checkMpiTarget(env, target, etDate) {
   // at 16:30 ET, plus ~20-30min of run+commit).
   const postCloseEOD = !weekendSkip && (etParts.hour >= 17);
   const weekdayPreClose = !weekendSkip && !postCloseEOD;
+  // PRIOR completed trading bar (the one a pre-close run on a weekday legitimately
+  // reflects). On Mon AM, this is Fri. On Tue-Fri AM, this is the previous weekday.
+  // lastTradingDayStr returns etDate itself if etDate is M-F, so we walk back one
+  // weekday to get the previous bar.
+  const priorTradingDay = (function(){
+    let d = new Date(etDate + "T12:00:00Z");
+    d.setUTCDate(d.getUTCDate() - 1);
+    while (d.getUTCDay() === 0 || d.getUTCDay() === 6) {
+      d.setUTCDate(d.getUTCDate() - 1);
+    }
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+  })();
 
   const base = {
     slug: target.slug, date: foundDate, todayHash, yesterdayHash, numbersMatched,
     computed_at: computedAt, pipelineAgeHours: pipelineAgeHours == null ? null : Number(pipelineAgeHours.toFixed(2)),
-    weekendSkip, postCloseEOD
+    weekendSkip, postCloseEOD, priorTradingDay
   };
 
   if (!foundDate) return { ...base, status: "no_date_field" };
@@ -410,13 +425,14 @@ async function checkMpiTarget(env, target, etDate) {
     return { ...base, status: "STALE", expected: lastTd, reason: "weekend_data_older_than_friday" };
   }
 
-  // (3) WEEKDAY PRE-CLOSE: accept lastTd OR today. Suppress STALE_DATA.
+  // (3) WEEKDAY PRE-CLOSE: accept priorTradingDay (Fri on Mon AM) OR today.
+  //     Suppress STALE_DATA — pre-close key numbers may legitimately match prior bar.
   if (weekdayPreClose) {
-    const accept = foundDate === etDate || foundDate === lastTd;
+    const accept = foundDate === etDate || foundDate === priorTradingDay;
     if (accept) {
-      return { ...base, status: "fresh", expected: lastTd, reason: "weekday_preclose_lastTd_ok" };
+      return { ...base, status: "fresh", expected: priorTradingDay, reason: "weekday_preclose_priorTd_ok" };
     }
-    return { ...base, status: "STALE", expected: lastTd, reason: "weekday_preclose_data_older_than_lastTd" };
+    return { ...base, status: "STALE", expected: priorTradingDay, reason: "weekday_preclose_data_older_than_priorTd" };
   }
 
   // (4) WEEKDAY POST-CLOSE (>= 17:00 ET): require today.
@@ -616,8 +632,8 @@ async function runTrackerStalenessWatchdog(env, etDate, mode = "weekday-evening"
       if (!foundDate || foundDate < lastTd) shouldDispatch = true;
       // v2.10: for MPI specifically, also skip dispatch when the pipeline actually
       // ran recently (computed_at fresh). Mon-AM asOf == Fri is normal; only
-      // dispatch if computed_at > 24h or asOf < lastTradingDay.
-      if (r.slug === "mpi" && r.pipelineAgeHours != null && r.pipelineAgeHours <= 24 && foundDate >= lastTd) {
+      // dispatch if computed_at > 24h or asOf < priorTradingDay (= Friday on Mon).
+      if (r.slug === "mpi" && r.pipelineAgeHours != null && r.pipelineAgeHours <= 24 && r.priorTradingDay && foundDate >= r.priorTradingDay) {
         shouldDispatch = false;
       }
     } else {
