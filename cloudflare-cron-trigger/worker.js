@@ -1,7 +1,27 @@
-// AZTMM CF Worker v2.9 - drop-in replacement for cloudflare-cron-trigger/worker.js
-// 2026-06-15 STRUCTURAL FIX: tracker-staleness watchdog (catches weekend drift).
+// AZTMM CF Worker v2.10 - drop-in replacement for cloudflare-cron-trigger/worker.js
+// 2026-06-15 MPI SEMANTIC FIX: split "data freshness" vs "pipeline ran".
 //
-// New vs v2.5:
+// New vs v2.9:
+//   - MPI freshness rule rewritten to honor the pipeline's TRUE asOf semantics.
+//     The Python pipeline correctly sets `asOf` = last completed trading day
+//     (Friday's bar on Monday morning, before Monday's 4:00 PM close completes).
+//     Previously v2.9 marked MPI STALE whenever asOf != etDate, falsely alarming
+//     every Monday from 09:30 ET until ~16:30 ET when Monday's bar finalizes.
+//   - New MPI logic (mpiFreshnessCheck):
+//       * Source-of-truth for "pipeline actually ran" = `computed_at`.
+//       * Source-of-truth for "is the bar new" = `asOf`.
+//       * STALE only when:
+//           (a) computed_at > 24h old (pipeline failed to run today), OR
+//           (b) it's past 17:00 ET on a weekday AND asOf != etDate (bar didn't roll
+//               forward despite the run window having passed market close).
+//       * Before 17:00 ET on a weekday: accept asOf == lastTradingDay (Fri on Mon AM)
+//         as FRESH provided computed_at is within 24h. This is the honest read.
+//       * Weekends: accept asOf == lastTradingDay always (no run expected).
+//   - /mpi-health endpoint added: separate operator view of both freshness axes.
+//   - Watchdog (runTrackerStalenessWatchdog) no longer auto-dispatches MPI on
+//     monday-morning unless computed_at is also stale. Prevents redundant runs.
+//
+// Carried forward from v2.9:
 //   - runTrackerStalenessWatchdog(): scans daily-cadence trackers, dispatches the
 //     matching workflow when latest.json is older than the tolerance.
 //     Idempotent: checks for in_progress/queued runs before dispatching.
@@ -29,7 +49,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 
 var GH_OWNER = "aztmm1";
 var GH_REPO = "aztmm-mpi-data";
-var USER_AGENT = "AZTMM-CF-Worker/2.9";
+var USER_AGENT = "AZTMM-CF-Worker/2.10";
 var RAW_BASE = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
 
 var WP_SITE = "aztmm.com";
@@ -283,7 +303,138 @@ function selectWorkflows(et) {
   return selected;
 }
 
+// v2.10: MPI-specific freshness check honoring computed_at vs asOf split.
+// Returns the same shape as checkTarget: {slug, status, date, expected, ...}.
+// Status values: "fresh" | "STALE" | "STALE_DATA" | "fetch_failed".
+//
+// Rules:
+//   - Fetch data/mpi.json.
+//   - If fetch fails -> fetch_failed.
+//   - Parse asOf (YYYY-MM-DD) and computed_at (ISO timestamp).
+//   - Compute pipelineAgeHours = (now - computed_at) / 3600s.
+//     If pipelineAgeHours > 24 -> STALE (reason: "pipeline_did_not_run").
+//   - Compute lastTd (most recent trading day on/before etDate).
+//   - If weekend: accept asOf == lastTd as fresh (no run expected today).
+//   - If weekday and current ET time < 17:00:
+//       accept asOf == lastTd OR asOf == etDate (pre-close grace) as fresh.
+//   - If weekday and current ET time >= 17:00:
+//       require asOf == etDate. Otherwise STALE (reason: "bar_did_not_advance").
+//   - Numbers-match (today vs yesterday key hash): same STALE_DATA logic as before,
+//     suppressed on weekends and on weekday-pre-close (legitimate carry-over).
+async function checkMpiTarget(env, target, etDate) {
+  const todayPath = target.path || `${target.slug}/sample-output/${target.file}`;
+  const yesterdayDate = prevDateStr(etDate);
+  const yesterdayPath = target.yesterdayFile ? `${target.slug}/sample-output/${target.yesterdayFile(yesterdayDate)}` : null;
+  const [todayRes, yResRaw] = await Promise.all([
+    fetchRepoJson(env, todayPath),
+    yesterdayPath ? fetchRepoJson(env, yesterdayPath) : Promise.resolve(null)
+  ]);
+  if (!todayRes.ok) return { slug: target.slug, status: "fetch_failed", code: todayRes.status };
+  const data = todayRes.data || {};
+
+  // Parse asOf
+  let foundDate = null;
+  for (const k of (target.dateKeys || ["asOf"])) {
+    if (data && typeof data === "object" && data[k]) { foundDate = String(data[k]).slice(0, 10); break; }
+  }
+
+  // Parse computed_at -> hours-of-age
+  const computedAt = data.computed_at || null;
+  let pipelineAgeHours = null;
+  if (computedAt) {
+    try {
+      const t = new Date(computedAt).getTime();
+      if (!isNaN(t)) pipelineAgeHours = (Date.now() - t) / 3_600_000;
+    } catch (_) {}
+  }
+
+  // Key-numbers hash for STALE_DATA detection (carry forward from v2.9).
+  let todayHash = null, yesterdayHash = null, numbersMatched = false, staleDataReason = null;
+  const extractor = FRESHNESS_KEY_NUMBERS[target.slug];
+  if (extractor) {
+    try { todayHash = extractor(data) || null; } catch (_) {}
+    if (yResRaw && yResRaw.ok && yResRaw.data) {
+      try { yesterdayHash = extractor(yResRaw.data) || null; } catch (_) {}
+      if (todayHash && yesterdayHash && todayHash === yesterdayHash) {
+        numbersMatched = true; staleDataReason = "key_numbers_identical_to_yesterday";
+      }
+    }
+  }
+  // KV-backed value-hash compare (preserves v2.9 logic).
+  if (target.valueHashKeys && Array.isArray(target.valueHashKeys) && env.KV) {
+    try {
+      const dig = (obj, dotPath) => { const parts2 = dotPath.split("."); let cur = obj; for (const p of parts2) { if (cur == null || typeof cur !== "object") return void 0; cur = cur[p]; } return cur; };
+      const parts = target.valueHashKeys.map((k) => { const v = dig(data, k); return v === void 0 || v === null ? "" : String(v); });
+      const todayValueHash = parts.join("|");
+      const kvKey = `${target.slug}:yesterdayValueHash`;
+      const prior = await env.KV.get(kvKey);
+      if (prior && todayValueHash && prior === todayValueHash) {
+        numbersMatched = true; staleDataReason = staleDataReason || "value_hash_identical_to_yesterday_kv";
+        todayHash = todayHash || todayValueHash; yesterdayHash = yesterdayHash || prior;
+      }
+      if (todayValueHash) await env.KV.put(kvKey, todayValueHash, { expirationTtl: 7 * 24 * 3600 });
+    } catch (_) {}
+  }
+
+  // Time-of-day classification
+  const now = new Date();
+  const etParts = getETParts(now);
+  const lastTd = lastTradingDayStr(etDate);
+  const weekendSkip = isWeekendET(etDate);
+  // 17:00 ET = pipeline's expected EOD window has passed (mpi-update.yml fires
+  // at 16:30 ET, plus ~20-30min of run+commit).
+  const postCloseEOD = !weekendSkip && (etParts.hour >= 17);
+  const weekdayPreClose = !weekendSkip && !postCloseEOD;
+
+  const base = {
+    slug: target.slug, date: foundDate, todayHash, yesterdayHash, numbersMatched,
+    computed_at: computedAt, pipelineAgeHours: pipelineAgeHours == null ? null : Number(pipelineAgeHours.toFixed(2)),
+    weekendSkip, postCloseEOD
+  };
+
+  if (!foundDate) return { ...base, status: "no_date_field" };
+
+  // (1) HARD-FAIL: pipeline did not run in the last 24h.
+  if (pipelineAgeHours != null && pipelineAgeHours > 24) {
+    return { ...base, status: "STALE", expected: etDate, reason: "pipeline_did_not_run", ageHours: base.pipelineAgeHours };
+  }
+
+  // (2) WEEKEND: accept lastTd (Fri) or any forward date.
+  if (weekendSkip) {
+    const isLastTd = foundDate === lastTd;
+    const isForward = foundDate >= etDate;
+    if (isLastTd || isForward) {
+      // Numbers-matching on weekend is normal (markets closed). Don't flag STALE_DATA.
+      return { ...base, status: "fresh", expected: lastTd, reason: "weekend_lastTd_ok" };
+    }
+    return { ...base, status: "STALE", expected: lastTd, reason: "weekend_data_older_than_friday" };
+  }
+
+  // (3) WEEKDAY PRE-CLOSE: accept lastTd OR today. Suppress STALE_DATA.
+  if (weekdayPreClose) {
+    const accept = foundDate === etDate || foundDate === lastTd;
+    if (accept) {
+      return { ...base, status: "fresh", expected: lastTd, reason: "weekday_preclose_lastTd_ok" };
+    }
+    return { ...base, status: "STALE", expected: lastTd, reason: "weekday_preclose_data_older_than_lastTd" };
+  }
+
+  // (4) WEEKDAY POST-CLOSE (>= 17:00 ET): require today.
+  if (foundDate === etDate) {
+    // Bar advanced — but check STALE_DATA (numbers identical to yesterday).
+    if (numbersMatched) return { ...base, status: "STALE_DATA", expected: etDate, reason: staleDataReason };
+    return { ...base, status: "fresh", expected: etDate, reason: "weekday_postclose_today_ok" };
+  }
+  return { ...base, status: "STALE", expected: etDate, reason: "weekday_postclose_bar_did_not_advance" };
+}
+__name(checkMpiTarget, "checkMpiTarget");
+
 async function checkTarget(env, target, etDate) {
+  // v2.10: route MPI to the dedicated checker that honors computed_at + asOf split.
+  if (target.slug === "mpi") {
+    return checkMpiTarget(env, target, etDate);
+  }
+
   const todayPath = target.path || `${target.slug}/sample-output/${target.file}`;
   const yesterdayDate = prevDateStr(etDate);
   const yesterdayPath = target.cadence === "daily" && target.yesterdayFile ? `${target.slug}/sample-output/${target.yesterdayFile(yesterdayDate)}` : null;
@@ -463,6 +614,12 @@ async function runTrackerStalenessWatchdog(env, etDate, mode = "weekday-evening"
     if (mode === "monday-morning") {
       // Need foundDate >= lastTradingDay (Friday). If older, dispatch.
       if (!foundDate || foundDate < lastTd) shouldDispatch = true;
+      // v2.10: for MPI specifically, also skip dispatch when the pipeline actually
+      // ran recently (computed_at fresh). Mon-AM asOf == Fri is normal; only
+      // dispatch if computed_at > 24h or asOf < lastTradingDay.
+      if (r.slug === "mpi" && r.pipelineAgeHours != null && r.pipelineAgeHours <= 24 && foundDate >= lastTd) {
+        shouldDispatch = false;
+      }
     } else {
       // weekday-evening: need foundDate === etDate. If older, dispatch.
       if (!foundDate || foundDate < etDate) shouldDispatch = true;
@@ -954,10 +1111,10 @@ export default {
       const etDate = getETDateStr(now);
       const next = selectWorkflows(et);
       return Response.json({
-        ok: true, worker: "aztmm-cron", version: "2.9", utc: now.toISOString(),
+        ok: true, worker: "aztmm-cron", version: "2.10", utc: now.toISOString(),
         etDate, etHour: et.hour, etMinute: et.minute, weekday: et.dow,
         wouldDispatchRightNow: next,
-        info: "GET /status (operator dashboard) | GET /draft-queue | GET /freshness | GET /log | POST /run?token=..."
+        info: "GET /status | GET /draft-queue | GET /freshness | GET /mpi-health | GET /log | POST /run?token=..."
       });
     }
 
@@ -974,6 +1131,28 @@ export default {
       const r = await runFreshnessWatch(env, etDate);
       const elapsedMs = Date.now() - t0;
       return new Response(JSON.stringify({ etDate, elapsedMs, results: r }), {
+        status: 200, headers: { "content-type": "application/json", ...corsHeaders() }
+      });
+    }
+
+    if (url.pathname === "/mpi-health") {
+      // v2.10: dedicated MPI freshness endpoint exposing both axes (asOf, computed_at).
+      const now = new Date();
+      const etDate = getETDateStr(now);
+      const mpiTarget = FRESHNESS_TARGETS.find((t) => t.slug === "mpi");
+      const result = mpiTarget
+        ? await checkMpiTarget(env, mpiTarget, etDate)
+        : { status: "error", error: "mpi target not configured" };
+      const etParts = getETParts(now);
+      return new Response(JSON.stringify({
+        etDate,
+        etHour: etParts.hour,
+        etMinute: etParts.minute,
+        utc: now.toISOString(),
+        worker_version: "2.10",
+        explanation: "asOf = last completed trading bar; computed_at = pipeline last successful run. STALE only if BOTH are stale, or weekday post-close bar didn't advance.",
+        result
+      }, null, 2), {
         status: 200, headers: { "content-type": "application/json", ...corsHeaders() }
       });
     }
