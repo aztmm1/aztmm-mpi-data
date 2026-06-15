@@ -1,7 +1,16 @@
-// AZTMM CF Worker v2.5 - drop-in replacement for cloudflare-cron-trigger/worker.js
-// 2026-06-06 STRUCTURAL FIX: two-phase publish watchdog + operator dashboard.
+// AZTMM CF Worker v2.9 - drop-in replacement for cloudflare-cron-trigger/worker.js
+// 2026-06-15 STRUCTURAL FIX: tracker-staleness watchdog (catches weekend drift).
 //
-// New vs v2.4:
+// New vs v2.5:
+//   - runTrackerStalenessWatchdog(): scans daily-cadence trackers, dispatches the
+//     matching workflow when latest.json is older than the tolerance.
+//     Idempotent: checks for in_progress/queued runs before dispatching.
+//   - Fires at weekday 18:30 ET (after the main 17:30 window has settled) and
+//     Monday 10:00 ET (catches any weekend drift on Friday EOD data).
+//   - Drift alert: STALE_DATA results are surfaced in the freshness log so the
+//     "ran but output unchanged" condition is observable (cannot auto-fix data).
+//
+// Carries forward from v2.5:
 //   - /draft-queue endpoint: lists held drafts in daily/weekly categories
 //   - watchdog retry: when a draft is held, dispatch workflow with reuse_draft_id
 //   - /status page rebuilt as operator dashboard:
@@ -20,7 +29,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 
 var GH_OWNER = "aztmm1";
 var GH_REPO = "aztmm-mpi-data";
-var USER_AGENT = "AZTMM-CF-Worker/2.5";
+var USER_AGENT = "AZTMM-CF-Worker/2.9";
 var RAW_BASE = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
 
 var WP_SITE = "aztmm.com";
@@ -37,6 +46,18 @@ var WORKFLOWS = {
   insiderActivity: "insider-activity.yml",
   earningsFlow: "earnings-flow.yml",
   ledger: "ledger-score.yml"
+};
+
+// v2.9: tracker slug -> workflow file. Used by runTrackerStalenessWatchdog
+// to dispatch the correct workflow when a daily tracker drifts stale.
+// Only daily-cadence trackers are listed (insider-activity is weekly).
+var TRACKER_WORKFLOW_MAP = {
+  "accountability-ledger": "ledger-score.yml",
+  "congress-trades-tracker": "congress-watch.yml",
+  "nope-max-pain-tracker": "options-gravity.yml",
+  "squeeze-watch": "squeeze-watch.yml",
+  "earnings-flow-flag-tracker": "earnings-flow.yml",
+  "mpi": "mpi-update.yml"
 };
 
 var FRESHNESS_TARGETS = [
@@ -362,6 +383,121 @@ async function runFreshnessWatch(env, etDate) {
 }
 
 // ============================================================================
+// v2.9: TRACKER STALENESS WATCHDOG
+// ============================================================================
+// Catches the case where the main 17:30 ET dispatch missed a tracker (workflow
+// errored before commit, GH cron drift across day boundary, etc.) by checking
+// freshness late in the day and dispatching the matching workflow.
+//
+// Fires at:
+//   - Weekday 18:30 ET — after the 17:30 dispatch + processing window settled.
+//   - Monday 10:00 ET  — catches weekend drift on Friday EOD data.
+//
+// Tolerances:
+//   - Weekday evening: foundDate must equal etDate (Mon-Fri). If older, dispatch.
+//   - Monday morning:  foundDate must equal lastTradingDayStr(etDate) (= Friday).
+//                      If older than that (e.g. Thursday or earlier), dispatch.
+//
+// Idempotency:
+//   - Before dispatching, check GH runs API for in_progress/queued runs of the
+//     same workflow file. If one exists, skip — don't pile on duplicate runs.
+//   - Drift alert: if status === STALE_DATA (todayHash matches yesterday's),
+//     we cannot auto-fix it from here (data source is unchanged), so log only.
+async function isWorkflowAlreadyRunning(env, workflowFile) {
+  if (!env.GH_PAT) return false;
+  try {
+    const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${workflowFile}/runs?per_page=5`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${env.GH_PAT}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": USER_AGENT
+      }
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    const runs = (data.workflow_runs || []);
+    return runs.some((r) => r.status === "in_progress" || r.status === "queued");
+  } catch (_) {
+    return false;
+  }
+}
+
+async function runTrackerStalenessWatchdog(env, etDate, mode = "weekday-evening") {
+  const stamp = new Date().toISOString();
+  const lastTd = lastTradingDayStr(etDate);
+  // Expected date depends on mode + cadence:
+  //   - weekday-evening: must be today (etDate)
+  //   - monday-morning:  must be Friday (lastTradingDayStr from Monday)
+  const expectedDate = mode === "monday-morning" ? lastTd : etDate;
+
+  const results = await Promise.all(
+    FRESHNESS_TARGETS.map((t) =>
+      checkTarget(env, t, etDate).catch((e) => ({ slug: t.slug, status: "error", error: String(e) }))
+    )
+  );
+
+  const dispatched = [];
+  const skipped = [];
+  const driftAlerts = [];
+
+  for (const r of results) {
+    // Only auto-dispatch daily-cadence trackers with a mapped workflow.
+    const wf = TRACKER_WORKFLOW_MAP[r.slug];
+    if (!wf) continue;
+
+    // Surface drift but don't try to fix it (data source is the problem).
+    if (r.status === "STALE_DATA" || (r.numbersMatched && r.todayHash && r.yesterdayHash && r.todayHash === r.yesterdayHash)) {
+      driftAlerts.push({ slug: r.slug, todayHash: r.todayHash, foundDate: r.date });
+      continue;
+    }
+
+    if (r.status !== "STALE") {
+      continue;
+    }
+
+    // STALE confirmed. Check if we should dispatch given the mode/expected.
+    const foundDate = r.date || "";
+    let shouldDispatch = false;
+    if (mode === "monday-morning") {
+      // Need foundDate >= lastTradingDay (Friday). If older, dispatch.
+      if (!foundDate || foundDate < lastTd) shouldDispatch = true;
+    } else {
+      // weekday-evening: need foundDate === etDate. If older, dispatch.
+      if (!foundDate || foundDate < etDate) shouldDispatch = true;
+    }
+    if (!shouldDispatch) continue;
+
+    // Idempotency check.
+    const busy = await isWorkflowAlreadyRunning(env, wf);
+    if (busy) {
+      skipped.push({ slug: r.slug, wf, reason: "already_running" });
+      continue;
+    }
+
+    try {
+      const d = await dispatchWorkflow(env, wf);
+      if (d.ok) {
+        dispatched.push({ slug: r.slug, wf, status: d.status, foundDate, expectedDate });
+      } else {
+        skipped.push({ slug: r.slug, wf, reason: `dispatch_failed_${d.status}`, error: d.text });
+      }
+    } catch (e) {
+      skipped.push({ slug: r.slug, wf, reason: "dispatch_threw", error: String(e) });
+    }
+  }
+
+  await appendLog(
+    env,
+    `${stamp} ${etDate} [watchdog-tracker-${mode}] dispatched=${dispatched.length} skipped=${skipped.length} driftAlerts=${driftAlerts.length} ` +
+      JSON.stringify({ dispatched, skipped, driftAlerts })
+  );
+
+  return { mode, etDate, expectedDate, dispatched, skipped, driftAlerts };
+}
+
+// ============================================================================
 // TWO-PHASE PUBLISH SUPPORT (v2.5, 2026-06-06)
 // ============================================================================
 
@@ -600,6 +736,15 @@ async function runTick(env, source = "cron") {
   if (et.dow >= 1 && et.dow <= 5 && et.hour === 17 && et.minute >= 50 && et.minute < 60) await runFreshnessWatch(env, etDate);
   // 2026-06-10: 23:00 ET daily watchdog disabled — it dispatched Pipeline B (retired).
   if (et.dow === 6 && et.hour === 9 && et.minute >= 30 && et.minute < 60) await runWeeklyPulseWatchdogTwoPhase(env, etDate);
+  // v2.9: tracker-staleness watchdog.
+  //   - Weekday 18:30-18:59 ET: catch trackers whose 17:30 dispatch left them STALE.
+  //   - Monday  10:00-10:29 ET: catch any weekend drift on Friday EOD data.
+  if (et.dow >= 1 && et.dow <= 5 && et.hour === 18 && et.minute >= 30 && et.minute < 60) {
+    await runTrackerStalenessWatchdog(env, etDate, "weekday-evening").catch((e) => appendLog(env, `${stamp} ${etDate} [watchdog-tracker-weekday-evening] ERROR ${String(e)}`));
+  }
+  if (et.dow === 1 && et.hour === 10 && et.minute < 30) {
+    await runTrackerStalenessWatchdog(env, etDate, "monday-morning").catch((e) => appendLog(env, `${stamp} ${etDate} [watchdog-tracker-monday-morning] ERROR ${String(e)}`));
+  }
   const workflows = selectWorkflows(et);
   const result = { timestamp: stamp, etDate, etHour: et.hour, etMinute: et.minute, dow: et.dow, source, workflowsTriggered: [], workflowsSkipped: [] };
   if (workflows.length === 0) {
@@ -771,7 +916,7 @@ function renderStatusPage(ctx) {
 
 <footer>
   Endpoints: <a href="/">/</a> &middot; <a href="/freshness">/freshness</a> &middot; <a href="/draft-queue">/draft-queue</a> &middot; <a href="/log">/log</a>
-  <br>aztmm-cron-v2 worker.js v2.6 &middot; two-phase publish + GH-API fallback (no WP_BASIC_AUTH needed)
+  <br>aztmm-cron-v2 worker.js v2.9 &middot; two-phase publish + tracker-staleness watchdog (weekday 18:30 + Mon 10:00)
 </footer>`;
 }
 
@@ -809,7 +954,7 @@ export default {
       const etDate = getETDateStr(now);
       const next = selectWorkflows(et);
       return Response.json({
-        ok: true, worker: "aztmm-cron", version: "2.5", utc: now.toISOString(),
+        ok: true, worker: "aztmm-cron", version: "2.9", utc: now.toISOString(),
         etDate, etHour: et.hour, etMinute: et.minute, weekday: et.dow,
         wouldDispatchRightNow: next,
         info: "GET /status (operator dashboard) | GET /draft-queue | GET /freshness | GET /log | POST /run?token=..."
