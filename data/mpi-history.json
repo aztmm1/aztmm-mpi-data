@@ -145,15 +145,15 @@
   },
   {
    "date": "2026-06-12",
-   "score": 59,
+   "score": 62,
    "regime": "Bull \u00b7 early",
    "subs": {
     "trend": 83.2,
     "breadth": 95.1,
-    "volatility": 37.9,
+    "volatility": 48.5,
     "yield_curve": 65.6,
-    "credit": 86.6,
-    "sentiment": 34.0,
+    "credit": 87.5,
+    "sentiment": 41.9,
     "rotation": 37.3,
     "currency": 34.9,
     "liquidity": 55.0
