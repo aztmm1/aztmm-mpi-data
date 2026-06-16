@@ -1,29 +1,29 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-15T23:46:37Z",
+  "generated_at": "2026-06-16T07:26:45Z",
   "mpi": {
-    "score": 62,
+    "score": 67,
     "regime": "Bull \u00b7 early",
-    "as_of": "2026-06-12",
-    "computed_at": "2026-06-15T18:47:11Z",
+    "as_of": "2026-06-15",
+    "computed_at": "2026-06-16T01:41:33Z",
     "confidence": 0.85,
     "confidence_band": [
-      57,
-      67
+      62,
+      72
     ]
   },
   "market": {
-    "spy_close": 741.75,
-    "vix": 17.68,
-    "rv_30d": 15.14,
-    "vrp": 2.54
+    "spy_close": 754.83,
+    "vix": 16.2,
+    "rv_30d": 15.74,
+    "vrp": 0.46
   },
   "latest_daily_pulse": {
-    "id": 2963,
-    "url": "https://aztmm.com/2026/06/12/daily-pulse-options-flow-dark-pool-12-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 June 2026",
-    "date": "2026-06-12",
-    "snippet": "Indices grind higher into opex week as VIX breaks back to a 17-handle, market-wide flow leans call-heavy, and the dark-pool tape closes with size blocks in SPY, TSLA, and QQQ.",
+    "id": 2978,
+    "url": "https://aztmm.com/2026/06/15/daily-pulse-options-flow-dark-pool-15-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 15 June 2026",
+    "date": "2026-06-15",
+    "snippet": "Indices gapped higher to start the week \u2014 SPY +1.76% to 754.83, QQQ +3.14% to 744 and semis leading \u2014 while the desk-flow tape showed call-heavy breadth layered with steady index put hedges and half-billion-dollar dark-pool blocks in AVGO and INTC.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 2978,
+      "url": "https://aztmm.com/2026/06/15/daily-pulse-options-flow-dark-pool-15-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 15 June 2026",
+      "date": "2026-06-15",
+      "snippet": "Indices gapped higher to start the week \u2014 SPY +1.76% to 754.83, QQQ +3.14% to 744 and semis leading \u2014 while the desk-flow tape showed call-heavy breadth layered with steady index put hedges and half-billion-dollar dark-pool blocks in AVGO and INTC.",
+      "kind": "daily"
+    },
     {
       "id": 2967,
       "url": "https://aztmm.com/2026/06/13/weekly-pulse-2026-06-08-to-2026-06-12/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 June 2026",
       "date": "2026-06-10",
       "snippet": "Indexes broke lower \u2014 SPY \u22121.58%, QQQ \u22122.00%, VIX back above 22 \u2014 while index put buying clustered at July strikes and the dark-pool tape printed huge blocks in MSFT, NVDA, and the semis.",
-      "kind": "daily"
-    },
-    {
-      "id": 2913,
-      "url": "https://aztmm.com/2026/06/09/daily-pulse-options-flow-dark-pool-9-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 June 2026",
-      "date": "2026-06-09",
-      "snippet": "An intraday air pocket that closed mostly healed: SPY \u22120.29%, QQQ \u22121.15%, VIX back over 19, with index put hedging stacked over single-name call appetite in MU, VST, and AMZN.",
       "kind": "daily"
     }
   ],
