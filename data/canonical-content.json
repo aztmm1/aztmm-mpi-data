@@ -1,22 +1,22 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-18T16:43:56Z",
+  "generated_at": "2026-06-18T19:10:46Z",
   "mpi": {
-    "score": 65,
+    "score": 59,
     "regime": "Bull \u00b7 early",
-    "as_of": "2026-06-16",
-    "computed_at": "2026-06-17T17:25:22Z",
+    "as_of": "2026-06-17",
+    "computed_at": "2026-06-18T17:30:12Z",
     "confidence": 0.85,
     "confidence_band": [
-      60,
-      70
+      54,
+      64
     ]
   },
   "market": {
-    "spy_close": 750.33,
-    "vix": 16.41,
-    "rv_30d": 15.93,
-    "vrp": 0.48
+    "spy_close": 740.96,
+    "vix": 18.44,
+    "rv_30d": 16.43,
+    "vrp": 2.01
   },
   "latest_daily_pulse": {
     "id": 2982,
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-06-15",
+      "as_of": "2026-06-18",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
