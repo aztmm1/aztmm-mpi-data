@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-18T19:14:07Z",
+  "generated_at": "2026-06-18T22:52:03Z",
   "mpi": {
     "score": 59,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 2.01
   },
   "latest_daily_pulse": {
-    "id": 3002,
-    "url": "https://aztmm.com/2026/06/17/daily-pulse-options-flow-dark-pool-17-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 June 2026",
-    "date": "2026-06-17",
-    "snippet": "FOMC day broke the 749 SPY / 729 QQQ defense lines. VIX +12.4%, defensives took blocks, short-dated put bid lifted ask-side. The Bull \u00b7 early thesis is on its back foot \u2014 we reset levels into Friday OPEX.",
+    "id": 3005,
+    "url": "https://aztmm.com/2026/06/18/daily-pulse-options-flow-dark-pool-18-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 June 2026",
+    "date": "2026-06-18",
+    "snippet": "A tech-led risk-on session: SPY +0.78%, QQQ +2.51% and VIX back to 16.4, with our flow read split between index put hedging and aggressive single-name call demand in semis.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3005,
+      "url": "https://aztmm.com/2026/06/18/daily-pulse-options-flow-dark-pool-18-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 June 2026",
+      "date": "2026-06-18",
+      "snippet": "A tech-led risk-on session: SPY +0.78%, QQQ +2.51% and VIX back to 16.4, with our flow read split between index put hedging and aggressive single-name call demand in semis.",
+      "kind": "daily"
+    },
     {
       "id": 3002,
       "url": "https://aztmm.com/2026/06/17/daily-pulse-options-flow-dark-pool-17-june-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-06-13",
       "snippet": "Sideways regime held; net call premium 2.2x put across 5 sessions; no single-name positioning carried through the week.",
       "kind": "weekly"
-    },
-    {
-      "id": 2963,
-      "url": "https://aztmm.com/2026/06/12/daily-pulse-options-flow-dark-pool-12-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 June 2026",
-      "date": "2026-06-12",
-      "snippet": "Indices grind higher into opex week as VIX breaks back to a 17-handle, market-wide flow leans call-heavy, and the dark-pool tape closes with size blocks in SPY, TSLA, and QQQ.",
-      "kind": "daily"
     }
   ],
   "trackers": {
