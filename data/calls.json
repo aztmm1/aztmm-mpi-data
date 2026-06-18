@@ -350,7 +350,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0847,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -468,7 +468,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.193,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -482,7 +482,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0559,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -496,7 +496,7 @@
     "direction": "down",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0302,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -510,7 +510,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": -0.0464,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -524,7 +524,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.1697,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -538,7 +538,7 @@
     "direction": "down",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0211,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -552,7 +552,7 @@
     "direction": "down",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0415,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -566,7 +566,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.1391,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -580,7 +580,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0929,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -608,7 +608,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0214,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -1513,12 +1513,12 @@
     "statement": "SPY 749–750 — today’s close sits right on the session low; a clean hold keeps the Bull · early read intact, a break below 749 opens room toward the 744 area.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-06-18",
+    "note": "manual review",
+    "ret_1d": -0.0125
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-16-june-2026:watch2",
@@ -1528,12 +1528,12 @@
     "statement": "QQQ 729 then 724 — closing on the lows leaves no intraday support cushion; 729 is the line in the sand, and 724 (near the rising 50-day) is the next real shelf.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-06-17",
+    "note": "next-session move -1.01% vs 'up' (±0.25% band)",
+    "ret_1d": -0.0101
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-16-june-2026:watch3",
@@ -1543,12 +1543,12 @@
     "statement": "NVDA 207 / 212 — 207 held as today’s floor; reclaiming 212 would neutralize the bearish premium tilt, losing 207 invites more downside hedging.",
     "direction": "down",
     "horizon_days": 1,
-    "status": "open",
+    "status": "hit",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-06-17",
+    "note": "next-session move -1.33% vs 'down' (±0.25% band)",
+    "ret_1d": -0.0133
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-16-june-2026:watch4",
@@ -1558,12 +1558,12 @@
     "statement": "VIX 17 — still benign at 16.41; a push through 17 with indices lower would tell us the hedging is turning into genuine demand for protection.",
     "direction": "down",
     "horizon_days": 1,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-06-17",
+    "note": "next-session move +12.37% vs 'down' (±0.25% band)",
+    "ret_1d": 0.1237
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-16-june-2026:watch5",
@@ -1573,12 +1573,12 @@
     "statement": "MU into 6/24 earnings — call sweeps plus a $253M block today; watch whether positioning keeps building through the week.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "hit",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-06-17",
+    "note": "next-session move +2.20% vs 'up' (±0.25% band)",
+    "ret_1d": 0.022
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-16-june-2026:watch6",
@@ -1588,11 +1588,11 @@
     "statement": "Net premium follow-through — if SPY/QQQ net premium stays negative a second day, the de-risking read firms up from a one-day flag to a trend.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-06-18",
+    "note": "manual review",
+    "ret_1d": -0.0125
   }
 ]
