@@ -164,3 +164,19 @@ jobs:
           else
             echo "aztmm-content-api/build_canonical.py not present; skipping."
           fi
+
+      - name: Purge jsDelivr cache (kills 12h edge cache after commit)
+        if: always()
+        run: |
+          PATHS=(
+            "accountability-ledger/sample-output/latest.json"
+            "accountability-ledger/sample-output/latest.html"
+            "data/canonical-content.json"
+            "data/mpi-history.json"
+          )
+          for path in "${PATHS[@]}"; do
+            url="https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/${path}"
+            echo "::group::Purge ${path}"
+            curl -sS -X POST "${url}" || echo "purge failed for ${path}, continuing"
+            echo "::endgroup::"
+          done
