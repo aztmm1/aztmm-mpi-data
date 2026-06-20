@@ -712,7 +712,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0669,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -782,7 +782,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.1387,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
