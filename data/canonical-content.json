@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-20T15:02:10Z",
+  "generated_at": "2026-06-21T09:41:53Z",
   "mpi": {
     "score": 63,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 2967,
-    "url": "https://aztmm.com/2026/06/13/weekly-pulse-2026-06-08-to-2026-06-12/",
-    "title": "Weekly Pulse \u2014 Week of June 8\u201312, 2026",
-    "date": "2026-06-13",
-    "snippet": "Sideways regime held; net call premium 2.2x put across 5 sessions; no single-name positioning carried through the week.",
+    "id": 3010,
+    "url": "https://aztmm.com/2026/06/20/weekly-pulse-2026-06-15-to-2026-06-19/",
+    "title": "Weekly Pulse \u2014 Week of June 15\u201319, 2026",
+    "date": "2026-06-20",
+    "snippet": "Sideways regime held; net call premium 2.3x put across 5 sessions; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3010,
+      "url": "https://aztmm.com/2026/06/20/weekly-pulse-2026-06-15-to-2026-06-19/",
+      "title": "Weekly Pulse \u2014 Week of June 15\u201319, 2026",
+      "date": "2026-06-20",
+      "snippet": "Sideways regime held; net call premium 2.3x put across 5 sessions; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3005,
       "url": "https://aztmm.com/2026/06/18/daily-pulse-options-flow-dark-pool-18-june-2026/",
@@ -66,19 +74,11 @@
       "date": "2026-06-15",
       "snippet": "Indices gapped higher to start the week \u2014 SPY +1.76% to 754.83, QQQ +3.14% to 744 and semis leading \u2014 while the desk-flow tape showed call-heavy breadth layered with steady index put hedges and half-billion-dollar dark-pool blocks in AVGO and INTC.",
       "kind": "daily"
-    },
-    {
-      "id": 2967,
-      "url": "https://aztmm.com/2026/06/13/weekly-pulse-2026-06-08-to-2026-06-12/",
-      "title": "Weekly Pulse \u2014 Week of June 8\u201312, 2026",
-      "date": "2026-06-13",
-      "snippet": "Sideways regime held; net call premium 2.2x put across 5 sessions; no single-name positioning carried through the week.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-06-20 5:00 PM ET",
+      "as_of": "2026-06-21 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
