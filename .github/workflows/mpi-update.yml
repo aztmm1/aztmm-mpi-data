@@ -74,6 +74,14 @@ jobs:
           ARGS=""
           if [ "${{ github.event.inputs.force }}" = "true" ]; then ARGS="$ARGS --force"; fi
           if [ "${{ github.event.inputs.mock }}"  = "true" ]; then ARGS="$ARGS --mock";  fi
+          # Post-close schedule crons: force compute so GitHub scheduler latency
+          # cannot push the fire outside the pipeline's internal ET gate (the
+          # recurring-staleness root cause: a delayed scheduled run lands late,
+          # the gate skips it, and the EOD bar never advances). Idempotent: the
+          # commit step only pushes when data/mpi.json actually changes.
+          case "${{ github.event.schedule }}" in
+            "0 22 * * 1-5"|"0 23 * * 1-5"|"0 2 * * 2-6"|"0 3 * * 2-6") ARGS="$ARGS --force" ;;
+          esac
           python mpi_hmm_pipeline.py $ARGS --output data/mpi.json
 
       - name: Show output (debug)
