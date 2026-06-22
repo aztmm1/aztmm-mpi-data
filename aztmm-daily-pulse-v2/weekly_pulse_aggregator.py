@@ -182,16 +182,49 @@ def _build_weekly_changes(agg, trading_days):
     return bullets[:5]
 
 
-def _build_weekly_catalysts():
-    """Hardcoded next-week catalysts (week of May 18-22, 2026)."""
-    return [
-        {"text": "<strong>NVDA earnings</strong> · expected May 20-21 after close",
-         "implication": "Premium concentration in semis can extend or unwind."},
-        {"text": "<strong>FOMC May minutes</strong> · May 21-22",
-         "implication": "Front-end vol can reprice on hawkish/dovish tone."},
-        {"text": "<strong>Existing/New Home Sales · retail bellwether prints</strong> mid-week",
-         "implication": "Discretionary tape sensitive to consumer reads."},
-    ][:3]
+def _build_weekly_catalysts(trading_days, upcoming_earnings=None, market_events=None):
+    """Catalysts for the week AFTER the reported week, built from live data.
+
+    Date-driven (no hardcoded month). Uses upcoming earnings / market events
+    when the aggregate provides them; otherwise emits an honest placeholder for
+    the correct next-week window. Never returns stale constant content.
+    """
+    last = datetime.strptime(trading_days[-1], "%Y-%m-%d").date()
+    wk_start = last + timedelta(days=3)          # next Monday
+    wk_end = wk_start + timedelta(days=4)         # next Friday
+    out = []
+    for e in (upcoming_earnings or []):
+        d = (e.get("report_date") or e.get("date") or "")[:10]
+        try:
+            dd = datetime.strptime(d, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        if wk_start <= dd <= wk_end:
+            sym = e.get("ticker") or e.get("symbol") or "?"
+            when = (e.get("report_time") or "").strip()
+            out.append({
+                "text": f"<strong>{sym} earnings</strong> &middot; {d}"
+                        + (f" {when}" if when else ""),
+                "implication": "Premium can concentrate around the print.",
+            })
+    for ev in (market_events or []):
+        d = (ev.get("date") or ev.get("event_date") or "")[:10]
+        try:
+            dd = datetime.strptime(d, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        if wk_start <= dd <= wk_end:
+            out.append({
+                "text": f"<strong>{ev.get('name') or ev.get('event') or 'Event'}</strong> &middot; {d}",
+                "implication": ev.get("note") or "Macro print; watch front-end vol.",
+            })
+    if not out:
+        out = [{
+            "text": f"<strong>No major confirmed catalysts</strong> &middot; week of "
+                    f"{wk_start.strftime('%b %-d')}-{wk_end.strftime('%-d')}",
+            "implication": "Light calendar; price action likely flow-driven.",
+        }]
+    return out[:4]
 
 
 def aggregate_week(week_ending: str, *, from_fixture: Path | None = None) -> dict:
@@ -216,7 +249,8 @@ def aggregate_week(week_ending: str, *, from_fixture: Path | None = None) -> dic
     }
     agg["headline"] = _build_weekly_headline(agg, mpi_snap)
     agg["changes"] = _build_weekly_changes(agg, trading_days)
-    agg["catalysts"] = _build_weekly_catalysts()
+    agg["catalysts"] = _build_weekly_catalysts(
+        trading_days, agg.get("upcoming_earnings"), agg.get("market_events"))
     monday, friday = trading_days[0], trading_days[-1]
     mon_dt = datetime.strptime(monday, "%Y-%m-%d")
     fri_dt = datetime.strptime(friday, "%Y-%m-%d")
