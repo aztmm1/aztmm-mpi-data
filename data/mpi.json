@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-06-22T18:18:27Z",
+  "computed_at": "2026-06-22T21:30:35Z",
   "asOf": "2026-06-18",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 62,
+    "mpi_score": 56,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 57,
-      "ci_high": 67
+      "ci_low": 51,
+      "ci_high": 61
     },
     "signal": {
       "bias": "Bullish",
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5319,
-      "probability_up": 0.5319,
+      "confidence": 0.5106,
+      "probability_up": 0.5106,
       "probability_flat": 0.2684,
-      "probability_down": 0.1997
+      "probability_down": 0.221
     },
     "hmm": {
       "state": "Bull",
@@ -55,9 +55,9 @@
         "ma50_slope_pct": 2.495
       },
       "breadth": {
-        "score": 98.9,
-        "cyclical_defensive_ratio": 1.468,
-        "cyc_def_percentile_1y": 98.4,
+        "score": 41.3,
+        "cyclical_defensive_ratio": 1.2276,
+        "cyc_def_percentile_1y": 2.4,
         "iwm_spy_percentile_1y": 99.6
       },
       "volatility": {
@@ -70,8 +70,8 @@
       "yield_curve": {
         "score": 60.8,
         "t10y2y_pct": 0.27,
-        "dgs10": 4.49,
-        "dgs2": 4.2
+        "dgs10": 4.46,
+        "dgs2": 4.19
       },
       "credit": {
         "score": 88.1,
@@ -79,8 +79,8 @@
         "ig_oas_pct": 0.74
       },
       "sentiment": {
-        "score": 35.6,
-        "cnn_fg": 35.6
+        "score": 34.7,
+        "cnn_fg": 34.7
       },
       "rotation": {
         "score": 36.1,
@@ -88,10 +88,10 @@
         "xlu_xly_percentile_1y": 63.9
       },
       "currency": {
-        "score": 20.4,
-        "uup": 28.3,
-        "uup_50d_ma": 27.645,
-        "uup_vs_ma_pct": 2.369,
+        "score": 18.5,
+        "uup": 28.36,
+        "uup_50d_ma": 27.663,
+        "uup_vs_ma_pct": 2.521,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
