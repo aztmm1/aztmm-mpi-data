@@ -207,6 +207,10 @@ def aggregate_sector_heatmap(sector_etfs: list[dict]) -> dict:
         net_prem = call_prem - put_prem
 
         close = _flt(s.get("close") or s.get("price") or s.get("last"))
+        prev_close = _flt(s.get("prev_close"))
+        if not change_pct and prev_close:
+            # UW sector feed exposes no change_% field; derive from last vs prev close.
+            change_pct = (close - prev_close) / prev_close * 100.0
         rows.append({
             "ticker": ticker,
             "name": SECTOR_ETF_NAMES.get(ticker, ticker),
@@ -400,6 +404,9 @@ def aggregate_darkpool(darkpool: dict, prev_darkpool: dict | None = None) -> dic
                 row["pct_change_fmt"] = "n/a"
         rows.append(row)
 
+    # Suppress zero-premium rows so an empty/holiday fetch hides the section
+    # instead of publishing a wall of $0 prints.
+    rows = [r for r in rows if r["total_premium"] > 0]
     rows.sort(key=lambda r: r["total_premium"], reverse=True)
     return {"available": bool(rows), "rows": rows[:10]}
 
