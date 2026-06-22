@@ -177,9 +177,65 @@ def fetch_analyst_ratings(ticker: str | None = None, limit: int = 50) -> FetchRe
     return _get("/api/screener/analysts", params)
 
 
+# Keyless macro source: FRED CSV (St. Louis Fed). No API key, no auth.
+# DGS10 = 10Y constant-maturity Treasury, DGS2 = 2Y. CSV is `date,value`
+# with missing/holiday days marked by a literal ".".
+FRED_CSV_BASE = "https://fred.stlouisfed.org/graph/fredgraph.csv"
+FRED_SERIES = {"10year": "DGS10", "2year": "DGS2"}
+
+
 def fetch_yield_curve_maturity(maturity: str = "10year") -> FetchResult:
-    """Treasury yield series for one maturity. Advanced+ tier."""
-    return _get(f"/api/economy/treasury-yield", {"maturity": maturity, "interval": "daily"})
+    """Latest Treasury yield for one maturity from FRED (keyless CSV).
+
+    Returns FetchResult whose .data is the latest data point shaped like the
+    aggregator expects: {"value": <float pct>, "date": "YYYY-MM-DD"}.
+    Never raises; failures are flagged in data_quality.
+    """
+    series = FRED_SERIES.get(maturity)
+    if series is None:
+        return FetchResult(ok=False, error=f"unknown maturity {maturity!r}",
+                           endpoint=f"fred:{maturity}")
+    endpoint = f"fred:{series}"
+    last_err = None
+    for attempt in range(2):
+        try:
+            r = requests.get(
+                FRED_CSV_BASE,
+                params={"id": series},
+                timeout=DEFAULT_TIMEOUT,
+                headers={"User-Agent": "aztmm-daily-pulse/2.0"},
+            )
+            time.sleep(DEFAULT_THROTTLE_SEC)
+            if r.status_code == 200:
+                latest = None
+                for line in r.text.strip().splitlines()[1:]:  # skip header
+                    parts = line.split(",")
+                    if len(parts) < 2:
+                        continue
+                    date_s, val_s = parts[0].strip(), parts[1].strip()
+                    if not val_s or val_s == ".":  # FRED missing-day marker
+                        continue
+                    try:
+                        latest = {"value": float(val_s), "date": date_s}
+                    except ValueError:
+                        continue
+                if latest is not None:
+                    return FetchResult(ok=True, data=latest, endpoint=endpoint)
+                last_err = "no parseable rows in FRED CSV"
+                break
+            if r.status_code in (429, 500, 502, 503, 504) and attempt == 0:
+                time.sleep(2.0)
+                continue
+            last_err = f"HTTP {r.status_code}: {r.text[:200]}"
+            break
+        except requests.RequestException as e:
+            last_err = f"Network: {type(e).__name__}: {e}"
+            if attempt == 0:
+                time.sleep(2.0)
+                continue
+            break
+    logger.warning("FRED fetch failed: %s — %s", endpoint, last_err)
+    return FetchResult(ok=False, error=last_err, endpoint=endpoint)
 
 
 # ---------------------------------------------------------------------------
@@ -319,23 +375,15 @@ def fetch_daily_data(date_str: str) -> dict[str, Any]:
         payload = r.data.get("data") if isinstance(r.data, dict) else r.data
         out["analyst_ratings"] = payload if isinstance(payload, list) else []
 
-    # --- v2.1: yield curve (one canonical maturity — 10Y for now)
-    # Advanced+ tier endpoint; expect 403 on lower tiers. data_quality.failures captures it.
+    # --- v2.1: yield curve (keyless FRED CSV — 10Y & 2Y constant maturity)
+    # .data is already the latest {"value", "date"} dict the aggregator wants.
     r = fetch_yield_curve_maturity("10year")
     _record(r)
-    out["yield_10y"] = None
-    if r.ok:
-        payload = r.data.get("data") if isinstance(r.data, dict) else r.data
-        if isinstance(payload, list) and payload:
-            out["yield_10y"] = payload[-1]  # latest data point
+    out["yield_10y"] = r.data if r.ok else None
 
     r = fetch_yield_curve_maturity("2year")
     _record(r)
-    out["yield_2y"] = None
-    if r.ok:
-        payload = r.data.get("data") if isinstance(r.data, dict) else r.data
-        if isinstance(payload, list) and payload:
-            out["yield_2y"] = payload[-1]
+    out["yield_2y"] = r.data if r.ok else None
 
     dq["degraded"] = dq["endpoints_failed"] > 0
     return out
