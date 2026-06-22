@@ -29,6 +29,10 @@ on:
         description: 'Watchdog: mark this run as the retry. On quality-gate fail, exit 8 (human approval) instead of 7.'
         required: false
         default: 'false'
+      force:
+        description: 'Force regenerate even if a post for this week already exists (bypasses the idempotency guard). Pair with reuse_draft_id to update that post in place.'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -98,7 +102,10 @@ jobs:
           # Query WP REST for an exact-slug match in weekly category.
           EXISTING=$(curl -fsS "https://aztmm.com/wp-json/wp/v2/posts?categories=730419629&slug=${SLUG}&per_page=1&_fields=id" 2>/dev/null \
             | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
-          if [ "$EXISTING" -ge "1" ]; then
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            echo "force=true — regenerating regardless of existing post (${EXISTING} found)"
+            echo "already_ran=false" >> "$GITHUB_OUTPUT"
+          elif [ "$EXISTING" -ge "1" ]; then
             echo "Weekly post for $SLUG already published — skipping"
             echo "already_ran=true" >> "$GITHUB_OUTPUT"
           else
