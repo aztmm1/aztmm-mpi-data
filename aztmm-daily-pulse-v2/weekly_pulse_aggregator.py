@@ -227,6 +227,28 @@ def _build_weekly_catalysts(trading_days, upcoming_earnings=None, market_events=
     return out[:4]
 
 
+# NYSE full-day market holidays (update annually). Used to snapshot the last
+# real trading day when the calendar week-ending Friday is itself a holiday
+# (e.g. Juneteenth 2026-06-19) so date-keyed fetches don't land on a closed
+# session and return empty (which previously zeroed the dark-pool section).
+US_MARKET_HOLIDAYS = {
+    "2026-01-01", "2026-01-19", "2026-02-16", "2026-04-03", "2026-05-25",
+    "2026-06-19", "2026-07-03", "2026-09-07", "2026-11-26", "2026-12-25",
+    "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31",
+    "2027-06-18", "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-24",
+}
+
+
+def _last_trading_day(on_or_before: str) -> str:
+    """Step back over weekends/holidays to the last open session (inclusive)."""
+    d = datetime.strptime(on_or_before, "%Y-%m-%d").date()
+    for _ in range(10):
+        if d.weekday() < 5 and d.isoformat() not in US_MARKET_HOLIDAYS:
+            return d.isoformat()
+        d = d - timedelta(days=1)
+    return d.isoformat()
+
+
 def aggregate_week(week_ending: str, *, from_fixture: Path | None = None) -> dict:
     trading_days = _trading_days_of_week_ending(week_ending)
     logger.info("Building weekly for window: %s", trading_days)
@@ -239,7 +261,9 @@ def aggregate_week(week_ending: str, *, from_fixture: Path | None = None) -> dic
         # Live fetch path — runs the full daily fetcher for Friday only
         # (single snapshot, full mode for tell-scoring quality).
         from daily_pulse_fetcher import fetch_daily_data
-        raw = fetch_daily_data(trading_days[-1])
+        # Snapshot the last OPEN session (not the calendar Friday, which may be
+        # a holiday like Juneteenth) so date-keyed fetches return real data.
+        raw = fetch_daily_data(_last_trading_day(trading_days[-1]))
         agg = aggregate(raw, prev_raw=None)
 
     # Override weekly framing
