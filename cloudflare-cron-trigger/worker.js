@@ -242,7 +242,8 @@ async function dispatchWorkflow(env, workflowFile, inputs = null) {
     },
     body: JSON.stringify(body)
   });
-  return { workflow: workflowFile, status: res.status, ok: res.ok, text: res.ok ? "" : (await res.text()).slice(0, 300) };
+  const authError = res.status === 401 || res.status === 403;
+  return { workflow: workflowFile, status: res.status, ok: res.ok, authError, text: res.ok ? "" : (await res.text()).slice(0, 300) };
 }
 
 async function fetchRepoJson(_env, path) {
@@ -920,6 +921,7 @@ async function runTick(env, source = "cron") {
   }
   const workflows = selectWorkflows(et);
   const result = { timestamp: stamp, etDate, etHour: et.hour, etMinute: et.minute, dow: et.dow, source, workflowsTriggered: [], workflowsSkipped: [] };
+  let authFailed = false;
   if (workflows.length === 0) {
     await appendLog(env, `${stamp} ${etDate} ET=${et.hour}:${String(et.minute).padStart(2,"0")} dow=${et.dow} [${source}] NO_MATCH`);
     return result;
@@ -932,6 +934,7 @@ async function runTick(env, source = "cron") {
         await appendLog(env, `${stamp} ${etDate} ET=${et.hour}:${String(et.minute).padStart(2,"0")} [${source}] DISPATCH ${wf} -> ${r.status}`);
       } else {
         result.workflowsSkipped.push({ wf, status: r.status, error: r.text });
+        if (r.authError) authFailed = true;
         await appendLog(env, `${stamp} ${etDate} ET=${et.hour}:${String(et.minute).padStart(2,"0")} [${source}] FAIL ${wf} -> ${r.status} ${r.text}`);
       }
     } catch (e) {
@@ -939,7 +942,8 @@ async function runTick(env, source = "cron") {
       await appendLog(env, `${stamp} ${etDate} ET=${et.hour}:${String(et.minute).padStart(2,"0")} [${source}] ERROR ${wf} -> ${e}`);
     }
   }
-  await pingHealthchecks(env);
+  if (authFailed) await appendLog(env, `${stamp} ${etDate} [AUTH-ERROR] GH_PAT 401/403 on dispatch — paging healthcheck`);
+  await pingHealthchecks(env, authFailed ? "/fail" : "");
   return result;
 }
 
