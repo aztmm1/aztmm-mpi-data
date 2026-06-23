@@ -27,15 +27,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: DST gate (only 5 PM ET)
+      - name: DST gate (run the 5 PM ET cron, latency-tolerant)
         id: dst
         run: |
-          ET_HOUR=$(TZ=America/New_York date +%H)
-          if [ "$ET_HOUR" = "17" ]; then
+          # Pick exactly the one UTC cron that lands at 17:00 ET for today's DST
+          # offset and run it, regardless of GitHub scheduler latency. The old gate
+          # required wall-clock ET hour == 17, so any cron fire delayed past the top
+          # of the hour was silently skipped (cause of the 6/19 staleness).
+          # workflow_dispatch is handled by the per-step "|| github.event_name ==
+          # 'workflow_dispatch'" conditions below, so on-demand runs still work.
+          OFFSET=$(TZ=America/New_York date +%z)
+          SCHED="${{ github.event.schedule }}"
+          RUN=false
+          if [ "$OFFSET" = "-0400" ] && [ "$SCHED" = "0 21 * * 1-5" ]; then RUN=true; fi
+          if [ "$OFFSET" = "-0500" ] && [ "$SCHED" = "0 22 * * 1-5" ]; then RUN=true; fi
+          if [ "$RUN" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping: ET hour is $ET_HOUR (not 17)"
+            echo "Skipping: offset=$OFFSET schedule=$SCHED (not the 5 PM ET cron for current DST)"
           fi
 
       - name: Set up Python
