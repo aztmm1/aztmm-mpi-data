@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-24T22:09:01Z",
+  "generated_at": "2026-06-24T22:22:28Z",
   "mpi": {
     "score": 55,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 2.46
   },
   "latest_daily_pulse": {
-    "id": 3019,
-    "url": "https://aztmm.com/2026/06/22/daily-pulse-options-flow-dark-pool-22-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 22 June 2026",
-    "date": "2026-06-22",
-    "snippet": "A quiet drift lower into Micron earnings week \u2014 SPY \u22120.31%, QQQ \u22120.36%, VIX back up to 17.28 \u2014 while the heaviest single-name premium of the day stacked up two-sided around the semis.",
+    "id": 3024,
+    "url": "https://aztmm.com/2026/06/23/daily-pulse-options-flow-dark-pool-23-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 23 June 2026",
+    "date": "2026-06-23",
+    "snippet": "A tech-led gap lower pinned SPY to its 50-day line and finally woke up the volatility bid \u2014 QQQ off 3.3%, NVDA back at $200, and a heavy two-way options book stacking up ahead of MU earnings.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3024,
+      "url": "https://aztmm.com/2026/06/23/daily-pulse-options-flow-dark-pool-23-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 23 June 2026",
+      "date": "2026-06-23",
+      "snippet": "A tech-led gap lower pinned SPY to its 50-day line and finally woke up the volatility bid \u2014 QQQ off 3.3%, NVDA back at $200, and a heavy two-way options book stacking up ahead of MU earnings.",
+      "kind": "daily"
+    },
     {
       "id": 3019,
       "url": "https://aztmm.com/2026/06/22/daily-pulse-options-flow-dark-pool-22-june-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-06-17",
       "snippet": "FOMC day broke the 749 SPY / 729 QQQ defense lines. VIX +12.4%, defensives took blocks, short-dated put bid lifted ask-side. The Bull \u00b7 early thesis is on its back foot \u2014 we reset levels into Friday OPEX.",
       "kind": "daily"
-    },
-    {
-      "id": 2982,
-      "url": "https://aztmm.com/2026/06/16/daily-pulse-options-flow-dark-pool-16-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 16 June 2026",
-      "date": "2026-06-16",
-      "snippet": "Both indices closed red as tech led the fade \u2014 SPY -0.60%, QQQ -1.90%, NVDA -2.37% \u2014 while net options premium across the megacaps tilted negative and dark-pool blocks lit up in AVGO, MU, and NVDA.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -86,7 +86,7 @@
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
-      "as_of": "2026-06-23",
+      "as_of": "2026-06-24",
       "snippet": "0 names flagged in the EOD earnings-flow screen."
     },
     "insider_activity": {
