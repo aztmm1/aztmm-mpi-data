@@ -10,8 +10,7 @@ and Pulse Compass probabilities from FREE public data sources only:
   * StockAnalysis.com (SPY/QQQ/sectors/UUP=DXY proxy)     — no key, no rate limit
   * CBOE EOD CSV (^VIX, ^VIX3M)                           — no key, public CDN
   * yfinance (legacy fallback only)                       — no key, often blocked from CI
-  * CBOE daily put/call CSV                              — no key (web scrape)
-  * AAII weekly sentiment (best-effort, Wed cadence)     — no key (web scrape)
+  * CBOE put/call + AAII sentiment   — RETIRED 2026-06-24 (dead feeds; CNN F&G carries sentiment)
   * CNN Fear & Greed JSON endpoint                       — no key
 
 Output JSON conforms to the existing seed schema (schema_version 2.0).
@@ -1506,11 +1505,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         log.info("public payload unchanged; skipping write to %s", out_path)
 
-    if internal_changed:
-        internal_path.write_text(internal_str + "\n")
-        log.info("wrote %s (%d bytes, internal)", internal_path, len(internal_str))
-    else:
-        log.info("internal payload unchanged; skipping write to %s", internal_path)
+    # mpi-internal.json retired 2026-06-24: it was committed to the public repo and exposed MPI_WEIGHTS via source_versions.weights; the weights-stripped public mpi.json is the only published artifact.
     return 0
 
 
