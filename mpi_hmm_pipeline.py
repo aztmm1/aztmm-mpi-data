@@ -596,33 +596,7 @@ def _load_cnn_fear_greed(ctx: RunContext) -> Optional[float]:
 
 def _load_cboe_putcall(ctx: RunContext) -> Optional[float]:
     """Pull total put/call ratio (latest day) from CBOE public CSV."""
-    body = _http_get(CBOE_PUTCALL_URL)
-    if body is None or pd is None:
-        ctx.warn("CBOE put/call fetch failed")
-        return None
-    try:
-        # CBOE CSV has a couple header rows
-        text = body.decode("utf-8", errors="ignore")
-        # Find first row that looks like a date header
-        lines = text.splitlines()
-        start = 0
-        for i, ln in enumerate(lines):
-            if "DATE" in ln.upper() and "RATIO" in ln.upper():
-                start = i
-                break
-        df = pd.read_csv(io.StringIO("\n".join(lines[start:])))
-        # Most recent row
-        ratio_col = next(
-            (c for c in df.columns if "RATIO" in c.upper() or "P/C" in c.upper()),
-            None,
-        )
-        if ratio_col is None or df.empty:
-            return None
-        val = pd.to_numeric(df[ratio_col], errors="coerce").dropna().iloc[-1]
-        return float(val)
-    except Exception as e:  # noqa: BLE001
-        ctx.warn(f"CBOE put/call parse failed: {e}")
-        return None
+    return None  # CBOE put/call retired 2026-06-24: CSV now 403s; CNN F&G already subsumes the put/call signal
 
 
 def _load_aaii(ctx: RunContext) -> Optional[float]:
@@ -633,29 +607,7 @@ def _load_aaii(ctx: RunContext) -> Optional[float]:
     so it does NOT degrade data_quality. CNN F&G carries the sentiment
     sleeve alone in the meantime.
     """
-    body = _http_get(AAII_CSV_FALLBACK)
-    if body is None or pd is None:
-        # Silently skip: no ctx.warn() -> no entry in public "warnings" list,
-        # no degradation of data_quality. CNN F&G covers sentiment for now.
-        log.info("AAII source unavailable; using CNN F&G alone for sentiment")
-        return None
-    try:
-        df = pd.read_csv(io.BytesIO(body))
-        # Expect columns Bullish, Bearish (case may vary)
-        bull_col = next((c for c in df.columns if "bull" in c.lower()), None)
-        bear_col = next((c for c in df.columns if "bear" in c.lower()), None)
-        if bull_col is None or bear_col is None or df.empty:
-            return None
-        bull = pd.to_numeric(df[bull_col], errors="coerce").dropna().iloc[-1]
-        bear = pd.to_numeric(df[bear_col], errors="coerce").dropna().iloc[-1]
-        # If values look like 0..1, scale up
-        if bull < 1 and bear < 1:
-            bull *= 100
-            bear *= 100
-        return float(bull - bear)
-    except Exception as e:  # noqa: BLE001
-        ctx.warn(f"AAII parse failed: {e}")
-        return None
+    return None  # AAII retired 2026-06-24: community mirror deleted (404), no keyless source; CNN F&G carries sentiment
 
 
 # ---------------------------------------------------------------------------
