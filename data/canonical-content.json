@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-25T00:13:32Z",
+  "generated_at": "2026-06-25T06:06:44Z",
   "mpi": {
     "score": 55,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-06-24",
-    "computed_at": "2026-06-25T00:13:16Z",
+    "computed_at": "2026-06-25T06:06:29Z",
     "confidence": 0.85,
     "confidence_band": [
       50,
@@ -14,16 +14,16 @@
   },
   "market": {
     "spy_close": 733.24,
-    "vix": 19.49,
+    "vix": 18.63,
     "rv_30d": 16.8,
-    "vrp": 2.69
+    "vrp": 1.83
   },
   "latest_daily_pulse": {
-    "id": 3024,
-    "url": "https://aztmm.com/2026/06/23/daily-pulse-options-flow-dark-pool-23-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 23 June 2026",
-    "date": "2026-06-23",
-    "snippet": "A tech-led gap lower pinned SPY to its 50-day line and finally woke up the volatility bid \u2014 QQQ off 3.3%, NVDA back at $200, and a heavy two-way options book stacking up ahead of MU earnings.",
+    "id": 3027,
+    "url": "https://aztmm.com/2026/06/24/daily-pulse-options-flow-dark-pool-24-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 24 June 2026",
+    "date": "2026-06-24",
+    "snippet": "A near-flat SPY masked a choppy, tech-soft session \u2014 index desks paid up to hedge into the close even as volatility leaked lower, with Micron&#8217;s after-the-bell print the next catalyst.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3027,
+      "url": "https://aztmm.com/2026/06/24/daily-pulse-options-flow-dark-pool-24-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 24 June 2026",
+      "date": "2026-06-24",
+      "snippet": "A near-flat SPY masked a choppy, tech-soft session \u2014 index desks paid up to hedge into the close even as volatility leaked lower, with Micron&#8217;s after-the-bell print the next catalyst.",
+      "kind": "daily"
+    },
     {
       "id": 3024,
       "url": "https://aztmm.com/2026/06/23/daily-pulse-options-flow-dark-pool-23-june-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 June 2026",
       "date": "2026-06-18",
       "snippet": "A tech-led risk-on session: SPY +0.78%, QQQ +2.51% and VIX back to 16.4, with our flow read split between index put hedging and aggressive single-name call demand in semis.",
-      "kind": "daily"
-    },
-    {
-      "id": 3002,
-      "url": "https://aztmm.com/2026/06/17/daily-pulse-options-flow-dark-pool-17-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 June 2026",
-      "date": "2026-06-17",
-      "snippet": "FOMC day broke the 749 SPY / 729 QQQ defense lines. VIX +12.4%, defensives took blocks, short-dated put bid lifted ask-side. The Bull \u00b7 early thesis is on its back foot \u2014 we reset levels into Friday OPEX.",
       "kind": "daily"
     }
   ],
