@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-26T16:28:17Z",
+  "generated_at": "2026-06-26T22:04:15Z",
   "mpi": {
     "score": 54,
     "regime": "Sideways",
@@ -19,11 +19,11 @@
     "vrp": 2.06
   },
   "latest_daily_pulse": {
-    "id": 3034,
-    "url": "https://aztmm.com/2026/06/25/daily-pulse-options-flow-dark-pool-25-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 25 June 2026",
-    "date": "2026-06-25",
-    "snippet": "Indices closed green on a choppy June 25 session \u2014 SPY +0.14%, QQQ +0.81% after a washout to 705 and back \u2014 with single-name calls, index puts, and heavy ETF block prints pointing to a hedged-long posture, and NVDA the standout drag.",
+    "id": 3038,
+    "url": "https://aztmm.com/2026/06/26/daily-pulse-options-flow-dark-pool-26-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 26 June 2026",
+    "date": "2026-06-26",
+    "snippet": "An orderly, tech-led fade into the weekend \u2014 SPY \u22120.72%, QQQ \u22121.38%, NVDA \u22121.64% \u2014 with the VIX spiking to 20.72 intraday before fading to 18.41 as index put hedges stacked up against persistent single-name call appetite.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3038,
+      "url": "https://aztmm.com/2026/06/26/daily-pulse-options-flow-dark-pool-26-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 26 June 2026",
+      "date": "2026-06-26",
+      "snippet": "An orderly, tech-led fade into the weekend \u2014 SPY \u22120.72%, QQQ \u22121.38%, NVDA \u22121.64% \u2014 with the VIX spiking to 20.72 intraday before fading to 18.41 as index put hedges stacked up against persistent single-name call appetite.",
+      "kind": "daily"
+    },
     {
       "id": 3034,
       "url": "https://aztmm.com/2026/06/25/daily-pulse-options-flow-dark-pool-25-june-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-06-22",
       "snippet": "A quiet drift lower into Micron earnings week \u2014 SPY \u22120.31%, QQQ \u22120.36%, VIX back up to 17.28 \u2014 while the heaviest single-name premium of the day stacked up two-sided around the semis.",
       "kind": "daily"
-    },
-    {
-      "id": 3010,
-      "url": "https://aztmm.com/2026/06/20/weekly-pulse-2026-06-15-to-2026-06-19/",
-      "title": "Weekly Pulse \u2014 Week of June 15\u201319, 2026",
-      "date": "2026-06-20",
-      "snippet": "Bull \u00b7 early regime held; net call premium 2.8x put across 5 sessions; no single-name positioning carried through the week.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-06-25",
+      "as_of": "2026-06-26",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
