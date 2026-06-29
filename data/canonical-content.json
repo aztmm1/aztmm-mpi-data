@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-29T17:12:59Z",
+  "generated_at": "2026-06-29T22:04:38Z",
   "mpi": {
     "score": 55,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 1.64
   },
   "latest_daily_pulse": {
-    "id": 3038,
-    "url": "https://aztmm.com/2026/06/26/daily-pulse-options-flow-dark-pool-26-june-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 26 June 2026",
-    "date": "2026-06-26",
-    "snippet": "An orderly, tech-led fade into the weekend \u2014 SPY \u22120.72%, QQQ \u22121.38%, NVDA \u22121.64% \u2014 with the VIX spiking to 20.72 intraday before fading to 18.41 as index put hedges stacked up against persistent single-name call appetite.",
+    "id": 3052,
+    "url": "https://aztmm.com/2026/06/29/daily-pulse-options-flow-dark-pool-29-june-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 29 June 2026",
+    "date": "2026-06-29",
+    "snippet": "Risk-on into quarter-end: SPY +1.65% to $741.00 and a semis-led QQQ +2.49%, with the broad tape paying for calls even as index puts stayed bid \u2014 and the day&#8217;s biggest off-exchange blocks crossing in AVGO, AMAT, NVDA and the SMH complex.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3052,
+      "url": "https://aztmm.com/2026/06/29/daily-pulse-options-flow-dark-pool-29-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 29 June 2026",
+      "date": "2026-06-29",
+      "snippet": "Risk-on into quarter-end: SPY +1.65% to $741.00 and a semis-led QQQ +2.49%, with the broad tape paying for calls even as index puts stayed bid \u2014 and the day&#8217;s biggest off-exchange blocks crossing in AVGO, AMAT, NVDA and the SMH complex.",
+      "kind": "daily"
+    },
     {
       "id": 3042,
       "url": "https://aztmm.com/2026/06/27/weekly-pulse-2026-06-22-to-2026-06-26/",
@@ -66,14 +74,6 @@
       "date": "2026-06-24",
       "snippet": "A near-flat SPY masked a choppy, tech-soft session \u2014 index desks paid up to hedge into the close even as volatility leaked lower, with Micron&#8217;s after-the-bell print the next catalyst.",
       "kind": "daily"
-    },
-    {
-      "id": 3024,
-      "url": "https://aztmm.com/2026/06/23/daily-pulse-options-flow-dark-pool-23-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 23 June 2026",
-      "date": "2026-06-23",
-      "snippet": "A tech-led gap lower pinned SPY to its 50-day line and finally woke up the volatility bid \u2014 QQQ off 3.3%, NVDA back at $200, and a heavy two-way options book stacking up ahead of MU earnings.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-06-26",
+      "as_of": "2026-06-29",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
