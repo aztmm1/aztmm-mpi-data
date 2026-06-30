@@ -973,6 +973,15 @@ def regime_label(score: float) -> Tuple[str, str]:
     return "Bear", "Bear"
 
 
+def mpi_band_label(score: float) -> str:
+    """MPI score -> label per methodology neutral band: >60 Bull, <40 Bear, 40-60 Neutral."""
+    if score > 60:
+        return "Bull"
+    if score < 40:
+        return "Bear"
+    return "Neutral"
+
+
 def signal_from_score(score: float) -> Dict[str, str]:
     if score >= 65:
         return {"bias": "Bullish", "strength": "High"}
@@ -1235,7 +1244,11 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
     hmm = fit_hmm_regime(yfd, ctx)
 
     # --- Regime/compass/signal ---
-    regime, regime_lbl = regime_label(mpi)
+    # M1: MPI score -> label follows the methodology neutral band (>60 Bull, <40 Bear, 40-60 Neutral).
+    mpi_lbl = mpi_band_label(mpi)
+    # M3: published regime reflects the HMM regime classifier (hmm.state), not the MPI score band.
+    regime = hmm["state"]
+    regime_lbl = regime
     sig = signal_from_score(mpi)
     ci = compute_confidence_band(mpi)
     compass = compute_compass(mpi, hmm["probs"], term_shape)
@@ -1248,7 +1261,7 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
         "data_quality":   _compute_data_quality(ctx),
         "data": {
             "mpi_score":  mpi,
-            "mpi_label":  regime,
+            "mpi_label":  mpi_lbl,
             "regime":     regime,
             "regime_label": regime_lbl,
             "confidence": ci,
