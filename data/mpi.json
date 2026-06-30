@@ -5,9 +5,9 @@
   "stale_threshold_hours": 18,
   "data": {
     "mpi_score": 56,
-    "mpi_label": "Bull",
-    "regime": "Bull",
-    "regime_label": "Bull · early",
+    "mpi_label": "Neutral",
+    "regime": "Sideways",
+    "regime_label": "Sideways",
     "confidence": {
       "ci_level": "85%",
       "ci_low": 51,
