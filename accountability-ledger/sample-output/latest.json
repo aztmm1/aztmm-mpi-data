@@ -1,14 +1,14 @@
 {
-  "as_of": "2026-07-01",
-  "date": "2026-07-01",
+  "as_of": "2026-07-02",
+  "date": "2026-07-02",
   "totals": {
-    "open": 167,
-    "resolved": 90,
+    "open": 161,
+    "resolved": 96,
     "hit": 11,
-    "invalidated": 18,
-    "unresolved": 61
+    "invalidated": 19,
+    "unresolved": 66
   },
-  "hit_rate_5d": 0.36,
+  "hit_rate_5d": 0.34,
   "hit_rate_21d": null,
   "regime_alignment_21d": null,
   "rows": [
@@ -20,11 +20,11 @@
       "statement": "New-quarter reset: the first session of Q3 often re-bases flow — we’ll be watching whether the call-tilt persists or the hedges start coming off.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
+      "resolved_date": "2026-07-02",
+      "note": "manual review",
       "ret_1d": null
     },
     {
@@ -35,11 +35,11 @@
       "statement": "Financials: watch whether the Citi and Goldman dark-pool bid shows up in price Wednesday or fades as quarter-end window dressing.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
+      "resolved_date": "2026-07-02",
+      "note": "manual review",
       "ret_1d": null
     },
     {
@@ -50,12 +50,12 @@
       "statement": "NVDA: $200 is now the pivot. Holding it keeps the reclaim and the long-dated call thesis intact; losing today’s 195.11 low negates it.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-02",
+      "note": "manual review",
+      "ret_1d": -0.0125
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch3",
@@ -65,12 +65,12 @@
       "statement": "VIX: 16.45 — a close back under 16 confirms the vol unwind; a snap back over 17.65 flips the near-term tone.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-02",
+      "note": "manual review",
+      "ret_1d": 0.0085
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch2",
@@ -80,12 +80,12 @@
       "statement": "QQQ: 737.62 is the intraday high to beat; the 724 area is the gap-fill floor if the leadership stalls.",
       "direction": "up",
       "horizon_days": 1,
-      "status": "open",
+      "status": "invalidated",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-01",
+      "note": "next-session move -1.52% vs 'up' (±0.25% band)",
+      "ret_1d": -0.0152
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch1",
@@ -95,12 +95,12 @@
       "statement": "SPY: 748.02 is today’s high and the line in the sand — a clean break opens fresh range; 741 (Monday’s close, today’s open) is first support.",
       "direction": "up",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-01",
+      "note": "next-session move -0.14% vs 'up' (±0.25% band)",
+      "ret_1d": -0.0014
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-30-june-2026:regime",

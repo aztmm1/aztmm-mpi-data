@@ -2580,7 +2580,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0407,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2594,7 +2594,7 @@
     "direction": "down",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0128,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2608,7 +2608,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0991,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2622,7 +2622,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": -0.0155,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2636,7 +2636,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": -0.0071,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2650,7 +2650,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.1078,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2664,7 +2664,7 @@
     "direction": "down",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0025,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2678,7 +2678,7 @@
     "direction": "watch",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0171,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2692,7 +2692,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": -0.0855,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -2706,7 +2706,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0171,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -3611,12 +3611,12 @@
     "statement": "SPY: 748.02 is today’s high and the line in the sand — a clean break opens fresh range; 741 (Monday’s close, today’s open) is first support.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-01",
+    "note": "next-session move -0.14% vs 'up' (±0.25% band)",
+    "ret_1d": -0.0014
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch2",
@@ -3626,12 +3626,12 @@
     "statement": "QQQ: 737.62 is the intraday high to beat; the 724 area is the gap-fill floor if the leadership stalls.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-01",
+    "note": "next-session move -1.52% vs 'up' (±0.25% band)",
+    "ret_1d": -0.0152
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch3",
@@ -3641,12 +3641,12 @@
     "statement": "VIX: 16.45 — a close back under 16 confirms the vol unwind; a snap back over 17.65 flips the near-term tone.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-02",
+    "note": "manual review",
+    "ret_1d": 0.0085
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch4",
@@ -3656,12 +3656,12 @@
     "statement": "NVDA: $200 is now the pivot. Holding it keeps the reclaim and the long-dated call thesis intact; losing today’s 195.11 low negates it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-02",
+    "note": "manual review",
+    "ret_1d": -0.0125
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-30-june-2026:watch5",
@@ -3671,11 +3671,11 @@
     "statement": "Financials: watch whether the Citi and Goldman dark-pool bid shows up in price Wednesday or fades as quarter-end window dressing.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-07-02",
+    "note": "manual review",
     "ret_1d": null
   },
   {
@@ -3686,11 +3686,11 @@
     "statement": "New-quarter reset: the first session of Q3 often re-bases flow — we’ll be watching whether the call-tilt persists or the hedges start coming off.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-07-02",
+    "note": "manual review",
     "ret_1d": null
   }
 ]
