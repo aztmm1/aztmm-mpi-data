@@ -1,97 +1,97 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-07-01T06:26:11Z",
-  "asOf": "2026-06-30",
+  "computed_at": "2026-07-02T00:07:00Z",
+  "asOf": "2026-07-01",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 61,
+    "mpi_score": 62,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 56,
-      "ci_high": 66
+      "ci_low": 57,
+      "ci_high": 67
     },
     "signal": {
       "bias": "Bullish",
       "strength": "Medium"
     },
     "market": {
-      "spy_spot": 746.77,
-      "expected_move_1sigma": 7.74,
+      "spy_spot": 745.76,
+      "expected_move_1sigma": 7.73,
       "expected_move_pct": 0.0104
     },
     "volatility": {
       "vix": 16.45,
-      "vix3m": 19.0,
-      "vrp": -1.69,
+      "vix3m": 19.16,
+      "vrp": -1.68,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 18.14
+      "realized_vol_20d_pct": 18.13
     },
     "compass": {
-      "bias": "Neutral",
-      "confidence": 0.3999,
-      "probability_up": 0.3999,
-      "probability_flat": 0.3818,
-      "probability_down": 0.2183
+      "bias": "Bullish",
+      "confidence": 0.5142,
+      "probability_up": 0.5142,
+      "probability_flat": 0.2619,
+      "probability_down": 0.2239
     },
     "hmm": {
-      "state": "Sideways",
-      "confidence": 0.9914,
+      "state": "Bull",
+      "confidence": 0.7294,
       "probs": {
-        "Bull": 0.0079,
-        "Sideways": 0.9914,
-        "Bear": 0.0007
+        "Bull": 0.7294,
+        "Sideways": 0.0722,
+        "Bear": 0.1985
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 83.1,
-        "spy_close": 746.77,
-        "ma50": 735.87,
-        "ma200": 691.43,
-        "cross_ratio_pct": 6.428,
-        "ma50_slope_pct": 1.53
+        "score": 82.7,
+        "spy_close": 745.76,
+        "ma50": 736.61,
+        "ma200": 691.87,
+        "cross_ratio_pct": 6.467,
+        "ma50_slope_pct": 1.377
       },
       "breadth": {
-        "score": 95.5,
-        "cyclical_defensive_ratio": 1.4282,
-        "cyc_def_percentile_1y": 94.0,
-        "iwm_spy_percentile_1y": 97.6
+        "score": 93.9,
+        "cyclical_defensive_ratio": 1.413,
+        "cyc_def_percentile_1y": 91.7,
+        "iwm_spy_percentile_1y": 97.2
       },
       "volatility": {
         "score": 65.4,
         "vix": 16.45,
-        "vix3m": 19.0,
+        "vix3m": 19.16,
         "vix_percentile_1y": 36.5,
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 62.0,
-        "t10y2y_pct": 0.3,
-        "dgs10": 4.38,
-        "dgs2": 4.1
+        "score": 62.4,
+        "t10y2y_pct": 0.31,
+        "dgs10": 4.44,
+        "dgs2": 4.14
       },
       "credit": {
-        "score": 86.4,
-        "hy_oas_pct": 2.8,
+        "score": 87.0,
+        "hy_oas_pct": 2.75,
         "ig_oas_pct": 0.76
       },
       "sentiment": {
-        "score": 31.3,
-        "cnn_fg": 31.3
+        "score": 31.9,
+        "cnn_fg": 31.9
       },
       "rotation": {
-        "score": 31.3,
-        "xlu_xly_ratio": 0.3866,
-        "xlu_xly_percentile_1y": 68.7
+        "score": 44.0,
+        "xlu_xly_ratio": 0.3791,
+        "xlu_xly_percentile_1y": 56.0
       },
       "currency": {
-        "score": 22.3,
-        "uup": 28.41,
-        "uup_50d_ma": 27.793,
-        "uup_vs_ma_pct": 2.219,
+        "score": 19.7,
+        "uup": 28.49,
+        "uup_50d_ma": 27.817,
+        "uup_vs_ma_pct": 2.42,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
