@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-07-03T05:53:00Z",
+  "computed_at": "2026-07-04T00:03:48Z",
   "asOf": "2026-07-02",
   "stale_threshold_hours": 18,
   "data": {
@@ -74,9 +74,9 @@
         "dgs2": 4.17
       },
       "credit": {
-        "score": 87.1,
-        "hy_oas_pct": 2.74,
-        "ig_oas_pct": 0.76
+        "score": 87.0,
+        "hy_oas_pct": 2.75,
+        "ig_oas_pct": 0.75
       },
       "sentiment": {
         "score": 31.9,
