@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T14:26:53Z",
+  "generated_at": "2026-07-05T08:45:42Z",
   "mpi": {
     "score": 61,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3042,
-    "url": "https://aztmm.com/2026/06/27/weekly-pulse-2026-06-22-to-2026-06-26/",
-    "title": "Weekly Pulse \u2014 Week of June 22\u201326, 2026",
-    "date": "2026-06-27",
+    "id": 3069,
+    "url": "https://aztmm.com/2026/07/04/weekly-pulse-2026-06-29-to-2026-07-03/",
+    "title": "Weekly Pulse \u2014 Week of June 29\u20133, 2026",
+    "date": "2026-07-04",
     "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3069,
+      "url": "https://aztmm.com/2026/07/04/weekly-pulse-2026-06-29-to-2026-07-03/",
+      "title": "Weekly Pulse \u2014 Week of June 29\u20133, 2026",
+      "date": "2026-07-04",
+      "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3056,
       "url": "https://aztmm.com/2026/06/30/daily-pulse-options-flow-dark-pool-30-june-2026/",
@@ -66,19 +74,11 @@
       "date": "2026-06-26",
       "snippet": "An orderly, tech-led fade into the weekend \u2014 SPY \u22120.72%, QQQ \u22121.38%, NVDA \u22121.64% \u2014 with the VIX spiking to 20.72 intraday before fading to 18.41 as index put hedges stacked up against persistent single-name call appetite.",
       "kind": "daily"
-    },
-    {
-      "id": 3034,
-      "url": "https://aztmm.com/2026/06/25/daily-pulse-options-flow-dark-pool-25-june-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 25 June 2026",
-      "date": "2026-06-25",
-      "snippet": "Indices closed green on a choppy June 25 session \u2014 SPY +0.14%, QQQ +0.81% after a washout to 705 and back \u2014 with single-name calls, index puts, and heavy ETF block prints pointing to a hedged-long posture, and NVDA the standout drag.",
-      "kind": "daily"
     }
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-07-04 5:00 PM ET",
+      "as_of": "2026-07-05 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
