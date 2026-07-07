@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-07T00:08:24Z",
+  "generated_at": "2026-07-07T06:07:32Z",
   "mpi": {
     "score": 65,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-07-06",
-    "computed_at": "2026-07-07T00:08:09Z",
+    "computed_at": "2026-07-07T06:07:17Z",
     "confidence": 0.85,
     "confidence_band": [
       60,
@@ -14,9 +14,9 @@
   },
   "market": {
     "spy_close": 751.28,
-    "vix": 15.81,
+    "vix": 15.57,
     "rv_30d": 18.23,
-    "vrp": -2.42
+    "vrp": -2.66
   },
   "latest_daily_pulse": {
     "id": 3083,
@@ -44,14 +44,6 @@
       "kind": "daily"
     },
     {
-      "id": 3079,
-      "url": "https://aztmm.com/2026/07/04/weekly-pulse-2026-06-29-to-03/",
-      "title": "Weekly Pulse \u2014 Week of June 29\u2013July 3, 2026",
-      "date": "2026-07-04",
-      "snippet": "A holiday-shortened week of two halves: a quarter-end melt-up carried SPY +2.2%, then Q3 opened with two straight sessions of tech distribution \u2014 QQQ \u22123.2% over Wednesday\u2013Thursday \u2014 while the VIX fell 12% and the block tape rotated into financials, value, and bonds.",
-      "kind": "daily"
-    },
-    {
       "id": 3069,
       "url": "https://aztmm.com/2026/07/04/weekly-pulse-2026-06-29-to-2026-07-03/",
       "title": "Weekly Pulse \u2014 Week of June 29\u20133, 2026",
@@ -73,6 +65,14 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 1 July 2026",
       "date": "2026-07-01",
       "snippet": "Q3 opened with a rotation, not a rally: SPY slipped just 0.14% while QQQ gave back 1.53% \u2014 and the day&#8217;s biggest off-exchange prints crossed in financials (JPM ~$1.8B), bond ETFs, and value wrappers, the fingerprint of a new-quarter allocation reset.",
+      "kind": "daily"
+    },
+    {
+      "id": 3056,
+      "url": "https://aztmm.com/2026/06/30/daily-pulse-options-flow-dark-pool-30-june-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 30 June 2026",
+      "date": "2026-06-30",
+      "snippet": "Quarter-end closed green across the board \u2014 QQQ +1.70%, SPY +0.78%, VIX down to 16.45 \u2014 while ~$1.27B in closing SPY blocks and heavy Citi/Goldman dark-pool accumulation flagged calendar-driven rebalancing beneath a risk-on tape.",
       "kind": "daily"
     }
   ],
