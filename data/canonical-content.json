@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-08T16:12:22Z",
+  "generated_at": "2026-07-08T21:59:15Z",
   "mpi": {
     "score": 63,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 0.52
   },
   "latest_daily_pulse": {
-    "id": 3092,
-    "url": "https://aztmm.com/2026/07/07/daily-pulse-options-flow-dark-pool-7-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 7 July 2026",
-    "date": "2026-07-07",
-    "snippet": "Tech led the tape lower \u2014 QQQ dropped 1.85% while SPY slipped just 0.48%, and the flow showed persistent August QQQ put buying against aggressive AMD call accumulation and a semis-heavy dark-pool tape.",
+    "id": 3100,
+    "url": "https://aztmm.com/2026/07/08/daily-pulse-options-flow-dark-pool-8-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 July 2026",
+    "date": "2026-07-08",
+    "snippet": "SPY slipped 0.31% while QQQ added 0.28% behind a 3.7% NVDA rip; VIX pushed back to 16.9, MU put hedging clustered, and semis dominated the dark-pool block tape.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3100,
+      "url": "https://aztmm.com/2026/07/08/daily-pulse-options-flow-dark-pool-8-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 July 2026",
+      "date": "2026-07-08",
+      "snippet": "SPY slipped 0.31% while QQQ added 0.28% behind a 3.7% NVDA rip; VIX pushed back to 16.9, MU put hedging clustered, and semis dominated the dark-pool block tape.",
+      "kind": "daily"
+    },
     {
       "id": 3092,
       "url": "https://aztmm.com/2026/07/07/daily-pulse-options-flow-dark-pool-7-july-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-07-02",
       "snippet": "A second straight tech-led fade into the long weekend \u2014 QQQ \u22121.73% while SPY slipped just 0.13% and the VIX fell to 16.15 \u2014 with massive closing dark-pool prints in SPY ($1.86B) and NVDA ($1.07B) capping a rotation week.",
       "kind": "daily"
-    },
-    {
-      "id": 3077,
-      "url": "https://aztmm.com/2026/07/01/daily-pulse-options-flow-dark-pool-1-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 1 July 2026",
-      "date": "2026-07-01",
-      "snippet": "Q3 opened with a rotation, not a rally: SPY slipped just 0.14% while QQQ gave back 1.53% \u2014 and the day&#8217;s biggest off-exchange prints crossed in financials (JPM ~$1.8B), bond ETFs, and value wrappers, the fingerprint of a new-quarter allocation reset.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-07-07",
+      "as_of": "2026-07-08",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
