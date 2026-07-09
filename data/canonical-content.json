@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-09T16:41:44Z",
+  "generated_at": "2026-07-09T22:14:53Z",
   "mpi": {
     "score": 60,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 1.24
   },
   "latest_daily_pulse": {
-    "id": 3100,
-    "url": "https://aztmm.com/2026/07/08/daily-pulse-options-flow-dark-pool-8-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 July 2026",
-    "date": "2026-07-08",
-    "snippet": "SPY slipped 0.31% while QQQ added 0.28% behind a 3.7% NVDA rip; VIX pushed back to 16.9, MU put hedging clustered, and semis dominated the dark-pool block tape.",
+    "id": 3112,
+    "url": "https://aztmm.com/2026/07/09/daily-pulse-options-flow-dark-pool-9-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 July 2026",
+    "date": "2026-07-09",
+    "snippet": "Indices rallied with QQQ up 1.66% and VIX crushed to 15.84, but the flow tape showed hedges being layered under the strength \u2014 Sep SPX straddles, long-dated index puts, and heavy closing dark-pool blocks.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3112,
+      "url": "https://aztmm.com/2026/07/09/daily-pulse-options-flow-dark-pool-9-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 July 2026",
+      "date": "2026-07-09",
+      "snippet": "Indices rallied with QQQ up 1.66% and VIX crushed to 15.84, but the flow tape showed hedges being layered under the strength \u2014 Sep SPX straddles, long-dated index puts, and heavy closing dark-pool blocks.",
+      "kind": "daily"
+    },
     {
       "id": 3100,
       "url": "https://aztmm.com/2026/07/08/daily-pulse-options-flow-dark-pool-8-july-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-07-04",
       "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
       "kind": "weekly"
-    },
-    {
-      "id": 3078,
-      "url": "https://aztmm.com/2026/07/02/daily-pulse-options-flow-dark-pool-2-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 2 July 2026",
-      "date": "2026-07-02",
-      "snippet": "A second straight tech-led fade into the long weekend \u2014 QQQ \u22121.73% while SPY slipped just 0.13% and the VIX fell to 16.15 \u2014 with massive closing dark-pool prints in SPY ($1.86B) and NVDA ($1.07B) capping a rotation week.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-07-08",
+      "as_of": "2026-07-09",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
