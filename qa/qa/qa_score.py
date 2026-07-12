@@ -142,8 +142,8 @@ def main():
     add("C2", "consistency", 6, True, mpi["asOf"] == c_mpi.get("as_of"),
         f"asOf {mpi['asOf']} vs canonical {c_mpi.get('as_of')}")
     spy_spot = d["market"]["spy_spot"]
-    add("C3", "consistency", 4, False, spy_spot == c_mpi.get("spy_close"),
-        f"spy_spot {spy_spot} vs canonical {c_mpi.get('spy_close')}")
+    add("C3", "consistency", 4, False, spy_spot == canon.get("market", {}).get("spy_close"),
+        f"spy_spot {spy_spot} vs canonical {canon.get('market', {}).get('spy_close')}")
     add("C4", "consistency", 4, False, d["regime_label"] == c_mpi.get("regime"),
         f"regime_label '{d['regime_label']}' vs canonical '{c_mpi.get('regime')}'")
 
