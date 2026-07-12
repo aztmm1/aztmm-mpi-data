@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "rubric": "v2.2",
+  "generated_at": "2026-07-12T03:55:03Z",
+  "as_of_session": "2026-07-10",
+  "score": 96,
+  "grade": "A",
+  "critical_fail": false,
+  "categories": {
+    "freshness": {
+      "earned": 20,
+      "max": 20
+    },
+    "consistency": {
+      "earned": 16,
+      "max": 20
+    },
+    "methodology": {
+      "earned": 25,
+      "max": 25
+    },
+    "honesty": {
+      "earned": 20,
+      "max": 20
+    },
+    "integrity": {
+      "earned": 15,
+      "max": 15
+    }
+  },
+  "unverified_count": 1,
+  "checks": [
+    {
+      "id": "F1",
+      "category": "freshness",
+      "points": 5,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "computed_at 2026-07-12T00:28:58Z vs 2026-07-10 18:00 ET window; asOf 2026-07-10"
+    },
+    {
+      "id": "F2",
+      "category": "freshness",
+      "points": 5,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "canonical embeds 2026-07-12T00:28:58Z (mpi 2026-07-12T00:28:58Z); generated 2026-07-12T00:29:13Z"
+    },
+    {
+      "id": "F3",
+      "category": "freshness",
+      "points": 4,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "latest daily pulse 2026-07-10 vs last session 2026-07-10"
+    },
+    {
+      "id": "F4",
+      "category": "freshness",
+      "points": 2,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "weekly pulse present in last 10 posts"
+    },
+    {
+      "id": "F5",
+      "category": "freshness",
+      "points": 4,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "/squeeze-watch/ not public (ok); /insider-activity/ not public (ok)"
+    },
+    {
+      "id": "C1",
+      "category": "consistency",
+      "points": 6,
+      "critical": true,
+      "pass": true,
+      "unverified": false,
+      "detail": "mpi 67 vs canonical 67"
+    },
+    {
+      "id": "C2",
+      "category": "consistency",
+      "points": 6,
+      "critical": true,
+      "pass": true,
+      "unverified": false,
+      "detail": "asOf 2026-07-10 vs canonical 2026-07-10"
+    },
+    {
+      "id": "C3",
+      "category": "consistency",
+      "points": 4,
+      "critical": false,
+      "pass": false,
+      "unverified": false,
+      "detail": "spy_spot 754.95 vs canonical None"
+    },
+    {
+      "id": "C4",
+      "category": "consistency",
+      "points": 4,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "regime_label 'Sideways' vs canonical 'Sideways'"
+    },
+    {
+      "id": "M1",
+      "category": "methodology",
+      "points": 10,
+      "critical": true,
+      "pass": true,
+      "unverified": false,
+      "detail": "label 'Bull' for score 67 (band Bull)"
+    },
+    {
+      "id": "M3",
+      "category": "methodology",
+      "points": 8,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "regime 'Sideways' vs HMM state 'Sideways'"
+    },
+    {
+      "id": "M4",
+      "category": "methodology",
+      "points": 3,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "CI 62-72 brackets 67"
+    },
+    {
+      "id": "M5",
+      "category": "methodology",
+      "points": 4,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "out-of-range sub-scores: none"
+    },
+    {
+      "id": "H1",
+      "category": "honesty",
+      "points": 8,
+      "critical": true,
+      "pass": true,
+      "unverified": true,
+      "detail": "Stooq unreachable ('Close')"
+    },
+    {
+      "id": "H2",
+      "category": "honesty",
+      "points": 6,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "vix 15.03 vs CBOE 15.03 for 2026-07-10"
+    },
+    {
+      "id": "H3",
+      "category": "honesty",
+      "points": 6,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "resolved 1-day ticker rows with null ret_1d: none"
+    },
+    {
+      "id": "I1",
+      "category": "integrity",
+      "points": 3,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "retired feeds (AAII, put/call) absent from payload"
+    },
+    {
+      "id": "I2",
+      "category": "integrity",
+      "points": 7,
+      "critical": false,
+      "pass": true,
+      "unverified": false,
+      "detail": "payload matches the reconciled Data Sources accounting (2026-07-07)"
+    },
+    {
+      "id": "I3",
+      "category": "integrity",
+      "points": 5,
+      "critical": true,
+      "pass": true,
+      "unverified": false,
+      "detail": "no MPI weights or HMM transition matrix in public payload"
+    }
+  ]
+}
