@@ -2,6 +2,7 @@ name: QA Self-Audit
 
 # Nightly public data-quality score against the v2.2 rubric. Runs after
 # the ledger cron (03:15 UTC Tue-Sat) so it audits the fully-updated surface.
+# Also renders social/latest-card.png - the shareable nightly ledger card.
 on:
   schedule:
     - cron: "0 7 * * 2-6"
@@ -33,16 +34,22 @@ jobs:
       - name: Run QA scorer
         run: python qa/qa/qa_score.py
 
+      - name: Render social card
+        run: |
+          pip install --quiet pillow
+          python social/make_card.py || echo "card render failed - continuing without card"
+
       - name: Commit & push if changed
         run: |
           set -e
           git config user.name  "aztmm-qa-bot"
           git config user.email "aztmm-qa-bot@users.noreply.github.com"
-          if [ -z "$(git status --porcelain -- data/qa.json)" ]; then
+          git add data/qa.json
+          [ -f social/latest-card.png ] && git add social/latest-card.png
+          if [ -z "$(git status --porcelain --cached)" ]; then
             echo "no changes to commit"
             exit 0
           fi
-          git add data/qa.json
           git commit -m "auto: QA self-audit $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           for i in 1 2 3; do
             if git pull --rebase origin main >/dev/null 2>&1 && git push origin main; then
@@ -55,3 +62,4 @@ jobs:
         if: always()
         run: |
           curl -sS -X POST "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/data/qa.json" || true
+          curl -sS -X POST "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/social/latest-card.png" || true
