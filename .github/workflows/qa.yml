@@ -38,7 +38,7 @@ jobs:
           set -e
           git config user.name  "aztmm-qa-bot"
           git config user.email "aztmm-qa-bot@users.noreply.github.com"
-          if git diff --quiet -- data/qa.json && [ -f data/qa.json ]; then
+          if [ -z "$(git status --porcelain -- data/qa.json)" ]; then
             echo "no changes to commit"
             exit 0
           fi
