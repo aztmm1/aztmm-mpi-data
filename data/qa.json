@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-07-12T03:55:03Z",
+  "generated_at": "2026-07-12T04:48:04Z",
   "as_of_session": "2026-07-10",
-  "score": 96,
+  "score": 100,
   "grade": "A",
   "critical_fail": false,
   "categories": {
@@ -12,7 +12,7 @@
       "max": 20
     },
     "consistency": {
-      "earned": 16,
+      "earned": 20,
       "max": 20
     },
     "methodology": {
@@ -98,9 +98,9 @@
       "category": "consistency",
       "points": 4,
       "critical": false,
-      "pass": false,
+      "pass": true,
       "unverified": false,
-      "detail": "spy_spot 754.95 vs canonical None"
+      "detail": "spy_spot 754.95 vs canonical 754.95"
     },
     {
       "id": "C4",
