@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-11T14:21:38Z",
+  "generated_at": "2026-07-12T00:29:13Z",
   "mpi": {
     "score": 67,
-    "regime": "Bull \u00b7 early",
+    "regime": "Sideways",
     "as_of": "2026-07-10",
-    "computed_at": "2026-07-11T05:13:01Z",
+    "computed_at": "2026-07-12T00:28:58Z",
     "confidence": 0.85,
     "confidence_band": [
       62,
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3069,
-    "url": "https://aztmm.com/2026/07/04/weekly-pulse-2026-06-29-to-2026-07-03/",
-    "title": "Weekly Pulse \u2014 Week of June 29\u20133, 2026",
-    "date": "2026-07-04",
-    "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
+    "id": 3121,
+    "url": "https://aztmm.com/2026/07/11/weekly-pulse-2026-07-06-to-2026-07-10/",
+    "title": "Weekly Pulse \u2014 Week of July 6\u201310, 2026",
+    "date": "2026-07-11",
+    "snippet": "Sideways regime held; net call premium 1.8x put across 5 sessions; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3121,
+      "url": "https://aztmm.com/2026/07/11/weekly-pulse-2026-07-06-to-2026-07-10/",
+      "title": "Weekly Pulse \u2014 Week of July 6\u201310, 2026",
+      "date": "2026-07-11",
+      "snippet": "Sideways regime held; net call premium 1.8x put across 5 sessions; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3116,
       "url": "https://aztmm.com/2026/07/10/daily-pulse-options-flow-dark-pool-10-july-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 7 July 2026",
       "date": "2026-07-07",
       "snippet": "Tech led the tape lower \u2014 QQQ dropped 1.85% while SPY slipped just 0.48%, and the flow showed persistent August QQQ put buying against aggressive AMD call accumulation and a semis-heavy dark-pool tape.",
-      "kind": "daily"
-    },
-    {
-      "id": 3083,
-      "url": "https://aztmm.com/2026/07/06/daily-pulse-options-flow-dark-pool-6-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 6 July 2026",
-      "date": "2026-07-06",
-      "snippet": "First session back from the long weekend: SPY +0.87% to a new-high zone, QQQ +1.43%, VIX under 16 \u2014 while long-dated index put buyers and a $326M NVDA dark-pool block worked beneath the surface.",
       "kind": "daily"
     }
   ],
