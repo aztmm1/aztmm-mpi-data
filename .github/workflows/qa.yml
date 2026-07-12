@@ -37,15 +37,18 @@ jobs:
       - name: Render social card
         run: |
           pip install --quiet pillow
-          python social/make_card.py || echo "card render failed - continuing without card"
+          set +e
+          python social/make_card.py > social/render.log 2>&1
+          echo "exit=$?" >> social/render.log
+          ls -la social >> social/render.log
+          set -e
 
       - name: Commit & push if changed
         run: |
           set -e
           git config user.name  "aztmm-qa-bot"
           git config user.email "aztmm-qa-bot@users.noreply.github.com"
-          git add data/qa.json
-          [ -f social/latest-card.png ] && git add social/latest-card.png
+          git add -A -- data/qa.json social
           if [ -z "$(git status --porcelain --cached)" ]; then
             echo "no changes to commit"
             exit 0
