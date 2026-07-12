@@ -973,6 +973,26 @@ def regime_label(score: float) -> Tuple[str, str]:
     return "Bear", "Bear"
 
 
+def mpi_band_label(score: float) -> str:
+    """M1: public MPI label per the published methodology bands:
+    >60 Bull, <40 Bear, 40-60 Neutral (no-edge)."""
+    if score > 60:
+        return "Bull"
+    if score < 40:
+        return "Bear"
+    return "Neutral"
+
+
+def regime_label_from_hmm(state: str, score: float) -> Tuple[str, str]:
+    """M3: published regime sourced from the HMM state; the label keeps the
+    existing early/cautious vocabulary using the MPI score as flavor."""
+    if state == "Bull":
+        return "Bull", ("Bull" if score >= 70 else "Bull · early")
+    if state == "Bear":
+        return "Bear", ("Bear" if score < 30 else "Bear · cautious")
+    return "Sideways", "Sideways"
+
+
 def signal_from_score(score: float) -> Dict[str, str]:
     if score >= 65:
         return {"bias": "Bullish", "strength": "High"}
@@ -1188,6 +1208,23 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
     spy = float(latest.get("spy") or 0)
     vix = float(latest.get("vix") or 0)
     vix3m = float(latest.get("vix3m") or 0)
+    # H2: align VIX/VIX3M to the same closed session as SPY (asOf). CBOE
+    # publishes index prints on equity holidays (e.g. 3 Jul), which otherwise
+    # leaks a different session’s VIX behind the SPY asOf stamp.
+    try:
+        _raw_h2 = yfd.get("raw")
+        _asof_h2 = pd.Timestamp(_resolve_asof(ctx))
+        for _sym_h2 in ("^VIX", "^VIX3M"):
+            if _raw_h2 is not None and _sym_h2 in _raw_h2.columns.get_level_values(0):
+                _ser_h2 = _raw_h2[_sym_h2]["Close"].dropna()
+                _ser_h2 = _ser_h2[_ser_h2.index <= _asof_h2]
+                if not _ser_h2.empty:
+                    if _sym_h2 == "^VIX":
+                        vix = float(_ser_h2.iloc[-1])
+                    else:
+                        vix3m = float(_ser_h2.iloc[-1])
+    except Exception as _e_h2:  # noqa: BLE001
+        ctx.warn(f"vix asOf-alignment skipped ({_e_h2})")
     em_abs, em_pct = expected_move(spy, vix, 1) if spy and vix else (0.0, 0.0)
     vrp = round(vix - (d_trend.get("ma50_slope_pct", 0) or 0), 2) if vix else 0.0
     # Better VRP: VIX - 20d realized vol (annualized %)
@@ -1235,7 +1272,8 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
     hmm = fit_hmm_regime(yfd, ctx)
 
     # --- Regime/compass/signal ---
-    regime, regime_lbl = regime_label(mpi)
+    # M3: regime from the HMM classifier, not the MPI score band.
+    regime, regime_lbl = regime_label_from_hmm(hmm["state"], mpi)
     sig = signal_from_score(mpi)
     ci = compute_confidence_band(mpi)
     compass = compute_compass(mpi, hmm["probs"], term_shape)
@@ -1248,7 +1286,7 @@ def build_payload(ctx: RunContext, mock: bool = False) -> Dict[str, Any]:
         "data_quality":   _compute_data_quality(ctx),
         "data": {
             "mpi_score":  mpi,
-            "mpi_label":  regime,
+            "mpi_label":  mpi_band_label(mpi),  # M1: methodology band label
             "regime":     regime,
             "regime_label": regime_lbl,
             "confidence": ci,
