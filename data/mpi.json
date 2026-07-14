@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-07-13T23:54:25Z",
+  "computed_at": "2026-07-14T04:50:33Z",
   "asOf": "2026-07-13",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 64,
-    "mpi_label": "Bull",
+    "mpi_score": 60,
+    "mpi_label": "Neutral",
     "regime": "Sideways",
     "regime_label": "Sideways",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 59,
-      "ci_high": 69
+      "ci_low": 55,
+      "ci_high": 65
     },
     "signal": {
       "bias": "Bullish",
@@ -19,22 +19,22 @@
     },
     "market": {
       "spy_spot": 749.17,
-      "expected_move_1sigma": 7.09,
-      "expected_move_pct": 0.0095
+      "expected_move_1sigma": 8.1,
+      "expected_move_pct": 0.0108
     },
     "volatility": {
-      "vix": 15.03,
+      "vix": 17.16,
       "vix3m": 19.64,
-      "vrp": 1.2,
+      "vrp": 3.33,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 13.83
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4737,
-      "probability_up": 0.4737,
+      "confidence": 0.4606,
+      "probability_up": 0.4606,
       "probability_flat": 0.3254,
-      "probability_down": 0.2009
+      "probability_down": 0.214
     },
     "hmm": {
       "state": "Sideways",
@@ -61,10 +61,10 @@
         "iwm_spy_percentile_1y": 92.9
       },
       "volatility": {
-        "score": 84.1,
-        "vix": 15.03,
+        "score": 56.3,
+        "vix": 17.16,
         "vix3m": 19.64,
-        "vix_percentile_1y": 9.9,
+        "vix_percentile_1y": 49.6,
         "term_shape": "Contango"
       },
       "yield_curve": {
