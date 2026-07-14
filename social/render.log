@@ -1,8 +1,8 @@
 card written: /home/runner/work/aztmm-mpi-data/aztmm-mpi-data/social/latest-card.png
 exit=0
 total 128
-drwxr-xr-x  2 runner runner   4096 Jul 14 09:05 .
-drwxr-xr-x 21 runner runner   4096 Jul 14 09:05 ..
--rw-r--r--  1 runner runner 108838 Jul 14 09:05 latest-card.png
--rw-r--r--  1 runner runner   5047 Jul 14 09:05 make_card.py
--rw-r--r--  1 runner runner     92 Jul 14 09:05 render.log
+drwxr-xr-x  2 runner runner   4096 Jul 14 13:33 .
+drwxr-xr-x 21 runner runner   4096 Jul 14 13:33 ..
+-rw-r--r--  1 runner runner 108838 Jul 14 13:33 latest-card.png
+-rw-r--r--  1 runner runner   5047 Jul 14 13:33 make_card.py
+-rw-r--r--  1 runner runner     92 Jul 14 13:33 render.log
