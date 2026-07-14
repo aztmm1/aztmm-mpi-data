@@ -1,0 +1,32 @@
+name: Daily Pulse Fallback Publisher
+
+# Server-side safety net for the desktop Daily Pulse publisher.
+# Runs after the desktop publisher's window; publishes a condensed
+# data-only edition ONLY if today's post is missing.
+# 22:45 UTC = 6:45 PM EDT / 5:45 PM EST.
+#
+# Required repo secrets (create a WordPress Application Password in
+# wp-admin -> Users -> Profile -> Application Passwords):
+#   WPCOM_FALLBACK_USER          WordPress username
+#   WPCOM_FALLBACK_APP_PASSWORD  the application password
+# Until secrets are added, a missing post makes this run FAIL (red) as an alert.
+
+on:
+  schedule:
+    - cron: "45 22 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  publish-if-missing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish fallback Daily Pulse if today's post is missing
+        env:
+          WPCOM_FALLBACK_USER: ${{ secrets.WPCOM_FALLBACK_USER }}
+          WPCOM_FALLBACK_APP_PASSWORD: ${{ secrets.WPCOM_FALLBACK_APP_PASSWORD }}
+        run: python3 scripts/daily_pulse_fallback.py
