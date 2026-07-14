@@ -54,8 +54,29 @@ def fetch_json(url):
 def stooq_close(symbol, date_str):
     d = date_str.replace("-", "")
     txt = fetch(f"https://stooq.com/q/d/l/?s={symbol}&d1={d}&d2={d}&i=d")
-    rows = list(csv.DictReader(io.StringIO(txt)))
-    return float(rows[0]["Close"]) if rows else None
+    rows = list(csv.DictReader(io.StringIO(txt.lstrip("\ufeff"))))
+    if not rows:
+        return None
+    row = {(k or "").strip().lower(): (v or "").strip() for k, v in rows[0].items()}
+    close = row.get("close") or row.get("zamkniecie")
+    if not close:
+        raise ValueError(f"Stooq response missing Close column (headers: {sorted(row)[:6]})")
+    return float(close)
+
+
+def yahoo_close(symbol, date_str):
+    """Independent fallback ground truth (Yahoo Finance chart API, stdlib only)."""
+    day = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    p1, p2 = int(day.timestamp()) - 86400, int(day.timestamp()) + 172800
+    j = fetch_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+                   f"?period1={p1}&period2={p2}&interval=1d")
+    res = (j.get("chart", {}).get("result") or [{}])[0]
+    stamps = res.get("timestamp") or []
+    closes = ((res.get("indicators", {}).get("quote") or [{}])[0].get("close")) or []
+    for ts, c in zip(stamps, closes):
+        if c is not None and datetime.fromtimestamp(ts, tz=ET).strftime("%Y-%m-%d") == date_str:
+            return round(float(c), 2)
+    return None
 
 
 def cboe_vix_close(date_str):
@@ -159,13 +180,23 @@ def main():
     add("M5", "methodology", 4, False, not bad, f"out-of-range sub-scores: {bad or 'none'}")
 
     # ---- HONESTY (20) ----
+    spy_true, spy_src = None, None
     try:
-        spy_true = stooq_close("spy.us", mpi["asOf"])
-        add("H1", "honesty", 8, True,
-            spy_true is not None and abs(spy_spot - spy_true) <= 0.05,
-            f"spy_spot {spy_spot} vs Stooq {spy_true} for {mpi['asOf']}")
-    except Exception as e:
-        add("H1", "honesty", 8, True, True, f"Stooq unreachable ({e})", unverified=True)
+        spy_true, spy_src = stooq_close("spy.us", mpi["asOf"]), "Stooq"
+    except Exception:
+        pass
+    if spy_true is None:
+        try:
+            spy_true, spy_src = yahoo_close("spy", mpi["asOf"]), "Yahoo"
+        except Exception:
+            pass
+    if spy_true is None:
+        add("H1", "honesty", 8, True, True,
+            f"no independent SPY close reachable for {mpi['asOf']} (Stooq+Yahoo)",
+            unverified=True)
+    else:
+        add("H1", "honesty", 8, True, abs(spy_spot - spy_true) <= 0.05,
+            f"spy_spot {spy_spot} vs {spy_src} {spy_true} for {mpi['asOf']}")
     try:
         vix_true = cboe_vix_close(mpi["asOf"])
         vix_pub = d["volatility"]["vix"]
