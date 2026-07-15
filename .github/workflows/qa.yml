@@ -32,15 +32,13 @@ jobs:
           python-version: "3.11"
 
       - name: Run QA scorer
-        run: python qa/qa/qa_score.py
+        run: python qa/qa_score.py
 
       - name: Render social card
         run: |
           pip install --quiet pillow
           set +e
-          python social/make_card.py > social/render.log 2>&1
-          echo "exit=$?" >> social/render.log
-          ls -la social >> social/render.log
+          python social/make_card.py
           set -e
 
       - name: Commit & push if changed
