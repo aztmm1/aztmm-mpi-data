@@ -1,29 +1,29 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-14T23:53:26Z",
+  "generated_at": "2026-07-15T03:13:47Z",
   "mpi": {
-    "score": 61,
+    "score": 62,
     "regime": "Sideways",
     "as_of": "2026-07-14",
-    "computed_at": "2026-07-14T23:53:15Z",
+    "computed_at": "2026-07-15T03:13:30Z",
     "confidence": 0.85,
     "confidence_band": [
-      56,
-      66
+      57,
+      67
     ]
   },
   "market": {
     "spy_close": 751.83,
-    "vix": 17.16,
+    "vix": 16.5,
     "rv_30d": 13.77,
-    "vrp": 3.39
+    "vrp": 2.73
   },
   "latest_daily_pulse": {
-    "id": 3131,
-    "url": "https://aztmm.com/2026/07/13/daily-pulse-options-flow-dark-pool-13-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 13 July 2026",
-    "date": "2026-07-13",
-    "snippet": "Tech led a risk-off Monday \u2014 QQQ -1.9%, VIX back above 17 \u2014 while the day&#8217;s flow showed concentrated short-dated put hedging in the memory names and an upside call bet placed into tomorrow&#8217;s bank earnings kickoff.",
+    "id": 3160,
+    "url": "https://aztmm.com/2026/07/14/daily-pulse-options-flow-dark-pool-14-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 July 2026",
+    "date": "2026-07-14",
+    "snippet": "IBM&#8217;s worst day since 1987 met a market that rotated instead of de-risked: SPY +0.36%, QQQ +1.12%, VIX back to 16.50, NVDA +4.06% \u2014 while index hedges quietly rebuilt underneath the bounce.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3160,
+      "url": "https://aztmm.com/2026/07/14/daily-pulse-options-flow-dark-pool-14-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 July 2026",
+      "date": "2026-07-14",
+      "snippet": "IBM&#8217;s worst day since 1987 met a market that rotated instead of de-risked: SPY +0.36%, QQQ +1.12%, VIX back to 16.50, NVDA +4.06% \u2014 while index hedges quietly rebuilt underneath the bounce.",
+      "kind": "daily"
+    },
     {
       "id": 3131,
       "url": "https://aztmm.com/2026/07/13/daily-pulse-options-flow-dark-pool-13-july-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 July 2026",
       "date": "2026-07-09",
       "snippet": "Indices rallied with QQQ up 1.66% and VIX crushed to 15.84, but the flow tape showed hedges being layered under the strength \u2014 Sep SPX straddles, long-dated index puts, and heavy closing dark-pool blocks.",
-      "kind": "daily"
-    },
-    {
-      "id": 3100,
-      "url": "https://aztmm.com/2026/07/08/daily-pulse-options-flow-dark-pool-8-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 July 2026",
-      "date": "2026-07-08",
-      "snippet": "SPY slipped 0.31% while QQQ added 0.28% behind a 3.7% NVDA rip; VIX pushed back to 16.9, MU put hedging clustered, and semis dominated the dark-pool block tape.",
       "kind": "daily"
     }
   ],
