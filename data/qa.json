@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-07-15T03:26:16Z",
+  "generated_at": "2026-07-15T09:09:47Z",
   "as_of_session": "2026-07-14",
   "score": 100,
   "grade": "A",
@@ -28,7 +28,7 @@
       "max": 15
     }
   },
-  "unverified_count": 0,
+  "unverified_count": 1,
   "checks": [
     {
       "id": "F1",
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-07-15T03:13:30Z vs 2026-07-14 18:00 ET window; asOf 2026-07-14"
+      "detail": "computed_at 2026-07-15T04:51:06Z vs 2026-07-14 18:00 ET window; asOf 2026-07-14"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-07-15T03:13:30Z (mpi 2026-07-15T03:13:30Z); generated 2026-07-15T03:13:47Z"
+      "detail": "canonical embeds 2026-07-15T04:51:06Z (mpi 2026-07-15T04:51:06Z); generated 2026-07-15T07:56:16Z"
     },
     {
       "id": "F3",
@@ -153,8 +153,8 @@
       "points": 8,
       "critical": true,
       "pass": true,
-      "unverified": false,
-      "detail": "spy_spot 751.83 vs Yahoo 751.83 for 2026-07-14"
+      "unverified": true,
+      "detail": "no independent SPY close reachable for 2026-07-14 (Stooq+Yahoo)"
     },
     {
       "id": "H2",
