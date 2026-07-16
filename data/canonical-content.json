@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-16T08:02:24Z",
+  "generated_at": "2026-07-16T15:13:52Z",
   "mpi": {
     "score": 66,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 3.33
   },
   "latest_daily_pulse": {
-    "id": 3160,
-    "url": "https://aztmm.com/2026/07/14/daily-pulse-options-flow-dark-pool-14-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 July 2026",
-    "date": "2026-07-14",
-    "snippet": "IBM&#8217;s worst day since 1987 met a market that rotated instead of de-risked: SPY +0.36%, QQQ +1.12%, VIX back to 16.50, NVDA +4.06% \u2014 while index hedges quietly rebuilt underneath the bounce.",
+    "id": 3170,
+    "url": "https://aztmm.com/2026/07/16/daily-pulse-options-flow-dark-pool-15-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 15 July 2026",
+    "date": "2026-07-16",
+    "snippet": "A $228M wave of call-selling hit the tape by lunch \u2014 and got bought back before the bell. SPY closed +0.40% at the session high, VIX broke 16, and the regime classifier flipped to Bull \u00b7 early, all while semis hedged into TSM&#8217;s print.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3170,
+      "url": "https://aztmm.com/2026/07/16/daily-pulse-options-flow-dark-pool-15-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 15 July 2026",
+      "date": "2026-07-16",
+      "snippet": "A $228M wave of call-selling hit the tape by lunch \u2014 and got bought back before the bell. SPY closed +0.40% at the session high, VIX broke 16, and the regime classifier flipped to Bull \u00b7 early, all while semis hedged into TSM&#8217;s print.",
+      "kind": "daily"
+    },
     {
       "id": 3160,
       "url": "https://aztmm.com/2026/07/14/daily-pulse-options-flow-dark-pool-14-july-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 July 2026",
       "date": "2026-07-10",
       "snippet": "SPY and QQQ both closed green with VIX back on a 15 handle, NVDA ripped 4% on heavy two-way flow, and a $286M DDOG dark-pool block headlined the off-exchange tape.",
-      "kind": "daily"
-    },
-    {
-      "id": 3112,
-      "url": "https://aztmm.com/2026/07/09/daily-pulse-options-flow-dark-pool-9-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 July 2026",
-      "date": "2026-07-09",
-      "snippet": "Indices rallied with QQQ up 1.66% and VIX crushed to 15.84, but the flow tape showed hedges being layered under the strength \u2014 Sep SPX straddles, long-dated index puts, and heavy closing dark-pool blocks.",
       "kind": "daily"
     }
   ],
