@@ -478,6 +478,22 @@
     "currency": 37.8,
     "liquidity": 55.0
    }
+  },
+  {
+   "date": "2026-07-16",
+   "score": 62,
+   "regime": "Bull \u00b7 early",
+   "subs": {
+    "trend": 82.8,
+    "breadth": 83.3,
+    "volatility": 61.0,
+    "yield_curve": 66.4,
+    "credit": 87.5,
+    "sentiment": 41.8,
+    "rotation": 32.1,
+    "currency": 34.5,
+    "liquidity": 55.0
+   }
   }
  ]
 }
