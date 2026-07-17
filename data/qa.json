@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-07-16T09:15:29Z",
-  "as_of_session": "2026-07-15",
-  "score": 96,
+  "generated_at": "2026-07-17T09:10:31Z",
+  "as_of_session": "2026-07-16",
+  "score": 100,
   "grade": "A",
   "critical_fail": false,
   "categories": {
     "freshness": {
-      "earned": 16,
+      "earned": 20,
       "max": 20
     },
     "consistency": {
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-07-16T05:09:56Z vs 2026-07-15 18:00 ET window; asOf 2026-07-15"
+      "detail": "computed_at 2026-07-17T05:13:19Z vs 2026-07-16 18:00 ET window; asOf 2026-07-16"
     },
     {
       "id": "F2",
@@ -46,16 +46,16 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-07-16T05:09:56Z (mpi 2026-07-16T05:09:56Z); generated 2026-07-16T08:02:24Z"
+      "detail": "canonical embeds 2026-07-17T05:13:19Z (mpi 2026-07-17T05:13:19Z); generated 2026-07-17T07:59:01Z"
     },
     {
       "id": "F3",
       "category": "freshness",
       "points": 4,
       "critical": false,
-      "pass": false,
+      "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-07-14 vs last session 2026-07-15"
+      "detail": "latest daily pulse 2026-07-16 vs last session 2026-07-16"
     },
     {
       "id": "F4",
@@ -82,7 +82,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "mpi 66 vs canonical 66"
+      "detail": "mpi 62 vs canonical 62"
     },
     {
       "id": "C2",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-07-15 vs canonical 2026-07-15"
+      "detail": "asOf 2026-07-16 vs canonical 2026-07-16"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 754.81 vs canonical 754.81"
+      "detail": "spy_spot 750.72 vs canonical 750.72"
     },
     {
       "id": "C4",
@@ -118,7 +118,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "label 'Bull' for score 66 (band Bull)"
+      "detail": "label 'Bull' for score 62 (band Bull)"
     },
     {
       "id": "M3",
@@ -136,7 +136,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "CI 61-71 brackets 66"
+      "detail": "CI 57-67 brackets 62"
     },
     {
       "id": "M5",
@@ -154,7 +154,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 754.81 vs Yahoo 754.81 for 2026-07-15"
+      "detail": "spy_spot 750.72 vs Yahoo 750.72 for 2026-07-16"
     },
     {
       "id": "H2",
@@ -163,7 +163,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "vix 15.67 vs CBOE 15.67 for 2026-07-15"
+      "detail": "vix 16.73 vs CBOE 16.73 for 2026-07-16"
     },
     {
       "id": "H3",
