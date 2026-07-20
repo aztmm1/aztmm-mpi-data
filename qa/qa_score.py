@@ -12,6 +12,7 @@ but are flagged unverified=true in the output - disclosed, never hidden.
 """
 import csv
 import io
+import re
 import json
 import sys
 import urllib.request
@@ -137,7 +138,20 @@ def main():
         posts = fetch_json("https://public-api.wordpress.com/wp/v2/sites/aztmm.com/posts"
                            "?per_page=10&_fields=slug,date,status")
         dailies = [p for p in posts if p["slug"].startswith("daily-pulse")]
-        latest_daily = dailies[0]["date"][:10] if dailies else "none"
+        # F3 compares the SESSION a post covers (encoded in the slug), not its
+        # publish timestamp - late back-filled posts are dated when published
+        # (never backdated), so the slug is the honest session key.
+        latest_daily = "none"
+        if dailies:
+            latest_daily = dailies[0]["date"][:10]
+            m = re.search(r"(\d{1,2})-([a-z]+)-(\d{4})$", dailies[0]["slug"])
+            if m:
+                try:
+                    latest_daily = datetime.strptime(
+                        m.group(1) + " " + m.group(2) + " " + m.group(3),
+                        "%d %B %Y").strftime("%Y-%m-%d")
+                except ValueError:
+                    pass
         add("F3", "freshness", 4, False, latest_daily == lcs_str,
             f"latest daily pulse {latest_daily} vs last session {lcs_str}")
         weekly = any("weekly-pulse" in p["slug"] for p in posts)
