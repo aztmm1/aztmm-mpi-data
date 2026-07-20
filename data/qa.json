@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-07-20T13:40:38Z",
+  "generated_at": "2026-07-20T13:47:56Z",
   "as_of_session": "2026-07-17",
-  "score": 96,
+  "score": 100,
   "grade": "A",
   "critical_fail": false,
   "categories": {
     "freshness": {
-      "earned": 16,
+      "earned": 20,
       "max": 20
     },
     "consistency": {
@@ -53,9 +53,9 @@
       "category": "freshness",
       "points": 4,
       "critical": false,
-      "pass": false,
+      "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-07-20 vs last session 2026-07-17"
+      "detail": "latest daily pulse 2026-07-17 vs last session 2026-07-17"
     },
     {
       "id": "F4",
