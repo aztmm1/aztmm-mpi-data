@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-20T16:02:02Z",
+  "generated_at": "2026-07-20T21:55:43Z",
   "mpi": {
     "score": 58,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 6.79
   },
   "latest_daily_pulse": {
-    "id": 3185,
-    "url": "https://aztmm.com/2026/07/20/daily-pulse-options-flow-dark-pool-17-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 July 2026",
+    "id": 3187,
+    "url": "https://aztmm.com/2026/07/20/daily-pulse-options-flow-dark-pool-20-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 20 July 2026",
     "date": "2026-07-20",
-    "snippet": "Expiration Friday broke the week&#8217;s floor: QQQ \u22122.3% through every level we&#8217;d flagged, VIX at 19.50 \u2014 the month&#8217;s high \u2014 and $2.1B of QQQ put premium as Tuesday&#8217;s confirmed 720 put wall closed 25 points in the money. The insurance cycle we tracked all\u2026",
+    "snippet": "SPY faded to $742 while QQQ gave back a 705 morning push; index put/call ratios ran near 1.2, semis put premium concentrated at SOXX $500 for a third session, and Friday&#8217;s QQQ $720 wall thinned rather than thickened in the OI update.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3187,
+      "url": "https://aztmm.com/2026/07/20/daily-pulse-options-flow-dark-pool-20-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 20 July 2026",
+      "date": "2026-07-20",
+      "snippet": "SPY faded to $742 while QQQ gave back a 705 morning push; index put/call ratios ran near 1.2, semis put premium concentrated at SOXX $500 for a third session, and Friday&#8217;s QQQ $720 wall thinned rather than thickened in the OI update.",
+      "kind": "daily"
+    },
     {
       "id": 3185,
       "url": "https://aztmm.com/2026/07/20/daily-pulse-options-flow-dark-pool-17-july-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-07-16",
       "snippet": "A $228M wave of call-selling hit the tape by lunch \u2014 and got bought back before the bell. SPY closed +0.40% at the session high, VIX broke 16, and the regime classifier flipped to Bull \u00b7 early, all while semis hedged into TSM&#8217;s print.",
       "kind": "daily"
-    },
-    {
-      "id": 3160,
-      "url": "https://aztmm.com/2026/07/14/daily-pulse-options-flow-dark-pool-14-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 July 2026",
-      "date": "2026-07-14",
-      "snippet": "IBM&#8217;s worst day since 1987 met a market that rotated instead of de-risked: SPY +0.36%, QQQ +1.12%, VIX back to 16.50, NVDA +4.06% \u2014 while index hedges quietly rebuilt underneath the bounce.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-07-17",
+      "as_of": "2026-07-20",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
