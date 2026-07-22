@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-22T15:52:29Z",
+  "generated_at": "2026-07-22T21:58:29Z",
   "mpi": {
     "score": 61,
     "regime": "Sideways",
@@ -19,11 +19,11 @@
     "vrp": 5.06
   },
   "latest_daily_pulse": {
-    "id": 3196,
-    "url": "https://aztmm.com/2026/07/21/daily-pulse-options-flow-dark-pool-21-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 July 2026",
-    "date": "2026-07-21",
-    "snippet": "Indices closed higher with VIX at 17.05; yesterday&#8217;s semiconductor put hedges confirmed as real overnight positioning, and Alphabet and Tesla report after Wednesday&#8217;s close.",
+    "id": 3198,
+    "url": "https://aztmm.com/2026/07/22/daily-pulse-options-flow-dark-pool-22-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 22 July 2026",
+    "date": "2026-07-22",
+    "snippet": "SPY slipped 0.1% and QQQ 0.5% while NVDA ran 2.3%; earnings-eve flow crowded into TSLA and GOOGL strikes, and six of yesterday&#8217;s ten flagged prints confirmed as new positioning.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3198,
+      "url": "https://aztmm.com/2026/07/22/daily-pulse-options-flow-dark-pool-22-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 22 July 2026",
+      "date": "2026-07-22",
+      "snippet": "SPY slipped 0.1% and QQQ 0.5% while NVDA ran 2.3%; earnings-eve flow crowded into TSLA and GOOGL strikes, and six of yesterday&#8217;s ten flagged prints confirmed as new positioning.",
+      "kind": "daily"
+    },
     {
       "id": 3196,
       "url": "https://aztmm.com/2026/07/21/daily-pulse-options-flow-dark-pool-21-july-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-07-18",
       "snippet": "Bear \u00b7 early regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
       "kind": "weekly"
-    },
-    {
-      "id": 3173,
-      "url": "https://aztmm.com/2026/07/16/daily-pulse-options-flow-dark-pool-16-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 16 July 2026",
-      "date": "2026-07-16",
-      "snippet": "Tech led the tape lower into Friday&#8217;s July expiration \u2014 QQQ fell 1.6%, put premium ran heavy on both indexes, and five of six flagged prints from yesterday confirmed overnight as real positioning.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-07-21",
+      "as_of": "2026-07-22",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
