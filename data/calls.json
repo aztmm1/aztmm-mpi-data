@@ -1847,11 +1847,11 @@
     "statement": "$71M dark-pool block @ 298 — Megacap accumulation into the close",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0478,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0998,
+    "resolved_date": "2026-07-21",
+    "note": "21-session move +9.98% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:DIA",
@@ -1861,11 +1861,11 @@
     "statement": "$217M dark-pool block — Largest off-exchange print of the day; broad rebalancing",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0043,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0119,
+    "resolved_date": "2026-07-22",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:IGV",
@@ -1875,11 +1875,11 @@
     "statement": "Dec puts bought, 89 strike — Software hedge — the one clear downside tell in single names",
     "direction": "down",
     "horizon_days": 21,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": -0.01,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0306,
+    "resolved_date": "2026-07-21",
+    "note": "21-session move +3.06% vs 'down' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:MU",
@@ -1889,11 +1889,11 @@
     "statement": "Call sweeps, 6/26 expiry, into 6/24 ER — Positioning building ahead of earnings — watch follow-through",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": -0.0015,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.1438,
+    "resolved_date": "2026-07-21",
+    "note": "21-session move -14.38% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:NVDA",
@@ -1903,11 +1903,11 @@
     "statement": "+2.95%, call premium > 4x puts — Led the tape; the engine of today’s QQQ move",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0862,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0161,
+    "resolved_date": "2026-07-22",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:ORCL",
@@ -1917,11 +1917,11 @@
     "statement": "$59M dark-pool block @ 184 — Steady institutional flow in the AI-infra name",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.194,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.3082,
+    "resolved_date": "2026-07-22",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:SMH",
@@ -1931,11 +1931,11 @@
     "statement": "Repeated call hits at 600 strike — Semis ETF bid confirms the sector leadership",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0731,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.1149,
+    "resolved_date": "2026-07-22",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:SPXW",
@@ -1945,11 +1945,11 @@
     "statement": "Repeated put hits, multiple strikes — Index insurance layered on as VIX cheapened",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "resolved_date": "2026-07-22",
+    "note": "no price data"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:STX",
@@ -1959,11 +1959,11 @@
     "statement": "$93M dark-pool block @ 1070 — Outsized block vs 30-day volume; storage demand theme",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.1586,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.1661,
+    "resolved_date": "2026-07-22",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:TSLA",
@@ -1973,11 +1973,11 @@
     "statement": "$81M dark-pool block @ 400 — Large off-exchange print at the round number",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0519,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0538,
+    "resolved_date": "2026-07-22",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:regime",
@@ -1987,11 +1987,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0238,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0021,
+    "resolved_date": "2026-07-21",
+    "note": "SPY 21-session move +0.21% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-18-june-2026:watch1",
@@ -5726,12 +5726,12 @@
     "statement": "SPY ≈743 (the 50-day) — Friday closed on it to the decimal. The line the regime model is implicitly long.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0083
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-17-july-2026:watch2",
@@ -5741,12 +5741,12 @@
     "statement": "QQQ 700 / 686.76 — the broken handle and Friday’s low. Reclaiming 700 early would mark expiration Friday as the flush; losing 686.76 would mark it as the beginning.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0185
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-17-july-2026:watch3",
@@ -5756,12 +5756,12 @@
     "statement": "VIX 17.23 — Thursday’s high, now the fade line. Below it, last week reads as an event; above 19.50, it reads as a trend change.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": -0.0858
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-17-july-2026:watch4",
@@ -5771,12 +5771,12 @@
     "statement": "Post-OPEX open interest — with July monthlies gone, tonight’s OI update shows what conviction survived expiration. The Aug QQQ puts and SOXX puts either rolled up their winnings, took them home, or pressed.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0185
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-17-july-2026:watch5",
@@ -5786,11 +5786,11 @@
     "statement": "Memory complex — down ≈12% in two sessions into Monday; the confirmed-but-underwater Aug call ladder is the sector’s sentiment gauge from here.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
     "ret_1d": null
   },
   {
@@ -5815,12 +5815,12 @@
     "statement": "SPY $741.51 — today’s low, and the level to watch. A close below would mark a second straight lower close; the $744 area (the 50-day) is the reference on the other side.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0083
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-20-july-2026:watch2",
@@ -5830,12 +5830,12 @@
     "statement": "QQQ $695.51 / $705.80 — the day’s rejection zone. A close back above $700 would mean the morning push was absorbed, not refused.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0185
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-20-july-2026:watch3",
@@ -5845,12 +5845,12 @@
     "statement": "NVDA $200 — 58K contracts traded on the July 31 $200 call line today. Tomorrow’s OI update will show whether that volume opened or closed; the strike is the near-dated shelf either way.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0197
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-20-july-2026:watch4",
@@ -5860,12 +5860,12 @@
     "statement": "TSLA $372.50 — earnings Wednesday postmarket. Today’s July 24 put prints at that strike ($2.0M, bid-side, 9.7x OI) are the pre-earnings positioning to check against the next OI update.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0253
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-20-july-2026:watch5",
@@ -5873,6 +5873,36 @@
     "type": "watch",
     "ticker": "SOXX",
     "statement": "SOXX $500 — the strike where put premium concentrated for a third session. A SOXX close below $520 would put the July 31 line within one weekly range of its strike.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "unresolved",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": 0.0545
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-20-july-2026:watch6",
+    "date": "2026-07-20",
+    "type": "watch",
+    "ticker": "VIX",
+    "statement": "VIX 18.65 / 17.41 — the day’s range. A settle back under 18 would mark the equity fade as un-hedged noise; holding above it would not.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "unresolved",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": "2026-07-22",
+    "note": "manual review",
+    "ret_1d": -0.0858
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-21-july-2026:watch1",
+    "date": "2026-07-21",
+    "type": "watch",
+    "ticker": "SPY",
+    "statement": "SPY $749.04 — today’s high, and the level to watch. A close above would mark a new leg high for the move; $744.18, today’s low, is the reference on the other side.",
     "direction": "watch",
     "horizon_days": 1,
     "status": "open",
@@ -5883,11 +5913,71 @@
     "ret_1d": null
   },
   {
-    "id": "daily-pulse-options-flow-dark-pool-20-july-2026:watch6",
-    "date": "2026-07-20",
+    "id": "daily-pulse-options-flow-dark-pool-21-july-2026:watch2",
+    "date": "2026-07-21",
+    "type": "watch",
+    "ticker": "QQQ",
+    "statement": "QQQ $710.05 / $702.80 — today’s range. A second consecutive close above $705 would mark the strongest two-day sequence since early July.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-21-july-2026:watch3",
+    "date": "2026-07-21",
     "type": "watch",
     "ticker": "VIX",
-    "statement": "VIX 18.65 / 17.41 — the day’s range. A settle back under 18 would mark the equity fade as un-hedged noise; holding above it would not.",
+    "statement": "VIX 17.05 — a move back through 18 would mark the compression stalling; continuation lower would put the June floor near 16 back in frame.",
+    "direction": "up",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-21-july-2026:watch4",
+    "date": "2026-07-21",
+    "type": "watch",
+    "ticker": "GOOGL",
+    "statement": "GOOGL and TSLA report after Wednesday’s close. The prints concentrated at GOOGL’s $352.50 line and TSLA’s $380 line — where the tape marked the event, in opposite directions (paid vs. supplied).",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-21-july-2026:watch5",
+    "date": "2026-07-21",
+    "type": "watch",
+    "ticker": "NVDA",
+    "statement": "NVDA $208.65 — today’s high. The overnight unwind of 34,767 contracts of July $200-call OI removed a large block from that strike’s dealer ledger.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-21-july-2026:watch6",
+    "date": "2026-07-21",
+    "type": "watch",
+    "ticker": "MU",
+    "statement": "MU $950 — the strike where Friday-expiry positioning stacked on both sides today, with the stock near $970.",
     "direction": "watch",
     "horizon_days": 1,
     "status": "open",

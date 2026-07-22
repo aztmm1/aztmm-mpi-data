@@ -526,6 +526,22 @@
     "currency": 34.0,
     "liquidity": 55.0
    }
+  },
+  {
+   "date": "2026-07-21",
+   "score": 61,
+   "regime": "Sideways",
+   "subs": {
+    "trend": 81.7,
+    "breadth": 87.3,
+    "volatility": 57.4,
+    "yield_curve": 64.8,
+    "credit": 87.7,
+    "sentiment": 41.1,
+    "rotation": 27.8,
+    "currency": 31.0,
+    "liquidity": 55.0
+   }
   }
  ]
 }
