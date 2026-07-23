@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-07-23T00:00:07Z",
+  "computed_at": "2026-07-23T05:24:21Z",
   "asOf": "2026-07-22",
   "stale_threshold_hours": 18,
   "data": {
@@ -19,13 +19,13 @@
     },
     "market": {
       "spy_spot": 747.41,
-      "expected_move_1sigma": 8.03,
-      "expected_move_pct": 0.0107
+      "expected_move_1sigma": 7.83,
+      "expected_move_pct": 0.0105
     },
     "volatility": {
-      "vix": 17.05,
+      "vix": 16.64,
       "vix3m": 19.54,
-      "vrp": 6.41,
+      "vrp": 6.0,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 10.64
     },
@@ -61,10 +61,10 @@
         "iwm_spy_percentile_1y": 91.7
       },
       "volatility": {
-        "score": 57.4,
-        "vix": 17.05,
+        "score": 63.5,
+        "vix": 16.64,
         "vix3m": 19.54,
-        "vix_percentile_1y": 48.0,
+        "vix_percentile_1y": 39.3,
         "term_shape": "Contango"
       },
       "yield_curve": {
@@ -79,8 +79,8 @@
         "ig_oas_pct": 0.78
       },
       "sentiment": {
-        "score": 42.8,
-        "cnn_fg": 42.8
+        "score": 43.0,
+        "cnn_fg": 43.0
       },
       "rotation": {
         "score": 14.7,
