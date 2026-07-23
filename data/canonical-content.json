@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-23T21:57:51Z",
+  "generated_at": "2026-07-23T22:08:39Z",
   "mpi": {
     "score": 60,
     "regime": "Sideways",
@@ -86,7 +86,7 @@
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
-      "as_of": "2026-07-22",
+      "as_of": "2026-07-23",
       "snippet": "0 names flagged in the EOD earnings-flow screen."
     },
     "insider_activity": {
