@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-24T23:01:48Z",
+  "generated_at": "2026-07-25T00:03:10Z",
   "mpi": {
-    "score": 55,
+    "score": 54,
     "regime": "Sideways",
-    "as_of": "2026-07-23",
-    "computed_at": "2026-07-24T05:19:49Z",
+    "as_of": "2026-07-24",
+    "computed_at": "2026-07-25T00:02:55Z",
     "confidence": 0.85,
     "confidence_band": [
-      50,
-      60
+      49,
+      59
     ]
   },
   "market": {
-    "spy_close": 738.18,
+    "spy_close": 738.93,
     "vix": 18.7,
     "rv_30d": 11.65,
     "vrp": 7.05
