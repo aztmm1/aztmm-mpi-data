@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-07-24T09:22:26Z",
-  "as_of_session": "2026-07-23",
+  "generated_at": "2026-07-25T09:02:01Z",
+  "as_of_session": "2026-07-24",
   "score": 100,
   "grade": "A",
   "critical_fail": false,
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-07-24T05:19:49Z vs 2026-07-23 18:00 ET window; asOf 2026-07-23"
+      "detail": "computed_at 2026-07-25T05:14:04Z vs 2026-07-24 18:00 ET window; asOf 2026-07-24"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-07-24T05:19:49Z (mpi 2026-07-24T05:19:49Z); generated 2026-07-24T08:14:35Z"
+      "detail": "canonical embeds 2026-07-25T05:14:04Z (mpi 2026-07-25T05:14:04Z); generated 2026-07-25T07:56:48Z"
     },
     {
       "id": "F3",
@@ -55,7 +55,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-07-23 vs last session 2026-07-23"
+      "detail": "latest daily pulse 2026-07-24 vs last session 2026-07-24"
     },
     {
       "id": "F4",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-07-23 vs canonical 2026-07-23"
+      "detail": "asOf 2026-07-24 vs canonical 2026-07-24"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 738.18 vs canonical 738.18"
+      "detail": "spy_spot 738.93 vs canonical 738.93"
     },
     {
       "id": "C4",
@@ -154,7 +154,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 738.18 vs Yahoo 738.18 for 2026-07-23"
+      "detail": "spy_spot 738.93 vs Yahoo 738.93 for 2026-07-24"
     },
     {
       "id": "H2",
@@ -163,7 +163,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "vix 18.7 vs CBOE 18.7 for 2026-07-23"
+      "detail": "vix 18.58 vs CBOE 18.58 for 2026-07-24"
     },
     {
       "id": "H3",
