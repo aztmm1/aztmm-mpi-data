@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-25T14:29:41Z",
+  "generated_at": "2026-07-26T08:14:25Z",
   "mpi": {
     "score": 55,
     "regime": "Sideways",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3180,
-    "url": "https://aztmm.com/2026/07/18/weekly-pulse-2026-07-13-to-2026-07-17/",
-    "title": "Weekly Pulse \u2014 Week of July 13\u201317, 2026",
-    "date": "2026-07-18",
-    "snippet": "Bear \u00b7 early regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
+    "id": 3212,
+    "url": "https://aztmm.com/2026/07/25/weekly-pulse-2026-07-20-to-2026-07-24/",
+    "title": "Weekly Pulse \u2014 Week of July 20\u201324, 2026",
+    "date": "2026-07-25",
+    "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3212,
+      "url": "https://aztmm.com/2026/07/25/weekly-pulse-2026-07-20-to-2026-07-24/",
+      "title": "Weekly Pulse \u2014 Week of July 20\u201324, 2026",
+      "date": "2026-07-25",
+      "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3208,
       "url": "https://aztmm.com/2026/07/24/daily-pulse-options-flow-dark-pool-24-july-2026/",
@@ -66,19 +74,11 @@
       "date": "2026-07-22",
       "snippet": "SPY slipped 0.1% and QQQ 0.5% while NVDA ran 2.3%; earnings-eve flow crowded into TSLA and GOOGL strikes, and six of yesterday&#8217;s ten flagged prints confirmed as new positioning.",
       "kind": "daily"
-    },
-    {
-      "id": 3196,
-      "url": "https://aztmm.com/2026/07/21/daily-pulse-options-flow-dark-pool-21-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 July 2026",
-      "date": "2026-07-21",
-      "snippet": "Indices closed higher with VIX at 17.05; yesterday&#8217;s semiconductor put hedges confirmed as real overnight positioning, and Alphabet and Tesla report after Wednesday&#8217;s close.",
-      "kind": "daily"
     }
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-07-25 5:00 PM ET",
+      "as_of": "2026-07-26 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
