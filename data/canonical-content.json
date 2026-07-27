@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-27T16:34:46Z",
+  "generated_at": "2026-07-27T21:57:25Z",
   "mpi": {
     "score": 55,
     "regime": "Sideways",
@@ -19,11 +19,11 @@
     "vrp": 6.93
   },
   "latest_daily_pulse": {
-    "id": 3208,
-    "url": "https://aztmm.com/2026/07/24/daily-pulse-options-flow-dark-pool-24-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 24 July 2026",
-    "date": "2026-07-24",
-    "snippet": "Tech slid while the broad tape held \u2014 QQQ -1.12% against a green SPY with VIX easing to 18.58, ~$52M of earnings-dated NBIS put premium on the day, and six of eight flagged prints from Thursday confirmed as real positioning.",
+    "id": 3224,
+    "url": "https://aztmm.com/2026/07/27/daily-pulse-options-flow-dark-pool-27-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 July 2026",
+    "date": "2026-07-27",
+    "snippet": "NVDA dropped 4.99% while the indices barely moved \u2014 SPY closed flat, QQQ ran more calls than puts \u2014 and Friday&#8217;s $32.7M NBIS put block confirmed as real positioning, with roughly 61% becoming new open interest overnight.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3224,
+      "url": "https://aztmm.com/2026/07/27/daily-pulse-options-flow-dark-pool-27-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 July 2026",
+      "date": "2026-07-27",
+      "snippet": "NVDA dropped 4.99% while the indices barely moved \u2014 SPY closed flat, QQQ ran more calls than puts \u2014 and Friday&#8217;s $32.7M NBIS put block confirmed as real positioning, with roughly 61% becoming new open interest overnight.",
+      "kind": "daily"
+    },
     {
       "id": 3212,
       "url": "https://aztmm.com/2026/07/25/weekly-pulse-2026-07-20-to-2026-07-24/",
@@ -49,14 +57,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 24 July 2026",
       "date": "2026-07-24",
       "snippet": "Tech slid while the broad tape held \u2014 QQQ -1.12% against a green SPY with VIX easing to 18.58, ~$52M of earnings-dated NBIS put premium on the day, and six of eight flagged prints from Thursday confirmed as real positioning.",
-      "kind": "daily"
-    },
-    {
-      "id": 3209,
-      "url": "https://aztmm.com/2026/07/24/weekly-pulse-2026-07-20-to-24/",
-      "title": "Weekly Pulse \u2014 Week of July 20\u201324, 2026",
-      "date": "2026-07-24",
-      "snippet": "Tech led the tape lower into month-end \u2014 SPY lost its 50-day, QQQ fell 1.6%, and August hedges stacked up ahead of a loaded earnings week.",
       "kind": "daily"
     },
     {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-07-24",
+      "as_of": "2026-07-27",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
