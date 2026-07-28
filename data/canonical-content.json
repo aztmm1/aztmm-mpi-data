@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T06:03:52Z",
+  "generated_at": "2026-07-28T08:22:58Z",
   "mpi": {
     "score": 55,
     "regime": "Bull \u00b7 early",
@@ -78,7 +78,7 @@
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-07-27 5:00 PM ET",
+      "as_of": "2026-07-28 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
