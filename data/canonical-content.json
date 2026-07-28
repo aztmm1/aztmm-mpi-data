@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T00:02:38Z",
+  "generated_at": "2026-07-28T05:14:09Z",
   "mpi": {
     "score": 55,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-07-27",
-    "computed_at": "2026-07-28T00:02:02Z",
+    "computed_at": "2026-07-28T05:13:56Z",
     "confidence": 0.85,
     "confidence_band": [
       50,
@@ -14,9 +14,9 @@
   },
   "market": {
     "spy_close": 739.09,
-    "vix": 18.58,
+    "vix": 18.67,
     "rv_30d": 11.3,
-    "vrp": 7.28
+    "vrp": 7.37
   },
   "latest_daily_pulse": {
     "id": 3224,
