@@ -1,29 +1,29 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T23:57:50Z",
+  "generated_at": "2026-07-29T05:21:02Z",
   "mpi": {
-    "score": 54,
+    "score": 55,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-07-28",
-    "computed_at": "2026-07-28T23:57:38Z",
+    "computed_at": "2026-07-29T05:20:48Z",
     "confidence": 0.85,
     "confidence_band": [
-      49,
-      59
+      50,
+      60
     ]
   },
   "market": {
     "spy_close": 740.86,
-    "vix": 18.67,
+    "vix": 18.21,
     "rv_30d": 9.71,
-    "vrp": 8.96
+    "vrp": 8.5
   },
   "latest_daily_pulse": {
-    "id": 3224,
-    "url": "https://aztmm.com/2026/07/27/daily-pulse-options-flow-dark-pool-27-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 July 2026",
-    "date": "2026-07-27",
-    "snippet": "NVDA dropped 4.99% while the indices barely moved \u2014 SPY closed flat, QQQ ran more calls than puts \u2014 and Friday&#8217;s $32.7M NBIS put block confirmed as real positioning, with roughly 61% becoming new open interest overnight.",
+    "id": 3230,
+    "url": "https://aztmm.com/2026/07/29/daily-pulse-options-flow-dark-pool-28-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
+    "date": "2026-07-29",
+    "snippet": "The split tape widened into FOMC eve \u2014 SPY +0.24% against QQQ \u22120.97% with VIX crushed to 18.21 \u2014 while the morning OI update confirmed both of yesterday&#8217;s headline prints: NVDA&#8217;s July 31 $197.5 calls (~58%) and AMD&#8217;s Aug 28 $515 puts (~99%).",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,22 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3230,
+      "url": "https://aztmm.com/2026/07/29/daily-pulse-options-flow-dark-pool-28-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
+      "date": "2026-07-29",
+      "snippet": "The split tape widened into FOMC eve \u2014 SPY +0.24% against QQQ \u22120.97% with VIX crushed to 18.21 \u2014 while the morning OI update confirmed both of yesterday&#8217;s headline prints: NVDA&#8217;s July 31 $197.5 calls (~58%) and AMD&#8217;s Aug 28 $515 puts (~99%).",
+      "kind": "daily"
+    },
+    {
+      "id": 3231,
+      "url": "https://aztmm.com/2026/07/28/daily-pulse-options-flow-dark-pool-28-july-2026-2/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
+      "date": "2026-07-28",
+      "snippet": "A split tape \u2014 SPY up 0.24%, QQQQ down 0.97% \u2014 as options flow crowded into the MSFT/META/AAPL earnings window and seven of thirteen prior flagged prints confirmed as new positioning.",
+      "kind": "daily"
+    },
     {
       "id": 3224,
       "url": "https://aztmm.com/2026/07/27/daily-pulse-options-flow-dark-pool-27-july-2026/",
@@ -57,22 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 24 July 2026",
       "date": "2026-07-24",
       "snippet": "Tech slid while the broad tape held \u2014 QQQ -1.12% against a green SPY with VIX easing to 18.58, ~$52M of earnings-dated NBIS put premium on the day, and six of eight flagged prints from Thursday confirmed as real positioning.",
-      "kind": "daily"
-    },
-    {
-      "id": 3202,
-      "url": "https://aztmm.com/2026/07/23/daily-pulse-options-flow-dark-pool-23-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 23 July 2026",
-      "date": "2026-07-23",
-      "snippet": "SPY fell 1.2% and QQQ 1.9% as VIX tagged 20 intraday; an October SPX strangle, heavy Friday-expiry QQQ put volume, and a $500M GOOG dark-pool block headline the EOD tape.",
-      "kind": "daily"
-    },
-    {
-      "id": 3198,
-      "url": "https://aztmm.com/2026/07/22/daily-pulse-options-flow-dark-pool-22-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 22 July 2026",
-      "date": "2026-07-22",
-      "snippet": "SPY slipped 0.1% and QQQ 0.5% while NVDA ran 2.3%; earnings-eve flow crowded into TSLA and GOOGL strikes, and six of yesterday&#8217;s ten flagged prints confirmed as new positioning.",
       "kind": "daily"
     }
   ],
