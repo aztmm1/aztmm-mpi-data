@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-07-29T09:37:49Z",
-  "as_of_session": "2026-07-28",
-  "score": 100,
+  "generated_at": "2026-07-30T09:32:09Z",
+  "as_of_session": "2026-07-29",
+  "score": 96,
   "grade": "A",
   "critical_fail": false,
   "categories": {
     "freshness": {
-      "earned": 20,
+      "earned": 16,
       "max": 20
     },
     "consistency": {
@@ -28,7 +28,7 @@
       "max": 15
     }
   },
-  "unverified_count": 1,
+  "unverified_count": 0,
   "checks": [
     {
       "id": "F1",
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-07-29T05:20:48Z vs 2026-07-28 18:00 ET window; asOf 2026-07-28"
+      "detail": "computed_at 2026-07-30T04:57:53Z vs 2026-07-29 18:00 ET window; asOf 2026-07-29"
     },
     {
       "id": "F2",
@@ -46,16 +46,16 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-07-29T05:20:48Z (mpi 2026-07-29T05:20:48Z); generated 2026-07-29T08:29:01Z"
+      "detail": "canonical embeds 2026-07-30T04:57:53Z (mpi 2026-07-30T04:57:53Z); generated 2026-07-30T08:13:11Z"
     },
     {
       "id": "F3",
       "category": "freshness",
       "points": 4,
       "critical": false,
-      "pass": true,
+      "pass": false,
       "unverified": false,
-      "detail": "latest daily pulse 2026-07-28 vs last session 2026-07-28"
+      "detail": "latest daily pulse 2026-07-28 vs last session 2026-07-29"
     },
     {
       "id": "F4",
@@ -82,7 +82,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "mpi 55 vs canonical 55"
+      "detail": "mpi 51 vs canonical 51"
     },
     {
       "id": "C2",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-07-28 vs canonical 2026-07-28"
+      "detail": "asOf 2026-07-29 vs canonical 2026-07-29"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 740.86 vs canonical 740.86"
+      "detail": "spy_spot 729.46 vs canonical 729.46"
     },
     {
       "id": "C4",
@@ -118,7 +118,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "label 'Neutral' for score 55 (band Neutral)"
+      "detail": "label 'Neutral' for score 51 (band Neutral)"
     },
     {
       "id": "M3",
@@ -136,7 +136,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "CI 50-60 brackets 55"
+      "detail": "CI 46-56 brackets 51"
     },
     {
       "id": "M5",
@@ -153,8 +153,8 @@
       "points": 8,
       "critical": true,
       "pass": true,
-      "unverified": true,
-      "detail": "no independent SPY close reachable for 2026-07-28 (Stooq+Yahoo)"
+      "unverified": false,
+      "detail": "spy_spot 729.46 vs Yahoo 729.46 for 2026-07-29"
     },
     {
       "id": "H2",
@@ -163,7 +163,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "vix 18.21 vs CBOE 18.21 for 2026-07-28"
+      "detail": "vix 20.66 vs CBOE 20.66 for 2026-07-29"
     },
     {
       "id": "H3",
