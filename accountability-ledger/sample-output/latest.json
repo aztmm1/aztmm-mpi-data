@@ -1,16 +1,16 @@
 {
-  "as_of": "2026-07-30",
-  "date": "2026-07-30",
+  "as_of": "2026-07-31",
+  "date": "2026-07-31",
   "totals": {
-    "open": 93,
-    "resolved": 360,
+    "open": 78,
+    "resolved": 375,
     "hit": 49,
-    "invalidated": 58,
-    "unresolved": 253
+    "invalidated": 61,
+    "unresolved": 265
   },
   "hit_rate_5d": 0.4,
-  "hit_rate_21d": 0.41,
-  "regime_alignment_21d": 0.8,
+  "hit_rate_21d": 0.39,
+  "regime_alignment_21d": 0.75,
   "rows": [
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch6",
@@ -20,12 +20,12 @@
       "statement": "VIX 17.88–19.05 — today’s range compressed into the event. The unusual configuration — vol crushed INTO a Fed decision — resolves within a day.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-31",
+      "note": "manual review",
+      "ret_1d": -0.1728
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch5",
@@ -35,12 +35,12 @@
       "statement": "NVDA $195.44 — Monday’s low held today. It remains the line under the week’s biggest single-name story.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-31",
+      "note": "manual review",
+      "ret_1d": 0.0265
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch4",
@@ -50,12 +50,12 @@
       "statement": "SPY $742.79 / $735.98 — today’s range. The broad tape enters the Fed two sessions green; which edge gives first defines the reaction.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-31",
+      "note": "manual review",
+      "ret_1d": 0.0168
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch3",
@@ -65,12 +65,12 @@
       "statement": "QQQ $667.88 — today’s low, and the level to watch. A third straight lower low would extend the divergence; $682.12, Monday’s close, is the reference on the other side.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-31",
+      "note": "manual review",
+      "ret_1d": 0.033
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch2",
@@ -80,12 +80,12 @@
       "statement": "MSFT and META report after Wednesday’s close — the second half of the day’s binary stack.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-07-31",
+      "note": "manual review",
+      "ret_1d": 0.1551
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch1",
@@ -95,11 +95,11 @@
       "statement": "FOMC, 2:00 PM ET, and the press conference at 2:30 — the week’s central binary. Rate futures priced a meaningful minority chance of a hike as of this morning; the afternoon’s premium selling leaned the other way. One of those two positions is wrong…",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
+      "resolved_date": "2026-07-31",
+      "note": "manual review",
       "ret_1d": null
     },
     {
