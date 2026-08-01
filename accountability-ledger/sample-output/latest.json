@@ -1,16 +1,16 @@
 {
-  "as_of": "2026-07-31",
-  "date": "2026-07-31",
+  "as_of": "2026-08-01",
+  "date": "2026-08-01",
   "totals": {
-    "open": 78,
-    "resolved": 375,
-    "hit": 49,
+    "open": 71,
+    "resolved": 382,
+    "hit": 51,
     "invalidated": 61,
-    "unresolved": 265
+    "unresolved": 270
   },
   "hit_rate_5d": 0.4,
-  "hit_rate_21d": 0.39,
-  "regime_alignment_21d": 0.75,
+  "hit_rate_21d": 0.4,
+  "regime_alignment_21d": 0.76,
   "rows": [
     {
       "id": "daily-pulse-options-flow-dark-pool-28-july-2026:watch6",
