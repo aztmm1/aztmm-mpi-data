@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-01T14:25:47Z",
+  "generated_at": "2026-08-02T08:11:42Z",
   "mpi": {
     "score": 65,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3212,
-    "url": "https://aztmm.com/2026/07/25/weekly-pulse-2026-07-20-to-2026-07-24/",
-    "title": "Weekly Pulse \u2014 Week of July 20\u201324, 2026",
-    "date": "2026-07-25",
+    "id": 3242,
+    "url": "https://aztmm.com/2026/08/01/weekly-pulse-2026-07-27-to-2026-07-31/",
+    "title": "Weekly Pulse \u2014 Week of July 27\u201331, 2026",
+    "date": "2026-08-01",
     "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3242,
+      "url": "https://aztmm.com/2026/08/01/weekly-pulse-2026-07-27-to-2026-07-31/",
+      "title": "Weekly Pulse \u2014 Week of July 27\u201331, 2026",
+      "date": "2026-08-01",
+      "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3230,
       "url": "https://aztmm.com/2026/07/29/daily-pulse-options-flow-dark-pool-28-july-2026/",
@@ -66,19 +74,11 @@
       "date": "2026-07-25",
       "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
       "kind": "weekly"
-    },
-    {
-      "id": 3208,
-      "url": "https://aztmm.com/2026/07/24/daily-pulse-options-flow-dark-pool-24-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 24 July 2026",
-      "date": "2026-07-24",
-      "snippet": "Tech slid while the broad tape held \u2014 QQQ -1.12% against a green SPY with VIX easing to 18.58, ~$52M of earnings-dated NBIS put premium on the day, and six of eight flagged prints from Thursday confirmed as real positioning.",
-      "kind": "daily"
     }
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-08-01 5:00 PM ET",
+      "as_of": "2026-08-02 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
