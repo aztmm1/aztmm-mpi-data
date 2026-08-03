@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-02T08:11:42Z",
+  "generated_at": "2026-08-03T09:32:05Z",
   "mpi": {
     "score": 65,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 3.29
   },
   "latest_daily_pulse": {
-    "id": 3230,
-    "url": "https://aztmm.com/2026/07/29/daily-pulse-options-flow-dark-pool-28-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
-    "date": "2026-07-29",
-    "snippet": "The split tape widened into FOMC eve \u2014 SPY +0.24% against QQQ \u22120.97% with VIX crushed to 18.21 \u2014 while the morning OI update confirmed both of yesterday&#8217;s headline prints: NVDA&#8217;s July 31 $197.5 calls (~58%) and AMD&#8217;s Aug 28 $515 puts (~99%).",
+    "id": 3247,
+    "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-31-july-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 July 2026",
+    "date": "2026-08-02",
+    "snippet": "Month-end closed the earnings gauntlet with more dispersion \u2014 AMZN surged on cloud strength while AAPL fell despite record results \u2014 as SPY finished +0.72% at $747.03 and VIX sank to 15.99, its lowest close of the month.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -36,6 +36,30 @@
   },
   "recent_pulses": [
     {
+      "id": 3247,
+      "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-31-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 July 2026",
+      "date": "2026-08-02",
+      "snippet": "Month-end closed the earnings gauntlet with more dispersion \u2014 AMZN surged on cloud strength while AAPL fell despite record results \u2014 as SPY finished +0.72% at $747.03 and VIX sank to 15.99, its lowest close of the month.",
+      "kind": "daily"
+    },
+    {
+      "id": 3246,
+      "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-30-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 30 July 2026",
+      "date": "2026-08-02",
+      "snippet": "The dispersion day: MSFT&#8217;s blowout dragged QQQ +3.30% and SPY +1.68% while META fell hard on guidance \u2014 Wednesday&#8217;s Fed selloff was fully reclaimed in one session, with AAPL and AMZN still to report.",
+      "kind": "daily"
+    },
+    {
+      "id": 3245,
+      "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-29-july-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 29 July 2026",
+      "date": "2026-08-02",
+      "snippet": "FOMC day broke the calm: a hawkish 9\u20133 hold with three dissents for a hike sent SPY \u22121.54% and QQQ \u22122.04% with VIX through 20 \u2014 the split tape&#8217;s worst session of the week, hours before MSFT and META reported.",
+      "kind": "daily"
+    },
+    {
       "id": 3242,
       "url": "https://aztmm.com/2026/08/01/weekly-pulse-2026-07-27-to-2026-07-31/",
       "title": "Weekly Pulse \u2014 Week of July 27\u201331, 2026",
@@ -44,41 +68,17 @@
       "kind": "weekly"
     },
     {
-      "id": 3230,
-      "url": "https://aztmm.com/2026/07/29/daily-pulse-options-flow-dark-pool-28-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
-      "date": "2026-07-29",
-      "snippet": "The split tape widened into FOMC eve \u2014 SPY +0.24% against QQQ \u22120.97% with VIX crushed to 18.21 \u2014 while the morning OI update confirmed both of yesterday&#8217;s headline prints: NVDA&#8217;s July 31 $197.5 calls (~58%) and AMD&#8217;s Aug 28 $515 puts (~99%).",
-      "kind": "daily"
-    },
-    {
       "id": 3231,
       "url": "https://aztmm.com/2026/07/28/daily-pulse-options-flow-dark-pool-28-july-2026-2/",
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
       "date": "2026-07-28",
       "snippet": "A split tape \u2014 SPY up 0.24%, QQQQ down 0.97% \u2014 as options flow crowded into the MSFT/META/AAPL earnings window and seven of thirteen prior flagged prints confirmed as new positioning.",
       "kind": "daily"
-    },
-    {
-      "id": 3224,
-      "url": "https://aztmm.com/2026/07/27/daily-pulse-options-flow-dark-pool-27-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 July 2026",
-      "date": "2026-07-27",
-      "snippet": "NVDA dropped 4.99% while the indices barely moved \u2014 SPY closed flat, QQQ ran more calls than puts \u2014 and Friday&#8217;s $32.7M NBIS put block confirmed as real positioning, with roughly 61% becoming new open interest overnight.",
-      "kind": "daily"
-    },
-    {
-      "id": 3212,
-      "url": "https://aztmm.com/2026/07/25/weekly-pulse-2026-07-20-to-2026-07-24/",
-      "title": "Weekly Pulse \u2014 Week of July 20\u201324, 2026",
-      "date": "2026-07-25",
-      "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
     "congress_watch": {
-      "as_of": "2026-08-02 5:00 PM ET",
+      "as_of": "2026-08-03 5:00 PM ET",
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
