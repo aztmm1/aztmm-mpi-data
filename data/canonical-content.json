@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-03T21:29:59Z",
+  "generated_at": "2026-08-03T21:59:27Z",
   "mpi": {
     "score": 65,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 3.29
   },
   "latest_daily_pulse": {
-    "id": 3247,
-    "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-31-july-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 July 2026",
-    "date": "2026-08-02",
-    "snippet": "Month-end closed the earnings gauntlet with more dispersion \u2014 AMZN surged on cloud strength while AAPL fell despite record results \u2014 as SPY finished +0.72% at $747.03 and VIX sank to 15.99, its lowest close of the month.",
+    "id": 3251,
+    "url": "https://aztmm.com/2026/08/03/daily-pulse-options-flow-dark-pool-3-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 3 August 2026",
+    "date": "2026-08-03",
+    "snippet": "SPY +1.42% to $757.67 and QQQ&#8217;s first close above $700 opened August with call premium running nearly two-to-one over puts; NVDA traded two-sided into its earnings window and a $207M Intel block hit after the bell.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3251,
+      "url": "https://aztmm.com/2026/08/03/daily-pulse-options-flow-dark-pool-3-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 3 August 2026",
+      "date": "2026-08-03",
+      "snippet": "SPY +1.42% to $757.67 and QQQ&#8217;s first close above $700 opened August with call premium running nearly two-to-one over puts; NVDA traded two-sided into its earnings window and a $207M Intel block hit after the bell.",
+      "kind": "daily"
+    },
     {
       "id": 3247,
       "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-31-july-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-08-01",
       "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
       "kind": "weekly"
-    },
-    {
-      "id": 3231,
-      "url": "https://aztmm.com/2026/07/28/daily-pulse-options-flow-dark-pool-28-july-2026-2/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 July 2026",
-      "date": "2026-07-28",
-      "snippet": "A split tape \u2014 SPY up 0.24%, QQQQ down 0.97% \u2014 as options flow crowded into the MSFT/META/AAPL earnings window and seven of thirteen prior flagged prints confirmed as new positioning.",
-      "kind": "daily"
     }
   ],
   "trackers": {
@@ -82,7 +82,7 @@
       "snippet": "0 new Periodic Transaction Report filings today."
     },
     "options_gravity": {
-      "as_of": "2026-07-31",
+      "as_of": "2026-08-03",
       "snippet": "yfinance EOD chain; BS delta sigma=0.25 r=0.045; classic max-pain; NOPE = sum(delta*volume)/share_volume*100"
     },
     "earnings_flow": {
