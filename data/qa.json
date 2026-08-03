@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-08-01T09:06:13Z",
+  "generated_at": "2026-08-03T16:21:08Z",
   "as_of_session": "2026-07-31",
-  "score": 96,
+  "score": 100,
   "grade": "A",
   "critical_fail": false,
   "categories": {
     "freshness": {
-      "earned": 16,
+      "earned": 20,
       "max": 20
     },
     "consistency": {
@@ -46,16 +46,16 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-08-01T05:26:23Z (mpi 2026-08-01T05:26:23Z); generated 2026-08-01T08:10:01Z"
+      "detail": "canonical embeds 2026-08-01T05:26:23Z (mpi 2026-08-01T05:26:23Z); generated 2026-08-03T15:52:24Z"
     },
     {
       "id": "F3",
       "category": "freshness",
       "points": 4,
       "critical": false,
-      "pass": false,
+      "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-07-28 vs last session 2026-07-31"
+      "detail": "latest daily pulse 2026-07-31 vs last session 2026-07-31"
     },
     {
       "id": "F4",
