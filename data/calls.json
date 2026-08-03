@@ -3889,11 +3889,11 @@
     "statement": "$364M block at $242.67 — Mega-cap consumer paper in the closing cross",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.011,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.1704,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:BKNG",
@@ -3903,11 +3903,11 @@
     "statement": "$415M prior-reference print — Consumer-cyclical size in an otherwise index-dominated tape",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0334,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0442,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:MSFT",
@@ -3917,11 +3917,11 @@
     "statement": "$330M and $315M contingent blocks — Two-sided structure trades — positioning, not a clean directional bet",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0138,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.2488,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:NVDA",
@@ -3931,11 +3931,11 @@
     "statement": "$1.07B block at $194.83 on a third straight red close — Size crossing at the lows — watch whether it marks absorption or distribution",
     "direction": "down",
     "horizon_days": 21,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": 0.0828,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0606,
+    "resolved_date": "2026-08-03",
+    "note": "21-session move +6.06% vs 'down' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:QQQ",
@@ -3945,11 +3945,11 @@
     "statement": "~$1.4B across closing prints; IV rank ~73rd percentile — Nasdaq protection bid persists even with spot VIX at 16",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0181,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0176,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:SMH",
@@ -3959,11 +3959,11 @@
     "statement": "$326M block at $592.29 — Semis marked at the lows after leading the two-day fade",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0316,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0791,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:SNOW",
@@ -3973,11 +3973,11 @@
     "statement": "$665M block at $260.15 — The day’s software standout off-exchange",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.005,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.1821,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:SPY",
@@ -3987,11 +3987,11 @@
     "statement": "$1.86B closing dark-pool print — week’s largest — plus $500M and $390M blocks — Wholesale index transfer into the holiday; rebalance mechanics, not conviction",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0137,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0173,
+    "resolved_date": "2026-08-03",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:regime",
@@ -4001,11 +4001,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": 0.0137,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0173,
+    "resolved_date": "2026-08-03",
+    "note": "SPY 21-session move +1.73% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-july-2026:watch1",
