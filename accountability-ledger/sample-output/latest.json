@@ -1,16 +1,16 @@
 {
-  "as_of": "2026-08-04",
-  "date": "2026-08-04",
+  "as_of": "2026-08-05",
+  "date": "2026-08-05",
   "totals": {
-    "open": 69,
-    "resolved": 391,
-    "hit": 52,
-    "invalidated": 62,
-    "unresolved": 277
+    "open": 54,
+    "resolved": 406,
+    "hit": 55,
+    "invalidated": 64,
+    "unresolved": 287
   },
   "hit_rate_5d": 0.4,
-  "hit_rate_21d": 0.4,
-  "regime_alignment_21d": 0.78,
+  "hit_rate_21d": 0.39,
+  "regime_alignment_21d": 0.79,
   "rows": [
     {
       "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch6",
@@ -20,11 +20,11 @@
       "statement": "Friday’s July jobs report — the week’s scheduled macro test, the same print the Fed dissents put in play.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
+      "resolved_date": "2026-08-05",
+      "note": "manual review",
       "ret_1d": null
     },
     {
@@ -35,12 +35,12 @@
       "statement": "NVDA $207.50 — the strike both sides paid up for today. The two-sided paper marks it as the level the options market treated as the dividing line on this tape.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-05",
+      "note": "manual review",
+      "ret_1d": 0.0256
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch4",
@@ -50,12 +50,12 @@
       "statement": "CAT reports premarket Tuesday — 500 August 7 $840 puts went off on the ask today at four times open interest with the stock at $830. What the open does with that strike is the first scored observation of the week.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-05",
+      "note": "manual review",
+      "ret_1d": 0.056
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch3",
@@ -65,12 +65,12 @@
       "statement": "VIX 15.86 — the lowest close of the move, down from 20.88 last Wednesday. A push back above 16.30 (today’s high) would be the first sign the vol floor is firming rather than falling.",
       "direction": "up",
       "horizon_days": 1,
-      "status": "open",
+      "status": "hit",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-04",
+      "note": "next-session move +4.04% vs 'up' (±0.25% band)",
+      "ret_1d": 0.0404
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch2",
@@ -80,12 +80,12 @@
       "statement": "QQQ $700 — first close above the round number, and the strike where $6.1M of August calls changed hands on the bid today. A hold above would extend the reclaim; a slip back below would return the level to contested ground.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-05",
+      "note": "manual review",
+      "ret_1d": 0.034
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch1",
@@ -95,12 +95,12 @@
       "statement": "SPY $758.58 — today’s high and the upper reference of the move; $748.80 is the session low and the top of this morning’s gap. A close back inside the gap would mark the first crack in the three-session advance.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-05",
+      "note": "manual review",
+      "ret_1d": 0.018
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-3-august-2026:regime",
@@ -319,7 +319,7 @@
       "direction": "up",
       "horizon_days": 21,
       "status": "open",
-      "ret_5d": null,
+      "ret_5d": 0.0411,
       "ret_21d": null,
       "resolved_date": null,
       "note": null

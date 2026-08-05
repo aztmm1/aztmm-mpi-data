@@ -4105,11 +4105,11 @@
     "statement": "$3.15M in 7/31 320 calls hit the bid, volume ~2x OI — Reads as call selling into the 7/30 earnings print — premium harvest, not a chase",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0149,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0105,
+    "resolved_date": "2026-08-05",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:BAC",
@@ -4119,11 +4119,11 @@
     "statement": "$8.5M ask-side sweeps-then-floor in Jun ’27 65 calls — Aggressive long-horizon upside bet a week ahead of 7/14 earnings",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0067,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0501,
+    "resolved_date": "2026-08-04",
+    "note": "21-session move +5.01% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:KVUE",
@@ -4133,11 +4133,11 @@
     "statement": "$110M dark-pool block (5.6M shares) — Unusual size for a defensive name — watching for follow-through or news",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0169,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0005,
+    "resolved_date": "2026-08-05",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:META",
@@ -4147,11 +4147,11 @@
     "statement": "$1.6M Dec 575 calls, mostly ask-side — Patient upside accumulation ahead of 7/29 earnings",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": 0.094,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0206,
+    "resolved_date": "2026-08-04",
+    "note": "21-session move -2.06% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:MU",
@@ -4161,11 +4161,11 @@
     "statement": "Dec ’28 1200 calls bought at the ask; $128M dark-pool block — Long-horizon bullish positioning plus block accumulation in memory",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": -0.0485,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0935,
+    "resolved_date": "2026-08-04",
+    "note": "21-session move -9.35% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:NVDA",
@@ -4175,11 +4175,11 @@
     "statement": "$326M dark-pool print at $195.55 (1.67M shares) — Major size repositioned at the closing print; options tape ran below recent averages",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0408,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0838,
+    "resolved_date": "2026-08-05",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:SNDK",
@@ -4189,11 +4189,11 @@
     "statement": "$7.1M bought 7/10 1570 calls vs ~$5.2M bought 7/17 1500 puts; $265M dark-pool block — Two-way fight in a very high-IV name — expect continued violent chop",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0404,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.1816,
+    "resolved_date": "2026-08-05",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:SPX",
@@ -4203,11 +4203,11 @@
     "statement": "~$19M repeated hits in Jun ’27 / Dec ’27 puts (6500, 4500 strikes) — Long-dated tail protection layered into strength — insurance, not a top call",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "resolved_date": "2026-08-05",
+    "note": "no price data"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:regime",
@@ -4217,11 +4217,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0028,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0267,
+    "resolved_date": "2026-08-04",
+    "note": "SPY 21-session move +2.67% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-6-july-2026:watch1",
@@ -6356,7 +6356,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0411,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -6577,12 +6577,12 @@
     "statement": "SPY $758.58 — today’s high and the upper reference of the move; $748.80 is the session low and the top of this morning’s gap. A close back inside the gap would mark the first crack in the three-session advance.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-05",
+    "note": "manual review",
+    "ret_1d": 0.018
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch2",
@@ -6592,12 +6592,12 @@
     "statement": "QQQ $700 — first close above the round number, and the strike where $6.1M of August calls changed hands on the bid today. A hold above would extend the reclaim; a slip back below would return the level to contested ground.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-05",
+    "note": "manual review",
+    "ret_1d": 0.034
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch3",
@@ -6607,12 +6607,12 @@
     "statement": "VIX 15.86 — the lowest close of the move, down from 20.88 last Wednesday. A push back above 16.30 (today’s high) would be the first sign the vol floor is firming rather than falling.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "hit",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-04",
+    "note": "next-session move +4.04% vs 'up' (±0.25% band)",
+    "ret_1d": 0.0404
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch4",
@@ -6622,12 +6622,12 @@
     "statement": "CAT reports premarket Tuesday — 500 August 7 $840 puts went off on the ask today at four times open interest with the stock at $830. What the open does with that strike is the first scored observation of the week.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-05",
+    "note": "manual review",
+    "ret_1d": 0.056
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch5",
@@ -6637,12 +6637,12 @@
     "statement": "NVDA $207.50 — the strike both sides paid up for today. The two-sided paper marks it as the level the options market treated as the dividing line on this tape.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-05",
+    "note": "manual review",
+    "ret_1d": 0.0256
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-3-august-2026:watch6",
@@ -6652,11 +6652,11 @@
     "statement": "Friday’s July jobs report — the week’s scheduled macro test, the same print the Fed dissents put in play.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-08-05",
+    "note": "manual review",
     "ret_1d": null
   }
 ]
