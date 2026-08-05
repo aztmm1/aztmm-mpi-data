@@ -1,4 +1,17 @@
-// AZTMM CF Worker v2.10 - drop-in replacement for cloudflare-cron-trigger/worker.js
+// AZTMM CF Worker v2.11 - drop-in replacement for cloudflare-cron-trigger/worker.js
+//
+// New vs v2.10 (2026-08-05):
+//   * RETIRED 4 trackers: nope-max-pain-tracker, squeeze-watch,
+//     earnings-flow-flag-tracker, insider-activity-tracker.
+//     earnings-flow + options-gravity were rebuilt on yfinance after the 2026-05-15
+//     PATH A lock (UW TOS) but reported SUCCESS daily while emitting EMPTY payloads
+//     (count=0; nope + max_pain null). The pages fell back to stale June latest.html
+//     artifacts and served them as the previous close for ~11 weeks. The freshness
+//     watchdog passed them because it reads the date key, not the payload.
+//     squeeze-watch last ran 2026-06-18, insider-activity 2026-06-07 - both were
+//     cron-disabled at the PATH A lock and never rebuilt.
+//     Removed from WORKFLOWS, TRACKER_WORKFLOW_MAP, FRESHNESS_TARGETS,
+//     FRESHNESS_KEY_NUMBERS and selectWorkflows.
 // 2026-06-15 MPI SEMANTIC FIX: split "data freshness" vs "pipeline ran".
 //
 // New vs v2.9:
@@ -49,7 +62,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 
 var GH_OWNER = "aztmm1";
 var GH_REPO = "aztmm-mpi-data";
-var USER_AGENT = "AZTMM-CF-Worker/2.10";
+var USER_AGENT = "AZTMM-CF-Worker/2.11";
 var RAW_BASE = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
 
 var WP_SITE = "aztmm.com";
@@ -61,10 +74,6 @@ var WORKFLOWS = {
   dailyPulse: "daily-pulse-v2.yml",
   weeklyPulse: "weekly-pulse.yml",
   congress: "congress-watch.yml",
-  optionsGravity: "options-gravity.yml",
-  squeeze: "squeeze-watch.yml",
-  insiderActivity: "insider-activity.yml",
-  earningsFlow: "earnings-flow.yml",
   ledger: "ledger-score.yml"
 };
 
@@ -74,9 +83,6 @@ var WORKFLOWS = {
 var TRACKER_WORKFLOW_MAP = {
   "accountability-ledger": "ledger-score.yml",
   "congress-trades-tracker": "congress-watch.yml",
-  "nope-max-pain-tracker": "options-gravity.yml",
-  "squeeze-watch": "squeeze-watch.yml",
-  "earnings-flow-flag-tracker": "earnings-flow.yml",
   "mpi": "mpi-update.yml"
 };
 
@@ -96,34 +102,6 @@ var FRESHNESS_TARGETS = [
     dateKeys: ["date", "asOf", "as_of"],
     cadence: "daily",
     yesterdayFile: (d) => `congress-${d}.public.json`
-  },
-  {
-    slug: "nope-max-pain-tracker",
-    file: "latest.json",
-    dateKeys: ["date", "asOf", "as_of"],
-    cadence: "daily",
-    yesterdayFile: (d) => `nope-maxpain-${d}.public.json`
-  },
-  {
-    slug: "squeeze-watch",
-    file: "latest.json",
-    dateKeys: ["date", "asOf", "as_of"],
-    cadence: "daily",
-    yesterdayFile: (d) => `squeeze-${d}.public.json`
-  },
-  {
-    slug: "earnings-flow-flag-tracker",
-    file: "latest.json",
-    dateKeys: ["date", "asOf", "as_of"],
-    cadence: "daily",
-    yesterdayFile: (d) => `earnings-flow-${d}.public.json`
-  },
-  {
-    slug: "insider-activity-tracker",
-    file: "latest.json",
-    dateKeys: ["weekEnding", "week_ending", "asOf", "as_of", "date"],
-    cadence: "weekly",
-    yesterdayFile: null
   },
   {
     slug: "mpi",
@@ -153,26 +131,6 @@ var FRESHNESS_KEY_NUMBERS = {
     const anyNonZero = vals.some((v) => typeof v === "number" && v > 0);
     if (!anyNonZero) return "";
     return vals.filter((v) => v !== void 0 && v !== null).join("|");
-  },
-  "nope-max-pain-tracker": (data) => {
-    const tickers = (data && data.tickers) || [];
-    const findT = (sym) => tickers.find((t) => t && t.ticker === sym) || {};
-    const spy = findT("SPY"); const qqq = findT("QQQ");
-    return [spy.nope, spy.max_pain, spy.spot, qqq.nope, qqq.max_pain].filter((v) => v !== void 0 && v !== null).join("|");
-  },
-  "squeeze-watch": (data) => {
-    const r0 = (data && data.rows && data.rows[0]) || {};
-    const r1 = (data && data.rows && data.rows[1]) || {};
-    return [data && data.summary_line, r0.ticker, r0.short_interest_pct_float_fmt, r0.alert_count, r1.ticker].filter((v) => v !== void 0 && v !== null && v !== "").join("|");
-  },
-  "earnings-flow-flag-tracker": (data) => {
-    const r0 = (data && data.rows && data.rows[0]) || {};
-    const tt = (data && data.tape_totals) || {};
-    return [data && data.summary_line, r0.ticker, r0.alert_count, r0.total_premium_fmt, tt.flagged_names].filter((v) => v !== void 0 && v !== null && v !== "").join("|");
-  },
-  "insider-activity-tracker": (data) => {
-    const tt = (data && data.tape_totals) || {};
-    return [data && data.summary_line, tt.total_filings, tt.total_buy_value_fmt, tt.total_sell_value_fmt].filter((v) => v !== void 0 && v !== null).join("|");
   },
   "mpi": (data) => {
     const d = (data && data.data) || {};
@@ -298,9 +256,11 @@ function selectWorkflows(et) {
   if (hour === 17 && minute >= 10 && minute < 50) {
     // 2026-06-10: WORKFLOWS.dailyPulse removed — Pipeline B daily retired (workflow disabled);
     // Daily Pulse is owned by the UW/MCP scheduled task (Pipeline A, 5:05 PM ET).
-    selected.push(WORKFLOWS.congress, WORKFLOWS.optionsGravity, WORKFLOWS.squeeze, WORKFLOWS.earningsFlow);
+    // 2026-08-05 v2.11: optionsGravity/squeeze/earningsFlow retired — feeds were frozen
+    // at 2026-05-15 while stamping fresh as_of dates. Congress is the only survivor here.
+    selected.push(WORKFLOWS.congress);
   }
-  if (et.dow === 5 && hour === 17 && minute >= 10 && minute < 50) { selected.push(WORKFLOWS.insiderActivity); }
+  // 2026-08-05 v2.11: Friday insiderActivity dispatch removed — tracker retired.
   return selected;
 }
 
@@ -1093,7 +1053,7 @@ function renderStatusPage(ctx) {
 
 <footer>
   Endpoints: <a href="/">/</a> &middot; <a href="/freshness">/freshness</a> &middot; <a href="/draft-queue">/draft-queue</a> &middot; <a href="/log">/log</a>
-  <br>aztmm-cron-v2 worker.js v2.9 &middot; two-phase publish + tracker-staleness watchdog (weekday 18:30 + Mon 10:00)
+  <br>aztmm-cron-v2 worker.js v2.11 &middot; two-phase publish + tracker-staleness watchdog (weekday 18:30 + Mon 10:00)
 </footer>`;
 }
 
@@ -1131,7 +1091,7 @@ export default {
       const etDate = getETDateStr(now);
       const next = selectWorkflows(et);
       return Response.json({
-        ok: true, worker: "aztmm-cron", version: "2.10", utc: now.toISOString(),
+        ok: true, worker: "aztmm-cron", version: "2.11", utc: now.toISOString(),
         etDate, etHour: et.hour, etMinute: et.minute, weekday: et.dow,
         wouldDispatchRightNow: next,
         info: "GET /status | GET /draft-queue | GET /freshness | GET /mpi-health | GET /log | POST /run?token=..."
@@ -1169,7 +1129,7 @@ export default {
         etHour: etParts.hour,
         etMinute: etParts.minute,
         utc: now.toISOString(),
-        worker_version: "2.10",
+        worker_version: "2.11",
         explanation: "asOf = last completed trading bar; computed_at = pipeline last successful run. STALE only if BOTH are stale, or weekday post-close bar didn't advance.",
         result
       }, null, 2), {
