@@ -27,6 +27,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Publish fallback Daily Pulse if today's post is missing
         env:
-          WPCOM_FALLBACK_USER: ${{ secrets.WPCOM_FALLBACK_USER }}
-          WPCOM_FALLBACK_APP_PASSWORD: ${{ secrets.WPCOM_FALLBACK_APP_PASSWORD }}
+          WPCOM_FALLBACK_USER: ${{ secrets.WP_USERNAME }}
+          WPCOM_FALLBACK_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
         run: python3 scripts/daily_pulse_fallback.py
