@@ -1,29 +1,29 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-05T00:02:44Z",
+  "generated_at": "2026-08-05T05:14:14Z",
   "mpi": {
-    "score": 71,
+    "score": 69,
     "regime": "Sideways",
     "as_of": "2026-08-04",
-    "computed_at": "2026-08-05T00:02:04Z",
+    "computed_at": "2026-08-05T05:14:02Z",
     "confidence": 0.85,
     "confidence_band": [
-      66,
-      76
+      64,
+      74
     ]
   },
   "market": {
     "spy_close": 771.33,
-    "vix": 15.86,
+    "vix": 16.5,
     "rv_30d": 14.51,
-    "vrp": 1.35
+    "vrp": 1.99
   },
   "latest_daily_pulse": {
-    "id": 3251,
-    "url": "https://aztmm.com/2026/08/03/daily-pulse-options-flow-dark-pool-3-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 3 August 2026",
-    "date": "2026-08-03",
-    "snippet": "SPY +1.42% to $757.67 and QQQ&#8217;s first close above $700 opened August with call premium running nearly two-to-one over puts; NVDA traded two-sided into its earnings window and a $207M Intel block hit after the bell.",
+    "id": 3267,
+    "url": "https://aztmm.com/2026/08/04/daily-pulse-options-flow-dark-pool-4-august-2026/",
+    "title": "Daily Pulse &#8211; Market Snapshot, 4 August 2026 (Condensed Auto Edition)",
+    "date": "2026-08-04",
+    "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3267,
+      "url": "https://aztmm.com/2026/08/04/daily-pulse-options-flow-dark-pool-4-august-2026/",
+      "title": "Daily Pulse &#8211; Market Snapshot, 4 August 2026 (Condensed Auto Edition)",
+      "date": "2026-08-04",
+      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+      "kind": "daily"
+    },
     {
       "id": 3251,
       "url": "https://aztmm.com/2026/08/03/daily-pulse-options-flow-dark-pool-3-august-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-08-02",
       "snippet": "FOMC day broke the calm: a hawkish 9\u20133 hold with three dissents for a hike sent SPY \u22121.54% and QQQ \u22122.04% with VIX through 20 \u2014 the split tape&#8217;s worst session of the week, hours before MSFT and META reported.",
       "kind": "daily"
-    },
-    {
-      "id": 3242,
-      "url": "https://aztmm.com/2026/08/01/weekly-pulse-2026-07-27-to-2026-07-31/",
-      "title": "Weekly Pulse \u2014 Week of July 27\u201331, 2026",
-      "date": "2026-08-01",
-      "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
