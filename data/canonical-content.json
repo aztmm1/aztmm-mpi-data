@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-05T23:59:56Z",
+  "generated_at": "2026-08-06T03:00:40Z",
   "mpi": {
     "score": 70,
     "regime": "Sideways",
@@ -19,11 +19,11 @@
     "vrp": 2.03
   },
   "latest_daily_pulse": {
-    "id": 3267,
-    "url": "https://aztmm.com/2026/08/04/daily-pulse-options-flow-dark-pool-4-august-2026/",
-    "title": "Daily Pulse &#8211; Market Snapshot, 4 August 2026 (Condensed Auto Edition)",
-    "date": "2026-08-04",
-    "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+    "id": 3274,
+    "url": "https://aztmm.com/2026/08/05/daily-pulse-options-flow-dark-pool-5-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 August 2026",
+    "date": "2026-08-05",
+    "snippet": "SPY and QQQ gapped higher and closed on their lows, while roughly $1.75B of off-exchange S&#038;P blocks printed near the session&#8217;s bottom and index desks paid up for January 2027 protection.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3274,
+      "url": "https://aztmm.com/2026/08/05/daily-pulse-options-flow-dark-pool-5-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 August 2026",
+      "date": "2026-08-05",
+      "snippet": "SPY and QQQ gapped higher and closed on their lows, while roughly $1.75B of off-exchange S&#038;P blocks printed near the session&#8217;s bottom and index desks paid up for January 2027 protection.",
+      "kind": "daily"
+    },
     {
       "id": 3267,
       "url": "https://aztmm.com/2026/08/04/daily-pulse-options-flow-dark-pool-4-august-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 30 July 2026",
       "date": "2026-08-02",
       "snippet": "The dispersion day: MSFT&#8217;s blowout dragged QQQ +3.30% and SPY +1.68% while META fell hard on guidance \u2014 Wednesday&#8217;s Fed selloff was fully reclaimed in one session, with AAPL and AMZN still to report.",
-      "kind": "daily"
-    },
-    {
-      "id": 3245,
-      "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-29-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 29 July 2026",
-      "date": "2026-08-02",
-      "snippet": "FOMC day broke the calm: a hawkish 9\u20133 hold with three dissents for a hike sent SPY \u22121.54% and QQQ \u22122.04% with VIX through 20 \u2014 the split tape&#8217;s worst session of the week, hours before MSFT and META reported.",
       "kind": "daily"
     }
   ],
