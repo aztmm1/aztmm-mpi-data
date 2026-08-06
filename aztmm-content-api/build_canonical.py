@@ -53,7 +53,19 @@ TRACKER_PATHS = {
 
 def _http_get_json(url: str, timeout: int = 15) -> Any | None:
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "aztmm-canonical/1.0"})
+        # 2026-08-05: WP.com edge-caches /wp-json responses and jsDelivr edge-caches
+        # raw files. Without a cache buster this can read a stale page and pin
+        # latest_daily_pulse to the previous day's post. Observed 2026-08-05: the
+        # 23:00Z and 23:59Z runs both wrote post 3267 even though 3274 had been
+        # live since 21:16Z, so the homepage advertised the prior day's condensed
+        # fallback edition for five hours.
+        sep = "&" if "?" in url else "?"
+        bust = f"{sep}_cb={int(dt.datetime.now(dt.timezone.utc).timestamp())}"
+        req = urllib.request.Request(url + bust, headers={
+            "User-Agent": "aztmm-canonical/1.0",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+        })
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read().decode())
     except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, TimeoutError) as e:
