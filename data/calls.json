@@ -4537,11 +4537,11 @@
     "statement": "$207.6M dark-pool block (day’s largest) + $1.3M sweep in 20 Jul $395C — Institutional accumulation with a short-dated upside kicker.",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": 0.0144,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.082,
+    "resolved_date": "2026-08-06",
+    "note": "21-session move +8.20% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:CRM",
@@ -4551,11 +4551,11 @@
     "statement": "$2.3M bid-side prints in Sep $175C — Call selling overhead — the tape isn’t paying up for a bounce yet.",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0025,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.1212,
+    "resolved_date": "2026-08-07",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:GS",
@@ -4565,11 +4565,11 @@
     "statement": "$194.2M off-exchange block (~8% of avg daily volume) — Big financials positioning ahead of earnings season.",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.1189,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0029,
+    "resolved_date": "2026-08-07",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:INTC",
@@ -4579,11 +4579,11 @@
     "statement": "$72.7M dark-pool print on a 104M-share day — Heavy tape continues — the turnaround trade keeps drawing size.",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0658,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0946,
+    "resolved_date": "2026-08-07",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:MU",
@@ -4593,11 +4593,11 @@
     "statement": "Put cluster: 13 Jul $925P ($1.8M), 17 Jul $815P (~$2.4M), Sep $800P sweep ($1.6M) — Layered downside hedging into strength near $949 — dated risk into mid-July.",
     "direction": "down",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0469,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.071,
+    "resolved_date": "2026-08-06",
+    "note": "21-session move -7.10% vs 'down' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:NVDA",
@@ -4607,11 +4607,11 @@
     "statement": "+3.7% to $204.12; 3.6M calls vs 2.2M avg; net premium +$75.8M — Momentum leader — call buyers pressed the move all session.",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": 0.0411,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0728,
+    "resolved_date": "2026-08-07",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:SMCI",
@@ -4621,11 +4621,11 @@
     "statement": "$1.1M ask-side buy, 31 Jul $29C, volume ≈ open interest — Speculative upside bet on a laggard reclaiming $29.",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0454,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.043,
+    "resolved_date": "2026-08-06",
+    "note": "21-session move +4.30% vs 'up' (±1% band)"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:SNDK",
@@ -4635,11 +4635,11 @@
     "statement": "$2.0M ask-side buy, 17 Jul $1700C, IV north of 130% — Aggressive short-dated chase in the hottest memory name.",
     "direction": "watch",
     "horizon_days": 21,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": -0.0649,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.2713,
+    "resolved_date": "2026-08-07",
+    "note": "no directional read — logged for calibration only"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:regime",
@@ -4649,11 +4649,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": 0.0126,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0311,
+    "resolved_date": "2026-08-06",
+    "note": "SPY 21-session move +3.11% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-july-2026:watch1",
@@ -6667,12 +6667,12 @@
     "statement": "SPY $769.51 — today’s low, and the level to watch. A close below would mark the first close beneath this week’s range floor; $771.33, Tuesday’s close, is the reference on the other side, and today’s session opened above it and failed to hold it.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-06",
+    "note": "next-session move -0.16% vs 'up' (±0.25% band)",
+    "ret_1d": -0.0016
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-5-august-2026:watch2",
@@ -6682,12 +6682,12 @@
     "statement": "SPY $776.85 — the high the morning gap stalled at, roughly 0.9% above the close. It is the level that defines today as an outside session rather than a trend day.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-07",
+    "note": "manual review",
+    "ret_1d": -0.0016
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-5-august-2026:watch3",
@@ -6697,12 +6697,12 @@
     "statement": "QQQ $716.92 — today’s low, still above Tuesday’s $707.53 intraday base. $723.85 is Tuesday’s close and the level the session gave up.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-07",
+    "note": "manual review",
+    "ret_1d": -0.0037
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-5-august-2026:watch4",
@@ -6712,12 +6712,12 @@
     "statement": "NVDA $222.22 — today’s high, on a 3.44% session that ran against its own index. The 26 August report is the next scheduled event in the name.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-07",
+    "note": "manual review",
+    "ret_1d": -0.001
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-5-august-2026:watch5",
@@ -6725,6 +6725,36 @@
     "type": "watch",
     "ticker": "VIX",
     "statement": "VIX 15.81 against today’s 18.43 high — the distance between the two is the observation. A close back above Tuesday’s 16.50 would mark the first session this week where the vol tape and the price tape agreed on direction.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "unresolved",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": "2026-08-07",
+    "note": "manual review",
+    "ret_1d": -0.0417
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-5-august-2026:watch6",
+    "date": "2026-08-05",
+    "type": "watch",
+    "ticker": "WDC",
+    "statement": "WDC reported after tonight’s close. Its 14 August $530 calls printed at 38 times open interest into the number, with fills split $1.53M bid-side against $0.77M ask-side.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "unresolved",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": "2026-08-07",
+    "note": "manual review",
+    "ret_1d": -0.1303
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-6-august-2026:watch1",
+    "date": "2026-08-06",
+    "type": "watch",
+    "ticker": "SPY",
+    "statement": "SPY $767.46 — today’s low, and below Wednesday’s $769.51. A close beneath it would extend the sequence of lower lows to a third session; $771.82, today’s high, is the reference on the other side.",
     "direction": "watch",
     "horizon_days": 1,
     "status": "open",
@@ -6735,11 +6765,71 @@
     "ret_1d": null
   },
   {
-    "id": "daily-pulse-options-flow-dark-pool-5-august-2026:watch6",
-    "date": "2026-08-05",
+    "id": "daily-pulse-options-flow-dark-pool-6-august-2026:watch2",
+    "date": "2026-08-06",
     "type": "watch",
-    "ticker": "WDC",
-    "statement": "WDC reported after tonight’s close. Its 14 August $530 calls printed at 38 times open interest into the number, with fills split $1.53M bid-side against $0.77M ask-side.",
+    "ticker": "QQQ",
+    "statement": "QQQ $708.50 — today’s low, roughly 1.5% under the $719.32 high. The 10.82-point range against SPY’s 4.36 is the observation; $717.30 is Wednesday’s close and the level today did not reclaim.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-6-august-2026:watch3",
+    "date": "2026-08-06",
+    "type": "watch",
+    "ticker": "VIX",
+    "statement": "VIX 15.15 — the week’s lowest close, against a 15.11 intraday low and Wednesday’s 18.43 spike high. A close back above Tuesday’s 16.50 would mark the first session this week the vol tape firmed.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-6-august-2026:watch4",
+    "date": "2026-08-06",
+    "type": "watch",
+    "ticker": "NVDA",
+    "statement": "NVDA $217.00 — today’s low, on a session where call volume ran 0.87 times its 30-day norm after 1.95 times on Wednesday. The 26 August report is the next scheduled event in the name.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-6-august-2026:watch5",
+    "date": "2026-08-06",
+    "type": "watch",
+    "ticker": "GLD",
+    "statement": "GLD $389.67 against the $420 strike — the 7.8% distance between the block price and the strike bought on the ask is the observation, with 22 days to that expiry.",
+    "direction": "watch",
+    "horizon_days": 1,
+    "status": "open",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": null,
+    "note": null,
+    "ret_1d": null
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-6-august-2026:watch6",
+    "date": "2026-08-06",
+    "type": "watch",
+    "ticker": "SPX",
+    "statement": "SPX 7,702 — spot against the September 30 $7,600 puts that took the day’s largest single options premium, roughly 1.3% below. The matched 252-lot call and put prints at $7,735 are the other reference.",
     "direction": "watch",
     "horizon_days": 1,
     "status": "open",
