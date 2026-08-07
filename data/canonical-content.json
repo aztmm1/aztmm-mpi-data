@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-06T08:23:42Z",
+  "generated_at": "2026-08-07T01:04:40Z",
   "mpi": {
     "score": 71,
     "regime": "Sideways",
@@ -19,11 +19,11 @@
     "vrp": 1.34
   },
   "latest_daily_pulse": {
-    "id": 3274,
-    "url": "https://aztmm.com/2026/08/05/daily-pulse-options-flow-dark-pool-5-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 August 2026",
-    "date": "2026-08-05",
-    "snippet": "SPY and QQQ gapped higher and closed on their lows, while roughly $1.75B of off-exchange S&#038;P blocks printed near the session&#8217;s bottom and index desks paid up for January 2027 protection.",
+    "id": 3275,
+    "url": "https://aztmm.com/2026/08/06/daily-pulse-options-flow-dark-pool-6-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 6 August 2026",
+    "date": "2026-08-06",
+    "snippet": "SPY closed $768.56 (-0.16%) and QQQ $714.65 (-0.37%) on a quieter tape \u2014 market-wide call premium fell 28% to $20.5B, implied-volatility ranks compressed across SPY, QQQ and NVDA, and gold was the one name where the session&#8217;s largest block and its most one-sided call\u2026",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3275,
+      "url": "https://aztmm.com/2026/08/06/daily-pulse-options-flow-dark-pool-6-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 6 August 2026",
+      "date": "2026-08-06",
+      "snippet": "SPY closed $768.56 (-0.16%) and QQQ $714.65 (-0.37%) on a quieter tape \u2014 market-wide call premium fell 28% to $20.5B, implied-volatility ranks compressed across SPY, QQQ and NVDA, and gold was the one name where the session&#8217;s largest block and its most one-sided call\u2026",
+      "kind": "daily"
+    },
     {
       "id": 3274,
       "url": "https://aztmm.com/2026/08/05/daily-pulse-options-flow-dark-pool-5-august-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 July 2026",
       "date": "2026-08-02",
       "snippet": "Month-end closed the earnings gauntlet with more dispersion \u2014 AMZN surged on cloud strength while AAPL fell despite record results \u2014 as SPY finished +0.72% at $747.03 and VIX sank to 15.99, its lowest close of the month.",
-      "kind": "daily"
-    },
-    {
-      "id": 3246,
-      "url": "https://aztmm.com/2026/08/02/daily-pulse-options-flow-dark-pool-30-july-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 30 July 2026",
-      "date": "2026-08-02",
-      "snippet": "The dispersion day: MSFT&#8217;s blowout dragged QQQ +3.30% and SPY +1.68% while META fell hard on guidance \u2014 Wednesday&#8217;s Fed selloff was fully reclaimed in one session, with AAPL and AMZN still to report.",
       "kind": "daily"
     }
   ],
