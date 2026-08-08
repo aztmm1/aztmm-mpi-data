@@ -60,7 +60,7 @@ jobs:
       - name: Purge jsDelivr edge cache
         if: always()
         run: |
-          curl -sS -X POST "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/data/canonical-content.json" || echo "purge failed, continuing"
+          curl -sS --fail "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/data/canonical-content.json" || echo "purge failed, continuing"
 
       - name: Report what the site will now show
         if: always()
