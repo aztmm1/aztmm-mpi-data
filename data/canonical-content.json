@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-08T06:40:32Z",
+  "generated_at": "2026-08-08T13:42:22Z",
   "mpi": {
     "score": 74,
     "regime": "Bull",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3242,
-    "url": "https://aztmm.com/2026/08/01/weekly-pulse-2026-07-27-to-2026-07-31/",
-    "title": "Weekly Pulse \u2014 Week of July 27\u201331, 2026",
-    "date": "2026-08-01",
-    "snippet": "Sideways regime held; call/put premium ran roughly balanced; no single-name positioning carried through the week.",
+    "id": 3277,
+    "url": "https://aztmm.com/2026/08/08/weekly-pulse-2026-08-03-to-2026-08-07/",
+    "title": "Weekly Pulse \u2014 Week of August 3\u20137, 2026",
+    "date": "2026-08-08",
+    "snippet": "Bull \u00b7 early regime held; net call premium 1.8x put across 5 sessions; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3277,
+      "url": "https://aztmm.com/2026/08/08/weekly-pulse-2026-08-03-to-2026-08-07/",
+      "title": "Weekly Pulse \u2014 Week of August 3\u20137, 2026",
+      "date": "2026-08-08",
+      "snippet": "Bull \u00b7 early regime held; net call premium 1.8x put across 5 sessions; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3276,
       "url": "https://aztmm.com/2026/08/07/daily-pulse-options-flow-dark-pool-7-august-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse &#8211; Market Snapshot, 4 August 2026 (Condensed Auto Edition)",
       "date": "2026-08-04",
       "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
-      "kind": "daily"
-    },
-    {
-      "id": 3251,
-      "url": "https://aztmm.com/2026/08/03/daily-pulse-options-flow-dark-pool-3-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 3 August 2026",
-      "date": "2026-08-03",
-      "snippet": "SPY +1.42% to $757.67 and QQQ&#8217;s first close above $700 opened August with call premium running nearly two-to-one over puts; NVDA traded two-sided into its earnings window and a $207M Intel block hit after the bell.",
       "kind": "daily"
     }
   ],
