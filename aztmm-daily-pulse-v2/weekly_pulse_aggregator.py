@@ -266,6 +266,22 @@ def aggregate_week(week_ending: str, *, from_fixture: Path | None = None) -> dic
         raw = fetch_daily_data(_last_trading_day(trading_days[-1]))
         agg = aggregate(raw, prev_raw=None)
 
+    # Canonical MPI override (2026-08-08): the free-source aggregate computes
+    # its own composite, which published 60 while canonical mpi.json said 74
+    # (homepage/app/feed). Canonical is the source of truth - the weekly must
+    # match it. Fix-forward only; published posts are never revised.
+    try:
+        _canon = json.loads((ROOT.parent / "data" / "mpi.json").read_text())
+        _cd = _canon.get("data") or {}
+        if _cd.get("mpi_score") is not None:
+            agg["mpi_score"] = _cd["mpi_score"]
+        if _cd.get("regime_label"):
+            agg["regime_short"] = _cd["regime_label"]
+        logger.info("canonical mpi.json override: mpi=%s regime=%s",
+                    agg.get("mpi_score"), agg.get("regime_short"))
+    except Exception as _exc:  # canonical missing must not kill the weekly
+        logger.warning("canonical mpi.json unavailable (%s); using computed values", _exc)
+
     # Override weekly framing
     mpi_snap = {
         "regime_short": agg.get("regime_short"),
