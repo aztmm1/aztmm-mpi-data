@@ -62,5 +62,5 @@ jobs:
       - name: Purge jsDelivr cache
         if: always()
         run: |
-          curl -sS -X POST "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/data/qa.json" || true
-          curl -sS -X POST "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/social/latest-card.png" || true
+          curl -sS --fail "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/data/qa.json" || true
+          curl -sS --fail "https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/social/latest-card.png" || true
