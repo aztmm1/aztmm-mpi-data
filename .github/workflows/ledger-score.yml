@@ -177,6 +177,6 @@ jobs:
           for path in "${PATHS[@]}"; do
             url="https://purge.jsdelivr.net/gh/aztmm1/aztmm-mpi-data@main/${path}"
             echo "::group::Purge ${path}"
-            curl -sS -X POST "${url}" || echo "purge failed for ${path}, continuing"
+            curl -sS --fail "${url}" || echo "purge failed for ${path}, continuing"
             echo "::endgroup::"
           done
