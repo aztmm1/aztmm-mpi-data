@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-10T15:16:43Z",
+  "generated_at": "2026-08-10T22:17:57Z",
   "mpi": {
     "score": 75,
     "regime": "Bull",
@@ -19,11 +19,11 @@
     "vrp": 0.55
   },
   "latest_daily_pulse": {
-    "id": 3276,
-    "url": "https://aztmm.com/2026/08/07/daily-pulse-options-flow-dark-pool-7-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 7 August 2026",
-    "date": "2026-08-07",
-    "snippet": "Both indices closed higher and volatility eased, but market-wide call premium ran 1.8-to-1 while SPY and QQQ net premium finished negative \u2014 plus $2.10 billion of Treasury ETF blocks after the bell.",
+    "id": 3280,
+    "url": "https://aztmm.com/2026/08/10/daily-pulse-options-flow-dark-pool-10-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 August 2026",
+    "date": "2026-08-10",
+    "snippet": "SPY closed within a quarter-point of Friday while NVDA gave back 2.9% into its low \u2014 a flat index masking a heavy semis tape, an enormous broad-index block session, and put premium quietly outspending calls in QQQ.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3280,
+      "url": "https://aztmm.com/2026/08/10/daily-pulse-options-flow-dark-pool-10-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 August 2026",
+      "date": "2026-08-10",
+      "snippet": "SPY closed within a quarter-point of Friday while NVDA gave back 2.9% into its low \u2014 a flat index masking a heavy semis tape, an enormous broad-index block session, and put premium quietly outspending calls in QQQ.",
+      "kind": "daily"
+    },
     {
       "id": 3277,
       "url": "https://aztmm.com/2026/08/08/weekly-pulse-2026-08-03-to-2026-08-07/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 August 2026",
       "date": "2026-08-05",
       "snippet": "SPY and QQQ gapped higher and closed on their lows, while roughly $1.75B of off-exchange S&#038;P blocks printed near the session&#8217;s bottom and index desks paid up for January 2027 protection.",
-      "kind": "daily"
-    },
-    {
-      "id": 3267,
-      "url": "https://aztmm.com/2026/08/04/daily-pulse-options-flow-dark-pool-4-august-2026/",
-      "title": "Daily Pulse &#8211; Market Snapshot, 4 August 2026 (Condensed Auto Edition)",
-      "date": "2026-08-04",
-      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
       "kind": "daily"
     }
   ],
