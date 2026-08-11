@@ -17,6 +17,11 @@ on:
     # 10:45 ET Saturday, after the weekly free-source Pulse -> 14:45 UTC (EDT) / 15:45 UTC (EST)
     - cron: "45 14 * * 6"
     - cron: "45 15 * * 6"
+    # 07:45 ET weekday morning refresh (added 2026-08-11). The deleted
+    # congress-watch.yml used to regenerate canonical as a 06:00 UTC side
+    # effect before failing; the morning heal now has an owner of record.
+    - cron: "45 11 * * 1-5"
+    - cron: "45 12 * * 1-5"
   workflow_dispatch:
 
 permissions:
