@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-11T15:16:31Z",
+  "generated_at": "2026-08-11T22:23:01Z",
   "mpi": {
     "score": 73,
     "regime": "Bull",
@@ -19,22 +19,22 @@
     "vrp": 1.48
   },
   "latest_daily_pulse": {
-    "id": 3280,
-    "url": "https://aztmm.com/2026/08/10/daily-pulse-options-flow-dark-pool-10-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 August 2026",
-    "date": "2026-08-10",
-    "snippet": "SPY closed within a quarter-point of Friday while NVDA gave back 2.9% into its low \u2014 a flat index masking a heavy semis tape, an enormous broad-index block session, and put premium quietly outspending calls in QQQ.",
+    "id": 3287,
+    "url": "https://aztmm.com/2026/08/11/daily-pulse-options-flow-dark-pool-11-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 August 2026",
+    "date": "2026-08-11",
+    "snippet": "Indices gave back a firm open to close near the lows, VIX still fell, and the day&#8217;s biggest tell printed off-exchange \u2014 a $1.08B INTC block into the close.",
     "kind": "daily"
   },
-  "latest_weekly_pulse": {
-    "id": 3277,
-    "url": "https://aztmm.com/2026/08/08/weekly-pulse-2026-08-03-to-2026-08-07/",
-    "title": "Weekly Pulse \u2014 Week of August 3\u20137, 2026",
-    "date": "2026-08-08",
-    "snippet": "Bull \u00b7 early regime held; net call premium 1.8x put across 5 sessions; no single-name positioning carried through the week.",
-    "kind": "weekly"
-  },
   "recent_pulses": [
+    {
+      "id": 3287,
+      "url": "https://aztmm.com/2026/08/11/daily-pulse-options-flow-dark-pool-11-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 August 2026",
+      "date": "2026-08-11",
+      "snippet": "Indices gave back a firm open to close near the lows, VIX still fell, and the day&#8217;s biggest tell printed off-exchange \u2014 a $1.08B INTC block into the close.",
+      "kind": "daily"
+    },
     {
       "id": 3280,
       "url": "https://aztmm.com/2026/08/10/daily-pulse-options-flow-dark-pool-10-august-2026/",
@@ -42,14 +42,6 @@
       "date": "2026-08-10",
       "snippet": "SPY closed within a quarter-point of Friday while NVDA gave back 2.9% into its low \u2014 a flat index masking a heavy semis tape, an enormous broad-index block session, and put premium quietly outspending calls in QQQ.",
       "kind": "daily"
-    },
-    {
-      "id": 3277,
-      "url": "https://aztmm.com/2026/08/08/weekly-pulse-2026-08-03-to-2026-08-07/",
-      "title": "Weekly Pulse \u2014 Week of August 3\u20137, 2026",
-      "date": "2026-08-08",
-      "snippet": "Bull \u00b7 early regime held; net call premium 1.8x put across 5 sessions; no single-name positioning carried through the week.",
-      "kind": "weekly"
     },
     {
       "id": 3276,
