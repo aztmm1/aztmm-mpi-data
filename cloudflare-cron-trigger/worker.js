@@ -1,4 +1,4 @@
-// AZTMM CF Worker v2.11 - drop-in replacement for cloudflare-cron-trigger/worker.js
+// AZTMM CF Worker v2.12 - drop-in replacement for cloudflare-cron-trigger/worker.js
 //
 // New vs v2.10 (2026-08-05):
 //   * RETIRED 4 trackers: nope-max-pain-tracker, squeeze-watch,
@@ -62,7 +62,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 
 var GH_OWNER = "aztmm1";
 var GH_REPO = "aztmm-mpi-data";
-var USER_AGENT = "AZTMM-CF-Worker/2.11";
+var USER_AGENT = "AZTMM-CF-Worker/2.12";
 var RAW_BASE = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
 
 var WP_SITE = "aztmm.com";
@@ -73,7 +73,6 @@ var WORKFLOWS = {
   mpi: "mpi-update.yml",
   dailyPulse: "daily-pulse-v2.yml",
   weeklyPulse: "weekly-pulse.yml",
-  congress: "congress-watch.yml",
   ledger: "ledger-score.yml"
 };
 
@@ -82,7 +81,6 @@ var WORKFLOWS = {
 // Only daily-cadence trackers are listed (insider-activity is weekly).
 var TRACKER_WORKFLOW_MAP = {
   "accountability-ledger": "ledger-score.yml",
-  "congress-trades-tracker": "congress-watch.yml",
   "mpi": "mpi-update.yml"
 };
 
@@ -95,13 +93,6 @@ var FRESHNESS_TARGETS = [
     dateKeys: ["as_of", "date"],
     cadence: "daily",
     yesterdayFile: null
-  },
-  {
-    slug: "congress-trades-tracker",
-    file: "latest.json",
-    dateKeys: ["date", "asOf", "as_of"],
-    cadence: "daily",
-    yesterdayFile: (d) => `congress-${d}.public.json`
   },
   {
     slug: "mpi",
@@ -124,13 +115,6 @@ var FRESHNESS_KEY_NUMBERS = {
     const m2 = stripped.match(/Put premium[^$]*\$([\d.]+[BMK]?)/i);
     const m3 = stripped.match(/P[\\/-]?C(?:\s*volume)?\s*ratio[^\d]*([\d.]+)/i) || stripped.match(/Put\/Call volume ratio[^\d]*([\d.]+)/i);
     return [m1 && m1[1], m2 && m2[1], m3 && m3[1]].filter(Boolean).join("|");
-  },
-  "congress-trades-tracker": (data) => {
-    const s = (data && data.summary) || {};
-    const vals = [s.filings_today, s.members_today, s.tickers_today, s.large_filings_today];
-    const anyNonZero = vals.some((v) => typeof v === "number" && v > 0);
-    if (!anyNonZero) return "";
-    return vals.filter((v) => v !== void 0 && v !== null).join("|");
   },
   "mpi": (data) => {
     const d = (data && data.data) || {};
@@ -253,13 +237,7 @@ function selectWorkflows(et) {
        drifts like all GH crons on this repo. The scorer is idempotent, so a double-fire is safe. */
     selected.push(WORKFLOWS.ledger);
   }
-  if (hour === 17 && minute >= 10 && minute < 50) {
-    // 2026-06-10: WORKFLOWS.dailyPulse removed — Pipeline B daily retired (workflow disabled);
-    // Daily Pulse is owned by the UW/MCP scheduled task (Pipeline A, 5:05 PM ET).
-    // 2026-08-05 v2.11: optionsGravity/squeeze/earningsFlow retired — feeds were frozen
-    // at 2026-05-15 while stamping fresh as_of dates. Congress is the only survivor here.
-    selected.push(WORKFLOWS.congress);
-  }
+  // 2026-08-11 v2.12: congress-watch retired (page trashed 2026-08-08); 17:10 ET dispatch removed.
   // 2026-08-05 v2.11: Friday insiderActivity dispatch removed — tracker retired.
   return selected;
 }
@@ -1053,7 +1031,7 @@ function renderStatusPage(ctx) {
 
 <footer>
   Endpoints: <a href="/">/</a> &middot; <a href="/freshness">/freshness</a> &middot; <a href="/draft-queue">/draft-queue</a> &middot; <a href="/log">/log</a>
-  <br>aztmm-cron-v2 worker.js v2.11 &middot; two-phase publish + tracker-staleness watchdog (weekday 18:30 + Mon 10:00)
+  <br>aztmm-cron-v2 worker.js v2.12 &middot; two-phase publish + tracker-staleness watchdog (weekday 18:30 + Mon 10:00)
 </footer>`;
 }
 
@@ -1091,7 +1069,7 @@ export default {
       const etDate = getETDateStr(now);
       const next = selectWorkflows(et);
       return Response.json({
-        ok: true, worker: "aztmm-cron", version: "2.11", utc: now.toISOString(),
+        ok: true, worker: "aztmm-cron", version: "2.12", utc: now.toISOString(),
         etDate, etHour: et.hour, etMinute: et.minute, weekday: et.dow,
         wouldDispatchRightNow: next,
         info: "GET /status | GET /draft-queue | GET /freshness | GET /mpi-health | GET /log | POST /run?token=..."
@@ -1129,7 +1107,7 @@ export default {
         etHour: etParts.hour,
         etMinute: etParts.minute,
         utc: now.toISOString(),
-        worker_version: "2.11",
+        worker_version: "2.12",
         explanation: "asOf = last completed trading bar; computed_at = pipeline last successful run. STALE only if BOTH are stale, or weekday post-close bar didn't advance.",
         result
       }, null, 2), {
