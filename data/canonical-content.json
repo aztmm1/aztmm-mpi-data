@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-12T15:14:38Z",
+  "generated_at": "2026-08-12T22:23:01Z",
   "mpi": {
     "score": 73,
     "regime": "Bull",
@@ -19,14 +19,22 @@
     "vrp": 1.22
   },
   "latest_daily_pulse": {
-    "id": 3287,
-    "url": "https://aztmm.com/2026/08/11/daily-pulse-options-flow-dark-pool-11-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 August 2026",
-    "date": "2026-08-11",
-    "snippet": "Indices gave back a firm open to close near the lows, VIX still fell, and the day&#8217;s biggest tell printed off-exchange \u2014 a $1.08B INTC block into the close.",
+    "id": 3291,
+    "url": "https://aztmm.com/2026/08/12/daily-pulse-options-flow-dark-pool-12-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 August 2026",
+    "date": "2026-08-12",
+    "snippet": "Both indices gapped up, faded most of it and still closed green \u2014 while SPY option premium paid $198M more for downside than upside and this morning&#8217;s open-interest update split cleanly by duration.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3291,
+      "url": "https://aztmm.com/2026/08/12/daily-pulse-options-flow-dark-pool-12-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 August 2026",
+      "date": "2026-08-12",
+      "snippet": "Both indices gapped up, faded most of it and still closed green \u2014 while SPY option premium paid $198M more for downside than upside and this morning&#8217;s open-interest update split cleanly by duration.",
+      "kind": "daily"
+    },
     {
       "id": 3287,
       "url": "https://aztmm.com/2026/08/11/daily-pulse-options-flow-dark-pool-11-august-2026/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 6 August 2026",
       "date": "2026-08-06",
       "snippet": "SPY closed $768.56 (-0.16%) and QQQ $714.65 (-0.37%) on a quieter tape \u2014 market-wide call premium fell 28% to $20.5B, implied-volatility ranks compressed across SPY, QQQ and NVDA, and gold was the one name where the session&#8217;s largest block and its most one-sided call\u2026",
-      "kind": "daily"
-    },
-    {
-      "id": 3274,
-      "url": "https://aztmm.com/2026/08/05/daily-pulse-options-flow-dark-pool-5-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 5 August 2026",
-      "date": "2026-08-05",
-      "snippet": "SPY and QQQ gapped higher and closed on their lows, while roughly $1.75B of off-exchange S&#038;P blocks printed near the session&#8217;s bottom and index desks paid up for January 2027 protection.",
       "kind": "daily"
     }
   ],
