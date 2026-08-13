@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-08-12T23:40:15Z",
+  "computed_at": "2026-08-13T04:10:46Z",
   "asOf": "2026-08-12",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 72,
+    "mpi_score": 73,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 67,
-      "ci_high": 77
+      "ci_low": 68,
+      "ci_high": 78
     },
     "signal": {
       "bias": "Bullish",
@@ -19,22 +19,22 @@
     },
     "market": {
       "spy_spot": 772.49,
-      "expected_move_1sigma": 7.44,
-      "expected_move_pct": 0.0096
+      "expected_move_1sigma": 7.08,
+      "expected_move_pct": 0.0092
     },
     "volatility": {
-      "vix": 15.28,
+      "vix": 14.55,
       "vix3m": 18.53,
-      "vrp": 1.25,
+      "vrp": 0.52,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 14.03
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5846,
-      "probability_up": 0.5846,
+      "confidence": 0.5882,
+      "probability_up": 0.5882,
       "probability_flat": 0.2539,
-      "probability_down": 0.1614
+      "probability_down": 0.1578
     },
     "hmm": {
       "state": "Bull",
@@ -61,10 +61,10 @@
         "iwm_spy_percentile_1y": 88.5
       },
       "volatility": {
-        "score": 83.5,
-        "vix": 15.28,
+        "score": 88.2,
+        "vix": 14.55,
         "vix3m": 18.53,
-        "vix_percentile_1y": 10.7,
+        "vix_percentile_1y": 4.0,
         "term_shape": "Contango"
       },
       "yield_curve": {
