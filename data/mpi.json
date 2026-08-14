@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-08-13T23:40:12Z",
+  "computed_at": "2026-08-14T04:07:25Z",
   "asOf": "2026-08-13",
   "stale_threshold_hours": 18,
   "data": {
@@ -19,13 +19,13 @@
     },
     "market": {
       "spy_spot": 777.88,
-      "expected_move_1sigma": 7.13,
+      "expected_move_1sigma": 7.17,
       "expected_move_pct": 0.0092
     },
     "volatility": {
-      "vix": 14.55,
+      "vix": 14.63,
       "vix3m": 18.61,
-      "vrp": 0.6,
+      "vrp": 0.68,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 13.95
     },
@@ -61,10 +61,10 @@
         "iwm_spy_percentile_1y": 82.9
       },
       "volatility": {
-        "score": 88.2,
-        "vix": 14.55,
+        "score": 87.7,
+        "vix": 14.63,
         "vix3m": 18.61,
-        "vix_percentile_1y": 4.0,
+        "vix_percentile_1y": 4.8,
         "term_shape": "Contango"
       },
       "yield_curve": {
