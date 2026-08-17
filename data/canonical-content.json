@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-17T14:45:45Z",
+  "generated_at": "2026-08-17T21:56:55Z",
   "mpi": {
     "score": 73,
     "regime": "Bull",
@@ -19,14 +19,22 @@
     "vrp": 0.92
   },
   "latest_daily_pulse": {
-    "id": 3293,
-    "url": "https://aztmm.com/2026/08/14/daily-pulse-options-flow-dark-pool-14-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 August 2026",
-    "date": "2026-08-14",
-    "snippet": "SPY -0.20% and QQQ -0.14% into a lower VIX print, market-wide call premium nearly 2x puts while SPY itself ran put-heavy, a $537M SNDK block, and five of eight of yesterday&#8217;s flagged prints confirmed as new open interest.",
+    "id": 3297,
+    "url": "https://aztmm.com/2026/08/17/daily-pulse-options-flow-dark-pool-17-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 August 2026",
+    "date": "2026-08-17",
+    "snippet": "SPY closed on its session low at $772.67 while index put volume ran ahead of calls in both majors \u2014 and seven of Friday&#8217;s nine flagged prints confirmed overnight as real open interest.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3297,
+      "url": "https://aztmm.com/2026/08/17/daily-pulse-options-flow-dark-pool-17-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 August 2026",
+      "date": "2026-08-17",
+      "snippet": "SPY closed on its session low at $772.67 while index put volume ran ahead of calls in both majors \u2014 and seven of Friday&#8217;s nine flagged prints confirmed overnight as real open interest.",
+      "kind": "daily"
+    },
     {
       "id": 3293,
       "url": "https://aztmm.com/2026/08/14/daily-pulse-options-flow-dark-pool-14-august-2026/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 August 2026",
       "date": "2026-08-11",
       "snippet": "Indices gave back a firm open to close near the lows, VIX still fell, and the day&#8217;s biggest tell printed off-exchange \u2014 a $1.08B INTC block into the close.",
-      "kind": "daily"
-    },
-    {
-      "id": 3280,
-      "url": "https://aztmm.com/2026/08/10/daily-pulse-options-flow-dark-pool-10-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 August 2026",
-      "date": "2026-08-10",
-      "snippet": "SPY closed within a quarter-point of Friday while NVDA gave back 2.9% into its low \u2014 a flat index masking a heavy semis tape, an enormous broad-index block session, and put premium quietly outspending calls in QQQ.",
       "kind": "daily"
     }
   ],
