@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-18T22:24:18Z",
+  "generated_at": "2026-08-18T22:59:20Z",
   "mpi": {
     "score": 71,
     "regime": "Bull",
@@ -19,14 +19,30 @@
     "vrp": 1.57
   },
   "latest_daily_pulse": {
-    "id": 3297,
-    "url": "https://aztmm.com/2026/08/17/daily-pulse-options-flow-dark-pool-17-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 August 2026",
-    "date": "2026-08-17",
-    "snippet": "SPY closed on its session low at $772.67 while index put volume ran ahead of calls in both majors \u2014 and seven of Friday&#8217;s nine flagged prints confirmed overnight as real open interest.",
+    "id": 3299,
+    "url": "https://aztmm.com/2026/08/18/daily-pulse-options-flow-dark-pool-18-august-2026-2/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 August 2026",
+    "date": "2026-08-18",
+    "snippet": "Tech-led red day \u2014 SPY -0.68%, QQQ -1.69%, VIX back to 15.8; index put sweeps printed while last session&#8217;s SPY and IWM put flags confirmed as real positioning in the OI update.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3299,
+      "url": "https://aztmm.com/2026/08/18/daily-pulse-options-flow-dark-pool-18-august-2026-2/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 August 2026",
+      "date": "2026-08-18",
+      "snippet": "Tech-led red day \u2014 SPY -0.68%, QQQ -1.69%, VIX back to 15.8; index put sweeps printed while last session&#8217;s SPY and IWM put flags confirmed as real positioning in the OI update.",
+      "kind": "daily"
+    },
+    {
+      "id": 3298,
+      "url": "https://aztmm.com/2026/08/18/daily-pulse-options-flow-dark-pool-18-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 August 2026",
+      "date": "2026-08-18",
+      "snippet": "QQQ -1.68% against SPY -0.68% as XLK fell 2.47% and defensives led \u2014 XLE and XLV both closed at fresh 52-week highs. SPY put premium ran 1.93x calls into tomorrow&#8217;s FOMC.",
+      "kind": "daily"
+    },
     {
       "id": 3297,
       "url": "https://aztmm.com/2026/08/17/daily-pulse-options-flow-dark-pool-17-august-2026/",
@@ -49,22 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 13 August 2026",
       "date": "2026-08-13",
       "snippet": "SPY +0.70% and QQQ +1.16% on a call-heavy market-wide tape, but the index ETFs ran near one-to-one on puts while the day&#8217;s largest prints \u2014 NVDA&#8217;s $518M block, AMGN at 48% of its session volume \u2014 went off-exchange into the close.",
-      "kind": "daily"
-    },
-    {
-      "id": 3291,
-      "url": "https://aztmm.com/2026/08/12/daily-pulse-options-flow-dark-pool-12-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 12 August 2026",
-      "date": "2026-08-12",
-      "snippet": "Both indices gapped up, faded most of it and still closed green \u2014 while SPY option premium paid $198M more for downside than upside and this morning&#8217;s open-interest update split cleanly by duration.",
-      "kind": "daily"
-    },
-    {
-      "id": 3287,
-      "url": "https://aztmm.com/2026/08/11/daily-pulse-options-flow-dark-pool-11-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 August 2026",
-      "date": "2026-08-11",
-      "snippet": "Indices gave back a firm open to close near the lows, VIX still fell, and the day&#8217;s biggest tell printed off-exchange \u2014 a $1.08B INTC block into the close.",
       "kind": "daily"
     }
   ],
