@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-19T22:25:27Z",
+  "generated_at": "2026-08-19T22:59:19Z",
   "mpi": {
     "score": 69,
     "regime": "Bull \u00b7 early",
@@ -19,14 +19,22 @@
     "vrp": 2.25
   },
   "latest_daily_pulse": {
-    "id": 3299,
-    "url": "https://aztmm.com/2026/08/18/daily-pulse-options-flow-dark-pool-18-august-2026-2/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 August 2026",
-    "date": "2026-08-18",
-    "snippet": "Tech-led red day \u2014 SPY -0.68%, QQQ -1.69%, VIX back to 15.8; index put sweeps printed while last session&#8217;s SPY and IWM put flags confirmed as real positioning in the OI update.",
+    "id": 3300,
+    "url": "https://aztmm.com/2026/08/19/daily-pulse-options-flow-dark-pool-19-august-2026/",
+    "title": "Daily Pulse &#8211; Market Snapshot, 19 August 2026 (Condensed Auto Edition)",
+    "date": "2026-08-19",
+    "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3300,
+      "url": "https://aztmm.com/2026/08/19/daily-pulse-options-flow-dark-pool-19-august-2026/",
+      "title": "Daily Pulse &#8211; Market Snapshot, 19 August 2026 (Condensed Auto Edition)",
+      "date": "2026-08-19",
+      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+      "kind": "daily"
+    },
     {
       "id": 3299,
       "url": "https://aztmm.com/2026/08/18/daily-pulse-options-flow-dark-pool-18-august-2026-2/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 August 2026",
       "date": "2026-08-14",
       "snippet": "SPY -0.20% and QQQ -0.14% into a lower VIX print, market-wide call premium nearly 2x puts while SPY itself ran put-heavy, a $537M SNDK block, and five of eight of yesterday&#8217;s flagged prints confirmed as new open interest.",
-      "kind": "daily"
-    },
-    {
-      "id": 3292,
-      "url": "https://aztmm.com/2026/08/13/daily-pulse-options-flow-dark-pool-13-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 13 August 2026",
-      "date": "2026-08-13",
-      "snippet": "SPY +0.70% and QQQ +1.16% on a call-heavy market-wide tape, but the index ETFs ran near one-to-one on puts while the day&#8217;s largest prints \u2014 NVDA&#8217;s $518M block, AMGN at 48% of its session volume \u2014 went off-exchange into the close.",
       "kind": "daily"
     }
   ],
