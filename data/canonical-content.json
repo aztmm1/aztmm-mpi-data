@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-21T14:53:52Z",
+  "generated_at": "2026-08-21T21:57:16Z",
   "mpi": {
     "score": 69,
     "regime": "Bull \u00b7 early",
@@ -19,14 +19,22 @@
     "vrp": 2.89
   },
   "latest_daily_pulse": {
-    "id": 3302,
-    "url": "https://aztmm.com/2026/08/20/daily-pulse-options-flow-dark-pool-20-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 20 August 2026",
-    "date": "2026-08-20",
-    "snippet": "Both indices closed lower on 20 August with index puts leading volume, while the long-dated call tape and a wall of half-billion-dollar closing blocks told a different story.",
+    "id": 3306,
+    "url": "https://aztmm.com/2026/08/21/daily-pulse-options-flow-dark-pool-21-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 August 2026",
+    "date": "2026-08-21",
+    "snippet": "Both indices closed green on small ranges and VIX slipped a point, while over $1.5bn of off-exchange size concentrated in memory and semis \u2014 and this morning&#8217;s open-interest file confirmed Thursday&#8217;s long-dated lines while rejecting the NVDA hedges.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3306,
+      "url": "https://aztmm.com/2026/08/21/daily-pulse-options-flow-dark-pool-21-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 August 2026",
+      "date": "2026-08-21",
+      "snippet": "Both indices closed green on small ranges and VIX slipped a point, while over $1.5bn of off-exchange size concentrated in memory and semis \u2014 and this morning&#8217;s open-interest file confirmed Thursday&#8217;s long-dated lines while rejecting the NVDA hedges.",
+      "kind": "daily"
+    },
     {
       "id": 3302,
       "url": "https://aztmm.com/2026/08/20/daily-pulse-options-flow-dark-pool-20-august-2026/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 August 2026",
       "date": "2026-08-17",
       "snippet": "SPY closed on its session low at $772.67 while index put volume ran ahead of calls in both majors \u2014 and seven of Friday&#8217;s nine flagged prints confirmed overnight as real open interest.",
-      "kind": "daily"
-    },
-    {
-      "id": 3293,
-      "url": "https://aztmm.com/2026/08/14/daily-pulse-options-flow-dark-pool-14-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 14 August 2026",
-      "date": "2026-08-14",
-      "snippet": "SPY -0.20% and QQQ -0.14% into a lower VIX print, market-wide call premium nearly 2x puts while SPY itself ran put-heavy, a $537M SNDK block, and five of eight of yesterday&#8217;s flagged prints confirmed as new open interest.",
       "kind": "daily"
     }
   ],
