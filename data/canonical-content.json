@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-24T22:27:02Z",
+  "generated_at": "2026-08-24T23:00:29Z",
   "mpi": {
     "score": 72,
     "regime": "Bull",
@@ -19,14 +19,22 @@
     "vrp": 1.89
   },
   "latest_daily_pulse": {
-    "id": 3306,
-    "url": "https://aztmm.com/2026/08/21/daily-pulse-options-flow-dark-pool-21-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 August 2026",
-    "date": "2026-08-21",
-    "snippet": "Both indices closed green on small ranges and VIX slipped a point, while over $1.5bn of off-exchange size concentrated in memory and semis \u2014 and this morning&#8217;s open-interest file confirmed Thursday&#8217;s long-dated lines while rejecting the NVDA hedges.",
+    "id": 3310,
+    "url": "https://aztmm.com/2026/08/24/daily-pulse-options-flow-dark-pool-24-august-2026/",
+    "title": "Daily Pulse &#8211; Market Snapshot, 24 August 2026 (Condensed Auto Edition)",
+    "date": "2026-08-24",
+    "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3310,
+      "url": "https://aztmm.com/2026/08/24/daily-pulse-options-flow-dark-pool-24-august-2026/",
+      "title": "Daily Pulse &#8211; Market Snapshot, 24 August 2026 (Condensed Auto Edition)",
+      "date": "2026-08-24",
+      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+      "kind": "daily"
+    },
     {
       "id": 3306,
       "url": "https://aztmm.com/2026/08/21/daily-pulse-options-flow-dark-pool-21-august-2026/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 18 August 2026",
       "date": "2026-08-18",
       "snippet": "Tech-led red day \u2014 SPY -0.68%, QQQ -1.69%, VIX back to 15.8; index put sweeps printed while last session&#8217;s SPY and IWM put flags confirmed as real positioning in the OI update.",
-      "kind": "daily"
-    },
-    {
-      "id": 3297,
-      "url": "https://aztmm.com/2026/08/17/daily-pulse-options-flow-dark-pool-17-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 17 August 2026",
-      "date": "2026-08-17",
-      "snippet": "SPY closed on its session low at $772.67 while index put volume ran ahead of calls in both majors \u2014 and seven of Friday&#8217;s nine flagged prints confirmed overnight as real open interest.",
       "kind": "daily"
     }
   ],
