@@ -1,17 +1,31 @@
 {
-  "as_of": "2026-08-21",
-  "date": "2026-08-21",
+  "as_of": "2026-08-24",
+  "date": "2026-08-24",
   "totals": {
-    "open": 20,
-    "resolved": 528,
+    "open": 15,
+    "resolved": 534,
     "hit": 79,
     "invalidated": 77,
-    "unresolved": 372
+    "unresolved": 378
   },
   "hit_rate_5d": 0.4,
   "hit_rate_21d": 0.42,
   "regime_alignment_21d": 0.85,
   "rows": [
+    {
+      "id": "daily-pulse-options-flow-dark-pool-24-august-2026:regime",
+      "date": "2026-08-24",
+      "type": "regime",
+      "ticker": "SPY",
+      "statement": "Regime Bull",
+      "direction": "up",
+      "horizon_days": 21,
+      "status": "open",
+      "ret_5d": null,
+      "ret_21d": null,
+      "resolved_date": null,
+      "note": null
+    },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:watch6",
       "date": "2026-08-21",
@@ -20,12 +34,12 @@
       "statement": "Monday’s OI file — the radar contracts below are unconfirmed until then. MRVL reports 27 August and NVDA 26 August, so both names’ flow this week carries event risk that the OI update will help separate from conviction.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-24",
+      "note": "manual review",
+      "ret_1d": -0.0327
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:watch5",
@@ -35,12 +49,12 @@
       "statement": "MU $963–$967 — the band where Friday’s two large blocks crossed. Where the stock trades relative to that band is the cleanest observation on whether the size was accumulation or distribution.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-24",
+      "note": "manual review",
+      "ret_1d": -0.0583
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:watch4",
@@ -50,12 +64,12 @@
       "statement": "VIX 15.00 — a full point of decay Friday. A move back through 16 would return volatility to where it opened the week; holding under 15 would be the lowest sustained reading of the month.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-24",
+      "note": "manual review",
+      "ret_1d": 0.0476
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:watch3",
@@ -65,12 +79,12 @@
       "statement": "NVDA $214.50 — Friday’s low and its closing price. Trading below it Monday would extend a fade that began at Friday’s $218.42 open, four sessions ahead of Wednesday’s print.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-24",
+      "note": "manual review",
+      "ret_1d": -0.0291
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:watch2",
@@ -80,12 +94,12 @@
       "statement": "QQQ $709.20 — Friday’s low, and the level to watch. A close below would mark the first lower low since the current leg began; $715.67 is the corresponding high.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-24",
+      "note": "manual review",
+      "ret_1d": -0.01
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:watch1",
@@ -95,12 +109,12 @@
       "statement": "SPY $762.60 — Thursday’s close and Friday’s pivot. A close back below it would mean the week’s last two sessions net to nothing; $767.85 is the reference on the other side as Friday’s high.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-24",
+      "note": "manual review",
+      "ret_1d": -0.0029
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-21-august-2026:regime",
@@ -442,21 +456,6 @@
       "resolved_date": "2026-08-18",
       "note": "manual review",
       "ret_1d": 0.0027
-    },
-    {
-      "id": "daily-pulse-options-flow-dark-pool-17-august-2026:watch4",
-      "date": "2026-08-17",
-      "type": "watch",
-      "ticker": "NVDA",
-      "statement": "NVDA into 26 August — earnings are nine days out and the September put strikes at $220 and $230 both saw ask-side prints today. Whether those become open interest is tomorrow’s question.",
-      "direction": "watch",
-      "horizon_days": 1,
-      "status": "unresolved",
-      "ret_5d": null,
-      "ret_21d": null,
-      "resolved_date": "2026-08-18",
-      "note": "manual review",
-      "ret_1d": -0.0234
     }
   ]
 }
