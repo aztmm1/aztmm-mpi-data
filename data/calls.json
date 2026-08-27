@@ -6355,11 +6355,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": 0.0411,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.034,
+    "resolved_date": "2026-08-26",
+    "note": "SPY 21-session move +3.40% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-28-july-2026-2:watch1",
@@ -7755,7 +7755,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": -0.0039,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -8004,12 +8004,12 @@
     "statement": "SPY $766.78 — today’s high, and the level to watch. A close above it would mark a fresh high for the move; $763.05, today’s low, is the reference on the other side.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-27",
+    "note": "manual review",
+    "ret_1d": 0.0002
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-25-august-2026:watch2",
@@ -8019,12 +8019,12 @@
     "statement": "QQQ $714.04 — the session high and the more extended of the two indices. A close below $707.45 would mark the first lower low since the reversal.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-27",
+    "note": "manual review",
+    "ret_1d": 0.0009
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-25-august-2026:watch3",
@@ -8034,12 +8034,12 @@
     "statement": "NVDA $214.73 — today’s high, unreached on the close. $210.11 is the low that would define the day’s range if revisited.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-27",
+    "note": "manual review",
+    "ret_1d": -0.0159
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-25-august-2026:watch4",
@@ -8049,12 +8049,12 @@
     "statement": "VIX 15 — a second consecutive close on the handle. A move above 16.30, today’s high, would be the first expansion in the current stretch.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-27",
+    "note": "manual review",
+    "ret_1d": -0.0155
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-25-august-2026:watch5",
@@ -8064,12 +8064,12 @@
     "statement": "SMH $555 — the semis proxy sits between the $575 puts and $600 calls that printed today. Which strike the tape drifts toward would tell us which side of that pair was the real position.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-27",
+    "note": "manual review",
+    "ret_1d": -0.0001
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-25-august-2026:watch6",
@@ -8079,11 +8079,25 @@
     "statement": "Earnings-adjacent names — BURL and IREN both report 27 August, and both saw large put prints today against small existing open interest.",
     "direction": "watch",
     "horizon_days": 1,
+    "status": "unresolved",
+    "ret_5d": null,
+    "ret_21d": null,
+    "resolved_date": "2026-08-27",
+    "note": "manual review",
+    "ret_1d": -0.0041
+  },
+  {
+    "id": "daily-pulse-options-flow-dark-pool-26-august-2026:regime",
+    "date": "2026-08-26",
+    "type": "regime",
+    "ticker": "SPY",
+    "statement": "Regime Bull",
+    "direction": "up",
+    "horizon_days": 21,
     "status": "open",
     "ret_5d": null,
     "ret_21d": null,
     "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "note": null
   }
 ]
