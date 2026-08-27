@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-08-26T07:47:17Z",
-  "as_of_session": "2026-08-25",
+  "generated_at": "2026-08-27T18:08:31Z",
+  "as_of_session": "2026-08-26",
   "score": 100,
   "grade": "A",
   "critical_fail": false,
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-08-26T03:02:55Z vs 2026-08-25 18:00 ET window; asOf 2026-08-25"
+      "detail": "computed_at 2026-08-27T13:47:45Z vs 2026-08-26 18:00 ET window; asOf 2026-08-26"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-08-26T03:02:55Z (mpi 2026-08-26T03:02:55Z); generated 2026-08-26T04:03:43Z"
+      "detail": "canonical embeds 2026-08-27T13:47:45Z (mpi 2026-08-27T13:47:45Z); generated 2026-08-27T14:13:32Z"
     },
     {
       "id": "F3",
@@ -55,7 +55,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-08-25 vs last session 2026-08-25"
+      "detail": "latest daily pulse 2026-08-26 vs last session 2026-08-26"
     },
     {
       "id": "F4",
@@ -82,7 +82,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "mpi 71 vs canonical 71"
+      "detail": "mpi 70 vs canonical 70"
     },
     {
       "id": "C2",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-08-25 vs canonical 2026-08-25"
+      "detail": "asOf 2026-08-26 vs canonical 2026-08-26"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 765.91 vs canonical 765.91"
+      "detail": "spy_spot 766.08 vs canonical 766.08"
     },
     {
       "id": "C4",
@@ -118,7 +118,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "label 'Bull' for score 71 (band Bull)"
+      "detail": "label 'Bull' for score 70 (band Bull)"
     },
     {
       "id": "M3",
@@ -136,7 +136,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "CI 66-76 brackets 71"
+      "detail": "CI 65-75 brackets 70"
     },
     {
       "id": "M5",
@@ -154,7 +154,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 765.91 vs Yahoo 765.91 for 2026-08-25"
+      "detail": "spy_spot 766.08 vs Yahoo 766.08 for 2026-08-26"
     },
     {
       "id": "H2",
@@ -163,7 +163,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "vix 15.45 vs CBOE 15.45 for 2026-08-25"
+      "detail": "vix 15.21 vs CBOE 15.21 for 2026-08-26"
     },
     {
       "id": "H3",
