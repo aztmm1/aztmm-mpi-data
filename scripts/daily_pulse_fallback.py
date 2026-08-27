@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Fallback Daily Pulse publisher (server-side safety net).
+"""Fallback Daily Pulse publisher v2 (server-side safety net).
+
+v2 (2026-08-27): adds a dp-fastread box (fixes the front-page Fast Read tile
+going stale after condensed editions) and a standard footer with subscribe CTA.
 
 Runs on GitHub Actions after the desktop publisher's window (cron 22:45 UTC
 Mon-Fri). If today's Daily Pulse is missing from aztmm.com, publishes a
@@ -87,7 +90,21 @@ def build_content(mpi, d):
         '<a href="/performance-archive/">Accountability Ledger</a> &middot; '
         '<a href="/trading-academy/">Trading Academy</a></em></p><!-- /wp:paragraph -->',
     ]
-    return strip + "".join(paras)
+    fastread = (
+        '<!-- wp:html --><div class="dp-fastread"><p style="color:#c9a961;'
+        'text-transform:uppercase;letter-spacing:2px;font-size:0.7rem;margin:0 0 6px;">Fast read</p><ul>'
+        f'<li>The Market Pulse Index printed <strong>{score}</strong> ({label}) with the regime classifier reading <strong>{regime}</strong>.</li>'
+        + (f'<li>SPY spot <strong>${spy}</strong>' + (f' with VIX at <strong>{vix}</strong>' if vix else '') + f' as of the {as_of_label} close.</li>' if spy else '')
+        + '<li>Condensed automatic edition &mdash; the full desk edition returns next session.</li>'
+        '</ul></div><!-- /wp:html -->'
+    )
+    footer = (
+        '<!-- wp:paragraph --><p class="dp-footer" style="font-size:0.85rem;color:#94a3b8;">'
+        'Research and journalism &mdash; not investment advice, a recommendation, or a solicitation. '
+        f'Data as of the {as_of_label} close. '
+        '<a href="/subscribe/">Subscribe for daily updates</a>.</p><!-- /wp:paragraph -->'
+    )
+    return strip + fastread + "".join(paras) + footer
 
 
 def main():
