@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-27T21:18:58Z",
+  "generated_at": "2026-08-27T22:26:59Z",
   "mpi": {
     "score": 70,
     "regime": "Bull",
@@ -19,14 +19,22 @@
     "vrp": 3.58
   },
   "latest_daily_pulse": {
-    "id": 3315,
-    "url": "https://aztmm.com/2026/08/26/daily-pulse-options-flow-dark-pool-26-august-2026/",
-    "title": "Daily Pulse &#8211; Market Snapshot, 26 August 2026 (Condensed Auto Edition)",
-    "date": "2026-08-26",
-    "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+    "id": 3317,
+    "url": "https://aztmm.com/2026/08/27/daily-pulse-options-flow-dark-pool-27-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 August 2026",
+    "date": "2026-08-27",
+    "snippet": "NVDA&#8217;s post-earnings surge led a broad Thursday advance, with call flow stacking across two 2027 expiries even as SPY, IWM, and PANW puts kept the hedge book active.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3317,
+      "url": "https://aztmm.com/2026/08/27/daily-pulse-options-flow-dark-pool-27-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 August 2026",
+      "date": "2026-08-27",
+      "snippet": "NVDA&#8217;s post-earnings surge led a broad Thursday advance, with call flow stacking across two 2027 expiries even as SPY, IWM, and PANW puts kept the hedge book active.",
+      "kind": "daily"
+    },
     {
       "id": 3315,
       "url": "https://aztmm.com/2026/08/26/daily-pulse-options-flow-dark-pool-26-august-2026/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 August 2026",
       "date": "2026-08-21",
       "snippet": "Both indices closed green on small ranges and VIX slipped a point, while over $1.5bn of off-exchange size concentrated in memory and semis \u2014 and this morning&#8217;s open-interest file confirmed Thursday&#8217;s long-dated lines while rejecting the NVDA hedges.",
-      "kind": "daily"
-    },
-    {
-      "id": 3302,
-      "url": "https://aztmm.com/2026/08/20/daily-pulse-options-flow-dark-pool-20-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 20 August 2026",
-      "date": "2026-08-20",
-      "snippet": "Both indices closed lower on 20 August with index puts leading volume, while the long-dated call tape and a wall of half-billion-dollar closing blocks told a different story.",
       "kind": "daily"
     }
   ],
