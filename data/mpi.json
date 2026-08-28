@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-08-28T14:54:15Z",
-  "asOf": "2026-08-27",
+  "computed_at": "2026-08-28T23:03:10Z",
+  "asOf": "2026-08-28",
   "stale_threshold_hours": 18,
   "data": {
     "mpi_score": 71,
@@ -18,60 +18,60 @@
       "strength": "High"
     },
     "market": {
-      "spy_spot": 771.1,
-      "expected_move_1sigma": 7.05,
+      "spy_spot": 769.35,
+      "expected_move_1sigma": 7.03,
       "expected_move_pct": 0.0091
     },
     "volatility": {
       "vix": 14.51,
-      "vix3m": 17.56,
-      "vrp": 4.02,
+      "vix3m": 17.48,
+      "vrp": 4.11,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 10.49
+      "realized_vol_20d_pct": 10.4
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5173,
-      "probability_up": 0.5173,
-      "probability_flat": 0.3077,
-      "probability_down": 0.1751
+      "confidence": 0.5149,
+      "probability_up": 0.5149,
+      "probability_flat": 0.3097,
+      "probability_down": 0.1754
     },
     "hmm": {
       "state": "Bull",
-      "confidence": 0.6123,
+      "confidence": 0.5977,
       "probs": {
-        "Bull": 0.6123,
-        "Sideways": 0.3855,
+        "Bull": 0.5977,
+        "Sideways": 0.4001,
         "Bear": 0.0022
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 78.7,
-        "spy_close": 771.1,
-        "ma50": 753.39,
-        "ma200": 709.41,
-        "cross_ratio_pct": 6.2,
-        "ma50_slope_pct": 0.655
+        "score": 78.8,
+        "spy_close": 769.35,
+        "ma50": 753.96,
+        "ma200": 709.85,
+        "cross_ratio_pct": 6.214,
+        "ma50_slope_pct": 0.671
       },
       "breadth": {
-        "score": 70.2,
-        "cyclical_defensive_ratio": 1.3536,
-        "cyc_def_percentile_1y": 65.9,
-        "iwm_spy_percentile_1y": 76.6
+        "score": 63.2,
+        "cyclical_defensive_ratio": 1.3483,
+        "cyc_def_percentile_1y": 63.5,
+        "iwm_spy_percentile_1y": 62.7
       },
       "volatility": {
         "score": 88.8,
         "vix": 14.51,
-        "vix3m": 17.56,
+        "vix3m": 17.48,
         "vix_percentile_1y": 3.2,
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 68.8,
-        "t10y2y_pct": 0.47,
-        "dgs10": 4.66,
-        "dgs2": 4.19
+        "score": 65.6,
+        "t10y2y_pct": 0.39,
+        "dgs10": 4.67,
+        "dgs2": 4.2
       },
       "credit": {
         "score": 88.4,
@@ -79,13 +79,13 @@
         "ig_oas_pct": 0.79
       },
       "sentiment": {
-        "score": 55.7,
-        "cnn_fg": 55.7
+        "score": 54.4,
+        "cnn_fg": 54.4
       },
       "rotation": {
-        "score": 63.1,
-        "xlu_xly_ratio": 0.3726,
-        "xlu_xly_percentile_1y": 36.9
+        "score": 74.2,
+        "xlu_xly_ratio": 0.3646,
+        "xlu_xly_percentile_1y": 25.8
       },
       "currency": {
         "score": 61.2,
