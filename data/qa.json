@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-08-28T15:04:30Z",
+  "generated_at": "2026-08-28T19:17:20Z",
   "as_of_session": "2026-08-27",
   "score": 100,
   "grade": "A",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-08-28T14:54:15Z (mpi 2026-08-28T14:54:15Z); generated 2026-08-28T14:54:31Z"
+      "detail": "canonical embeds 2026-08-28T14:54:15Z (mpi 2026-08-28T14:54:15Z); generated 2026-08-28T15:23:41Z"
     },
     {
       "id": "F3",
