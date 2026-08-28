@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-28T06:20:44Z",
+  "generated_at": "2026-08-28T06:46:58Z",
   "mpi": {
     "score": 71,
     "regime": "Bull",
@@ -25,6 +25,14 @@
     "date": "2026-08-27",
     "snippet": "NVDA&#8217;s post-earnings surge led a broad Thursday advance, with call flow stacking across two 2027 expiries even as SPY, IWM, and PANW puts kept the hedge book active.",
     "kind": "daily"
+  },
+  "latest_weekly_pulse": {
+    "id": 3307,
+    "url": "https://aztmm.com/2026/08/22/weekly-pulse-2026-08-17-to-2026-08-21/",
+    "title": "Weekly Pulse \u2014 Week of August 17\u201321, 2026",
+    "date": "2026-08-22",
+    "snippet": "Bull regime held; net call premium 2.0x put across 5 sessions; no single-name positioning carried through the week.",
+    "kind": "weekly"
   },
   "recent_pulses": [
     {
@@ -60,12 +68,12 @@
       "kind": "daily"
     },
     {
-      "id": 3306,
-      "url": "https://aztmm.com/2026/08/21/daily-pulse-options-flow-dark-pool-21-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 August 2026",
-      "date": "2026-08-21",
-      "snippet": "Both indices closed green on small ranges and VIX slipped a point, while over $1.5bn of off-exchange size concentrated in memory and semis \u2014 and this morning&#8217;s open-interest file confirmed Thursday&#8217;s long-dated lines while rejecting the NVDA hedges.",
-      "kind": "daily"
+      "id": 3307,
+      "url": "https://aztmm.com/2026/08/22/weekly-pulse-2026-08-17-to-2026-08-21/",
+      "title": "Weekly Pulse \u2014 Week of August 17\u201321, 2026",
+      "date": "2026-08-22",
+      "snippet": "Bull regime held; net call premium 2.0x put across 5 sessions; no single-name positioning carried through the week.",
+      "kind": "weekly"
     }
   ],
   "trackers": {
