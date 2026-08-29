@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-29T17:53:47Z",
+  "generated_at": "2026-08-29T18:51:49Z",
   "mpi": {
     "score": 71,
     "regime": "Bull",
@@ -26,23 +26,7 @@
     "snippet": "NVDA gives back half its pop as $6.2B of closing S&#038;P-tracker crosses hits the dark-pool tape; six of eight flagged prints confirm as new open interest, and AVGO&#8217;s pre-earnings calls lead Monday&#8217;s check.",
     "kind": "daily"
   },
-  "latest_weekly_pulse": {
-    "id": 3337,
-    "url": "https://aztmm.com/2026/08/29/weekly-pulse-2026-08-24-to-2026-08-28/",
-    "title": "Weekly Pulse \u2014 Week of August 24\u201328, 2026",
-    "date": "2026-08-29",
-    "snippet": "Bull regime held; net call premium 1.5x put across 5 sessions; no single-name positioning carried through the week.",
-    "kind": "weekly"
-  },
   "recent_pulses": [
-    {
-      "id": 3337,
-      "url": "https://aztmm.com/2026/08/29/weekly-pulse-2026-08-24-to-2026-08-28/",
-      "title": "Weekly Pulse \u2014 Week of August 24\u201328, 2026",
-      "date": "2026-08-29",
-      "snippet": "Bull regime held; net call premium 1.5x put across 5 sessions; no single-name positioning carried through the week.",
-      "kind": "weekly"
-    },
     {
       "id": 3336,
       "url": "https://aztmm.com/2026/08/28/daily-pulse-options-flow-dark-pool-28-august-2026/",
@@ -73,6 +57,14 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 25 August 2026",
       "date": "2026-08-25",
       "snippet": "SPY and QQQ both closed green with VIX pinned near 15, but the flow underneath split \u2014 index puts bought on the S&#038;P side while semis and metals were chased to the upside, alongside more than $3.2B in off-exchange blocks.",
+      "kind": "daily"
+    },
+    {
+      "id": 3310,
+      "url": "https://aztmm.com/2026/08/24/daily-pulse-options-flow-dark-pool-24-august-2026/",
+      "title": "Daily Pulse &#8211; Market Snapshot, 24 August 2026 (Condensed Auto Edition)",
+      "date": "2026-08-24",
+      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
       "kind": "daily"
     }
   ],
