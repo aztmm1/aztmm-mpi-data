@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-28T23:33:28Z",
+  "generated_at": "2026-08-29T03:22:04Z",
   "mpi": {
     "score": 71,
     "regime": "Bull",
@@ -19,14 +19,22 @@
     "vrp": 4.11
   },
   "latest_daily_pulse": {
-    "id": 3317,
-    "url": "https://aztmm.com/2026/08/27/daily-pulse-options-flow-dark-pool-27-august-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 27 August 2026",
-    "date": "2026-08-27",
-    "snippet": "NVDA&#8217;s post-earnings surge led a broad Thursday advance, with call flow stacking across two 2027 expiries even as SPY, IWM, and PANW puts kept the hedge book active.",
+    "id": 3336,
+    "url": "https://aztmm.com/2026/08/28/daily-pulse-options-flow-dark-pool-28-august-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 August 2026",
+    "date": "2026-08-28",
+    "snippet": "NVDA gives back half its pop as $6.2B of closing S&#038;P-tracker crosses hits the dark-pool tape; six of eight flagged prints confirm as new open interest, and AVGO&#8217;s pre-earnings calls lead Monday&#8217;s check.",
     "kind": "daily"
   },
   "recent_pulses": [
+    {
+      "id": 3336,
+      "url": "https://aztmm.com/2026/08/28/daily-pulse-options-flow-dark-pool-28-august-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 28 August 2026",
+      "date": "2026-08-28",
+      "snippet": "NVDA gives back half its pop as $6.2B of closing S&#038;P-tracker crosses hits the dark-pool tape; six of eight flagged prints confirm as new open interest, and AVGO&#8217;s pre-earnings calls lead Monday&#8217;s check.",
+      "kind": "daily"
+    },
     {
       "id": 3317,
       "url": "https://aztmm.com/2026/08/27/daily-pulse-options-flow-dark-pool-27-august-2026/",
@@ -57,14 +65,6 @@
       "title": "Daily Pulse &#8211; Market Snapshot, 24 August 2026 (Condensed Auto Edition)",
       "date": "2026-08-24",
       "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
-      "kind": "daily"
-    },
-    {
-      "id": 3306,
-      "url": "https://aztmm.com/2026/08/21/daily-pulse-options-flow-dark-pool-21-august-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 21 August 2026",
-      "date": "2026-08-21",
-      "snippet": "Both indices closed green on small ranges and VIX slipped a point, while over $1.5bn of off-exchange size concentrated in memory and semis \u2014 and this morning&#8217;s open-interest file confirmed Thursday&#8217;s long-dated lines while rejecting the NVDA hedges.",
       "kind": "daily"
     }
   ],
