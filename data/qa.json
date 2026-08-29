@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-08-28T19:17:20Z",
-  "as_of_session": "2026-08-27",
+  "generated_at": "2026-08-29T12:59:02Z",
+  "as_of_session": "2026-08-28",
   "score": 100,
   "grade": "A",
   "critical_fail": false,
@@ -28,7 +28,7 @@
       "max": 15
     }
   },
-  "unverified_count": 0,
+  "unverified_count": 1,
   "checks": [
     {
       "id": "F1",
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-08-28T14:54:15Z vs 2026-08-27 18:00 ET window; asOf 2026-08-27"
+      "detail": "computed_at 2026-08-29T08:38:25Z vs 2026-08-28 18:00 ET window; asOf 2026-08-28"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-08-28T14:54:15Z (mpi 2026-08-28T14:54:15Z); generated 2026-08-28T15:23:41Z"
+      "detail": "canonical embeds 2026-08-29T08:38:25Z (mpi 2026-08-29T08:38:25Z); generated 2026-08-29T10:05:40Z"
     },
     {
       "id": "F3",
@@ -55,7 +55,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-08-27 vs last session 2026-08-27"
+      "detail": "latest daily pulse 2026-08-28 vs last session 2026-08-28"
     },
     {
       "id": "F4",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-08-27 vs canonical 2026-08-27"
+      "detail": "asOf 2026-08-28 vs canonical 2026-08-28"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 771.1 vs canonical 771.1"
+      "detail": "spy_spot 769.35 vs canonical 769.35"
     },
     {
       "id": "C4",
@@ -153,8 +153,8 @@
       "points": 8,
       "critical": true,
       "pass": true,
-      "unverified": false,
-      "detail": "spy_spot 771.1 vs Yahoo 771.1 for 2026-08-27"
+      "unverified": true,
+      "detail": "no independent SPY close reachable for 2026-08-28 (Stooq+Yahoo)"
     },
     {
       "id": "H2",
@@ -163,7 +163,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "vix 14.51 vs CBOE 14.51 for 2026-08-27"
+      "detail": "vix 14.43 vs CBOE 14.43 for 2026-08-28"
     },
     {
       "id": "H3",
