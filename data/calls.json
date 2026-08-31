@@ -7873,7 +7873,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0047,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -8122,12 +8122,12 @@
     "statement": "$767 — Thursday’s SPY low, and the level to watch. A close below would mark the first break of this week’s range; $772 is the reference on the other side, today’s high.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-31",
+    "note": "manual review",
+    "ret_1d": -0.0023
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-27-august-2026:watch2",
@@ -8137,12 +8137,12 @@
     "statement": "$714.50–$721.35 — QQQ’s full range today; a close outside either bound would be the first meaningful move away from Thursday’s tight band.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-31",
+    "note": "manual review",
+    "ret_1d": -0.0065
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-27-august-2026:watch3",
@@ -8152,12 +8152,12 @@
     "statement": "MRVL reports after tonight’s close — that puts both call prints flagged below first in line for tomorrow’s open-interest check.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-31",
+    "note": "manual review",
+    "ret_1d": -0.1028
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-27-august-2026:watch4",
@@ -8167,12 +8167,12 @@
     "statement": "NVDA’s Aug 28 $220 calls expire tomorrow — the shortest-dated print in today’s flow, worth watching purely for how it settles.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-31",
+    "note": "manual review",
+    "ret_1d": -0.0457
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-27-august-2026:watch5",
@@ -8182,12 +8182,12 @@
     "statement": "The IWM $285 puts and the SPY/AVGO dark-pool blocks are both first up for tomorrow morning’s open-interest confirmation.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-31",
+    "note": "manual review",
+    "ret_1d": -0.0135
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-27-august-2026:watch6",
@@ -8197,12 +8197,12 @@
     "statement": "VIX at 14.00 — the lowest close of the past two sessions; a move back above 15 would mark a reversal of this week’s calm.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-08-31",
+    "note": "manual review",
+    "ret_1d": -0.0055
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-28-august-2026:regime",
