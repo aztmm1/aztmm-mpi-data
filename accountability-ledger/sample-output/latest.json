@@ -2,11 +2,11 @@
   "as_of": "2026-08-31",
   "date": "2026-08-31",
   "totals": {
-    "open": 23,
-    "resolved": 548,
+    "open": 17,
+    "resolved": 554,
     "hit": 81,
-    "invalidated": 77,
-    "unresolved": 390
+    "invalidated": 78,
+    "unresolved": 395
   },
   "hit_rate_5d": 0.4,
   "hit_rate_21d": 0.42,
@@ -20,11 +20,11 @@
       "statement": "The Weekly Pulse publishes Saturday morning with the full-week decomposition.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
+      "resolved_date": "2026-08-31",
+      "note": "manual review",
       "ret_1d": null
     },
     {
@@ -35,12 +35,12 @@
       "statement": "Monday morning’s open-interest update scores today’s flagged prints, including the NVDA $225 weekly churn; results land in Monday’s edition.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-31",
+      "note": "manual review",
+      "ret_1d": 0.0148
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-august-2026:watch4",
@@ -50,12 +50,12 @@
       "statement": "AVGO and HPE both report Wednesday postmarket — the flagged AVGO Sept 4 $370 calls and HPE Jan 2027 $46 puts are pre-earnings positioning on the clock.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-31",
+      "note": "manual review",
+      "ret_1d": 0.0042
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-august-2026:watch3",
@@ -65,12 +65,12 @@
       "statement": "NVDA at $217.55 kept about 43% of Thursday’s earnings gain. $216.81 (Friday’s low) and $209.66 (Wednesday’s pre-earnings close) are the references below; $229.26, Friday’s high, above.",
       "direction": "watch",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-31",
+      "note": "manual review",
+      "ret_1d": 0.0148
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-august-2026:watch2",
@@ -80,12 +80,12 @@
       "statement": "$715.09–$724.13 — QQQ’s Friday range. The close at $716.43 sat within a point and a half of the bottom; a close under $715 would be the first close below the week’s floor.",
       "direction": "up",
       "horizon_days": 1,
-      "status": "open",
+      "status": "unresolved",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-31",
+      "note": "next-session move +0.05% vs 'up' (±0.25% band)",
+      "ret_1d": 0.0005
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-august-2026:watch1",
@@ -95,12 +95,12 @@
       "statement": "$768.31 — Friday’s SPY low, and the level to watch. A close below would put the tape under the whole week’s floor near $767; $775.30, Friday’s high, is the reference on the other side.",
       "direction": "up",
       "horizon_days": 1,
-      "status": "open",
+      "status": "invalidated",
       "ret_5d": null,
       "ret_21d": null,
-      "resolved_date": null,
-      "note": null,
-      "ret_1d": null
+      "resolved_date": "2026-08-31",
+      "note": "next-session move -0.30% vs 'up' (±0.25% band)",
+      "ret_1d": -0.003
     },
     {
       "id": "daily-pulse-options-flow-dark-pool-28-august-2026:regime",
@@ -347,7 +347,7 @@
       "direction": "up",
       "horizon_days": 21,
       "status": "open",
-      "ret_5d": null,
+      "ret_5d": 0.0047,
       "ret_21d": null,
       "resolved_date": null,
       "note": null
