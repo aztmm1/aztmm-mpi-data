@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-09-02T00:54:07Z",
+  "generated_at": "2026-09-02T11:58:48Z",
   "as_of_session": "2026-09-01",
   "score": 100,
   "grade": "A",
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-09-02T00:50:08Z vs 2026-09-01 18:00 ET window; asOf 2026-09-01"
+      "detail": "computed_at 2026-09-02T07:38:47Z vs 2026-09-01 18:00 ET window; asOf 2026-09-01"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-09-02T00:50:08Z (mpi 2026-09-02T00:50:08Z); generated 2026-09-02T00:50:21Z"
+      "detail": "canonical embeds 2026-09-02T07:38:47Z (mpi 2026-09-02T07:38:47Z); generated 2026-09-02T07:55:26Z"
     },
     {
       "id": "F3",
@@ -82,7 +82,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "mpi 64 vs canonical 64"
+      "detail": "mpi 62 vs canonical 62"
     },
     {
       "id": "C2",
@@ -118,7 +118,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "label 'Bull' for score 64 (band Bull)"
+      "detail": "label 'Bull' for score 62 (band Bull)"
     },
     {
       "id": "M3",
@@ -136,7 +136,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "CI 59-69 brackets 64"
+      "detail": "CI 57-67 brackets 62"
     },
     {
       "id": "M5",
