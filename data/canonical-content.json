@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-02T00:50:21Z",
+  "generated_at": "2026-09-02T00:54:07Z",
   "mpi": {
     "score": 64,
     "regime": "Sideways",
@@ -21,18 +21,18 @@
   "latest_daily_pulse": {
     "id": 3344,
     "url": "https://aztmm.com/2026/09/01/daily-pulse-options-flow-dark-pool-1-september-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 1 September 2026",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 August &#038; 1 September 2026 (Combined Edition)",
     "date": "2026-09-01",
-    "snippet": "SPY -0.69% and QQQ -1.27% with VIX closing at 16; index put/call ratios tilted defensive while $2.3B in off-exchange prints clustered at SPY&#8217;s closing marks \u2014 the boards, the radar table, and the levels to watch into Wednesday.",
+    "snippet": "Combined edition for the two sessions the desk was offline: SPY breaks the prior week&#8217;s floor as the regime read slips from Bull to Neutral at MPI 67, deep-OTM index put buying wakes up, and the two-session OI check hands Friday&#8217;s radar a rough card \u2014 misses stay on\u2026",
     "kind": "daily"
   },
   "recent_pulses": [
     {
       "id": 3344,
       "url": "https://aztmm.com/2026/09/01/daily-pulse-options-flow-dark-pool-1-september-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 1 September 2026",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 August &#038; 1 September 2026 (Combined Edition)",
       "date": "2026-09-01",
-      "snippet": "SPY -0.69% and QQQ -1.27% with VIX closing at 16; index put/call ratios tilted defensive while $2.3B in off-exchange prints clustered at SPY&#8217;s closing marks \u2014 the boards, the radar table, and the levels to watch into Wednesday.",
+      "snippet": "Combined edition for the two sessions the desk was offline: SPY breaks the prior week&#8217;s floor as the regime read slips from Bull to Neutral at MPI 67, deep-OTM index put buying wakes up, and the two-session OI check hands Friday&#8217;s radar a rough card \u2014 misses stay on\u2026",
       "kind": "daily"
     },
     {
