@@ -1009,7 +1009,7 @@
   },
   {
    "date": "2026-09-01",
-   "score": 64,
+   "score": 62,
    "regime": "Sideways",
    "subs": {
     "trend": 78.6,
@@ -1017,7 +1017,7 @@
     "volatility": 69.3,
     "yield_curve": 66.0,
     "credit": 88.4,
-    "sentiment": 44.6,
+    "sentiment": 31.3,
     "rotation": 65.1,
     "currency": 52.5,
     "liquidity": 55.0
