@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-02T17:54:39Z",
+  "computed_at": "2026-09-02T20:30:26Z",
   "asOf": "2026-09-01",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 63,
+    "mpi_score": 62,
     "mpi_label": "Bull",
     "regime": "Sideways",
     "regime_label": "Sideways",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 58,
-      "ci_high": 68
+      "ci_low": 57,
+      "ci_high": 67
     },
     "signal": {
       "bias": "Bullish",
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4485,
-      "probability_up": 0.4485,
+      "confidence": 0.4454,
+      "probability_up": 0.4454,
       "probability_flat": 0.3443,
-      "probability_down": 0.2071
+      "probability_down": 0.2103
     },
     "hmm": {
       "state": "Sideways",
@@ -70,8 +70,8 @@
       "yield_curve": {
         "score": 66.0,
         "t10y2y_pct": 0.4,
-        "dgs10": 4.75,
-        "dgs2": 4.34
+        "dgs10": 4.79,
+        "dgs2": 4.39
       },
       "credit": {
         "score": 88.2,
@@ -79,8 +79,8 @@
         "ig_oas_pct": 0.81
       },
       "sentiment": {
-        "score": 33.6,
-        "cnn_fg": 33.6
+        "score": 33.2,
+        "cnn_fg": 33.2
       },
       "rotation": {
         "score": 65.1,
