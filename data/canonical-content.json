@@ -1,38 +1,38 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-02T00:31:54Z",
+  "generated_at": "2026-09-02T00:50:21Z",
   "mpi": {
-    "score": 67,
+    "score": 64,
     "regime": "Sideways",
     "as_of": "2026-09-01",
-    "computed_at": "2026-09-01T22:30:55Z",
+    "computed_at": "2026-09-02T00:50:08Z",
     "confidence": 0.85,
     "confidence_band": [
-      62,
-      72
+      59,
+      69
     ]
   },
   "market": {
     "spy_close": 761.78,
-    "vix": 14.92,
+    "vix": 16.34,
     "rv_30d": 7.18,
-    "vrp": 7.74
+    "vrp": 9.16
   },
   "latest_daily_pulse": {
     "id": 3344,
     "url": "https://aztmm.com/2026/09/01/daily-pulse-options-flow-dark-pool-1-september-2026/",
-    "title": "Daily Pulse &#8211; Market Snapshot, 1 September 2026 (Condensed Auto Edition)",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 1 September 2026",
     "date": "2026-09-01",
-    "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+    "snippet": "SPY -0.69% and QQQ -1.27% with VIX closing at 16; index put/call ratios tilted defensive while $2.3B in off-exchange prints clustered at SPY&#8217;s closing marks \u2014 the boards, the radar table, and the levels to watch into Wednesday.",
     "kind": "daily"
   },
   "recent_pulses": [
     {
       "id": 3344,
       "url": "https://aztmm.com/2026/09/01/daily-pulse-options-flow-dark-pool-1-september-2026/",
-      "title": "Daily Pulse &#8211; Market Snapshot, 1 September 2026 (Condensed Auto Edition)",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 1 September 2026",
       "date": "2026-09-01",
-      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
+      "snippet": "SPY -0.69% and QQQ -1.27% with VIX closing at 16; index put/call ratios tilted defensive while $2.3B in off-exchange prints clustered at SPY&#8217;s closing marks \u2014 the boards, the radar table, and the levels to watch into Wednesday.",
       "kind": "daily"
     },
     {
