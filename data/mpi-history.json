@@ -1022,6 +1022,22 @@
     "currency": 52.5,
     "liquidity": 55.0
    }
+  },
+  {
+   "date": "2026-09-02",
+   "score": 65,
+   "regime": "Bull \u00b7 early",
+   "subs": {
+    "trend": 78.7,
+    "breadth": 55.1,
+    "volatility": 83.2,
+    "yield_curve": 66.0,
+    "credit": 88.2,
+    "sentiment": 33.2,
+    "rotation": 65.1,
+    "currency": 54.1,
+    "liquidity": 55.0
+   }
   }
  ]
 }
