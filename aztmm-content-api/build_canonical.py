@@ -103,6 +103,7 @@ def build_mpi(mpi_doc: dict | None) -> dict | None:
     conf = (d.get("confidence") or {})
     score = d.get("mpi_score")
     regime = d.get("regime_label") or d.get("regime") or d.get("mpi_label")
+    regime = {"Sideways": "Neutral", "Bear": "Crisis"}.get(regime, regime)
     if score is None or regime is None:
         return None
     out = {
@@ -144,7 +145,12 @@ def build_market(mpi_doc: dict | None) -> dict | None:
 
 def _wp_pulse(category: int) -> list[dict]:
     url = f"{WP_POSTS}?categories={category}&per_page=5&_fields=id,date,link,title,excerpt,slug"
-    docs = _http_get_json(url) or []
+    docs = _http_get_json(url)
+    if not docs:  # one retry after a short pause -- WP.com edge flakes on back-to-back hits
+        import time
+        time.sleep(5)
+        docs = _http_get_json(url)
+    docs = docs or []
     out = []
     for p in docs:
         title = _strip_html((p.get("title") or {}).get("rendered", ""))
@@ -238,6 +244,7 @@ def build_trackers(repo_root: Path) -> dict[str, dict]:
 
 
 def compose(repo_root: Path) -> dict:
+    prev = _read_local_json(repo_root, "data/canonical-content.json") or {}
     mpi_doc = _read_local_json(repo_root, "data/mpi.json")
     if mpi_doc is None:
         # Fall back to jsDelivr if not in repo (e.g. running outside CI checkout)
@@ -259,10 +266,18 @@ def compose(repo_root: Path) -> dict:
         payload["market"] = market
     if latest_daily:
         payload["latest_daily_pulse"] = latest_daily
+    elif prev.get("latest_daily_pulse"):
+        payload["latest_daily_pulse"] = prev["latest_daily_pulse"]
+        log.warning("daily fetch empty -- carried forward previous latest_daily_pulse")
     if latest_weekly:
         payload["latest_weekly_pulse"] = latest_weekly
+    elif prev.get("latest_weekly_pulse"):
+        payload["latest_weekly_pulse"] = prev["latest_weekly_pulse"]
+        log.warning("weekly fetch empty -- carried forward previous latest_weekly_pulse")
     if recent:
         payload["recent_pulses"] = recent
+    elif prev.get("recent_pulses"):
+        payload["recent_pulses"] = prev["recent_pulses"]
     trackers = build_trackers(repo_root)
     if trackers:
         payload["trackers"] = trackers

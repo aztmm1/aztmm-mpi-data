@@ -967,10 +967,10 @@ def regime_label(score: float) -> Tuple[str, str]:
     if score >= 55:
         return "Bull", "Bull · early"
     if score >= 45:
-        return "Sideways", "Sideways"
+        return "Sideways", "Neutral"
     if score >= 30:
-        return "Bear", "Bear · cautious"
-    return "Bear", "Bear"
+        return "Bear", "Crisis · early"
+    return "Bear", "Crisis"
 
 
 def mpi_band_label(score: float) -> str:
@@ -989,8 +989,8 @@ def regime_label_from_hmm(state: str, score: float) -> Tuple[str, str]:
     if state == "Bull":
         return "Bull", ("Bull" if score >= 70 else "Bull · early")
     if state == "Bear":
-        return "Bear", ("Bear" if score < 30 else "Bear · cautious")
-    return "Sideways", "Sideways"
+        return "Bear", ("Crisis" if score < 30 else "Crisis · early")
+    return "Sideways", "Neutral"
 
 
 def signal_from_score(score: float) -> Dict[str, str]:
