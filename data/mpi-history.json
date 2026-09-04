@@ -1041,7 +1041,7 @@
   },
   {
    "date": "2026-09-03",
-   "score": 67,
+   "score": 68,
    "regime": "Bull \u00b7 early",
    "subs": {
     "trend": 79.0,
@@ -1049,7 +1049,7 @@
     "volatility": 89.3,
     "yield_curve": 67.2,
     "credit": 88.1,
-    "sentiment": 35.3,
+    "sentiment": 44.8,
     "rotation": 67.9,
     "currency": 60.7,
     "liquidity": 55.0
