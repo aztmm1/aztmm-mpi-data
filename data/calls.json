@@ -8109,7 +8109,7 @@
     "direction": "up",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0027,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -8434,12 +8434,12 @@
     "statement": "AVGO, HPE, SNOW and AGX all reported after today’s close — results were landing as this went to press, and Thursday’s open prices the reactions. Yesterday’s SNOW $327.50 calls and AGX $410 calls confirmed into those prints; the scoreboard on that po…",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-09-03",
+    "note": "manual review",
+    "ret_1d": -0.0274
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-september-2026:watch2",
@@ -8449,12 +8449,12 @@
     "statement": "SPY 766.43 — today’s high and the ceiling of this three-day grind. A close above it puts the tape back at highs; 761.73, today’s low, is the floor that held.",
     "direction": "up",
     "horizon_days": 1,
-    "status": "open",
+    "status": "hit",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-09-03",
+    "note": "next-session move +1.05% vs 'up' (±0.25% band)",
+    "ret_1d": 0.0105
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-september-2026:watch3",
@@ -8464,12 +8464,12 @@
     "statement": "QQQ 709.80 / 705.10 — the equivalent brackets, with the 3-print $707.65 dark-pool cluster sitting right inside them.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-09-03",
+    "note": "manual review",
+    "ret_1d": 0.0119
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-september-2026:watch4",
@@ -8479,12 +8479,12 @@
     "statement": "NVDA 227.95 — today’s intraday high. The stock gave back $3.54 from that high into 224.41; whether that gap closes or widens Thursday says how much of today’s 1.57× call volume had follow-through behind it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-09-03",
+    "note": "manual review",
+    "ret_1d": 0.018
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-2-september-2026:watch5",
@@ -8494,11 +8494,11 @@
     "statement": "VIX 15.12 — the session low. Continued closes under 16 keep the vol fade intact; the $24.8M SPX 7680 straddle money is betting that calm breaks by September 18.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-03",
+    "note": "manual review",
     "ret_1d": -0.0579
   },
   {
@@ -8509,11 +8509,11 @@
     "statement": "SPX 7680 — the strike where today’s biggest two-sided money planted its flag, 0.5% above the 7645 spot reference on the prints.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-03",
+    "note": "no price data",
     "ret_1d": null
   },
   {
