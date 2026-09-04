@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-04T17:37:19Z",
+  "generated_at": "2026-09-04T21:16:30Z",
   "mpi": {
     "score": 68,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 6.05
   },
   "latest_daily_pulse": {
-    "id": 3401,
-    "url": "https://aztmm.com/2026/09/03/daily-pulse-options-flow-dark-pool-3-september-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 3 September 2026",
-    "date": "2026-09-03",
-    "snippet": "SPY +1.05% on a four-fold jump in call premium. Nine of eleven flagged contracts confirmed in open interest, and the regime line crossed into Bull \u00b7 early.",
+    "id": 3402,
+    "url": "https://aztmm.com/2026/09/04/daily-pulse-options-flow-dark-pool-4-september-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 4 September 2026",
+    "date": "2026-09-04",
+    "snippet": "A flat, split tape: SPY \u22120.39%, QQQ +0.18%. The loudest print was 269,424 VIX November calls lifted at the offer for $23.1M, against open interest of 1,266.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3402,
+      "url": "https://aztmm.com/2026/09/04/daily-pulse-options-flow-dark-pool-4-september-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 4 September 2026",
+      "date": "2026-09-04",
+      "snippet": "A flat, split tape: SPY \u22120.39%, QQQ +0.18%. The loudest print was 269,424 VIX November calls lifted at the offer for $23.1M, against open interest of 1,266.",
+      "kind": "daily"
+    },
     {
       "id": 3401,
       "url": "https://aztmm.com/2026/09/03/daily-pulse-options-flow-dark-pool-3-september-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-08-31",
       "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
       "kind": "daily"
-    },
-    {
-      "id": 3337,
-      "url": "https://aztmm.com/2026/08/29/weekly-pulse-2026-08-24-to-2026-08-28/",
-      "title": "Weekly Pulse \u2014 Week of August 24\u201328, 2026",
-      "date": "2026-08-29",
-      "snippet": "Bull regime held; net call premium 1.5x put across 5 sessions; no single-name positioning carried through the week.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
