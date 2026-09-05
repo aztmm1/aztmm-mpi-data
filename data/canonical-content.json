@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-05T07:41:00Z",
+  "generated_at": "2026-09-05T14:15:53Z",
   "mpi": {
     "score": 67,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3337,
-    "url": "https://aztmm.com/2026/08/29/weekly-pulse-2026-08-24-to-2026-08-28/",
-    "title": "Weekly Pulse \u2014 Week of August 24\u201328, 2026",
-    "date": "2026-08-29",
-    "snippet": "Bull regime held; net call premium 1.5x put across 5 sessions; no single-name positioning carried through the week.",
+    "id": 3406,
+    "url": "https://aztmm.com/2026/09/05/weekly-pulse-2026-08-31-to-2026-09-04/",
+    "title": "Weekly Pulse \u2014 Week of August 31 \u2013 September 4, 2026",
+    "date": "2026-09-05",
+    "snippet": "SPY finished the week eighty-four cents higher after a full round trip. Twenty-two of twenty-eight flagged contracts confirmed as new open interest, and the regime line went Bull to Neutral to Bull \u00b7 early.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3406,
+      "url": "https://aztmm.com/2026/09/05/weekly-pulse-2026-08-31-to-2026-09-04/",
+      "title": "Weekly Pulse \u2014 Week of August 31 \u2013 September 4, 2026",
+      "date": "2026-09-05",
+      "snippet": "SPY finished the week eighty-four cents higher after a full round trip. Twenty-two of twenty-eight flagged contracts confirmed as new open interest, and the regime line went Bull to Neutral to Bull \u00b7 early.",
+      "kind": "weekly"
+    },
     {
       "id": 3402,
       "url": "https://aztmm.com/2026/09/04/daily-pulse-options-flow-dark-pool-4-september-2026/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 August &#038; 1 September 2026 (Combined Edition)",
       "date": "2026-09-01",
       "snippet": "Combined edition for the two sessions the desk was offline: SPY breaks the prior week&#8217;s floor as the regime read slips from Bull to Neutral at MPI 67, deep-OTM index put buying wakes up, and the two-session OI check hands Friday&#8217;s radar a rough card \u2014 misses stay on\u2026",
-      "kind": "daily"
-    },
-    {
-      "id": 3340,
-      "url": "https://aztmm.com/2026/08/31/daily-pulse-options-flow-dark-pool-31-august-2026/",
-      "title": "Daily Pulse &#8211; Market Snapshot, 31 August 2026 (Condensed Auto Edition)",
-      "date": "2026-08-31",
-      "snippet": "Condensed automatic edition: MPI and regime readings from the public data feed. The full desk edition was unavailable tonight &#8211; published and disclosed automatically.",
       "kind": "daily"
     }
   ],
