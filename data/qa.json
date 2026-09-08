@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-09-05T11:09:35Z",
+  "generated_at": "2026-09-08T12:00:10Z",
   "as_of_session": "2026-09-04",
   "score": 100,
   "grade": "A",
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-09-05T06:41:28Z vs 2026-09-04 18:00 ET window; asOf 2026-09-04"
+      "detail": "computed_at 2026-09-08T06:55:44Z vs 2026-09-04 18:00 ET window; asOf 2026-09-04"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-09-05T06:41:28Z (mpi 2026-09-05T06:41:28Z); generated 2026-09-05T07:41:00Z"
+      "detail": "canonical embeds 2026-09-08T06:55:44Z (mpi 2026-09-08T06:55:44Z); generated 2026-09-08T08:05:50Z"
     },
     {
       "id": "F3",
