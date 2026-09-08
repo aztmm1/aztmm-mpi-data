@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-08T20:46:08Z",
+  "generated_at": "2026-09-08T21:28:31Z",
   "mpi": {
     "score": 66,
     "regime": "Bull \u00b7 early",
@@ -19,11 +19,11 @@
     "vrp": 6.43
   },
   "latest_daily_pulse": {
-    "id": 3402,
-    "url": "https://aztmm.com/2026/09/04/daily-pulse-options-flow-dark-pool-4-september-2026/",
-    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 4 September 2026",
-    "date": "2026-09-04",
-    "snippet": "A flat, split tape: SPY \u22120.39%, QQQ +0.18%. The loudest print was 269,424 VIX November calls lifted at the offer for $23.1M, against open interest of 1,266.",
+    "id": 3415,
+    "url": "https://aztmm.com/2026/09/08/daily-pulse-options-flow-dark-pool-8-september-2026/",
+    "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 September 2026",
+    "date": "2026-09-08",
+    "snippet": "SPY opened at its high and closed at its low, down 0.55%. The options tide made a $298M round trip to finish at \u2212$151M, and nine of ten flagged contracts confirmed, including both VIX November call lines.",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3415,
+      "url": "https://aztmm.com/2026/09/08/daily-pulse-options-flow-dark-pool-8-september-2026/",
+      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 September 2026",
+      "date": "2026-09-08",
+      "snippet": "SPY opened at its high and closed at its low, down 0.55%. The options tide made a $298M round trip to finish at \u2212$151M, and nine of ten flagged contracts confirmed, including both VIX November call lines.",
+      "kind": "daily"
+    },
     {
       "id": 3406,
       "url": "https://aztmm.com/2026/09/05/weekly-pulse-2026-08-31-to-2026-09-04/",
@@ -65,14 +73,6 @@
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 2 September 2026",
       "date": "2026-09-02",
       "snippet": "Eight of ten radar prints from the combined edition confirmed in this morning&#8217;s open interest \u2014 zero misses. NVDA led a $20.65B dark-pool board while the SPX Jan-2027 8000-call buyer returned for a third straight session.",
-      "kind": "daily"
-    },
-    {
-      "id": 3344,
-      "url": "https://aztmm.com/2026/09/01/daily-pulse-options-flow-dark-pool-1-september-2026/",
-      "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 31 August &#038; 1 September 2026 (Combined Edition)",
-      "date": "2026-09-01",
-      "snippet": "Combined edition for the two sessions the desk was offline: SPY breaks the prior week&#8217;s floor as the regime read slips from Bull to Neutral at MPI 67, deep-OTM index put buying wakes up, and the two-session OI check hands Friday&#8217;s radar a rough card \u2014 misses stay on\u2026",
       "kind": "daily"
     }
   ],
