@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-09T17:10:43Z",
+  "generated_at": "2026-09-09T17:50:50Z",
   "mpi": {
     "score": 65,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-09-08",
-    "computed_at": "2026-09-09T17:10:04Z",
+    "computed_at": "2026-09-09T17:50:31Z",
     "confidence": 0.85,
     "confidence_band": [
       60,
