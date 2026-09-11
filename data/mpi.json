@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-11T07:48:26Z",
+  "computed_at": "2026-09-11T13:00:43Z",
   "asOf": "2026-09-10",
   "stale_threshold_hours": 18,
   "data": {
@@ -70,7 +70,7 @@
       "yield_curve": {
         "score": 65.6,
         "t10y2y_pct": 0.39,
-        "dgs10": 4.83,
+        "dgs10": null,
         "dgs2": 4.43
       },
       "credit": {
