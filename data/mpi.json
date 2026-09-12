@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-11T23:55:18Z",
+  "computed_at": "2026-09-12T00:55:44Z",
   "asOf": "2026-09-11",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 60,
-    "mpi_label": "Neutral",
+    "mpi_score": 64,
+    "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 55,
-      "ci_high": 65
+      "ci_low": 59,
+      "ci_high": 69
     },
     "signal": {
       "bias": "Bullish",
@@ -19,22 +19,22 @@
     },
     "market": {
       "spy_spot": 764.29,
-      "expected_move_1sigma": 8.59,
-      "expected_move_pct": 0.0112
+      "expected_move_1sigma": 7.63,
+      "expected_move_pct": 0.01
     },
     "volatility": {
-      "vix": 17.84,
+      "vix": 15.84,
       "vix3m": 18.6,
-      "vrp": 9.1,
+      "vrp": 7.1,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 8.74
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4755,
-      "probability_up": 0.4755,
+      "confidence": 0.4889,
+      "probability_up": 0.4889,
       "probability_flat": 0.3118,
-      "probability_down": 0.2126
+      "probability_down": 0.1993
     },
     "hmm": {
       "state": "Bull",
@@ -55,16 +55,16 @@
         "ma50_slope_pct": 0.694
       },
       "breadth": {
-        "score": 74.0,
-        "cyclical_defensive_ratio": 1.4333,
-        "cyc_def_percentile_1y": 95.2,
+        "score": 60.6,
+        "cyclical_defensive_ratio": 1.366,
+        "cyc_def_percentile_1y": 73.0,
         "iwm_spy_percentile_1y": 42.1
       },
       "volatility": {
-        "score": 49.6,
-        "vix": 17.84,
+        "score": 76.6,
+        "vix": 15.84,
         "vix3m": 18.6,
-        "vix_percentile_1y": 59.1,
+        "vix_percentile_1y": 20.6,
         "term_shape": "Contango"
       },
       "yield_curve": {
@@ -83,9 +83,9 @@
         "cnn_fg": 33.3
       },
       "rotation": {
-        "score": 48.4,
-        "xlu_xly_ratio": 0.3798,
-        "xlu_xly_percentile_1y": 51.6
+        "score": 58.3,
+        "xlu_xly_ratio": 0.3753,
+        "xlu_xly_percentile_1y": 41.7
       },
       "currency": {
         "score": 56.2,
