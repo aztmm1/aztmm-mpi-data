@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-12T07:55:54Z",
+  "generated_at": "2026-09-12T15:59:50Z",
   "mpi": {
     "score": 64,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3406,
-    "url": "https://aztmm.com/2026/09/05/weekly-pulse-2026-08-31-to-2026-09-04/",
-    "title": "Weekly Pulse \u2014 Week of August 31 \u2013 September 4, 2026",
-    "date": "2026-09-05",
-    "snippet": "SPY finished the week eighty-four cents higher after a full round trip. Twenty-two of twenty-eight flagged contracts confirmed as new open interest, and the regime line went Bull to Neutral to Bull \u00b7 early.",
+    "id": 3444,
+    "url": "https://aztmm.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
+    "title": "Weekly Pulse \u2014 Week of September 7\u201311, 2026",
+    "date": "2026-09-12",
+    "snippet": "Bull \u00b7 early regime held; net call premium 1.4x put across 5 sessions; no single-name positioning carried through the week.",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3444,
+      "url": "https://aztmm.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
+      "title": "Weekly Pulse \u2014 Week of September 7\u201311, 2026",
+      "date": "2026-09-12",
+      "snippet": "Bull \u00b7 early regime held; net call premium 1.4x put across 5 sessions; no single-name positioning carried through the week.",
+      "kind": "weekly"
+    },
     {
       "id": 3442,
       "url": "https://aztmm.com/2026/09/11/daily-pulse-options-flow-dark-pool-11-september-2026/",
@@ -66,14 +74,6 @@
       "date": "2026-09-08",
       "snippet": "SPY opened at its high and closed at its low, down 0.55%. The options tide made a $298M round trip to finish at \u2212$151M, and nine of ten flagged contracts confirmed, including both VIX November call lines.",
       "kind": "daily"
-    },
-    {
-      "id": 3406,
-      "url": "https://aztmm.com/2026/09/05/weekly-pulse-2026-08-31-to-2026-09-04/",
-      "title": "Weekly Pulse \u2014 Week of August 31 \u2013 September 4, 2026",
-      "date": "2026-09-05",
-      "snippet": "SPY finished the week eighty-four cents higher after a full round trip. Twenty-two of twenty-eight flagged contracts confirmed as new open interest, and the regime line went Bull to Neutral to Bull \u00b7 early.",
-      "kind": "weekly"
     }
   ],
   "trackers": {
