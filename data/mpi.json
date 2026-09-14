@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-14T13:01:21Z",
+  "computed_at": "2026-09-14T13:16:20Z",
   "asOf": "2026-09-11",
   "stale_threshold_hours": 18,
   "data": {
@@ -71,7 +71,7 @@
         "score": 63.2,
         "t10y2y_pct": 0.33,
         "dgs10": 4.95,
-        "dgs2": null
+        "dgs2": 4.56
       },
       "credit": {
         "score": 87.6,
