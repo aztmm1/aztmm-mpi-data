@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-12T17:50:06Z",
+  "generated_at": "2026-09-14T13:02:19Z",
   "mpi": {
     "score": 64,
     "regime": "Bull \u00b7 early",
     "as_of": "2026-09-11",
-    "computed_at": "2026-09-12T06:52:13Z",
+    "computed_at": "2026-09-14T13:01:21Z",
     "confidence": 0.85,
     "confidence_band": [
       59,
@@ -20,7 +20,7 @@
   },
   "latest_daily_pulse": {
     "id": 3442,
-    "url": "https://aztmm.com/2026/09/11/daily-pulse-options-flow-dark-pool-11-september-2026/",
+    "url": "https://somerquant.com/2026/09/11/daily-pulse-options-flow-dark-pool-11-september-2026/",
     "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 September 2026",
     "date": "2026-09-11",
     "snippet": "SPY closed up 0.85% at 764.29 while SPY put premium ran $943.1M against $702.0M of calls. The $100M+ dark-pool board fell 40.3% to $21.63B across just 44 names.",
@@ -28,7 +28,7 @@
   },
   "latest_weekly_pulse": {
     "id": 3444,
-    "url": "https://aztmm.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
+    "url": "https://somerquant.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
     "title": "Weekly Pulse \u2014 Week of September 7\u201311, 2026",
     "date": "2026-09-12",
     "snippet": "Bull \u00b7 early regime held; net call premium 1.4x put across 5 sessions; no single-name positioning carried through the week.",
@@ -37,7 +37,7 @@
   "recent_pulses": [
     {
       "id": 3444,
-      "url": "https://aztmm.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
+      "url": "https://somerquant.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
       "title": "Weekly Pulse \u2014 Week of September 7\u201311, 2026",
       "date": "2026-09-12",
       "snippet": "Bull \u00b7 early regime held; net call premium 1.4x put across 5 sessions; no single-name positioning carried through the week.",
@@ -45,7 +45,7 @@
     },
     {
       "id": 3442,
-      "url": "https://aztmm.com/2026/09/11/daily-pulse-options-flow-dark-pool-11-september-2026/",
+      "url": "https://somerquant.com/2026/09/11/daily-pulse-options-flow-dark-pool-11-september-2026/",
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 11 September 2026",
       "date": "2026-09-11",
       "snippet": "SPY closed up 0.85% at 764.29 while SPY put premium ran $943.1M against $702.0M of calls. The $100M+ dark-pool board fell 40.3% to $21.63B across just 44 names.",
@@ -53,7 +53,7 @@
     },
     {
       "id": 3440,
-      "url": "https://aztmm.com/2026/09/10/daily-pulse-options-flow-dark-pool-10-september-2026/",
+      "url": "https://somerquant.com/2026/09/10/daily-pulse-options-flow-dark-pool-10-september-2026/",
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 10 September 2026",
       "date": "2026-09-10",
       "snippet": "Put premium led every one of the ten heaviest SPY strikes, and the options tide spent 76 of its 78 five-minute readings below zero. SPY fell 0.60% on a 3.47-point range, and six of ten contracts flagged yesterday confirmed as new open interest.",
@@ -61,7 +61,7 @@
     },
     {
       "id": 3434,
-      "url": "https://aztmm.com/2026/09/09/daily-pulse-options-flow-dark-pool-9-september-2026/",
+      "url": "https://somerquant.com/2026/09/09/daily-pulse-options-flow-dark-pool-9-september-2026/",
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 9 September 2026",
       "date": "2026-09-09",
       "snippet": "Net options premium peaked at +$189M by 9:55 and finished at \u2212$71M as SPY fell 0.46%. Against that fade, roughly $350M of SPX December 31 calls printed in a single second, and eight of ten flagged contracts confirmed in open interest.",
@@ -69,7 +69,7 @@
     },
     {
       "id": 3415,
-      "url": "https://aztmm.com/2026/09/08/daily-pulse-options-flow-dark-pool-8-september-2026/",
+      "url": "https://somerquant.com/2026/09/08/daily-pulse-options-flow-dark-pool-8-september-2026/",
       "title": "Daily Pulse \u2014 Options Flow + Dark Pool, 8 September 2026",
       "date": "2026-09-08",
       "snippet": "SPY opened at its high and closed at its low, down 0.55%. The options tide made a $298M round trip to finish at \u2212$151M, and nine of ten flagged contracts confirmed, including both VIX November call lines.",
