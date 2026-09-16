@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-16T00:00:13Z",
+  "computed_at": "2026-09-16T01:07:34Z",
   "asOf": "2026-09-15",
   "stale_threshold_hours": 18,
   "data": {
@@ -19,13 +19,13 @@
     },
     "market": {
       "spy_spot": 757.39,
-      "expected_move_1sigma": 8.16,
+      "expected_move_1sigma": 8.21,
       "expected_move_pct": 0.0108
     },
     "volatility": {
-      "vix": 17.1,
+      "vix": 17.2,
       "vix3m": 19.36,
-      "vrp": 8.29,
+      "vrp": 8.39,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 8.81
     },
@@ -61,10 +61,10 @@
         "iwm_spy_percentile_1y": 38.9
       },
       "volatility": {
-        "score": 57.7,
-        "vix": 17.1,
+        "score": 56.6,
+        "vix": 17.2,
         "vix3m": 19.36,
-        "vix_percentile_1y": 47.6,
+        "vix_percentile_1y": 49.2,
         "term_shape": "Contango"
       },
       "yield_curve": {
