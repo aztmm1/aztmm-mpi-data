@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-16T20:32:08Z",
+  "generated_at": "2026-09-16T20:46:25Z",
   "mpi": {
-    "score": 59,
+    "score": 61,
     "regime": "Neutral",
     "as_of": "2026-09-15",
-    "computed_at": "2026-09-16T20:31:15Z",
+    "computed_at": "2026-09-16T20:46:05Z",
     "confidence": 0.85,
     "confidence_band": [
-      54,
-      64
+      56,
+      66
     ]
   },
   "market": {
