@@ -2,15 +2,15 @@
   "as_of": "2026-09-17",
   "date": "2026-09-17",
   "totals": {
-    "open": 19,
-    "resolved": 622,
+    "open": 18,
+    "resolved": 623,
     "hit": 84,
-    "invalidated": 87,
+    "invalidated": 88,
     "unresolved": 451
   },
   "hit_rate_5d": 0.4,
   "hit_rate_21d": 0.42,
-  "regime_alignment_21d": 0.7,
+  "regime_alignment_21d": 0.68,
   "rows": [
     {
       "id": "daily-pulse-options-flow-dark-pool-15-september-2026:watch6",
@@ -423,7 +423,7 @@
       "direction": "up",
       "horizon_days": 21,
       "status": "open",
-      "ret_5d": null,
+      "ret_5d": 0.0063,
       "ret_21d": null,
       "resolved_date": null,
       "note": null
