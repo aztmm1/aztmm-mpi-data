@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-19T18:12:40Z",
+  "generated_at": "2026-09-19T22:46:14Z",
   "mpi": {
     "score": 63,
     "regime": "Neutral",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3444,
-    "url": "https://somerquant.com/2026/09/12/weekly-pulse-2026-09-07-to-2026-09-11-2/",
-    "title": "Weekly Pulse \u2014 Week of September 7\u201311, 2026",
-    "date": "2026-09-12",
-    "snippet": "Bull \u00b7 early regime held; net call premium 1.4x put across 5 sessions; no single-name positioning carried through the week.",
+    "id": 3630,
+    "url": "https://somerquant.com/2026/09/19/weekly-pulse-2026-09-14-to-2026-09-18/",
+    "title": "SomerQuant Weekly: Week of September 14\u201318, 2026",
+    "date": "2026-09-19",
+    "snippet": "SPY finished the week at 761.69 against 764.29, a give-back of 0.34%, after a 749.60 low on Wednesday and an overnight gap that carried most of it back on Thursday. Of the 27 contracts flagged Monday to Thursday that were checked, 19 came back as new open interest.\u2026",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 3630,
+      "url": "https://somerquant.com/2026/09/19/weekly-pulse-2026-09-14-to-2026-09-18/",
+      "title": "SomerQuant Weekly: Week of September 14\u201318, 2026",
+      "date": "2026-09-19",
+      "snippet": "SPY finished the week at 761.69 against 764.29, a give-back of 0.34%, after a 749.60 low on Wednesday and an overnight gap that carried most of it back on Thursday. Of the 27 contracts flagged Monday to Thursday that were checked, 19 came back as new open interest.\u2026",
+      "kind": "weekly"
+    },
     {
       "id": 3614,
       "url": "https://somerquant.com/2026/09/18/daily-pulse-options-flow-dark-pool-18-september-2026/",
@@ -65,14 +73,6 @@
       "title": "SomerQuant Daily \u2014 Options Flow + Dark Pool, 15 September 2026",
       "date": "2026-09-15",
       "snippet": "The $100M+ dark-pool board more than doubled to $39.81B across 127 prints in 85 names, the widest session on our record, while net options premium sat below zero for 74 of 79 readings and the regime read went Bull \u00b7 early to Neutral.",
-      "kind": "daily"
-    },
-    {
-      "id": 3575,
-      "url": "https://somerquant.com/2026/09/14/daily-pulse-options-flow-dark-pool-14-september-2026/",
-      "title": "SomerQuant Daily \u2014 Options Flow + Dark Pool, 14 September 2026",
-      "date": "2026-09-14",
-      "snippet": "Semis led the tape lower, net options premium sat below zero for 64 of 79 readings, and the $100M+ dark pool printed its lightest session of the five on record at $18.52B.",
       "kind": "daily"
     }
   ],
