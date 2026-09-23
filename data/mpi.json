@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-23T20:31:06Z",
+  "computed_at": "2026-09-23T20:46:08Z",
   "asOf": "2026-09-22",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 66,
+    "mpi_score": 68,
     "mpi_label": "Bull",
     "regime": "Bull",
     "regime_label": "Bull · early",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 61,
-      "ci_high": 71
+      "ci_low": 63,
+      "ci_high": 73
     },
     "signal": {
       "bias": "Bullish",
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Bullish",
-      "confidence": 0.5133,
-      "probability_up": 0.5133,
+      "confidence": 0.5201,
+      "probability_up": 0.5201,
       "probability_flat": 0.2966,
-      "probability_down": 0.1902
+      "probability_down": 0.1833
     },
     "hmm": {
       "state": "Bull",
@@ -55,9 +55,9 @@
         "ma50_slope_pct": 0.395
       },
       "breadth": {
-        "score": 54.0,
-        "cyclical_defensive_ratio": 1.3654,
-        "cyc_def_percentile_1y": 71.0,
+        "score": 71.2,
+        "cyclical_defensive_ratio": 4.9142,
+        "cyc_def_percentile_1y": 99.6,
         "iwm_spy_percentile_1y": 28.6
       },
       "volatility": {
