@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-09-23T12:36:03Z",
-  "as_of_session": "2026-09-22",
-  "score": 100,
+  "generated_at": "2026-09-24T12:34:56Z",
+  "as_of_session": "2026-09-23",
+  "score": 94,
   "grade": "A",
   "critical_fail": false,
   "categories": {
@@ -20,7 +20,7 @@
       "max": 25
     },
     "honesty": {
-      "earned": 20,
+      "earned": 14,
       "max": 20
     },
     "integrity": {
@@ -28,7 +28,7 @@
       "max": 15
     }
   },
-  "unverified_count": 1,
+  "unverified_count": 0,
   "checks": [
     {
       "id": "F1",
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-09-23T07:21:57Z vs 2026-09-22 18:00 ET window; asOf 2026-09-22"
+      "detail": "computed_at 2026-09-24T07:13:05Z vs 2026-09-23 18:00 ET window; asOf 2026-09-23"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-09-23T07:21:57Z (mpi 2026-09-23T07:21:57Z); generated 2026-09-23T08:35:42Z"
+      "detail": "canonical embeds 2026-09-24T07:13:05Z (mpi 2026-09-24T07:13:05Z); generated 2026-09-24T08:28:35Z"
     },
     {
       "id": "F3",
@@ -55,7 +55,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "latest daily pulse 2026-09-22 vs last session 2026-09-22"
+      "detail": "latest daily pulse 2026-09-23 vs last session 2026-09-23"
     },
     {
       "id": "F4",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-09-22 vs canonical 2026-09-22"
+      "detail": "asOf 2026-09-23 vs canonical 2026-09-23"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 773.38 vs canonical 773.38"
+      "detail": "spy_spot 767.81 vs canonical 767.81"
     },
     {
       "id": "C4",
@@ -153,17 +153,17 @@
       "points": 8,
       "critical": true,
       "pass": true,
-      "unverified": true,
-      "detail": "no independent SPY close reachable for 2026-09-22 (Stooq+Yahoo)"
+      "unverified": false,
+      "detail": "spy_spot 767.81 vs Yahoo 767.81 for 2026-09-23"
     },
     {
       "id": "H2",
       "category": "honesty",
       "points": 6,
       "critical": false,
-      "pass": true,
+      "pass": false,
       "unverified": false,
-      "detail": "vix 14.21 vs CBOE 14.21 for 2026-09-22"
+      "detail": "vix 14.21 vs CBOE None for 2026-09-23"
     },
     {
       "id": "H3",
