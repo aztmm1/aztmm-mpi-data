@@ -7990,11 +7990,11 @@
     "statement": "Regime Bull",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0054,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0041,
+    "resolved_date": "2026-09-24",
+    "note": "SPY 21-session move +0.41% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-25-august-2026:watch1",
@@ -9447,7 +9447,7 @@
     "direction": "flat",
     "horizon_days": 21,
     "status": "open",
-    "ret_5d": null,
+    "ret_5d": 0.0085,
     "ret_21d": null,
     "resolved_date": null,
     "note": null
@@ -9834,11 +9834,11 @@
     "statement": "766.50, the session low, printed in the 1:00 PM bar. The close sat 0.17% above it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-24",
+    "note": "manual review",
     "ret_1d": null
   },
   {
@@ -9849,11 +9849,11 @@
     "statement": "773.02, the highest five-minute high, printed in the opening bar. The 22 September close of 773.38 sits above it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-24",
+    "note": "manual review",
     "ret_1d": null
   },
   {
@@ -9864,11 +9864,11 @@
     "statement": "771.89 to 773.02, the fifteen-minute opening range. Every five-minute bar from 9:45 ET onward closed below it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-24",
+    "note": "manual review",
     "ret_1d": null
   },
   {
@@ -9879,12 +9879,12 @@
     "statement": "735, the strike carrying the heaviest net put premium on the SPY board at −$24.1M across all expiries, 4.27% below the close.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
-    "ret_1d": null
+    "resolved_date": "2026-09-24",
+    "note": "manual review",
+    "ret_1d": -0.0008
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-23-september-2026:watch5",
@@ -9894,11 +9894,11 @@
     "statement": "785, the nearest call-led shelf above the close at +$11.4M, 2.24% above it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-24",
+    "note": "manual review",
     "ret_1d": null
   },
   {
@@ -9909,11 +9909,11 @@
     "statement": "−$560.4M, the session tide’s trough at 1:10 PM. The finish sat +$64.1M above it.",
     "direction": "watch",
     "horizon_days": 1,
-    "status": "open",
+    "status": "unresolved",
     "ret_5d": null,
     "ret_21d": null,
-    "resolved_date": null,
-    "note": null,
+    "resolved_date": "2026-09-24",
+    "note": "manual review",
     "ret_1d": null
   }
 ]
