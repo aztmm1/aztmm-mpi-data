@@ -1,10 +1,10 @@
 {
-  "as_of": "2026-09-25",
-  "date": "2026-09-25",
+  "as_of": "2026-09-26",
+  "date": "2026-09-26",
   "totals": {
-    "open": 15,
-    "resolved": 664,
-    "hit": 88,
+    "open": 14,
+    "resolved": 665,
+    "hit": 89,
     "invalidated": 90,
     "unresolved": 486
   },
@@ -381,7 +381,7 @@
       "direction": "flat",
       "horizon_days": 21,
       "status": "open",
-      "ret_5d": null,
+      "ret_5d": 0.0127,
       "ret_21d": null,
       "resolved_date": null,
       "note": null
