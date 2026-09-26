@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-26T18:02:13Z",
+  "generated_at": "2026-09-26T18:43:21Z",
   "mpi": {
     "score": 66,
     "regime": "Bull \u00b7 early",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 3630,
-    "url": "https://somerquant.com/2026/09/19/weekly-pulse-2026-09-14-to-2026-09-18/",
-    "title": "SomerQuant Weekly: Week of September 14 to 18, 2026",
-    "date": "2026-09-19",
-    "snippet": "SPY finished the week at 761.69 against 764.29, a give-back of 0.34%, after a 749.60 low on Wednesday and an overnight gap that carried most of it back on Thursday. Of the 27 contracts flagged Monday to Thursday that were checked, 19 came back as new open interest.\u2026",
+    "id": 4084,
+    "url": "https://somerquant.com/2026/09/26/weekly-pulse-2026-09-21-to-2026-09-25/",
+    "title": "SomerQuant Weekly: Week of September 21 to 25, 2026",
+    "date": "2026-09-26",
+    "snippet": "SomerQuant Weekly &middot; Options flow and dark pool\nSPY ended the week 1.27% higher after a Thursday low and a Friday recovery\nThe $100M and above dark-pool board carried $162.59B across the five sessions, and 72.4% of it printed through index wrappers rather than single\u2026",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 4084,
+      "url": "https://somerquant.com/2026/09/26/weekly-pulse-2026-09-21-to-2026-09-25/",
+      "title": "SomerQuant Weekly: Week of September 21 to 25, 2026",
+      "date": "2026-09-26",
+      "snippet": "SomerQuant Weekly &middot; Options flow and dark pool\nSPY ended the week 1.27% higher after a Thursday low and a Friday recovery\nThe $100M and above dark-pool board carried $162.59B across the five sessions, and 72.4% of it printed through index wrappers rather than single\u2026",
+      "kind": "weekly"
+    },
     {
       "id": 4083,
       "url": "https://somerquant.com/2026/09/25/daily-pulse-options-flow-dark-pool-25-september-2026/",
@@ -65,14 +73,6 @@
       "title": "SomerQuant Daily: Options Flow and Dark Pool, 22 September 2026",
       "date": "2026-09-22",
       "snippet": "Market-wide net options premium printed above zero in all 79 five-minute readings of the session and never crossed the line, finishing at +$341.4M. SPY closed 0.02% lower at 773.38 on a 2.57-point range while QQQ gained 0.81%, and the $100M+ dark-pool board more than doubled to\u2026",
-      "kind": "daily"
-    },
-    {
-      "id": 3734,
-      "url": "https://somerquant.com/2026/09/21/daily-pulse-options-flow-dark-pool-21-september-2026/",
-      "title": "SomerQuant Daily: Options Flow and Dark Pool, 21 September 2026",
-      "date": "2026-09-21",
-      "snippet": "Market-wide net options premium finished at +$811.7M without a single five-minute reading below zero as SPY rose 1.55% to 773.50. The $100M+ dark-pool board came to $29.53B across 100 prints in 51 names, and seven of nine contracts flagged on 18 September came back as new open\u2026",
       "kind": "daily"
     }
   ],
