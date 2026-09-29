@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-29T13:01:40Z",
+  "computed_at": "2026-09-29T13:15:50Z",
   "asOf": "2026-09-28",
   "stale_threshold_hours": 18,
   "data": {
@@ -68,8 +68,8 @@
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 62.8,
-        "t10y2y_pct": 0.32,
+        "score": 64.4,
+        "t10y2y_pct": 0.36,
         "dgs10": 5.17,
         "dgs2": 4.81
       },
