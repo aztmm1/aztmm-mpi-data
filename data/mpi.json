@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-09-30T19:21:38Z",
+  "computed_at": "2026-09-30T20:31:20Z",
   "asOf": "2026-09-29",
   "stale_threshold_hours": 18,
   "data": {
@@ -70,8 +70,8 @@
       "yield_curve": {
         "score": 64.8,
         "t10y2y_pct": 0.37,
-        "dgs10": 5.24,
-        "dgs2": 4.92
+        "dgs10": 5.26,
+        "dgs2": 4.89
       },
       "credit": {
         "score": 83.0,
@@ -79,8 +79,8 @@
         "ig_oas_pct": 0.84
       },
       "sentiment": {
-        "score": 33.4,
-        "cnn_fg": 33.4
+        "score": 30.8,
+        "cnn_fg": 30.8
       },
       "rotation": {
         "score": 80.2,
