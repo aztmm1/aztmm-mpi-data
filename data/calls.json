@@ -8212,11 +8212,11 @@
     "statement": "Regime Bull",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "invalidated",
     "ret_5d": 0.0011,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": -0.0042,
+    "resolved_date": "2026-09-29",
+    "note": "SPY 21-session move -0.42% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-28-august-2026:watch1",
