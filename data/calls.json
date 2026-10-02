@@ -8316,11 +8316,11 @@
     "statement": "Regime Neutral",
     "direction": "flat",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": 0.0008,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0054,
+    "resolved_date": "2026-10-01",
+    "note": "SPY 21-session move +0.54% vs regime read 'flat'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-1-september-2026:watch1",
