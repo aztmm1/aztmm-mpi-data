@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-03T16:57:44Z",
+  "generated_at": "2026-10-03T18:17:16Z",
   "mpi": {
     "score": 64,
     "regime": "Neutral",
@@ -27,14 +27,22 @@
     "kind": "daily"
   },
   "latest_weekly_pulse": {
-    "id": 4084,
-    "url": "https://somerquant.com/2026/09/26/weekly-pulse-2026-09-21-to-2026-09-25/",
-    "title": "SomerQuant Weekly: Week of September 21 to 25, 2026",
-    "date": "2026-09-26",
-    "snippet": "SomerQuant Weekly &middot; Options flow and dark pool\nSPY ended the week 1.27% higher after a Thursday low and a Friday recovery\nThe $100M and above dark-pool board carried $162.59B across the five sessions, and 72.4% of it printed through index wrappers rather than single\u2026",
+    "id": 4105,
+    "url": "https://somerquant.com/2026/10/03/weekly-pulse-2026-09-28-to-2026-10-02/",
+    "title": "SomerQuant Weekly: Week of September 28 to October 2, 2026",
+    "date": "2026-10-03",
+    "snippet": "SomerQuant Weekly \u00b7 Options flow and dark poolSPY closed below the prior Friday\u2019s level in all five sessions and ended the week 0.22% lowerETF wrappers took 64.7% of the week\u2019s $109.06B dark-pool board, a share that ran from 48.3% on Monday to 75.7% on Tuesday and back under\u2026",
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 4105,
+      "url": "https://somerquant.com/2026/10/03/weekly-pulse-2026-09-28-to-2026-10-02/",
+      "title": "SomerQuant Weekly: Week of September 28 to October 2, 2026",
+      "date": "2026-10-03",
+      "snippet": "SomerQuant Weekly \u00b7 Options flow and dark poolSPY closed below the prior Friday\u2019s level in all five sessions and ended the week 0.22% lowerETF wrappers took 64.7% of the week\u2019s $109.06B dark-pool board, a share that ran from 48.3% on Monday to 75.7% on Tuesday and back under\u2026",
+      "kind": "weekly"
+    },
     {
       "id": 4104,
       "url": "https://somerquant.com/2026/10/02/daily-pulse-options-flow-dark-pool-2-october-2026/",
@@ -65,14 +73,6 @@
       "title": "SomerQuant Daily: Options Flow and Dark Pool, 29 September 2026",
       "date": "2026-09-29",
       "snippet": "SomerQuant Daily \u00b7 Options flow and dark poolThe dark-pool board came to $25.74B, its heaviest of the five sessions on recordETF wrappers carried 75.7% of that board, the widest such share of the five sessions in our archive.29 September 2026. EOD read. The $100M and above\u2026",
-      "kind": "daily"
-    },
-    {
-      "id": 4090,
-      "url": "https://somerquant.com/2026/09/28/daily-pulse-options-flow-dark-pool-28-september-2026/",
-      "title": "SomerQuant Daily: Options Flow and Dark Pool, 28 September 2026",
-      "date": "2026-09-28",
-      "snippet": "SomerQuant Daily \u00b7 Options flow and dark poolNet options premium stayed below zero through all 79 readings of the sessionETF wrappers carried 48.3% of the $100M and above dark-pool board, down 14.9 points against Friday.28 September 2026. EOD read. Market-wide net options\u2026",
       "kind": "daily"
     }
   ],
