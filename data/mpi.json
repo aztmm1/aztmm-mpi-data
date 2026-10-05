@@ -1,64 +1,64 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-05T21:17:17Z",
-  "asOf": "2026-10-02",
+  "computed_at": "2026-10-05T21:29:36Z",
+  "asOf": "2026-10-05",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 66,
+    "mpi_score": 61,
     "mpi_label": "Bull",
     "regime": "Sideways",
     "regime_label": "Neutral",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 61,
-      "ci_high": 71
+      "ci_low": 56,
+      "ci_high": 66
     },
     "signal": {
       "bias": "Bullish",
-      "strength": "High"
+      "strength": "Medium"
     },
     "market": {
-      "spy_spot": 769.64,
-      "expected_move_1sigma": 7.42,
+      "spy_spot": 774.83,
+      "expected_move_1sigma": 7.47,
       "expected_move_pct": 0.0096
     },
     "volatility": {
       "vix": 15.31,
       "vix3m": 18.01,
-      "vrp": 4.99,
+      "vrp": 4.8,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 10.32
+      "realized_vol_20d_pct": 10.51
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4183,
-      "probability_up": 0.4183,
-      "probability_flat": 0.359,
-      "probability_down": 0.2227
+      "confidence": 0.399,
+      "probability_up": 0.399,
+      "probability_flat": 0.3826,
+      "probability_down": 0.2184
     },
     "hmm": {
       "state": "Sideways",
-      "confidence": 0.7899,
+      "confidence": 0.9993,
       "probs": {
         "Bull": 0.0,
-        "Sideways": 0.7899,
-        "Bear": 0.2101
+        "Sideways": 0.9993,
+        "Bear": 0.0007
       }
     },
     "sub_indicators": {
       "trend": {
-        "score": 77.3,
-        "spy_close": 769.64,
-        "ma50": 763.7,
-        "ma200": 720.47,
-        "cross_ratio_pct": 6.0,
-        "ma50_slope_pct": 0.523
+        "score": 77.6,
+        "spy_close": 774.83,
+        "ma50": 764.42,
+        "ma200": 720.95,
+        "cross_ratio_pct": 6.029,
+        "ma50_slope_pct": 0.568
       },
       "breadth": {
-        "score": 56.8,
-        "cyclical_defensive_ratio": 1.3959,
-        "cyc_def_percentile_1y": 83.3,
-        "iwm_spy_percentile_1y": 17.1
+        "score": 6.5,
+        "cyclical_defensive_ratio": 0.8974,
+        "cyc_def_percentile_1y": 0.0,
+        "iwm_spy_percentile_1y": 16.3
       },
       "volatility": {
         "score": 80.7,
