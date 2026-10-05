@@ -1,16 +1,17 @@
 /*
  * fire.js — the campfire: coal bed, procedural flames, fire light + halo,
- * rising sparks / embers and the occasional ember pop, a touch of heat shimmer.
+ * rising sparks / embers and the occasional ember pop.
  *
  *   scene z42  coal bed (emissive, slow pulsing chunks between the logs)
  *   scene z44  flames (emissive, procedural, 12 fps)
- *   fx    z34  heat shimmer (1px row offsets just above the flame tips)
  *   fx    z35  sparks, embers, pops
  *
- * Flames: a tileable value-noise texture is baked once; two copies scroll
- * upward at different speeds (each a whole number of tile heights per loop),
- * get combined with a flame envelope (wide hot base, tapering, leaning with
- * the wind), and the resulting field is banded into HD.PAL.fire colours.
+ * Flames: a field of stateless "puffs" (HD.time.cycle blobs, 12 fps) streams
+ * up from a hot root over the coals, converging and leaning with the wind; a
+ * tileable value-noise texture baked in init() scrolls upward (a whole number
+ * of tile heights per loop) and erodes the field so tongues split and detach.
+ * The field is banded into 7 HD.PAL.fire colours, then lone pixels / pinholes
+ * are cleaned up so the shapes stay clustered.
  * The two crossing front logs (geometry mirrored from props.js) occlude the
  * lower flame so the logs read as dark silhouettes against the fire.
  */
@@ -48,7 +49,7 @@
   const FIRE = P.fire.map((c) => HD.color.hex(c));
   // flame bands (dark red edge -> near-white core)
   const BAND_COL = [3, 5, 6, 7, 8, 9, 10];
-  const BAND_TH = [0.04, 0.14, 0.26, 0.4, 0.56, 0.75, 0.97];
+  const BAND_TH = [0.1, 0.22, 0.38, 0.56, 0.78, 1.02, 1.28];
 
   let NOISE = null; // Float32Array NW*NH, tileable
   let LOGMASK = null; // Uint8Array GW*GH: 1 where a front-crossing log covers the flame
@@ -57,13 +58,20 @@
   let flameImg = null;
   let LV = null; // level grid
   let LV2 = null;
+  let FLD = null; // flame field
   let coalCv = null;
   let coalCtx = null;
   let coalImg = null;
   let COALS = null; // [{x, y, base, cl}] coal pixels
-  let shimmerTmp = null;
 
   // ---- helpers --------------------------------------------------------------
+  // loop-wrapped integer tick at `fps` (for per-tick hashes that must repeat every loop)
+  function tick(t, fps) {
+    const n = Math.round(HD.LOOP * fps);
+    const k = Math.floor(t * fps + 1e-6) % n;
+    return k < 0 ? k + n : k;
+  }
+
   function bakeNoise(rnd) {
     // two-octave tileable value noise, elongated vertically (flame tongues)
     const out = new Float32Array(NW * NH);
@@ -150,6 +158,30 @@
   }
 
   // ---- flames -------------------------------------------------------------------
+  // rising flame "puffs": stateless blobs streaming up from the coals; where
+  // they overlap they make the body, where they separate they become tongues
+  // and detached wisps
+  const N_BLOB = 18;
+  function splat(fld, bx, by, rx, ry, s) {
+    const x0 = Math.max(0, Math.floor(bx - rx - GX0));
+    const x1 = Math.min(GW - 1, Math.ceil(bx + rx - GX0));
+    const y0 = Math.max(0, Math.floor(by - ry - GY0));
+    const y1 = Math.min(GH - 1, Math.ceil(by + ry - GY0));
+    const irx = 1 / (rx * rx);
+    const iry = 1 / (ry * ry);
+    for (let gy = y0; gy <= y1; gy++) {
+      const dy = GY0 + gy + 0.5 - by;
+      const ky = 1 - dy * dy * iry;
+      if (ky <= 0) continue;
+      const row = gy * GW;
+      for (let gx = x0; gx <= x1; gx++) {
+        const dx = GX0 + gx + 0.5 - bx;
+        const k = ky - dx * dx * irx;
+        if (k > 0) fld[row + gx] += s * k;
+      }
+    }
+  }
+
   function drawFlames(g, t) {
     const ts = T.step(t, 12);
     const st = flameHeight(ts);
@@ -157,46 +189,56 @@
     // two noise layers scrolling upward a whole number of tiles per loop
     const sA = Math.floor(T.phase(ts, 1.45) * NH);
     const sB = Math.floor(T.phase(ts, 2.4) * NH);
-    const sD = Math.floor(T.phase(ts, 1.9) * NH);
     // gusty lean to the right
     const gust = T.noise(ts, 3.3, 51);
-    const lean = 0.04 + 0.09 * gust;
-    const sway = (T.noise(ts, 1.3, 52) - 0.5) * 3.2;
+    const lean = 0.05 + 0.1 * gust;
+    const sway = (T.noise(ts, 1.3, 52) - 0.5) * 2.4;
+    const fld = FLD;
+    fld.fill(0);
+    // hot root over the coals
+    splat(fld, CX + 0.5, BASE - 1, HALFW * (0.92 + 0.08 * st.f), 5 + 1.5 * st.f, 0.86);
+    splat(fld, CX + 0.5, BASE - 5, HALFW * 0.55, 7 + 2 * st.f, 0.42);
+    // streaming blobs
+    for (let i = 0; i < N_BLOB; i++) {
+      const c = T.cycle(ts, i, 0.95 + HD.hash(i, 1, 23) * 0.5, 321);
+      const a = c.age;
+      const side = c.rnd(0) * 2 - 1; // -1..1 across the root
+      const cen = 1 - Math.abs(side); // centre blobs climb higher
+      const top = Hc * (0.48 + 0.5 * cen + 0.22 * c.rnd(1));
+      const h = 2 + top * Math.pow(a, 0.85);
+      const xs = CX + 0.5 + side * HALFW * 0.8;
+      // converge towards the axis as they rise, lean with the wind, wobble
+      const conv = 0.55 * Math.min(1, a * 1.4);
+      const hn = h / Hc;
+      const wob = Math.sin(6.2832 * (c.rnd(2) + a * (1 + c.rnd(3)))) * 1.3 * hn;
+      const bx = xs + (CX + 0.5 - xs) * conv + lean * h + sway * hn * hn + wob;
+      const by = BASE - h;
+      const r = (2.2 + 2.6 * c.rnd(4)) * Math.pow(1 - a, 0.85) + 0.5;
+      splat(fld, bx, by, r, r * (1.6 + 1.5 * a), 0.64 * (1 - a * 0.55));
+    }
     const d = flameImg.data;
     d.fill(0);
     const lv = LV;
     for (let gy = 0; gy < GH; gy++) {
       const y = GY0 + gy;
       const h = BASE - y + 0.5;
-      const hn = h / Hc;
       const row = gy * GW;
-      if (hn > 1.25 || h < -1) {
+      if (h < -1) {
         for (let gx = 0; gx < GW; gx++) lv[row + gx] = 0;
         continue;
       }
-      const hc = hn < 0 ? 0 : hn;
-      // row-wise wobble that also scrolls up: wavy tongues
-      const wob = (NOISE[((gy + sD) % NH) * NW + 7] - 0.5) * 5 * hc;
-      const xc = CX + lean * Math.max(0, h) + sway * hc * hc + wob;
-      // envelope half-width: wide hot base, tapering tongue
-      const hw = HALFW * Math.pow(Math.max(0, 1 - hc * 0.92), 0.75) + 0.8 + (h < 2 ? h * 0.6 - 1.2 : 0);
-      const vert = 1 - Math.pow(hc, 1.7);
+      const hc = Math.min(1.2, Math.max(0, h / Hc));
       const nRowA = ((gy + sA) % NH) * NW;
       const nRowB = ((gy + sB + 17) % NH) * NW;
-      const kN = 0.3 + 0.62 * Math.min(1, hc * 1.1);
+      const kN = 0.22 + 0.36 * hc;
       for (let gx = 0; gx < GW; gx++) {
-        const x = GX0 + gx;
-        const u = (x + 0.5 - xc) / hw;
-        const au = u < 0 ? -u : u;
-        if (au > 1.6) {
+        const f0 = fld[row + gx];
+        if (f0 <= 0.02) {
           lv[row + gx] = 0;
           continue;
         }
-        let env = (1 - au * au * (0.6 + 0.4 * au)) * vert;
-        // bottom: round off the root so the coal bed shows below
-        if (h < 4) env -= (4 - h) * (0.1 + 0.25 * au);
         const n = 0.62 * NOISE[nRowA + (gx & 31)] + 0.38 * NOISE[nRowB + ((gx + 11) & 31)];
-        const F = env * 1.12 - n * kN + 0.06;
+        const F = f0 - (n - 0.35) * kN;
         let L = 0;
         while (L < 7 && F > BAND_TH[L]) L++;
         lv[row + gx] = L;
@@ -256,7 +298,7 @@
       const pulse = T.noise(ts, k.per, k.cl);
       let v = k.base + (pulse - 0.5) * 0.55 + (glow - 0.5) * 0.2;
       // a tiny sparkle now and then on the hottest chunks
-      if (k.base > 0.55 && HD.hash(k.cl, Math.floor(ts * 12), 5) > 0.985) v += 0.3;
+      if (k.base > 0.55 && HD.hash(k.cl, tick(t, 12), 5) > 0.985) v += 0.3;
       const ci = v < 0.12 ? 1 : v < 0.3 ? 2 : v < 0.45 ? 3 : v < 0.58 ? 4 : v < 0.7 ? 5 : v < 0.82 ? 6 : v < 0.93 ? 7 : 8;
       const col = FIRE[ci];
       const q = ((k.y - KY0) * KW + (k.x - KX0)) * 4;
@@ -296,7 +338,7 @@
       const x = Math.round(x0 + wind + wob);
       const y = Math.round(y0 - rise);
       // cooling, with a gentle twinkle
-      const tw = HD.hash(i, Math.floor(t * 14), c.c, 2) < 0.12 ? -0.12 : 0;
+      const tw = HD.hash(i, tick(t, 14), c.c, 2) < 0.12 ? -0.12 : 0;
       const temp = (1 - a) * (0.75 + 0.25 * c.rnd(10)) + tw;
       if (temp < 0.03) continue;
       const col = sparkCol(temp);
@@ -335,36 +377,6 @@
     }
   }
 
-  // ---- heat shimmer ----------------------------------------------------------------------
-  const SH_X0 = CX - 12;
-  const SH_W = 26;
-  const SH_Y0 = BASE - 50;
-  const SH_H = 18;
-  function drawShimmer(g, t) {
-    const ctx = g.ctx;
-    const img = ctx.getImageData(SH_X0, SH_Y0, SH_W, SH_H);
-    const d = img.data;
-    const src = shimmerTmp;
-    src.set(d);
-    const ph = T.phase(t, 0.9);
-    for (let y = 0; y < SH_H; y++) {
-      // fade in from the edges of the band
-      const e = Math.sin((Math.PI * (y + 0.5)) / SH_H);
-      const off = Math.round(Math.sin(6.2832 * (ph * 2 + y * 0.21)) * e * 0.9);
-      if (off === 0) continue;
-      const r = y * SH_W * 4;
-      for (let x = 0; x < SH_W; x++) {
-        const sx = Math.min(SH_W - 1, Math.max(0, x + off));
-        const di = r + x * 4;
-        const si = r + sx * 4;
-        d[di] = src[si];
-        d[di + 1] = src[si + 1];
-        d[di + 2] = src[si + 2];
-      }
-    }
-    ctx.putImageData(img, SH_X0, SH_Y0);
-  }
-
   // ---- module ---------------------------------------------------------------------------
   HD.module('fire', {
     init() {
@@ -377,6 +389,7 @@
       flameImg = flameCtx.createImageData(GW, GH);
       LV = new Uint8Array(GW * GH);
       LV2 = new Uint8Array(GW * GH);
+      FLD = new Float32Array(GW * GH);
 
       // coal bed: an ellipse of chunks in the ring, hottest under the flames
       const r = HD.rng(1313);
@@ -405,7 +418,6 @@
       coalCv = HD.canvas(KW, KH, true);
       coalCtx = coalCv.getContext('2d');
       coalImg = coalCtx.createImageData(KW, KH);
-      shimmerTmp = new Uint8ClampedArray(SH_W * SH_H * 4);
     },
 
     lights(t, Lt) {
@@ -442,7 +454,6 @@
     passes: [
       { layer: 'scene', z: 42, id: 'coals', draw: drawCoals },
       { layer: 'scene', z: 44, id: 'flames', draw: drawFlames },
-      { layer: 'fx', z: 34, id: 'shimmer', draw: drawShimmer },
       { layer: 'fx', z: 35, id: 'sparks', draw: drawSparks },
     ],
   });

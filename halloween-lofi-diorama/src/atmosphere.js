@@ -38,7 +38,9 @@
     const a = hex(c);
     return css(a[0] * (1 + (FIRE[0] * L) / AMB[0]), a[1] * (1 + (FIRE[1] * L) / AMB[1]), a[2] * (1 + (FIRE[2] * L) / AMB[2]));
   }
-  const litSet = (c) => LEVEL_L.map((L) => relit(c, L));
+  const litSet = (c, levels) => (levels || LEVEL_L).map((L) => relit(c, L));
+  // smoke catches light more softly than mist (it would turn ember-orange)
+  const SMOKE_L = [0, 0.1, 0.2, 0.34];
   function level(x, y) {
     const l = HD.lights.lum(x, y);
     return l < 0.07 ? 0 : l < 0.2 ? 1 : l < 0.42 ? 2 : 3;
@@ -52,14 +54,14 @@
     life: 14,
     seed: 401,
     sx: (CH.x0 + CH.x1) / 2 + 1,
-    sy: CH.top - 2,
+    sy: CH.top - 1,
   };
   const CAMP = {
-    n: 24,
+    n: 40,
     life: 8,
     seed: 433,
     sx: CF.x,
-    sy: CF.base - 30,
+    sy: CF.base - 33,
   };
   // tones (cold, light -> dark) each with warm-lit variants per light level
   let chimTone, campTone;
@@ -94,11 +96,11 @@
       const gust = (T.noise(te, 21, 77) - 0.5) * 18;
       const rise = (58 + 10 * r1) * (1 - Math.pow(1 - a, 1.6));
       const drift = (WIND * Pd * 0.75 + gust) * Math.pow(a, 1.55);
-      const curl = 1.6 * a * Math.sin(TAU * (a * 1.2 + r2));
+      const curl = 2.2 * a * Math.sin(TAU * (a * 1.2 + r2));
       const x = S.sx + drift + curl;
       const y = S.sy - rise;
-      const rad = 2.2 + 6.8 * Math.pow(a, 0.7) * (0.85 + 0.3 * r3);
-      const lv = Math.min(1, a / 0.04) * Math.pow(1 - a, 1.05);
+      const rad = 2.4 + 7.2 * Math.pow(a, 0.7) * (0.85 + 0.3 * r3);
+      const lv = Math.min(1, a / 0.04) * Math.pow(1 - a, 0.8);
       if (lv <= 0.02) return;
       const xi = Math.round(x);
       const yi = Math.round(y);
@@ -107,11 +109,11 @@
       const L = level(xi, yi);
       // tone by age (banded, jittered per puff): light grey -> sky-ish blue
       const aj = a + (r3 - 0.5) * 0.12;
-      const tone = aj < 0.22 ? 1 : aj < 0.5 ? 2 : 3;
+      const tone = aj < 0.2 ? 1 : aj < 0.42 ? 2 : aj < 0.68 ? 3 : 4;
       g.ditherCircle(xi, yi, rad, chimTone[tone][L], lv * 1.5, 0.9, ox, oy);
       // moon-facing highlight on the upper right
       const hr = rad * 0.55;
-      if (tone < 3 && hr >= 1.2) {
+      if (tone < 4 && hr >= 1.2) {
         const hx = xi + Math.round(rad * 0.3);
         const hy = yi - Math.round(rad * 0.3);
         g.ditherCircle(hx, hy, hr, chimTone[tone - 1][L], lv * 1.25, 0.95, ox, oy);
@@ -132,10 +134,11 @@
       const rise = (82 + 8 * r1) * Math.pow(a, 0.88);
       const drift = (WIND * Pd * 0.8 + gust) * Math.pow(a, 1.5);
       const curl = 2.6 * Math.sqrt(a) * Math.sin(TAU * (a * 1.5 + T.noise(te, 6, 92) * 0.6));
-      const x = S.sx + (r2 - 0.5) * 4 * (1 - a) + drift + curl;
+      const x = S.sx + (r2 - 0.5) * 2 * (1 - a) + drift + curl;
       const y = S.sy - rise;
-      const rad = 1.4 + 3.4 * a;
-      const lv = Math.min(1, a / 0.1) * Math.pow(1 - a, 1.25);
+      // emerges as a thin solid thread from the flame tips, widens and thins out
+      const rad = 0.7 + 5.2 * Math.pow(a, 0.85);
+      const lv = Math.min(1, a / 0.02) * Math.min(1, 0.45 + a / 0.1) * Math.pow(1 - a, 0.9);
       if (lv <= 0.02) return;
       const xi = Math.round(x);
       const yi = Math.round(y);
@@ -143,51 +146,52 @@
       const oy = ky - yi;
       const L = level(xi, yi);
       const aj = a + (r3 - 0.5) * 0.1;
-      const tone = aj < 0.35 ? 1 : 2;
-      g.ditherCircle(xi, yi, rad, campTone[tone][L], lv * 1.15, 0.9, ox, oy);
-      if (rad > 2.2 && tone === 1) g.ditherCircle(xi + 1, yi - 1, rad * 0.5, campTone[0][L], lv, 0.9, ox, oy);
+      const tone = aj < 0.12 ? 2 : aj < 0.36 ? 1 : aj < 0.64 ? 2 : 3;
+      g.ditherCircle(xi, yi, rad, campTone[tone][L], lv * 1.7, 0.88, ox, oy);
+      if (rad > 2.2 && tone < 3) g.ditherCircle(xi + 1, yi - 1, rad * 0.5, campTone[tone - 1][L], lv * 1.2, 0.95, ox, oy);
     });
   }
 
   // ---------------------------------------------------------------------
   // mist: baked tileable textures, scrolled whole tiles per loop
   // ---------------------------------------------------------------------
-  // periodic 1D noise over a tile: sum of integer-frequency sines
+  // periodic 1D noise over a tile: sum of integer-frequency sines (0..1)
   function pnoise(tw, seed, terms) {
     const rng = HD.rng(seed);
     const comps = [];
     let norm = 0;
-    for (let k = 0; k < terms.length; k++) {
-      const amp = terms[k][1];
-      comps.push([terms[k][0], amp, rng()]);
+    for (const [f, amp] of terms) {
+      comps.push([f, amp, rng()]);
       norm += amp;
     }
     const out = new Float32Array(tw);
     for (let x = 0; x < tw; x++) {
       let s = 0;
       for (const [f, amp, ph] of comps) s += amp * Math.sin(TAU * ((f * x) / tw + ph));
-      out[x] = 0.5 + (0.5 * s) / norm; // 0..1
+      out[x] = 0.5 + (0.5 * s) / norm;
     }
     return out;
   }
 
   /**
-   * Bake one texture per light level: a pixel gets colour cols[1] where the
-   * dither passes `d - core`, cols[0] where it passes `d`.
+   * Bake one dithered texture per light level (or a single cold one).
+   * Colour cols[1] (core) where bayer < (d - core) * 1.6, cols[0] where bayer < d.
    */
-  function bakeTile(tw, h, dens, cols, levels) {
+  function bakeTile(tw, h, dens, cols, lit, core) {
+    const sets = cols.map((c) => (lit ? litSet(c) : [c]));
+    const nv = lit ? LEVEL_L.length : 1;
+    const D = new Float32Array(tw * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < tw; x++) D[y * tw + x] = dens(x, y);
     const out = [];
-    const sets = cols.map((c) => (levels ? litSet(c) : [c]));
-    const nv = levels ? LEVEL_L.length : 1;
     for (let v = 0; v < nv; v++) {
       out.push(
         HD.bake(tw, h, (g) => {
           for (let y = 0; y < h; y++)
             for (let x = 0; x < tw; x++) {
-              const d = dens(x, y);
+              const d = D[y * tw + x];
               if (d <= 0) continue;
               const b = HD.bayer(x, y);
-              if (b < d - 0.3) g.px(x, y, sets[1][v]);
+              if (b < (d - core) * 1.6) g.px(x, y, sets[1][v]);
               else if (b < d) g.px(x, y, sets[0][v]);
             }
         }),
@@ -196,23 +200,45 @@
     return out;
   }
 
-  const BANDS = [];
-  function makeBand(o) {
-    BANDS.push(o);
-    return o;
+  /** screen-space keep-out mask (opaque = erase mist), soft dithered rims */
+  function bakeMask(y0, h, holes) {
+    return HD.bake(W, h, (g) => {
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < W; x++) {
+          let k = 0;
+          for (const o of holes) {
+            const qx = (x - o.x) / o.rx;
+            const qy = (y + y0 - o.y) / o.ry;
+            const e = Math.sqrt(qx * qx + qy * qy);
+            k = Math.max(k, 1 - HD.smoothstep(0.75, 1.35, e));
+          }
+          if (k > 0 && HD.bayer(x, y) < k) g.px(x, y, '#fff');
+        }
+    });
   }
+
+  let tmp = null;
+  let tmpCtx = null;
+  let tmpG = null;
 
   function drawBand(g, B, t) {
     const tw = B.tw;
-    const off = Math.floor(T.phase(t, HD.LOOP / B.k) * tw);
+    // == floor(phase(t, LOOP / k) * tw), computed so t and t + LOOP round alike
+    const off = ((Math.floor((t * B.k * tw) / HD.LOOP + 1e-6) % tw) + tw) % tw;
+    const lit = B.tex.length > 1;
+    const dst = B.mask ? tmpG : g;
+    const dy = B.mask ? 0 : B.y0;
+    const ga = g.ctx.globalAlpha;
+    if (B.mask) tmpCtx.clearRect(0, 0, W, B.h);
+    else g.ctx.globalAlpha = B.alpha || 1;
     const CW = 8;
     let x = 0;
-    let lv = B.tex.length > 1 ? level(x + 4, B.ly) : 0;
+    let lv = lit ? level(x + 4, B.ly) : 0;
     while (x < W) {
       let x1 = x + CW;
       let nl = lv;
       while (x1 < W) {
-        nl = B.tex.length > 1 ? level(x1 + 4, B.ly) : 0;
+        nl = lit ? level(x1 + 4, B.ly) : 0;
         if (nl !== lv) break;
         x1 += CW;
       }
@@ -223,7 +249,7 @@
       let dx = x;
       while (w > 0) {
         const part = Math.min(w, tw - s);
-        g.blit(img, s, 0, part, B.h, dx, B.y0);
+        dst.blit(img, s, 0, part, B.h, dx, dy);
         dx += part;
         w -= part;
         s = 0;
@@ -231,12 +257,19 @@
       x = x1;
       lv = nl;
     }
+    if (B.mask) {
+      tmpCtx.globalCompositeOperation = 'destination-out';
+      tmpCtx.drawImage(B.mask, 0, 0);
+      tmpCtx.globalCompositeOperation = 'source-over';
+      g.ctx.globalAlpha = B.alpha || 1;
+      g.blit(tmp, 0, 0, W, B.h, 0, B.y0);
+    }
+    g.ctx.globalAlpha = ga;
   }
 
   // ---------------------------------------------------------------------
   // vignette (baked once)
   // ---------------------------------------------------------------------
-  let vignette = null;
   function bakeVignette() {
     const c = HD.canvas(W, H, true);
     const cx = c.getContext('2d');
@@ -252,144 +285,158 @@
         const ax = Math.abs(nx);
         const ay = Math.abs(ny);
         // rounded-rectangle-ish distance so the frame hugs the edges
-        const v = Math.pow(Math.pow(ax, 4) + Math.pow(ay, 4), 0.25) * 0.6 + Math.sqrt(nx * nx + ny * ny) * 0.4;
-        let dens = sm(0.78, 1.32, v) * 0.62;
-        if (ny > 0) dens += 0.16 * sm(0.3, 1, ny) * sm(0.45, 1, ax);
+        const v = Math.pow(Math.pow(ax, 4) + Math.pow(ay, 4), 0.25) * 0.55 + Math.sqrt(nx * nx + ny * ny) * 0.45;
+        let dens = sm(0.86, 1.4, v) * 0.6;
+        if (ny > 0) dens += 0.14 * sm(0.4, 1, ny) * sm(0.6, 1, ax);
         if (dens <= 0) continue;
         const b = HD.bayer(x, y);
         let col = null;
         if (b < dens) col = k0;
-        else if (b < dens * 1.6) col = k1;
+        else if (b < dens * 1.5) col = k1;
         if (!col) continue;
         const q = (y * W + x) * 4;
         d[q] = col[0];
         d[q + 1] = col[1];
         d[q + 2] = col[2];
-        d[q + 3] = 255;
+        d[q + 3] = col === k0 ? 190 : 150;
       }
     cx.putImageData(im, 0, 0);
     return c;
   }
 
   // ---------------------------------------------------------------------
+  let FAR = null;
+  let FAR2 = null;
+  let GROUND = null;
+  let FRONT = null;
+  let vignette = null;
+
   HD.module('atmosphere', {
     init() {
-      // smoke colours: cold slate/blue, warm-lit variants per light level
+      // smoke tones: light (moonlit) -> dark (almost sky), warm-lit variants
       chimTone = [
-        litSet(mix(P.stone[6], P.moon[0], 0.3)),
-        litSet(mix(P.stone[5], P.night[7], 0.3)),
-        litSet(mix(P.stone[4], P.night[6], 0.4)),
-        litSet(mix(P.stone[3], P.night[5], 0.5)),
+        litSet(mix(P.stone[6], P.moon[0], 0.3), SMOKE_L),
+        litSet(mix(P.stone[5], P.night[7], 0.3), SMOKE_L),
+        litSet(mix(P.stone[4], P.night[6], 0.4), SMOKE_L),
+        litSet(mix(P.stone[3], P.night[5], 0.5), SMOKE_L),
+        litSet(mix(P.night[3], P.stone[2], 0.45), SMOKE_L),
       ];
       campTone = [
-        litSet(mix(P.stone[5], P.night[7], 0.3)),
-        litSet(mix(P.stone[4], P.wood[6], 0.35)),
-        litSet(mix(P.stone[3], P.night[6], 0.45)),
+        litSet(mix(P.stone[5], P.night[7], 0.25), SMOKE_L),
+        litSet(mix(P.stone[4], P.wood[5], 0.35), SMOKE_L),
+        litSet(mix(P.stone[3], P.night[5], 0.45), SMOKE_L),
+        litSet(mix(P.night[3], P.stone[2], 0.45), SMOKE_L),
       ];
 
-      // --- distant mist along the hill bases (bg z 26), two parallax layers
+      tmp = HD.canvas(W, 32, true);
+      tmpCtx = tmp.getContext('2d');
+      tmpG = HD.makeGfx(tmpCtx);
+
+      // --- distant mist banks along the hill bases (bg z 26)
       {
         const tw = 240;
-        const y0 = 178;
         const h = 34;
         const yc = pnoise(tw, 11, [[1, 1], [3, 0.6], [5, 0.3]]);
         const th = pnoise(tw, 12, [[2, 1], [4, 0.6], [7, 0.3]]);
         const am = pnoise(tw, 13, [[1, 0.7], [2, 1], [5, 0.5], [9, 0.25]]);
-        makeBand({
-          id: 'far',
+        FAR = {
           tw,
-          y0,
+          y0: 176,
           h,
           k: 1,
-          layer: 'bg',
           tex: bakeTile(
             tw,
             h,
             (x, y) => {
-              const c = 18 + (yc[x] - 0.5) * 8;
-              const s = 5 + th[x] * 5;
+              const c = 21 + (yc[x] - 0.5) * 8;
+              const s = (y < c ? 5 : 3.5) + th[x] * 4;
               const q = (y - c) / s;
-              return 0.62 * Math.exp(-q * q) * (0.35 + 0.65 * am[x]);
+              const m = HD.smoothstep(0.15, 0.85, am[x]);
+              return 0.95 * Math.exp(-q * q) * (0.25 + 0.75 * m);
             },
-            [mix(P.night[5], P.stone[4], 0.35), mix(P.night[6], P.stone[5], 0.35)],
+            [mix(P.night[5], P.stone[4], 0.35), mix(P.night[6], P.stone[5], 0.4)],
             false,
+            0.5,
           ),
-        });
+          alpha: 0.55,
+        };
       }
       {
         const tw = 160;
-        const y0 = 186;
-        const h = 22;
+        const h = 20;
         const yc = pnoise(tw, 21, [[1, 1], [2, 0.5], [5, 0.3]]);
         const am = pnoise(tw, 23, [[1, 1], [3, 0.7], [6, 0.4]]);
-        makeBand({
-          id: 'far2',
+        FAR2 = {
           tw,
-          y0,
+          y0: 188,
           h,
           k: 1,
-          layer: 'bg',
           tex: bakeTile(
             tw,
             h,
             (x, y) => {
-              const c = 12 + (yc[x] - 0.5) * 6;
-              const q = (y - c) / 4.5;
-              return 0.4 * Math.exp(-q * q) * Math.max(0, am[x] * 1.4 - 0.3);
+              const c = 11 + (yc[x] - 0.5) * 5;
+              const q = (y - c) / 3.5;
+              return 0.8 * Math.exp(-q * q) * HD.smoothstep(0.35, 0.9, am[x]);
             },
-            [mix(P.night[6], P.stone[5], 0.3), mix(P.night[7], P.stone[6], 0.3)],
+            [mix(P.night[6], P.stone[5], 0.4), mix(P.night[7], P.stone[6], 0.4)],
             false,
+            0.45,
           ),
-        });
+          alpha: 0.45,
+        };
       }
 
-      // --- thin low ground mist (fx z 15): sparse, never hides props
+      // --- thin low ground mist (fx z 15): sparse, kept off fire and porch
       {
         const tw = 480;
         const y0 = 196;
         const h = 22;
         const yc = pnoise(tw, 31, [[2, 1], [5, 0.6], [11, 0.3]]);
         const am = pnoise(tw, 33, [[1, 0.6], [3, 1], [7, 0.6], [13, 0.3]]);
-        makeBand({
-          id: 'ground',
+        GROUND = {
           tw,
           y0,
           h,
           k: 1,
-          ly: 206,
-          layer: 'fx',
+          ly: 205,
           tex: bakeTile(
             tw,
             h,
             (x, y) => {
-              const c = 9 + (yc[x] - 0.5) * 6;
-              const q = (y - c) / 4;
-              return 0.3 * Math.exp(-q * q) * Math.max(0, am[x] * 1.5 - 0.45);
+              const c = 8 + (yc[x] - 0.5) * 5;
+              const q = (y - c) / (y < c ? 3 : 5.5);
+              return 0.8 * Math.exp(-q * q) * HD.smoothstep(0.25, 0.85, am[x]);
             },
-            [mix(P.night[6], P.stone[5], 0.3), mix(P.night[7], P.stone[6], 0.3)],
+            [mix(P.night[7], P.stone[6], 0.3), mix(P.night[8], P.stone[7], 0.3)],
             true,
+            0.45,
           ),
-        });
+          alpha: 0.38,
+          mask: bakeMask(y0, h, [
+            { x: CF.x, y: CF.base - 16, rx: 20, ry: 20 },
+            { x: 220, y: 204, rx: 22, ry: 7 },
+            { x: 128, y: 220, rx: 12, ry: 8 },
+          ]),
+        };
       }
 
-      // --- foreground wisps near the lip (fx z 61)
+      // --- faint foreground wisps creeping over the lip (fx z 61)
       {
         const tw = 720;
-        const y0 = 220;
-        const h = 28;
+        const y0 = 226;
+        const h = 24;
         const rng = HD.rng(41);
         const blobs = [];
-        for (let k = 0; k < 5; k++)
-          blobs.push({ x: (k + 0.2 + rng() * 0.6) * (tw / 5), y: 9 + rng() * 10, rx: 26 + rng() * 34, ry: 2.2 + rng() * 2, a: 0.22 + rng() * 0.14 });
+        for (let k = 0; k < 6; k++)
+          blobs.push({ x: (k + 0.15 + rng() * 0.7) * (tw / 6), y: 10 + rng() * 5, rx: 24 + rng() * 30, ry: 3 + rng() * 2.2, a: 0.5 + rng() * 0.25 });
         const tilt = pnoise(tw, 43, [[3, 1], [7, 0.5]]);
-        makeBand({
-          id: 'front',
+        FRONT = {
           tw,
           y0,
           h,
           k: 1,
-          ly: 230,
-          layer: 'fx',
+          ly: 234,
           tex: bakeTile(
             tw,
             h,
@@ -399,16 +446,23 @@
                 let dx = x - b.x;
                 dx -= tw * Math.round(dx / tw);
                 const qx = dx / b.rx;
-                const qy = (y - b.y - (tilt[x] - 0.5) * 3) / b.ry;
+                const qy = (y - b.y - (tilt[x] - 0.5) * 4) / b.ry;
                 const e = qx * qx + qy * qy;
-                if (e < 1.6) d += b.a * Math.exp(-1.8 * e);
+                if (e < 3) d += b.a * Math.exp(-1.6 * e);
               }
               return d;
             },
             [mix(P.night[7], P.stone[6], 0.3), mix(P.night[8], P.stone[7], 0.3)],
             true,
+            0.45,
           ),
-        });
+          alpha: 0.42,
+          mask: bakeMask(y0, h, [
+            { x: 62, y: 228, rx: 11, ry: 7 },
+            { x: 147, y: 228, rx: 9, ry: 6 },
+            { x: CF.x, y: CF.base - 4, rx: 20, ry: 9 },
+          ]),
+        };
       }
 
       vignette = bakeVignette();
@@ -420,8 +474,8 @@
         z: 26,
         id: 'far-mist',
         draw(g, t) {
-          drawBand(g, BANDS[0], t);
-          drawBand(g, BANDS[1], t);
+          drawBand(g, FAR, t);
+          drawBand(g, FAR2, t);
         },
       },
       {
@@ -429,27 +483,17 @@
         z: 15,
         id: 'ground-mist',
         draw(g, t) {
-          drawBand(g, BANDS[2], t);
+          drawBand(g, GROUND, t);
         },
       },
-      {
-        layer: 'fx',
-        z: 31,
-        id: 'campfire-smoke',
-        draw: drawCamp,
-      },
-      {
-        layer: 'fx',
-        z: 32,
-        id: 'chimney-smoke',
-        draw: drawChimney,
-      },
+      { layer: 'fx', z: 31, id: 'campfire-smoke', draw: drawCamp },
+      { layer: 'fx', z: 32, id: 'chimney-smoke', draw: drawChimney },
       {
         layer: 'fx',
         z: 61,
         id: 'front-mist',
         draw(g, t) {
-          drawBand(g, BANDS[3], t);
+          drawBand(g, FRONT, t);
         },
       },
       {
