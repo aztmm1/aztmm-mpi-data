@@ -247,9 +247,9 @@
       halo: 0.09,
       spill: { r: 18, ry: 6, i: 0.34 },
     },
-    'upper-left': { ramp: [A[2], A[3], A[4], A[5]], src: [0.5, 0.75], R: 16, seed: 43, speed: 0.5, amp: 0.5, light: { r: 22, i: 0.24 }, halo: 0.06 },
-    'upper-right': { ramp: [A[3], A[4], A[5], A[6], A[7]], src: [0.45, 0.8], R: 21, seed: 44, speed: 0.55, amp: 0.5, light: { r: 28, i: 0.38 }, halo: 0.1 },
-    'turret-upper': { arch: true, ramp: [A[2], A[3], A[4], A[5], A[6]], src: [0.5, 0.55], R: 15, seed: 45, speed: 0.6, amp: 0.5, light: { r: 22, i: 0.26 }, halo: 0.07 },
+    'upper-left': { ramp: [A[2], A[3], A[4], A[5]], src: [0.5, 0.75], R: 16, seed: 43, speed: 0.5, amp: 0.5, light: { r: 26, i: 0.32 }, halo: 0.06 },
+    'upper-right': { ramp: [A[3], A[4], A[5], A[6], A[7]], src: [0.45, 0.8], R: 21, seed: 44, speed: 0.55, amp: 0.5, light: { r: 32, i: 0.46 }, halo: 0.1 },
+    'turret-upper': { arch: true, ramp: [A[2], A[3], A[4], A[5], A[6]], src: [0.5, 0.55], R: 15, seed: 45, speed: 0.6, amp: 0.5, light: { r: 26, i: 0.32 }, halo: 0.07 },
     'turret-lower': {
       arch: true,
       ramp: [A[3], A[4], A[5], A[6], A[7]],
@@ -467,21 +467,16 @@
     for (let y = 129; y <= 158; y++) {
       for (let x = ux0; x <= ux1; x++) {
         let c = S[4];
-        if (y >= 155 && chk(x, y)) c = S[3];
         if (y >= 157) c = S[3];
         R.set(x, y, c, TG.plaster);
       }
     }
     // damp stains and hairline cracks in the plaster
-    const stain = (x, y, w, h) => {
-      for (let yy = y; yy < y + h; yy++)
-        for (let xx = x; xx < x + w; xx++) {
-          const edge = yy === y || xx === x || xx === x + w - 1;
-          if (!edge || chk(xx, yy)) R.mod(xx, yy, (c, tg) => (tg === TG.plaster ? S[3] : c));
-        }
-    };
-    stain(169, 149, 6, 6);
-    stain(256, 133, 6, 5);
+    // solid, irregular damp stains (no dither speckle)
+    const stain = (tpl, x, y) => R.rows(tpl, x, y, { s: S[3] }, TG.plaster, TG.plaster);
+    stain(['.sss', 'ssss', 'sss.', '.ss.', '..s.'], 169, 150);
+    stain(['ss..', 'sss.', '.sss', '..s.'], 257, 133);
+    stain(['.ss', 'sss', '.s.'], 220, 150);
     R.line(201, 133, 203, 136, S[3], TG.plaster);
     R.line(203, 136, 202, 138, S[3], TG.plaster);
     R.line(262, 150, 265, 152, S[3], TG.plaster);
@@ -732,10 +727,17 @@
       }
     // light leaks: threshold gap, plank cracks, keyhole
     for (let x = DX0 + 1; x <= DX1 - 1; x++) DOOR_LEAK.push([x, DY1, 'gap']);
-    for (let y = 189; y <= 193; y++) DOOR_LEAK.push([DX0 + 7, y, 'crack']);
     for (let y = 200; y <= 203; y++) DOOR_LEAK.push([DX0 + 11, y, 'crack']);
     DOOR_LEAK.push([DX1 - 3, 194, 'key'], [DX1 - 3, 195, 'key']);
     for (const [x, y] of DOOR_LEAK) R.set(x, y, HOLE, TG.door);
+    // a small Halloween wreath: twigs and moss, pumpkin berries, violet bow
+    R.rows(
+      ['..www..', '.wgwgw.', 'wo...ww', 'ww...gw', 'wg...ow', '.wwbww.', '..bbb..', '.b...b.'],
+      DX0 + 4,
+      DY0 + 9,
+      { w: M[3], g: M[5], o: P.pumpkin[4], b: V[5] },
+      TG.door,
+    );
   }
 
   function paintPorch(R) {
@@ -956,6 +958,7 @@
     w = byId['upper-left'];
     hbar(w, 1, 0, w.gw - 1);
     for (const hx of [2, 9]) rows(w, ['.s.', '.s.', 'hhh', 'hhh', 'hhh', '.h.'], hx - 1, 2, { s: A[0], h: A[1] });
+    rows(w, ['.l..l', 'l.ll.', '.lll.', 'l.l.l', '.ooo.', '.ooo.', '..o..'], 0, w.gh - 7, { l: A[1], o: A[0] });
     vbar(w, 6, 0, w.gh - 1, true);
     hbar(w, 8, 0, w.gw - 1);
 

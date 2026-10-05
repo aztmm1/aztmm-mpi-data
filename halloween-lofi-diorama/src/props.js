@@ -802,7 +802,7 @@
     I: ['X', 'X', 'X', 'X', 'X'],
     P: ['XX.', 'X.X', 'XX.', 'X..', 'X..'],
   };
-  const SKULL = ['.XXX.', 'XXXXX', 'X.X.X', 'XXXXX', '.X.X.'];
+  const SKULL = ['.LLL.', 'LLLLL', 'LDLDL', 'LLDLL', '.LLL.', '.L.L.'];
 
   function tombShape(kind) {
     // returns inside(u, v) in local coords: u right of centre, v up from base
@@ -868,32 +868,34 @@
         else if (eR) c = P.stone[6];
         else if (eL) c = P.stone[3];
         else if (!solid(x + 2, y) || !solid(x, y - 2) || (!solid(x, y - 3) && HD.bayer(x, y) < 0.5)) c = P.stone[5];
-        // rain streaks / weathering under the top
-        const streak = HD.hash(Math.round(u * 1.0 + 40), idx, 3) < 0.28;
-        if (c === P.stone[4] && streak && v > 4) c = P.stone[3];
+        // two rain-darkened drip streaks running down from the top
+        const sx = (idx * 5) % 3 - 1;
+        const streak = (Math.round(u) === sx - 2 && v > 6) || (Math.round(u) === sx + 3 && v > 9);
+        if (c === P.stone[4] && streak) c = P.stone[3];
         // bottom shade
         if (c === P.stone[4] && v < 2.5) c = P.stone[3];
         B.set(x, y, c);
       }
     // engravings
     const engrave = (rows, u0, v0, col) => {
-      for (const [cx, cy] of cells(rows)) {
+      for (const [cx, cy, ch] of cells(rows)) {
+        const cc = ch === 'L' ? P.stone[6] : ch === 'D' ? P.stone[1] : col;
         // map local (u, v) to screen and set
         const u = u0 + cx;
         const v = v0 - cy;
         const sx = st.x + u * ca + v * sa;
         const sy = st.base + sink - (-u * sa + v * ca);
-        if (solid(Math.round(sx), Math.round(sy))) B.set(sx, sy, col);
+        if (solid(Math.round(sx), Math.round(sy))) B.set(sx, sy, cc);
       }
     };
     if (kind === 'round') {
       const rows = [];
       for (let r = 0; r < 5; r++) rows.push(FONT.R[r] + '.' + FONT.I[r] + '.' + FONT.P[r]);
       engrave(rows, -4, 13, P.stone[2]);
-      engrave(['XX.XXX', '......', 'XXX.XX'], -3, 6, P.stone[3]);
+      engrave(['XXX.XXX'], -3, 6, P.stone[3]);
     } else if (kind === 'tall') {
-      engrave(SKULL, -2, 22, P.stone[2]);
-      engrave(['XXXXX', '.....', 'XXX.X', '.....', 'X.XXX'], -2, 14, P.stone[3]);
+      engrave(SKULL, -2, 23, P.stone[2]);
+      engrave(['XXXXX', '.....', 'XX.XX'], -2, 13, P.stone[3]);
     } else if (kind === 'leaning') {
       engrave(['.X.', 'XXX', '.X.', '.X.'], -1, 11, P.stone[2]);
       engrave(['XXX.X', '.....', 'X.XXX'], -2, 5, P.stone[3]);
