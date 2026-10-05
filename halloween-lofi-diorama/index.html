@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Rainy Hollow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" />
+    <style>
+      /* Single dark world: the letterbox is the night itself. */
+      :root {
+        --void: #04050b;
+        --ink: #a3b8d8;
+        --ink-dim: #5670a3;
+        --veil: rgba(4, 5, 11, 0.72);
+        --ember: #ffb54d;
+        --font-pixel: 'Silkscreen', ui-monospace, Menlo, Consolas, monospace;
+        --font-mono: ui-monospace, Menlo, Consolas, monospace;
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--void);
+        color: var(--ink);
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      body.idle {
+        cursor: none;
+      }
+      #screen {
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      #hud {
+        position: fixed;
+        left: 8px;
+        top: calc(6px + env(safe-area-inset-top, 0px));
+        font: 12px/1.4 var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+        background: var(--veil);
+        padding: 2px 6px;
+        display: none;
+        pointer-events: none;
+      }
+      #hint {
+        position: fixed;
+        left: 50%;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        transform: translateX(-50%);
+        max-width: calc(100% - 32px);
+        box-sizing: border-box;
+        font: 10px/1.6 var(--font-pixel);
+        letter-spacing: 0.06em;
+        text-align: center;
+        color: var(--ink);
+        background: var(--veil);
+        padding: 4px 10px;
+        pointer-events: none;
+        transition: opacity 0.6s ease;
+      }
+      #hint b {
+        color: var(--ember);
+        font-weight: normal;
+      }
+      body.idle #hint,
+      body.export #hint {
+        opacity: 0;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #hint {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="screen" width="480" height="270" aria-label="Animated pixel-art Halloween diorama: a cottage on a rainy night with a campfire and jack-o'-lanterns"></canvas>
+    <div id="hud"></div>
+    <div id="hint"><b>F</b> or double-click: fullscreen &middot; <b>Space</b>: pause &middot; <b>H</b>: stats</div>
+    <!-- core -->
+    <script src="src/engine.js"></script>
+    <script src="src/palette.js"></script>
+    <script src="src/layout.js"></script>
+    <!-- scene modules (each file registers itself with HD.module) -->
+    <script src="src/bg.js"></script>
+    <script src="src/ground.js"></script>
+    <script src="src/house.js"></script>
+    <script src="src/props.js"></script>
+    <script src="src/fire.js"></script>
+    <script src="src/weather.js"></script>
+    <script src="src/atmosphere.js"></script>
+  </body>
+</html>

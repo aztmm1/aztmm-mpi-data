@@ -1,0 +1,6 @@
+out/
+review/
+node_modules/
+*.mp4
+*.mov
+*.mkv
