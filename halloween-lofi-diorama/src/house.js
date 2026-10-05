@@ -763,26 +763,33 @@
       R.set(br - k, yb + 4 - k, W[3], TG.post);
       R.set(br - k, yb + 3 - k, W[4], TG.post);
     }
-    // shingled roof: a shallow trapezoid (hipped ends) of two tab courses
+    // shingled roof: a shallow trapezoid (hipped ends) of two staggered tab courses
     for (let y = y0; y <= y0 + 3; y++) {
       const inset = Math.max(0, 2 - (y - y0));
       for (let x = x0 + inset; x <= x1 - inset; x++) {
-        let c;
         const v = y - y0;
+        const lx = x - x0;
+        let c;
         if (v === 0) c = S[5];
-        else if (v === 1) c = (x - x0) % 4 === 1 ? S[1] : S[3];
-        else if (v === 2) c = (x - x0) % 4 === 1 ? S[1] : S[4];
-        else c = (x - x0) % 4 === 3 ? S[1] : S[3];
+        else if (v === 1) c = lx % 3 === 0 ? S[1] : S[3];
+        else if (v === 2) c = S[4];
+        else c = lx % 3 === 1 ? S[1] : S[2];
         if (x === x0 + inset) c = dk(c);
         R.set(x, y, c, TG.porch);
       }
     }
+    // fascia board + scalloped gingerbread trim, sagging a pixel in the middle
     for (let x = x0; x <= x1; x++) {
-      R.set(x, y0 + 4, W[4], TG.porch);
-      R.set(x, y0 + 5, W[2], TG.porch);
+      const sag = x > x0 + 10 && x < x1 - 9 ? 1 : 0;
+      R.set(x, y0 + 4 + sag, W[5], TG.porch);
+      R.set(x, y0 + 5 + sag, W[3], TG.porch);
+      if (sag) R.set(x, y0 + 4, S[3], TG.porch);
+      const lx = x - x0;
+      if (x > x0 + 2 && x < x1 - 2) {
+        if (lx % 4 !== 0) R.set(x, y0 + 6 + sag, W[4], TG.porch);
+        if (lx % 4 === 2) R.set(x, y0 + 7 + sag, W[3], TG.porch);
+      }
     }
-    // sagging middle of the fascia
-    R.hl(x0 + 11, x1 - 10, yb, W[2], TG.porch);
     // shadow under the porch roof on the wall and door surround
     for (let x = x0 + 1; x <= x1 - 1; x++) {
       for (let y = yb; y <= yb + 2; y++) {

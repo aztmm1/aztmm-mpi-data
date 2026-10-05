@@ -1023,6 +1023,7 @@
         const p = vals.get(key(x, y));
         if (!p) continue;
         if (!vals.has(key(x - 1, y)) || !vals.has(key(x + 1, y))) continue;
+        if (o.noGroove && o.noGroove(x, y)) continue;
         B.set(x, y, RAMP[Math.max(0, tone(p.val) - 1)]);
       }
     }
@@ -1070,14 +1071,18 @@
     B.set(dir > 0 ? x + 3 : x - 3, y + 1, P.vine[4]);
   }
 
-  /** soft contact shadow, offset away from the key light */
+  /** contact shadow: a flat dark ellipse the body sits in, offset away from the key light */
   function shadow(B, cx, y, rx, off) {
-    const x0 = Math.round(cx - rx + off);
-    const x1 = Math.round(cx + rx + off);
-    for (let x = x0; x <= x1; x++) {
-      const k = Math.abs(x - (cx + off)) / (rx + 0.5);
-      if (k < 0.7 || HD.bayer(x, y) < 1.35 - k * 1.2) B.set(x, y, P.soil[1]);
-      if (k < 0.5 && HD.bayer(x, y + 1) < 0.5) B.set(x, y + 1, P.soil[1]);
+    const ox = cx + off;
+    for (let dy = -1; dy <= 1; dy++) {
+      const hw = (rx + 0.6) * Math.sqrt(Math.max(0, 1 - (dy * dy) / 2.6));
+      const x0 = Math.round(ox - hw);
+      const x1 = Math.round(ox + hw);
+      for (let x = x0; x <= x1; x++) {
+        const end = x === x0 || x === x1;
+        if (end && (x + y + dy) % 2) continue;
+        B.set(x, y + dy, dy === 1 ? P.soil[2] : P.soil[1]);
+      }
     }
   }
 
@@ -1121,7 +1126,7 @@
       const dx = fire.x - p.x;
       const dy = fire.base - 14 - p.y;
       const dl = Math.hypot(dx, dy);
-      shadow(B, p.x, Math.round(p.y + p.ry) + 1, p.rx * 0.95, -Math.sign(dx) * 1.5);
+      shadow(B, p.x, Math.round(p.y + p.ry), p.rx, -Math.sign(dx) * 1.5);
       pumpkinBody(B, p.x, p.y, p.rx, p.ry, { lobes: p.lobes, lx: dx / dl, ly: dy / dl - 0.3, lz: 0.55, ramp: p.ramp });
       stem(B, p.x, Math.round(p.y - p.ry) + 1, p.stemH, p.dir, p.curl);
     }
@@ -1212,8 +1217,13 @@
         lx = dx / dl;
         ly = dy / dl - 0.25;
       }
-      shadow(B, cx, Math.round(cy + S.ry) + 1, S.rx * 0.95, -Math.sign(lx) * 1.5);
-      const vals = pumpkinBody(B, cx, cy, S.rx, S.ry, { lobes: S.lobes, lx, ly, lz: 0.5, ramp: JACK_RAMP });
+      shadow(B, cx, Math.round(cy + S.ry), S.rx, -Math.sign(lx) * 1.5);
+      const F = FACES[i % FACES.length];
+      const fw = F.rows[0].length;
+      const fx0 = cx - (fw >> 1);
+      const fy0 = cy + F.dy;
+      const nearFace = (x, y) => x >= fx0 - 1 && x <= fx0 + fw && y >= fy0 - 1 && y <= fy0 + F.rows.length;
+      const vals = pumpkinBody(B, cx, cy, S.rx, S.ry, { lobes: S.lobes, lx, ly, lz: 0.5, ramp: JACK_RAMP, noGroove: nearFace });
       const sdir = i % 2 ? -1 : 1;
       stem(B, cx, Math.round(cy - S.ry) + 1, S.stemH, sdir, j.size !== 'small');
       // carved lid seam around the stem (zig-zag) on the bigger ones
@@ -1226,10 +1236,6 @@
       }
       const body = B.bake();
       // face (emissive) in 4 flicker levels
-      const F = FACES[i % FACES.length];
-      const fw = F.rows[0].length;
-      const fx0 = cx - (fw >> 1);
-      const fy0 = cy + F.dy;
       const cut = new Set(cells(F.rows).map(([x, y]) => x + fx0 + ',' + (y + fy0)));
       const isCut = (x, y) => cut.has(x + ',' + y);
       const faces = JLV.map((lv) => {
