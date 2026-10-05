@@ -66,7 +66,7 @@
   // density breathes slowly between ~80% and 100%; decided per life
   // (at the life's start time) so a drop never pops in or out mid-fall
   // ------------------------------------------------------------------
-  const dens = (ts) => 0.8 + 0.2 * T.noise(ts, 47, 6113);
+  const dens = (ts) => 0.8 + 0.2 * T.noise(ts, 47, 6119);
 
   // ------------------------------------------------------------------
   // drawing helpers

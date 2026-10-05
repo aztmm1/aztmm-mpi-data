@@ -432,7 +432,9 @@
     tctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(tmp, 0, 0, R.w, R.h, R.x, R.y, R.w, R.h);
   }
-  const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w);
+  // whole tiles per loop; the epsilon keeps t and t+LOOP on the same pixel when
+// phase*w lands exactly on an integer (float noise would otherwise floor differently)
+const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6) % Ly.w;
 
   function drawLayer(g, t, Ly) {
     const ctx = g.ctx;
