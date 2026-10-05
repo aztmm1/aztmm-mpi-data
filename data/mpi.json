@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-05T13:00:59Z",
+  "computed_at": "2026-10-05T21:17:17Z",
   "asOf": "2026-10-02",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 65,
+    "mpi_score": 66,
     "mpi_label": "Bull",
     "regime": "Sideways",
     "regime_label": "Neutral",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 60,
-      "ci_high": 70
+      "ci_low": 61,
+      "ci_high": 71
     },
     "signal": {
       "bias": "Bullish",
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.4152,
-      "probability_up": 0.4152,
+      "confidence": 0.4183,
+      "probability_up": 0.4183,
       "probability_flat": 0.359,
-      "probability_down": 0.2258
+      "probability_down": 0.2227
     },
     "hmm": {
       "state": "Sideways",
@@ -68,19 +68,19 @@
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 68.0,
-        "t10y2y_pct": 0.45,
-        "dgs10": 5.24,
-        "dgs2": 4.78
+        "score": 68.8,
+        "t10y2y_pct": 0.47,
+        "dgs10": 5.28,
+        "dgs2": 4.83
       },
       "credit": {
-        "score": 81.1,
-        "hy_oas_pct": 3.24,
-        "ig_oas_pct": 0.86
+        "score": 82.8,
+        "hy_oas_pct": 3.1,
+        "ig_oas_pct": 0.85
       },
       "sentiment": {
-        "score": 38.3,
-        "cnn_fg": 38.3
+        "score": 43.1,
+        "cnn_fg": 43.1
       },
       "rotation": {
         "score": 82.5,
