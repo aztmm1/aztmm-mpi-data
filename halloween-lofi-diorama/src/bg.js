@@ -116,8 +116,8 @@
     // inner lumps: upper-right contour of "front" puffs inside the silhouette
     for (const p of puffs) {
       if (!p[5]) continue;
-      for (let y = Math.floor(p[1] - p[3]); y <= p[1]; y++)
-        for (let x = Math.floor(p[0] - p[2] * 0.2); x <= Math.ceil(p[0] + p[2]); x++) {
+      for (let y = Math.floor(p[1] - p[3]); y <= p[1] - p[3] * 0.25; y++)
+        for (let x = Math.floor(p[0] + p[2] * 0.1); x <= Math.ceil(p[0] + p[2] * 0.85); x++) {
           if (!inP(p, x, y) || inP(p, x + 1, y - 1)) continue;
           if (!M(x + 1, y - 1)) continue; // already the outer edge
           tn.put(x, y, 3);
@@ -504,13 +504,12 @@
     for (let i = 0; i <= 6; i++) for (let x = 56 + i; x <= 76 - i; x++) ch(x, 129 - i); // gable roof
     for (let y = 120; y <= base; y++) for (let x = 49; x <= 56; x++) ch(x, y); // tower
     for (let x = 48; x <= 57; x++) ch(x, 120); // tower cornice
-    for (let i = 0; i < 11; i++) {
-      const hw = Math.floor((11 - i) / 2.8);
-      for (let x = 52 - hw; x <= 53 + hw - (i > 6 ? 1 : 0); x++) ch(x, 119 - i);
-    }
-    for (let y = 105; y <= 108; y++) ch(52, y); // cross
-    ch(51, 106);
-    ch(53, 106);
+    // spire: tapering to a 1px needle
+    const spire = [4, 3, 3, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0];
+    for (let i = 0; i < spire.length; i++) for (let x = 52 - spire[i]; x <= 52 + spire[i] + (i < 6 ? 1 : 0); x++) ch(x, 119 - i);
+    for (let y = 103; y <= 106; y++) ch(52, y); // cross
+    ch(51, 104);
+    ch(53, 104);
     // a small apse on the far end
     for (let y = 133; y <= base; y++) for (let x = 76; x <= 78; x++) ch(x, y);
     // dark belfry slit
@@ -523,7 +522,7 @@
     for (let i = 1; i <= 6; i++) S(76 - i, 129 - i, rimCh);
     for (let y = 134; y <= 138; y++) S(78, y, rimCh);
     for (let y = 121; y <= 128; y++) S(56, y, rimCh);
-    for (let i = 3; i < 9; i++) S(53 + Math.floor((11 - i) / 2.8) - (i > 6 ? 1 : 0), 119 - i, rimCh);
+    for (let i = 1; i < 9; i++) S(52 + spire[i] + (i < 6 ? 1 : 0), 119 - i, rimCh);
     // graves and a bare far tree beside the chapel
     for (const gx of [82, 86, 44]) {
       S(gx, base - 1, CHAPEL);
@@ -708,9 +707,8 @@
           g.ctx.drawImage(landCv, 0, LAND_Y);
           // chapel window: one tiny warm pane, breathing very slowly
           const v = T.noise(t, 9, 77);
-          const wc = v > 0.62 ? P.amber[5] : v > 0.3 ? P.amber[4] : P.amber[3];
-          g.px(CHAPEL_WIN.x, CHAPEL_WIN.y, wc);
-          g.px(CHAPEL_WIN.x, CHAPEL_WIN.y + 1, P.amber[3]);
+          g.px(CHAPEL_WIN.x, CHAPEL_WIN.y, v > 0.35 ? P.amber[5] : P.amber[4]);
+          g.px(CHAPEL_WIN.x, CHAPEL_WIN.y + 1, v > 0.7 ? P.amber[5] : P.amber[4]);
           for (let i = 0; i < COTTAGES.length; i++) {
             const c = COTTAGES[i];
             const k = T.noise(t, 13, 91 + i);

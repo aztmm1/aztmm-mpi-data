@@ -223,8 +223,9 @@
 
   function drawBand(g, B, t) {
     const tw = B.tw;
-    // == floor(phase(t, LOOP / k) * tw), computed so t and t + LOOP round alike
-    const off = ((Math.floor((t * B.k * tw) / HD.LOOP + 1e-6) % tw) + tw) % tw;
+    // == floor(phase(t, LOOP / k) * tw + sub), computed so t and t + LOOP round
+    // alike; `sub` staggers the 1px steps so the bands never all jump together
+    const off = ((Math.floor((t * B.k * tw) / HD.LOOP + B.sub) % tw) + tw) % tw;
     const lit = B.tex.length > 1;
     const dst = B.mask ? tmpG : g;
     const dy = B.mask ? 0 : B.y0;
@@ -341,6 +342,7 @@
         const am = pnoise(tw, 13, [[1, 0.7], [2, 1], [5, 0.5], [9, 0.25]]);
         FAR = {
           tw,
+          sub: 0.5,
           y0: 176,
           h,
           k: 1,
@@ -368,6 +370,7 @@
         const am = pnoise(tw, 23, [[1, 1], [3, 0.7], [6, 0.4]]);
         FAR2 = {
           tw,
+          sub: 0.23,
           y0: 188,
           h,
           k: 1,
@@ -396,6 +399,7 @@
         const am = pnoise(tw, 33, [[1, 0.6], [3, 1], [7, 0.6], [13, 0.3]]);
         GROUND = {
           tw,
+          sub: 0.71,
           y0,
           h,
           k: 1,
@@ -433,6 +437,7 @@
         const tilt = pnoise(tw, 43, [[3, 1], [7, 0.5]]);
         FRONT = {
           tw,
+          sub: 0.37,
           y0,
           h,
           k: 1,
