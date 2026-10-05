@@ -45,6 +45,10 @@ node tools/render-video.mjs --out out/rainy-hollow-loop-1080p.mp4 --scale 4 --fp
 tools/make-long.sh out/rainy-hollow-loop-1080p.mp4 my-lofi-mix.m4a 10
 ```
 
+If the loop was split into parts (for example `...-part1-of-6.mp4` to get under a
+file-size limit), pass part 1 and the script joins the rest losslessly first.
+In a video editor, place the parts in order and repeat that block.
+
 Tips:
 - Upload in 4K (`--scale 8`) even if most viewers watch at 1080p. YouTube gives
   4K uploads a much higher bitrate, which keeps the rain and the pixel edges sharp.
