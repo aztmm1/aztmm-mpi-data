@@ -1,40 +1,40 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-05T21:29:36Z",
+  "computed_at": "2026-10-06T02:05:13Z",
   "asOf": "2026-10-05",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 61,
+    "mpi_score": 65,
     "mpi_label": "Bull",
     "regime": "Sideways",
     "regime_label": "Neutral",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 56,
-      "ci_high": 66
+      "ci_low": 60,
+      "ci_high": 70
     },
     "signal": {
       "bias": "Bullish",
-      "strength": "Medium"
+      "strength": "High"
     },
     "market": {
       "spy_spot": 774.83,
-      "expected_move_1sigma": 7.47,
-      "expected_move_pct": 0.0096
+      "expected_move_1sigma": 7.58,
+      "expected_move_pct": 0.0098
     },
     "volatility": {
-      "vix": 15.31,
-      "vix3m": 18.01,
-      "vrp": 4.8,
+      "vix": 15.52,
+      "vix3m": 18.0,
+      "vrp": 5.01,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 10.51
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.399,
-      "probability_up": 0.399,
+      "confidence": 0.4109,
+      "probability_up": 0.4109,
       "probability_flat": 0.3826,
-      "probability_down": 0.2184
+      "probability_down": 0.2064
     },
     "hmm": {
       "state": "Sideways",
@@ -55,16 +55,16 @@
         "ma50_slope_pct": 0.568
       },
       "breadth": {
-        "score": 6.5,
-        "cyclical_defensive_ratio": 0.8974,
-        "cyc_def_percentile_1y": 0.0,
+        "score": 55.3,
+        "cyclical_defensive_ratio": 1.3923,
+        "cyc_def_percentile_1y": 81.3,
         "iwm_spy_percentile_1y": 16.3
       },
       "volatility": {
-        "score": 80.7,
-        "vix": 15.31,
-        "vix3m": 18.01,
-        "vix_percentile_1y": 14.7,
+        "score": 78.2,
+        "vix": 15.52,
+        "vix3m": 18.0,
+        "vix_percentile_1y": 18.3,
         "term_shape": "Contango"
       },
       "yield_curve": {
@@ -83,15 +83,15 @@
         "cnn_fg": 43.1
       },
       "rotation": {
-        "score": 82.5,
+        "score": 82.1,
         "xlu_xly_ratio": 0.362,
-        "xlu_xly_percentile_1y": 17.5
+        "xlu_xly_percentile_1y": 17.9
       },
       "currency": {
-        "score": 22.3,
-        "uup": 28.89,
-        "uup_50d_ma": 28.264,
-        "uup_vs_ma_pct": 2.215,
+        "score": 18.3,
+        "uup": 28.99,
+        "uup_50d_ma": 28.272,
+        "uup_vs_ma_pct": 2.539,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
