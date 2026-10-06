@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-06T20:31:04Z",
+  "computed_at": "2026-10-06T20:46:10Z",
   "asOf": "2026-10-06",
   "stale_threshold_hours": 18,
   "data": {
@@ -56,7 +56,7 @@
       },
       "breadth": {
         "score": 53.2,
-        "cyclical_defensive_ratio": 1.3946,
+        "cyclical_defensive_ratio": 1.3945,
         "cyc_def_percentile_1y": 82.5,
         "iwm_spy_percentile_1y": 9.1
       },
@@ -84,7 +84,7 @@
       },
       "rotation": {
         "score": 72.2,
-        "xlu_xly_ratio": 0.3683,
+        "xlu_xly_ratio": 0.3684,
         "xlu_xly_percentile_1y": 27.8
       },
       "currency": {
