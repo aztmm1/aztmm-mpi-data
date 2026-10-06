@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-06T18:55:02Z",
+  "computed_at": "2026-10-06T19:32:56Z",
   "asOf": "2026-10-06",
   "stale_threshold_hours": 18,
   "data": {
@@ -18,16 +18,16 @@
       "strength": "High"
     },
     "market": {
-      "spy_spot": 780.04,
-      "expected_move_1sigma": 7.63,
+      "spy_spot": 779.85,
+      "expected_move_1sigma": 7.62,
       "expected_move_pct": 0.0098
     },
     "volatility": {
       "vix": 15.52,
       "vix3m": 18.0,
-      "vrp": 5.01,
+      "vrp": 5.03,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 10.51
+      "realized_vol_20d_pct": 10.49
     },
     "compass": {
       "bias": "Neutral",
@@ -48,16 +48,16 @@
     "sub_indicators": {
       "trend": {
         "score": 77.9,
-        "spy_close": 780.04,
+        "spy_close": 779.85,
         "ma50": 765.24,
         "ma200": 721.49,
         "cross_ratio_pct": 6.063,
-        "ma50_slope_pct": 0.612
+        "ma50_slope_pct": 0.611
       },
       "breadth": {
-        "score": 52.4,
-        "cyclical_defensive_ratio": 1.3953,
-        "cyc_def_percentile_1y": 82.5,
+        "score": 53.6,
+        "cyclical_defensive_ratio": 1.397,
+        "cyc_def_percentile_1y": 84.5,
         "iwm_spy_percentile_1y": 7.1
       },
       "volatility": {
@@ -83,9 +83,9 @@
         "cnn_fg": 47.9
       },
       "rotation": {
-        "score": 75.0,
-        "xlu_xly_ratio": 0.3671,
-        "xlu_xly_percentile_1y": 25.0
+        "score": 75.8,
+        "xlu_xly_ratio": 0.3662,
+        "xlu_xly_percentile_1y": 24.2
       },
       "currency": {
         "score": 22.1,
