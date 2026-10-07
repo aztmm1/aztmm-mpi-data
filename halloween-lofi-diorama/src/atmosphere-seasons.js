@@ -10,7 +10,8 @@
  *   far    bands drawn at bg z 26 (distant haze along the hill bases)
  *   ground bands drawn at fx z 15 (low mist / haze over the yard)
  *   front  bands drawn at fx z 61 (wisps over the diorama lip)
- *   sky    optional bg z 8.5 draw (faint firework-smoke haze, relit by bursts)
+ *   sky    optional bg z 8.5 draw (faint firework-smoke haze, relit by bursts;
+ *          in the Summer Story it is born from each burst of the show)
  *   low / high / near   optional extra draws in the fx 15 / 32 / 61 passes
  *
  * Everything stays a pure function of t: bands scroll whole tiles per loop,
@@ -565,7 +566,8 @@
   }
 
   // ---------------------------------------------------------------------
-  // burst smoke (Summer Story nyc): every firework leaves a soft cloud of
+  // burst smoke (Summer Story nyc, and the match goal cheer): every firework
+  // shell of the fire module's show leaves a soft cloud of
   // smoke where it burst. It forms as the stars fade, swells, drifts
   // downwind and thins out over ~20 s, so the sky high over the skyline
   // carries a faint drifting haze only after the bursts. The show's shell
@@ -691,22 +693,48 @@
       return (tb < 0.1 ? tb / 0.1 : Math.exp(-(tb - 0.1) / 0.65)) * (sh.far ? 0.55 : 1);
     };
     const flashes = [];
-    const TSX = LY.titleSafe.x1 + 4;
-    const TSY = LY.titleSafe.y1 + 4;
+    // the title-safe sky stays calm: smoke fades out (dithered) as it nears it
+    const TSF = 12; // fade width
+    const TSX = LY.titleSafe.x1 + 2;
+    const TSY = LY.titleSafe.y1 + 2;
+    const MW = TSX + TSF;
+    const MH = TSY + TSF;
+    const tsMask = A().bakePixels(MW, MH, (u32) => {
+      for (let y = 0; y < MH; y++)
+        for (let x = 0; x < MW; x++) {
+          const k = Math.min(1 - sm(TSX, TSX + TSF, x + 0.5), 1 - sm(TSY, TSY + TSF, y + 0.5)) ;
+          if (k > 0 && HD.bayer(x, y) < k) u32[y * MW + x] = 0xffffffff;
+        }
+    });
+    let mscr = null;
     function put(ctx, img, sg, bx, by, alpha) {
       if (alpha <= 0.01) return;
-      let sx = 0;
       const dx = bx + sg.ox;
       const dy = by + sg.oy;
-      // the title-safe sky stays clear
-      if (dy < TSY && dx < TSX) sx = TSX - dx;
-      if (sx >= sg.w) return;
+      let src = img;
+      if (dx < MW && dy < MH) {
+        // overlaps the title fade: erase it on a scratch copy first
+        if (!mscr || mscr.width < sg.w || mscr.height < sg.h) mscr = HD.canvas(Math.max(sg.w, mscr ? mscr.width : 0), Math.max(sg.h, mscr ? mscr.height : 0), true);
+        const m = mscr.getContext('2d');
+        m.globalCompositeOperation = 'source-over';
+        m.clearRect(0, 0, sg.w, sg.h);
+        m.drawImage(img, 0, 0, sg.w, sg.h, 0, 0, sg.w, sg.h);
+        m.globalCompositeOperation = 'destination-out';
+        m.drawImage(tsMask, -dx, -dy);
+        m.globalCompositeOperation = 'source-over';
+        src = mscr;
+      }
       ctx.globalAlpha = Math.min(1, alpha);
-      ctx.drawImage(img, sx, 0, sg.w - sx, sg.h, dx + sx, dy, sg.w - sx, sg.h);
+      ctx.drawImage(src, 0, 0, sg.w, sg.h, dx, dy, sg.w, sg.h);
     }
     return function (g, t) {
       const fw = HD._fireworks;
-      const s = fw && fw.show && fw.show();
+      let s = null;
+      try {
+        s = fw && fw.show && fw.show();
+      } catch (e) {
+        return; // the fire module's own error is reported by its passes
+      }
       if (!s || !s.list || !s.list.length) return;
       const st = stateFor(s);
       const L = HD.LOOP;
@@ -982,7 +1010,8 @@
   // Summer Story chapters (SUMMER.md): the cottage travels, the air changes.
   // Thin chimney smoke, a warm low summer haze lying at the back of the yard,
   // a soft city haze along the skyline base, sea mist on the bay in sandiego
-  // and firework smoke drifting high over New York after the bursts.
+  // and firework smoke drifting high over New York after the bursts (and a
+  // wisp after the Match Night goal cheer's three little fireworks).
   // ---------------------------------------------------------------------
   const SU = LY.summer;
   // where the family and the chapter's set pieces stand: the yard haze and
@@ -1003,17 +1032,17 @@
   // per chapter: yard haze, skyline haze (cols / alpha)
   const STORY_AIR = {
     // Boston, a warm June night: green-gold meadow haze, a cool harbour haze
-    match: { yard: [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)], yardA: 0.28, city: [mix(P.night[5], P.amber[2], 0.22), mix(P.night[6], P.amber[3], 0.2)], cityA: 0.42 },
+    match: { yard: [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)], yardA: 0.32, city: [mix(P.night[5], P.amber[2], 0.22), mix(P.night[6], P.amber[3], 0.2)], cityA: 0.42 },
     // New York on the Fourth: the skyline glows a little warmer
-    nyc: { yard: [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)], yardA: 0.26, city: [mix(P.night[5], P.amber[3], 0.3), mix(P.night[6], P.amber[4], 0.26)], cityA: 0.44 },
+    nyc: { yard: [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)], yardA: 0.30, city: [mix(P.night[5], P.amber[3], 0.3), mix(P.night[6], P.amber[4], 0.26)], cityA: 0.44 },
     // Los Angeles: an amber smog glow over the basin, a warmer yard haze
-    la: { yard: [mix(P.leaf[4], P.amber[4], 0.5), mix(P.leaf[5], P.amber[5], 0.5)], yardA: 0.26, city: [mix(P.night[5], P.amber[3], 0.48), mix(P.night[6], P.amber[4], 0.42)], cityA: 0.5, cityGain: 1 },
+    la: { yard: [mix(P.leaf[4], P.amber[4], 0.5), mix(P.leaf[5], P.amber[5], 0.5)], yardA: 0.30, city: [mix(P.night[5], P.amber[3], 0.48), mix(P.night[6], P.amber[4], 0.42)], cityA: 0.5, cityGain: 1 },
     // San Diego at dusk: rose-lilac haze (the bay gets its own sea mist)
-    sandiego: { yard: [mix(P.leaf[5], P.blossom[5], 0.42), mix(P.leaf[6], P.blossom[6], 0.42)], yardA: 0.26 },
+    sandiego: { yard: [mix(P.leaf[5], P.blossom[5], 0.42), mix(P.leaf[6], P.blossom[6], 0.42)], yardA: 0.30 },
     // Washington in August: the most humid night, a fuller green-gold haze
-    dc: { yard: [mix(P.leaf[5], P.amber[4], 0.38), mix(P.leaf[6], P.amber[5], 0.38)], yardA: 0.34, yardGain: 0.95, city: [mix(P.night[6], P.leaf[5], 0.25), mix(P.night[7], P.amber[3], 0.25)], cityA: 0.46, cityFloor: 0.4 },
+    dc: { yard: [mix(P.leaf[5], P.amber[4], 0.38), mix(P.leaf[6], P.amber[5], 0.38)], yardA: 0.38, yardGain: 0.95, city: [mix(P.night[6], P.leaf[5], 0.25), mix(P.night[7], P.amber[3], 0.25)], cityA: 0.46, cityFloor: 0.4 },
     // home to Boston under a pink-violet late dusk: end-of-summer calm
-    home: { yard: [mix(P.leaf[5], P.blossom[5], 0.4), mix(P.leaf[6], P.blossom[6], 0.4)], yardA: 0.28, city: [mix(P.violet[5], P.blossom[4], 0.5), mix(P.violet[6], P.blossom[5], 0.5)], cityA: 0.44 },
+    home: { yard: [mix(P.leaf[5], P.blossom[5], 0.4), mix(P.leaf[6], P.blossom[6], 0.4)], yardA: 0.32, city: [mix(P.violet[5], P.blossom[4], 0.5), mix(P.violet[6], P.blossom[5], 0.5)], cityA: 0.44 },
   };
 
   /** sea mist on the bay: long thin strata lying on the calm water band */
@@ -1082,7 +1111,9 @@
       front: [frontBand({ cols: air.yard, alpha: 0.2, n: 4, seed: 1041 + id.length, holes })],
     };
     if (id === 'sandiego') r.far = seaMist();
-    if (id === 'nyc') r.sky = burstSmoke({ cols: [mix(P.night[5], P.stone[5], 0.45), mix(P.night[7], P.stone[6], 0.45)], alpha: 0.42, life: 20 });
+    // the goal cheer's three little bursts leave a wisp of smoke over the roof
+    if (id === 'match') r.sky = burstSmoke({ cols: [mix(P.night[5], P.stone[5], 0.45), mix(P.night[7], P.stone[6], 0.45)], alpha: 0.36, life: 16 });
+    if (id === 'nyc') r.sky = burstSmoke({ cols: [mix(P.night[5], P.stone[5], 0.45), mix(P.night[7], P.stone[6], 0.45)], alpha: 0.48, life: 20 });
     return r;
   }
   for (const id of Object.keys(STORY_AIR)) RECIPES[id] = storyRecipe;

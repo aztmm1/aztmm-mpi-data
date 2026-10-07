@@ -874,16 +874,22 @@
   // avoid:  [x0, y0, x1, y1] that no firefly's wander may enter
   // zones:  aggregated light pools (one L.add each)
   const FLAG = [26, 166, 66, 198]; // the US flag on its pole (props)
-  const TREE_G = [352, 458, 100, 192];
+  const MOON_BOX = [372, 24, 426, 80];
+  // tree fireflies stay inside the canopy (above the skyline, off the moon);
+  // every other one keeps its whole wander below the skyline's base, so a dim
+  // firefly never passes for a lit window in the city behind
+  const TREE_G = [334, 470, 92, 140];
+  const CANOPY_Y = [80, 152];
+  const YARD_TOP = 196;
   const STORY_FF = {
     match: {
       seed: 9701,
       groups: [
         [10, 8, 186, 206, 234, 'm'],
         [4, 244, 318, 214, 236, 'm'],
-        [3, 70, 160, 182, 200, 'h'],
+        [3, 70, 160, 200, 208, 'h'],
         [7, ...TREE_G, 't'],
-        [6, 318, 474, 198, 228, 'm'],
+        [6, 318, 474, 202, 228, 'm'],
         [6, 8, 470, 213, 236, 'r'],
       ],
       // you + partner on the porch steps; the niece by her ball
@@ -897,7 +903,7 @@
         [3, 8, 92, 208, 234, 'm'],
         [5, 244, 330, 212, 236, 'm'],
         [4, ...TREE_G, 't'],
-        [4, 318, 474, 198, 228, 'm'],
+        [4, 318, 474, 202, 228, 'm'],
         [4, 8, 470, 213, 236, 'r'],
       ],
       // the anniversary bench, the couple and the heart lantern
@@ -913,7 +919,7 @@
         [5, 240, 318, 212, 236, 'm'],
         [7, ...TREE_G, 't'],
         [5, 318, 474, 204, 230, 'm'],
-        [3, 6, 72, 176, 200, 'h'],
+        [3, 6, 72, 200, 208, 'h'],
         [6, 8, 470, 213, 236, 'r'],
       ],
       // the whole party round the table; the balloon bunches on the fence
@@ -926,9 +932,9 @@
       groups: [
         [11, 8, 180, 204, 234, 'm'],
         [5, 240, 318, 212, 236, 'm'],
-        [4, 70, 160, 180, 200, 'h'],
+        [4, 70, 160, 200, 208, 'h'],
         [7, ...TREE_G, 't'],
-        [6, 318, 474, 198, 228, 'm'],
+        [6, 318, 474, 202, 228, 'm'],
         [7, 8, 470, 213, 236, 'r'],
       ],
       // the niece's spot below the steps and her way to and from the door
@@ -958,8 +964,8 @@
         const h = (q) => hash(i, q, cfg.seed);
         const rest = kind === 'r';
         const ax = rest ? 0 : kind === 't' ? 8 + h(3) * 8 : 8 + h(3) * 10;
-        const ay = rest ? 0 : kind === 't' ? 6 + h(4) * 8 : kind === 'h' ? 4 + h(4) * 4 : 3 + h(4) * 3;
-        const jr = rest ? 0 : 2 + h(10) * 2;
+        const ay = rest ? 0 : kind === 't' ? 5 + h(4) * 5 : kind === 'h' ? 2 + h(4) * 2 : 3 + h(4) * 3;
+        const jr = rest ? 0 : kind === 'h' ? 1.5 : 2 + h(10) * 2;
         const wob = rest ? 0 : 1;
         let hx = 0;
         let hy = 0;
@@ -970,7 +976,8 @@
           const ex = ax + 2 * wob + 1;
           const eu = ay + 1.2 * wob + jr + 1;
           const ed2 = ay + 1.2 * wob + 1;
-          ok = !cfg.avoid.some((a) => hx + ex >= a[0] && hx - ex <= a[2] && hy + ed2 >= a[1] && hy - eu <= a[3]);
+          const box = (a) => hx + ex >= a[0] && hx - ex <= a[2] && hy + ed2 >= a[1] && hy - eu <= a[3];
+          ok = !cfg.avoid.some(box) && !box(MOON_BOX) && (kind === 't' ? hy - eu >= CANOPY_Y[0] && hy + ed2 <= CANOPY_Y[1] : hy - eu >= YARD_TOP);
         }
         if (!ok) continue;
         let zone = 0;
@@ -1010,6 +1017,8 @@
     const n = flies.length;
     return { cfg, flies, X: new Float64Array(n), Y: new Float64Array(n), E: new Float64Array(n), small: new Uint8Array(n), zones: cfg.zones.length + 1 };
   });
+
+  SEA.storyFlies = storyFlies; // for inspection from the tools
 
   // the goal ripple (match): the yard goes quiet as the goal goes in, then
   // flashes spread out from the porch at ~80 px/s (a second, softer ripple

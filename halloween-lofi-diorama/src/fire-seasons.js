@@ -201,7 +201,195 @@
     return h;
   }
 
+  // ------------------------------------------------------------------
+  // Summer Story shows (SUMMER.md). Editions listed here get their own
+  // choreography; every other edition keeps the original show untouched.
+  //
+  //  nyc    July 4th over New York: red / white / blue, calm. Bursts live in
+  //         two sky pockets that are actually open in this chapter: low over
+  //         the skyline left of the house (under the title-safe sky) and above
+  //         the roof, clear of the turret spire and the lush summer tree. Twice
+  //         a loop, right after the anniversary heart has floated up, a
+  //         red-white-blue triple sweeps across the sky, then a lull.
+  //  match  no show, only the goal cheer: 2-3 small green / white / gold
+  //         bursts low over the house during HD.summer.goal(t).
+  // ------------------------------------------------------------------
+  const STORY = {
+    nyc: {
+      mix: { peony: 5, chrys: 1.3, ring: 1.8, willow: 1.1, crackle: 0.45 },
+      rate: 0.6, // launches per second at a flurry's peak (calm, never a barrage)
+      cap: 3,
+      R: [13, 11], // star radius: base + depth * var (before the show scale)
+      zones: [
+        // [x0, x1] holds the whole burst; [y0, y1] the burst centre band
+        { x0: 10, x1: 160, y0: 76, y1: 124, w: 0.7, rk: 0.8 }, // just over the skyline (far ones dip behind it), left of the house
+        // above the roof between the peak and the turret, or over the spire:
+        // right of the chimney-smoke column, short of the tree crown
+        { x0: 236, x1: 318, y0: 10, y1: 104, w: 0.3, rk: 0.8 },
+      ],
+      // the triple after each anniversary heart: zone, x, height 0..1, colour, inner colour
+      triple: [
+        [0, 34, 0.55, 'red', 'white'],
+        [0, 86, 0.12, 'white', null],
+        [0, 138, 0.45, 'blue', 'white'],
+      ],
+      tripleFallback: [66.5, 186.5],
+      quiet: [6, 10], // seconds kept clear before / after the triple
+      maxIdle: 14,
+      glow: { white: [0.74, 0.8, 1] }, // white shells glow silver here (the tricolour reads)
+      clip: { x0: 0, y0: 40, x1: HD.W - 1, y1: HD.H - 1 }, // the yard on the left catches the flashes too
+    },
+  };
+  const GOAL = {
+    match: {
+      // [launch offset in the goal window (s), type, x, y, star radius, colour, inner colour]
+      shells: [
+        // left of the roof over the skyline, high over the peak, right of the
+        // turret (clear of the chimney smoke and the tree crown)
+        [0.3, 'peony', 147, 97, 11, 'gold', null],
+        [1.05, 'peony', 244, 42, 14, 'green', 'white'],
+        [1.85, 'peony', 310, 80, 10, 'white', null],
+      ],
+      fallback: [[150, 158]],
+      lightK: 2.2, // the yard and roof catch a soft coloured flash
+    },
+  };
+
+  /** [start, end) windows (loop seconds) where fn(t) >= 0, or null */
+  function windowsOf(fn) {
+    if (typeof fn !== 'function') return null;
+    const L = HD.LOOP;
+    const dt = 0.05;
+    const out = [];
+    let a = -1;
+    for (let k = 0, n = Math.round(L / dt); k <= n; k++) {
+      const t = Math.min(L, k * dt);
+      const on = k < n && fn(t) >= 0;
+      if (on && a < 0) a = t;
+      else if (!on && a >= 0) {
+        out.push([a, t]);
+        a = -1;
+      }
+    }
+    return out.length ? out : null;
+  }
+
+  /**
+   * Zone placement (Summer Story shows): the shell picks one of the show's sky
+   * pockets (or opt.zone), takes that pocket's size, and is then placed like
+   * placeShell: lifted clear of the house, out of the title-safe sky, spread
+   * away from the bursts that share the sky with it. Falls back to the other
+   * pocket, then to a smaller shell.
+   */
+  function placeShellZones(sh, s, rnd, others, opt) {
+    const zs = s.zones;
+    let zi = opt ? opt.zone : -1;
+    if (zi < 0) {
+      const u = rnd();
+      let acc = 0;
+      zi = zs.length - 1;
+      for (let i = 0; i < zs.length; i++) if (u < (acc += zs[i].w)) {
+        zi = i;
+        break;
+      }
+    }
+    const R0 = sh.R;
+    for (let zt = 0; zt < zs.length; zt++) {
+      const z = zs[(zi + zt) % zs.length];
+      sh.R = R0 * z.rk;
+      for (let tries = 0; tries < 4; tries++) {
+        const Rr = sh.R;
+        const fp = footprint(sh);
+        const xMin = z.x0 + fp[0];
+        const xMax = z.x1 - fp[0];
+        const yMin = z.y0 + Rr * 0.9;
+        const yMax = Math.max(yMin, z.y1 - Rr * 0.35);
+        let best = null;
+        let bestScore = Infinity;
+        if (xMax > xMin)
+          for (let c = 0; c < 24; c++) {
+            const bx = opt ? Math.min(xMax, Math.max(xMin, opt.tx + (rnd() - 0.5) * 10)) : xMin + rnd() * (xMax - xMin);
+            const yk = opt ? clamp01(opt.ty + (rnd() - 0.5) * 0.1) : clamp01((1 - sh.depth) * 0.42 + rnd() * 0.5);
+            let by = yMin + yk * (yMax - yMin);
+            const lim = byLimit(bx, fp);
+            if (lim < yMin) continue; // no room above the house here
+            let score = rnd() * 0.4;
+            if (by > lim) {
+              score += (by - lim) * 0.03;
+              by = lim;
+            }
+            if (bx - fp[0] < SAFE.x1 + 6 && by - Rr < SAFE.y1 + 6) continue; // title-safe sky stays calm
+            for (const o of others) {
+              const need = (Rr + o.R) * 0.95;
+              const d = Math.hypot(bx - o.bx, by - o.by);
+              if (d < need) score += ((need - d) / need) * 4;
+              score += 0.8 * Math.max(0, 1 - d / 90);
+            }
+            if (score < bestScore) {
+              bestScore = score;
+              best = [bx, by];
+            }
+          }
+        if (best) {
+          sh.bx = best[0];
+          sh.by = best[1];
+          return true;
+        }
+        sh.R *= 0.86;
+      }
+    }
+    return false;
+  }
+
+  /** the match goal cheer: a fixed little choreography inside HD.summer.goal */
+  function buildGoalShow(ed, cfg) {
+    const s = {
+      f: 0,
+      list: [],
+      size: 1,
+      colors: ['green', 'white', 'gold'],
+      types: [],
+      moon: false,
+      denseTree: true,
+      salvo: false,
+      glow: GLOW,
+      clip: FW_CLIP,
+      lightK: cfg.lightK,
+    };
+    const wins = windowsOf(HD.summer && HD.summer.goal) || cfg.fallback;
+    const seed = edSeed(ed.id);
+    let idx = 0;
+    for (const [a] of wins)
+      for (const [dt, type, x, y, Rr, col, col2] of cfg.shells) {
+        const k = idx++;
+        s.list.push({
+          type,
+          t0: a + dt,
+          rise: 0.8,
+          life: TYPE_LIFE[type] * 0.78,
+          seed: (Math.imul(seed, 131) + k * 977 + 17) | 0,
+          depth: 0.5,
+          far: false,
+          nk: 0.7, // fewer stars: small bursts stay crisp, not a solid blob
+          R: Rr,
+          col,
+          col2,
+          tilt: 0.5,
+          rot: 0,
+          sway: (HD.hash(seed, k, 5) - 0.5) * 6,
+          bx: x,
+          by: y,
+          tau: 0,
+        });
+      }
+    s.list.sort((p, q) => p.t0 - q.t0);
+    return s;
+  }
+
   function buildShow(ed) {
+    if (GOAL[ed.id] && !(ed.fireworks > 0)) return buildGoalShow(ed, GOAL[ed.id]);
+    const cfg = STORY[ed.id] || null;
+    if (cfg) return buildStoryShow(ed, cfg);
     const f = clamp01(ed.fireworks || 0);
     const mixw = MIXES[ed.id] || MIXES.other;
     const types = [];
@@ -393,6 +581,191 @@
     list.sort((a, b) => a.t0 - b.t0);
     return s;
   }
+
+  /**
+   * A Summer Story show (STORY config): the same flurries-and-lulls engine as
+   * buildShow, with its own mix, calmer launch rate, smaller shells placed in
+   * the chapter's open sky pockets, and a tricolour triple after each moment
+   * of HD.summer.heart (the anniversary heart), kept clear before and after.
+   */
+  function buildStoryShow(ed, cfg) {
+    const f = clamp01(ed.fireworks || 0);
+    const types = [];
+    let sum = 0;
+    for (const k of ['peony', 'chrys', 'ring', 'willow', 'crackle']) {
+      sum += cfg.mix[k];
+      types.push([k, sum]);
+    }
+    for (const t of types) t[1] /= sum;
+    const s = {
+      f,
+      list: [],
+      size: 0.84 + 0.3 * f,
+      colors: ed.fireworkColors && ed.fireworkColors.length ? ed.fireworkColors : ['gold', 'white'],
+      types,
+      moon: ed.moon && ed.moon !== 'none',
+      denseTree: true,
+      salvo: false,
+      zones: cfg.zones,
+      glow: Object.assign({}, GLOW, cfg.glow || {}),
+      clip: cfg.clip || FW_CLIP,
+      lightK: cfg.lightK || 1,
+    };
+    if (!f) return s;
+    const L = HD.LOOP;
+    const seed = edSeed(ed.id);
+    const rnd = HD.rng(6060 ^ seed);
+    const list = s.list;
+    const nc = s.colors.length;
+    const cap = cfg.cap;
+    const brk = (sh) => sh.t0 + sh.rise;
+    const total = (sh) => sh.rise + sh.life;
+    const wrap = (d) => d - Math.floor(d / L) * L;
+    const liveAt = (sh, p) => wrap(p - sh.t0) < total(sh);
+    const countAt = (p) => {
+      let n = 0;
+      for (const o of list) if (liveAt(o, p)) n++;
+      return n;
+    };
+    const near = (sh) => {
+      const out = [];
+      const b = brk(sh);
+      for (const o of list) {
+        const d = wrap(brk(o) - b);
+        if (Math.min(d, L - d) < 7) out.push(o);
+      }
+      return out;
+    };
+    let idx = 0;
+    const shell = (t0, type) => {
+      const depth = rnd();
+      const rise = 1.15 + rnd() * 0.6;
+      const life = TYPE_LIFE[type] * (0.92 + 0.16 * rnd());
+      const col = type === 'willow' ? 'willow' : s.colors[Math.floor(rnd() * nc) % nc];
+      let col2 = s.colors[Math.floor(rnd() * nc) % nc];
+      if (col2 === col || rnd() < 0.4 || type === 'ring' || type === 'willow') col2 = null;
+      if (col === 'white') col2 = null; // a white ball with a coloured core reads as an eye
+      return {
+        type,
+        t0,
+        rise,
+        life,
+        seed: (Math.imul(seed, 131) + idx++ * 977 + 17) | 0,
+        depth,
+        far: depth < 0.2,
+        R: (type === 'willow' ? cfg.R[0] + 8 + 5 * depth : cfg.R[0] + cfg.R[1] * depth) * s.size * (type === 'crackle' ? 0.8 : 1),
+        col,
+        col2,
+        tilt: 0.35 + 0.45 * rnd(),
+        rot: (rnd() - 0.5) * 1.2,
+        sway: (rnd() - 0.5) * 14,
+        bx: 0,
+        by: 0,
+        tau: 0,
+      };
+    };
+
+    // the tricolour triple, launched as each anniversary heart finishes rising
+    const hw = windowsOf(HD.summer && HD.summer.heart);
+    const tripleAt = hw ? hw.map((w) => w[1] + 0.4) : cfg.tripleFallback;
+    for (const ts of tripleAt) {
+      const mine = [];
+      cfg.triple.forEach(([zone, tx, ty, col, col2], k) => {
+        const sh = shell(ts + k * 0.6, 'peony');
+        sh.rise = 1.3;
+        sh.life = TYPE_LIFE.peony * 1.05;
+        sh.depth = 0.6;
+        sh.far = false;
+        sh.R = (cfg.R[0] + cfg.R[1] * 0.6) * s.size;
+        sh.col = col;
+        sh.col2 = col2;
+        sh.sway = (k - 1) * 6;
+        if (placeShellZones(sh, s, rnd, mine, { zone, tx, ty })) {
+          mine.push(sh);
+          list.push(sh);
+        }
+      });
+    }
+    const [qPre, qPost] = cfg.quiet;
+    const quiet = (t) => {
+      for (const ts of tripleAt) {
+        const d = wrap(t - ts);
+        if (d < qPost || L - d < qPre) return true;
+      }
+      return false;
+    };
+    // density envelope: flurries that swell and fade, separated by lulls
+    const segs = [];
+    let acc = 0;
+    while (acc < L) {
+      const fl = 16 + 20 * rnd();
+      const lu = 8 + 6 * rnd();
+      segs.push(fl, lu);
+      acc += fl + lu;
+    }
+    const ends = [];
+    let cum = 0;
+    for (const d of segs) ends.push((cum += (d * L) / acc));
+    const segOff = rnd() * L;
+    const env = (t) => {
+      const u = wrap(t - segOff);
+      let a0 = 0;
+      for (let i = 0; i < ends.length; i++) {
+        if (u < ends[i]) {
+          if (i & 1) return 0.02;
+          const x = (u - a0) / (ends[i] - a0);
+          return 0.4 + 0.6 * Math.sin(Math.PI * x);
+        }
+        a0 = ends[i];
+      }
+      return 0.02;
+    };
+    let t = rnd() * 2;
+    for (let guard = 0; guard < 5000; guard++) {
+      t += -Math.log(1 - rnd() * 0.999) / cfg.rate;
+      if (t >= L) break;
+      if (rnd() > env(t) || quiet(t)) continue;
+      const sh = shell(t, pickType(types, rnd()));
+      let ok = countAt(t) < cap && !quiet(t + total(sh) - 0.5);
+      for (let i = 0; ok && i < list.length; i++) {
+        const o = list[i];
+        const db = wrap(brk(o) - brk(sh));
+        if (Math.min(db, L - db) < 0.5) ok = false;
+        else if (wrap(o.t0 - t) < total(sh) && countAt(o.t0) >= cap) ok = false;
+      }
+      if (!ok) continue;
+      if (placeShellZones(sh, s, rnd, near(sh), null)) list.push(sh);
+    }
+    // no lull longer than maxIdle (outside the quiet windows)
+    for (let guard = 0; guard < 24; guard++) {
+      const iv = [];
+      for (const o of list) {
+        const e = o.t0 + total(o);
+        if (e <= L) iv.push([o.t0, e]);
+        else iv.push([o.t0, L], [0, e - L]);
+      }
+      iv.sort((p, q) => p[0] - q[0]);
+      let gs = 0;
+      let gl = 0;
+      let end = iv.length ? iv[iv.length - 1][1] - L : 0;
+      for (const [a0, a1] of iv) {
+        if (a0 - end > gl && !quiet(end + (a0 - end) * 0.5)) {
+          gl = a0 - end;
+          gs = end;
+        }
+        if (a1 > end) end = a1;
+      }
+      if (iv.length && iv[0][0] + L - end > gl && !quiet(end + (iv[0][0] + L - end) * 0.5)) {
+        gl = iv[0][0] + L - end;
+        gs = end;
+      }
+      if (gl <= cfg.maxIdle) break;
+      const sh = shell(wrap(gs + gl * 0.5 - 1.5), pickType(types, rnd()));
+      if (placeShellZones(sh, s, rnd, near(sh), null)) list.push(sh);
+    }
+    list.sort((a, b) => a.t0 - b.t0);
+    return s;
+  }
   // built once per edition (~10 ms), prewarmed in init() so a live edition
   // switch never hitches; always looked up from HD.edition at draw time
   const SHOWS = new Map();
@@ -552,7 +925,7 @@
 
     // shells: [count, radius scale, ramp, life scale]
     const shells = [];
-    const nk = sh.far ? 0.7 : 1;
+    const nk = (sh.far ? 0.7 : 1) * (sh.nk || 1);
     if (type === 'ring') shells.push([Math.round((24 + Rr * 0.6) * nk), 1, ramp, 1]);
     else if (type === 'willow') shells.push([Math.round((20 + Rr * 0.5) * nk), 1, ramp, 1]);
     else if (type === 'crackle') shells.push([Math.round((18 + Rr * 0.6) * nk), 1, ramp, 0.5]);
@@ -726,11 +1099,12 @@
     const s = show();
     if (!s.list.length) return;
     const list = liveShells(t, s);
+    const glow = s.glow || GLOW;
     // glows first (additive, behind every burst)
     for (const sh of list) {
       const fl = flashOf(sh);
       if (fl <= 0.02) continue;
-      const col = GLOW[sh.col] || GLOW.gold;
+      const col = glow[sh.col] || glow.gold;
       const rad = Math.max(10, Math.round((sh.R * 1.1) / 4) * 4);
       HD.glow(g, sh.bx, sh.by, rad, col, 0.2 * fl);
     }
@@ -753,7 +1127,7 @@
     let gc = 0;
     let b = 0;
     for (const sh of list) {
-      const fl = lightOf(sh) * (sh.R / 24);
+      const fl = lightOf(sh) * (sh.R / 24) * (s.lightK || 1);
       if (fl <= 0.01) continue;
       const col = HD.LIGHT.firework[sh.col] || HD.LIGHT.firework.gold;
       w += fl;
@@ -773,7 +1147,7 @@
       i: Math.min(0.18, 0.12 * w),
       bands: 4,
       pow: 1.25,
-      clip: FW_CLIP,
+      clip: s.clip || FW_CLIP,
     });
   }
 
@@ -932,7 +1306,7 @@
   // ------------------------------------------------------------------
   HD.module('fire', {
     init() {
-      for (const ed of HD.EDITIONS) if (ed.fireworks > 0) showFor(ed);
+      for (const ed of HD.EDITIONS) if (ed.fireworks > 0 || GOAL[ed.id]) showFor(ed);
     },
     lights(t, L) {
       fireworkLights(t, L);
