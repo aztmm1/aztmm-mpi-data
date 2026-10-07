@@ -91,9 +91,10 @@
       sky: [mix(N[3], V[2], 0.5), mix(N[4], V[3], 0.45), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5), mix(N[6], V[4], 0.5), mix(N[6], V[5], 0.5), mix(P.snow[4], V[5], 0.5), mix(P.snow[4], V[5], 0.4)],
       land: 'snow',
       clouds: {
-        far: [mix(N[5], V[4], 0.5), mix(N[6], V[4], 0.45), mix(P.snow[3], V[5], 0.45), mix(P.snow[4], V[5], 0.4)],
-        mid: [mix(N[4], V[3], 0.55), mix(N[5], V[4], 0.5), mix(N[6], V[4], 0.45), mix(P.snow[4], V[5], 0.4)],
-        near: [mix(N[3], V[2], 0.55), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.45), mix(N[6], V[4], 0.45)],
+        deck: true,
+        far: [mix(N[5], V[4], 0.5), mix(N[6], V[4], 0.45), mix(N[6], V[5], 0.4), mix(P.snow[3], V[5], 0.4)],
+        mid: [mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.45), mix(N[6], V[4], 0.4), mix(P.snow[3], V[5], 0.42)],
+        near: [mix(N[2], V[2], 0.55), mix(N[3], V[3], 0.5), mix(N[4], V[3], 0.45), mix(N[5], V[4], 0.42)],
       },
     },
     newyear: {
@@ -420,6 +421,49 @@
     ctx.drawImage(tmp, 0, 0, MR.w, MR.h, MR.x, MR.y, MR.w, MR.h);
   }
 
+  // ------------------------------------------------------------------
+  // Snow-cloud deck (winter): a heavy, lumpy ceiling of overlapping cloud
+  // masses in two parallax layers, few gaps. Rows are painted from the
+  // horizon upward so the nearer (higher) masses hang their dark bellies over
+  // the lit tops of the farther ones. Geometry is edition independent.
+  // ------------------------------------------------------------------
+  function genDeck(seed, w, h, rows) {
+    const rng = HD.rng(seed);
+    const tn = new K.Tones(w, h);
+    for (const r of rows) {
+      // r: [yBase, ryMin, ryMax, stretch, under]
+      let x = rng() * 30;
+      const x0 = x;
+      while (x < x0 + w) {
+        const ry = r[1] + rng() * (r[2] - r[1]);
+        const rx = ry * (r[3] + rng() * 0.8);
+        const mass = [];
+        const n = 2 + Math.floor(rng() * 3);
+        for (let j = 0; j < n; j++) {
+          const u = n === 1 ? 0.5 : j / (n - 1);
+          const hump = Math.sin(Math.PI * (0.15 + 0.7 * u));
+          const pr = ry * (0.55 + 0.45 * hump) * (0.85 + rng() * 0.3);
+          mass.push([x + u * rx * 1.6, r[0] - pr * 0.6 - rng() * 1.5, pr * (1.25 + rng() * 0.4), pr, r[0] + 1, j > 0 && rng() < 0.6]);
+        }
+        K.cloud(tn, mass, true, r[4]);
+        x += rx * 1.6 + ry * (0.6 + rng() * 0.9);
+      }
+    }
+    K.tidy(tn, 2);
+    return tn;
+  }
+  let deckGeo = null;
+  function deckLayers() {
+    if (deckGeo) return deckGeo;
+    deckGeo = {
+      // low deck towards the horizon: flatter, smaller masses (1 tile / loop)
+      mid: { y: 40, w: 480, h: 96, k: 1, tn: genDeck(9151, 480, 96, [[92, 3, 5, 2.6, 2], [80, 4, 6, 2.4, 2], [66, 5, 8, 2.2, 3], [50, 6, 9, 2, 3], [34, 6, 10, 2, 3]]) },
+      // overhead deck: big heavy masses (2 tiles / loop)
+      near: { y: 0, w: 480, h: 58, k: 2, tn: genDeck(7717, 480, 58, [[50, 7, 10, 1.8, 3], [36, 8, 12, 1.8, 3], [20, 9, 13, 1.7, 4], [6, 9, 12, 1.7, 3]]) },
+    };
+    return deckGeo;
+  }
+
   function bakeClouds(ed) {
     const lk = lookOf(ed);
     const cl = lk.clouds;
@@ -428,9 +472,11 @@
     const ids = ['far', 'mid', 'near'];
     let masks = null;
     if (cl.lit && ed.moon !== 'none') masks = cl.lit.r.map((r) => K.radialMask(MR.w, MR.h, MOON.x - MR.x, MOON.y - MR.y, r[0], r[1]));
-    K.LAYERS.forEach((Ly, i) => {
+    const deck = cl.deck ? deckLayers() : null;
+    K.LAYERS.forEach((Ly0, i) => {
       const pal = cl[ids[i]];
       if (!pal) return;
+      const Ly = deck && deck[ids[i]] ? deck[ids[i]] : Ly0;
       const L = { Ly, cv: K.tonesToCanvas(Ly.tn, pal), lit: null, masks };
       if (masks)
         L.lit = cl.lit.k.map((ks, j) => {

@@ -99,71 +99,6 @@
     return s >= 0 && s <= len && Math.abs(v) <= w / 2;
   }
 
-  // front logs drawn by the rig itself (bonfire): same shading recipe as
-  // props.js logShape — bark plates, charred inner end, end grain outside
-  function bakeLogs(logs) {
-    let x0 = Infinity;
-    let y0 = Infinity;
-    let x1 = -Infinity;
-    let y1 = -Infinity;
-    for (const l of logs) {
-      const r = l[4] / 2 + 2;
-      x0 = Math.min(x0, l[0] - r, l[2] - r);
-      y0 = Math.min(y0, l[1] - r, l[3] - r);
-      x1 = Math.max(x1, l[0] + r, l[2] + r);
-      y1 = Math.max(y1, l[1] + r, l[3] + r);
-    }
-    x0 = Math.floor(x0);
-    y0 = Math.floor(y0);
-    x1 = Math.ceil(x1);
-    y1 = Math.ceil(y1);
-    const cv = HD.bake(x1 - x0 + 1, y1 - y0 + 1, (g) => {
-      logs.forEach((l, li) => {
-        const [lx0, ly0, lx1, ly1, w] = l;
-        const len = Math.hypot(lx1 - lx0, ly1 - ly0);
-        const tx = (lx1 - lx0) / len;
-        const ty = (ly1 - ly0) / len;
-        let nx = -ty;
-        let ny = tx;
-        if (ny > 0) {
-          nx = -nx;
-          ny = -ny;
-        }
-        const r = w / 2;
-        for (let y = y0; y <= y1; y++)
-          for (let x = x0; x <= x1; x++) {
-            const px = x - lx0;
-            const py = y - ly0;
-            const s = px * tx + py * ty;
-            const v = px * nx + py * ny;
-            if (s < 0 || s > len || Math.abs(v) > r) continue;
-            const vv = v / r;
-            let c = vv > 0.5 ? P.wood[5] : vv > -0.1 ? P.wood[4] : vv > -0.6 ? P.wood[3] : P.wood[2];
-            const gr = Math.sin(s * 0.55 + Math.round(vv * 2) * 2.3 + li * 1.7) > 0.55 && Math.abs(vv) < 0.75;
-            if (gr) c = vv > 0 ? P.wood[3] : P.wood[2];
-            if (vv < -0.75) c = P.wood[1];
-            const ch = s / len; // inner end charred
-            if (ch > 0.62) c = ch > 0.8 ? P.wood[0] : vv > 0.3 ? P.wood[2] : P.wood[1];
-            g.px(x - x0, y - y0, c);
-          }
-        // end grain on the outer end
-        const er = r + 0.4;
-        const ew = er * 0.72;
-        for (let y = Math.floor(ly0 - er - 1); y <= Math.ceil(ly0 + er + 1); y++)
-          for (let x = Math.floor(lx0 - ew - 1); x <= Math.ceil(lx0 + ew + 1); x++) {
-            const dx = (x - lx0) / ew;
-            const dy = (y - ly0) / er;
-            const d = Math.hypot(dx, dy);
-            if (d > 1) continue;
-            let c = d > 0.8 ? P.wood[2] : d > 0.58 ? P.wood[7] : d > 0.36 ? P.wood[4] : d > 0.15 ? P.wood[6] : P.wood[3];
-            if (d > 0.8 && dy < -0.2 && dx > -0.3) c = P.wood[4];
-            g.px(x - x0, y - y0, c);
-          }
-      });
-    });
-    return { cv, x: x0, y: y0 };
-  }
-
   // colour by "temperature" 0..1 (1 = white hot)
   function sparkCol(k) {
     return k > 0.86 ? P.fire[10] : k > 0.72 ? P.fire[9] : k > 0.58 ? P.fire[8] : k > 0.44 ? P.fire[7] : k > 0.3 ? P.fire[6] : k > 0.18 ? P.fire[5] : k > 0.08 ? P.fire[4] : P.fire[3];
@@ -218,10 +153,15 @@
     let coalCtx = null;
     let coalImg = null;
     let COALS = null; // [{x, y, base, cl}] coal pixels
-    let OWNLOGS = null; // baked front logs (bonfire only)
 
     function logAt(x, y) {
       for (const l of LOGS) if (inLog(x, y, l[0], l[1], l[2], l[3], l[4])) return true;
+      return false;
+    }
+    // does a log hide the flame at (x, y)? a log may carry its own occlusion
+    // line (l[5]): above it the flames lick in front of that log
+    function logOcc(x, y) {
+      for (const l of LOGS) if (y >= (l[5] === undefined ? LOG_OCC_Y : l[5]) && inLog(x, y, l[0], l[1], l[2], l[3], l[4])) return true;
       return false;
     }
 
@@ -385,7 +325,6 @@
       }
       coalCtx.putImageData(coalImg, 0, 0);
       g.em.sprite(coalCv, KX0, KY0);
-      if (OWNLOGS) g.sprite(OWNLOGS.cv, OWNLOGS.x, OWNLOGS.y);
     }
 
     // ---- sparks & embers --------------------------------------------------------------
@@ -454,7 +393,7 @@
       NOISE = bakeNoise(HD.rng(4711), NW, NH);
       LOGMASK = new Uint8Array(GW * GH);
       for (let gy = 0; gy < GH; gy++)
-        for (let gx = 0; gx < GW; gx++) if (GY0 + gy >= LOG_OCC_Y && logAt(GX0 + gx, GY0 + gy)) LOGMASK[gy * GW + gx] = 1;
+        for (let gx = 0; gx < GW; gx++) if (logOcc(GX0 + gx, GY0 + gy)) LOGMASK[gy * GW + gx] = 1;
       flameCv = HD.canvas(GW, GH, true);
       flameCtx = flameCv.getContext('2d');
       flameImg = flameCtx.createImageData(GW, GH);
@@ -491,7 +430,6 @@
       coalCv = HD.canvas(KW, KH, true);
       coalCtx = coalCv.getContext('2d');
       coalImg = coalCtx.createImageData(KW, KH);
-      if (o.ownLogs) OWNLOGS = bakeLogs(LOGS);
     }
 
     function lights(t, Lt) {
@@ -566,9 +504,22 @@
     light: { r: 122, i0: 0.8, i1: 0.42, haloR: 34, haloA: 0.15, poolR: 40, poolRy: 30, p0: 0.16, p1: 0.16 },
   });
 
-  // bonfire: the same fire ~1.6x; the crossing front logs scale about the pit centre
+  // bonfire: the same fire ~1.6x. The log teepee is drawn by props-seasons.js
+  // (feet in a ring, leaning in to an apex ~34 px up); its four front-facing
+  // logs are mirrored here so they hide the lower flames and read as charred
+  // silhouettes against the fire. Each carries its own occlusion line: the
+  // outer logs hide flame up to y 197, the inner pair only low down, so the
+  // fire licks out between and over them. The back-centre log stays behind.
   const BS = 1.6;
-  const BON_LOGS = CAMP_LOGS.map((l) => [C.x + (l[0] - C.x) * BS, LCY + (l[1] - LCY) * BS, C.x + (l[2] - C.x) * BS, LCY + (l[3] - LCY) * BS, l[4] * BS]);
+  const BX = C.x;
+  const BY = C.base - 1;
+  const BAPEX = [BX + 1, BY - 34];
+  const BON_LOGS = [
+    [BX - 17, BY - 1, BAPEX[0] - 2, BAPEX[1], 4.6, BY - 28],
+    [BX - 9, BY - 3, BAPEX[0] + 2, BAPEX[1] + 1, 4.2, BY - 18],
+    [BX + 5, BY - 3, BAPEX[0] - 2, BAPEX[1] + 2, 4.4, BY - 18],
+    [BX + 16, BY - 1, BAPEX[0] + 2, BAPEX[1], 4.8, BY - 28],
+  ];
   const bon = makeRig({
     S: BS,
     FH: C.flameH * BS,
@@ -585,7 +536,6 @@
     NH: 72,
     logs: BON_LOGS,
     logOccY: LCY - 16,
-    ownLogs: true,
     nBlob: 30,
     nSpark: 96,
     blobLife: 1.18,

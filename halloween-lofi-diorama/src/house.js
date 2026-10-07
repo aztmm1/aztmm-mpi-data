@@ -663,9 +663,19 @@
     return dx * dx + dy * dy <= r * r;
   }
   const DOOR_LEAK = []; // [x, y, kind] pixels lit from inside (drawn per frame)
+  const PEEP = ['.ooo.', 'oo.oo', 'oo.oo'];
+  /** light leaks: peep window, threshold gap, plank crack, keyhole (geometry only) */
+  function collectDoorLeak() {
+    if (DOOR_LEAK.length) return;
+    for (let y = 0; y < PEEP.length; y++)
+      for (let x = 0; x < 5; x++) if (PEEP[y][x] === 'o') DOOR_LEAK.push([DX0 + 5 + x, DY0 + 3 + y, 'peep']);
+    for (let x = DX0 + 1; x <= DX1 - 1; x++) DOOR_LEAK.push([x, DY1, 'gap']);
+    for (let y = 200; y <= 203; y++) DOOR_LEAK.push([DX0 + 11, y, 'crack']);
+    DOOR_LEAK.push([DX1 - 3, 194, 'key'], [DX1 - 3, 195, 'key']);
+  }
 
   function paintDoor(R, ed) {
-    const collect = DOOR_LEAK.length === 0;
+    collectDoorLeak();
     // stone surround (voussoirs on the arch, blocks on the jambs)
     for (let y = DY0 - 4; y <= DY1; y++)
       for (let x = DX0 - 4; x <= DX1 + 4; x++) {
@@ -718,22 +728,10 @@
     R.rows(['.r.', 'r.r', 'rrr'], DX1 - 4, 190, { r: S[3] }, TG.iron);
     R.set(DX1 - 3, 191, W[1], TG.door);
     // small arched peep window with a centre bar
-    const pw = ['.ooo.', 'oo.oo', 'oo.oo'];
     R.rows(['..www..', '.w...w.', 'w.....w', 'w.....w', 'wwwwwww'], DX0 + 4, DY0 + 2, { w: W[1] }, TG.door);
-    for (let y = 0; y < pw.length; y++)
-      for (let x = 0; x < 5; x++) {
-        const ch = pw[y][x];
-        if (ch === 'o') {
-          if (collect) DOOR_LEAK.push([DX0 + 5 + x, DY0 + 3 + y, 'peep']);
-        }
-        else if (x === 2 && y > 0) R.set(DX0 + 5 + x, DY0 + 3 + y, S[1], TG.iron);
-      }
-    // light leaks: threshold gap, plank cracks, keyhole
-    if (collect) {
-      for (let x = DX0 + 1; x <= DX1 - 1; x++) DOOR_LEAK.push([x, DY1, 'gap']);
-      for (let y = 200; y <= 203; y++) DOOR_LEAK.push([DX0 + 11, y, 'crack']);
-      DOOR_LEAK.push([DX1 - 3, 194, 'key'], [DX1 - 3, 195, 'key']);
-    }
+    for (let y = 0; y < PEEP.length; y++)
+      for (let x = 0; x < 5; x++) if (PEEP[y][x] !== 'o' && x === 2 && y > 0) R.set(DX0 + 5 + x, DY0 + 3 + y, S[1], TG.iron);
+    // light leaks: peep window, threshold gap, plank cracks, keyhole
     for (const [x, y] of DOOR_LEAK) R.set(x, y, HOLE, TG.door);
     // a small Halloween wreath: twigs and moss, pumpkin berries, violet bow
     if (ed.id === 'halloween')
@@ -1159,6 +1157,7 @@
         return out;
       });
 
+      collectDoorLeak();
       doorImgs = [];
       for (let l = 0; l < NL; l++) {
         doorImgs.push(

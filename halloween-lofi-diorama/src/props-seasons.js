@@ -197,13 +197,31 @@
     return { x, y, r, subs };
   }
   /**
-   * Shade a union of clumps as one leaf mass: a height field (max over the
-   * spheres) gives each pixel the normal of its front-most sphere, so creases
-   * between clumps fall into shade on their own. Clean bands, a serrated edge.
-   *  o.bias brightens, o.sil colour inside the moon, o.jit tone jitter (2x2 blocks)
+   * Shade a union of clumps as ONE leaf mass, painter style:
+   *  - macro form: the whole silhouette is blurred into a soft volume whose
+   *    gradient gives a big rounded normal (so the crown reads as masses, not bubbles)
+   *  - micro form: each sub-sphere adds a weaker bump on top
+   *  - creases: a sphere sitting under a higher neighbour (towards the light)
+   *    falls into its shadow -> crisp dark crescents that define the clumps
+   *  - leaf texture: a brick of fish-scale tiles nudges both the tone and the
+   *    silhouette, so band edges and outlines become scalloped leaf clusters
+   *    (clustered, never per-pixel speckle)
+   *  - cold rim light on edges that face the moon
+   *  o.bias brightens, o.sil colour inside the moon, o.rim rim colour, o.scale leaf tile size
    */
+  function leafBump(x, y, sc) {
+    const tw = 6 * sc;
+    const th = 4 * sc;
+    const ty = Math.floor(y / th);
+    const xs = x + (ty & 1) * (tw >> 1) + (HD.hash(ty, 3, 41) < 0.5 ? 1 : 0);
+    const tx = Math.floor(xs / tw);
+    const u = (xs - tx * tw + 0.5) / tw - 0.5;
+    const v = (y - ty * th + 0.5) / th;
+    return 1 - 3.2 * u * u - 0.9 * v + (HD.hash(tx, ty, 23) - 0.5) * 0.5;
+  }
   function canopy(B, clumps, m, o) {
     o = o || {};
+    const sc = o.scale || 1;
     let x0 = 1e9;
     let y0 = 1e9;
     let x1 = -1e9;
@@ -212,10 +230,10 @@
     clumps.forEach((c, ci) => {
       for (const sb of c.subs) {
         subs.push({ x: sb.x + (o.dx || 0), y: sb.y, r: sb.r, z: sb.z, ci });
-        x0 = Math.min(x0, Math.floor(sb.x - sb.r - 2));
-        y0 = Math.min(y0, Math.floor(sb.y - sb.r - 2));
-        x1 = Math.max(x1, Math.ceil(sb.x + sb.r + 2));
-        y1 = Math.max(y1, Math.ceil(sb.y + sb.r + 2));
+        x0 = Math.min(x0, Math.floor(sb.x - sb.r - 3));
+        y0 = Math.min(y0, Math.floor(sb.y - sb.r - 3));
+        x1 = Math.max(x1, Math.ceil(sb.x + sb.r + 3));
+        y1 = Math.max(y1, Math.ceil(sb.y + sb.r + 3));
       }
     });
     if (!subs.length) return;
@@ -223,23 +241,64 @@
     const h = y1 - y0 + 1;
     const H = new Float32Array(w * h).fill(-1e9);
     const win = new Int32Array(w * h).fill(-1);
+    const LB = new Float32Array(w * h);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) LB[(y - y0) * w + (x - x0)] = leafBump(x, y, sc);
     subs.forEach((sb, si) => {
-      const rr = sb.r * sb.r + sb.r * 0.5;
-      for (let y = Math.floor(sb.y - sb.r - 1); y <= Math.ceil(sb.y + sb.r + 1); y++)
-        for (let x = Math.floor(sb.x - sb.r - 1); x <= Math.ceil(sb.x + sb.r + 1); x++) {
-          const d2 = (x - sb.x) * (x - sb.x) + (y - sb.y) * (y - sb.y);
-          if (d2 > rr) continue;
-          const hh = sb.z + Math.sqrt(Math.max(0, sb.r * sb.r - d2));
+      const R2 = sb.r + 1.2;
+      for (let y = Math.floor(sb.y - R2); y <= Math.ceil(sb.y + R2); y++)
+        for (let x = Math.floor(sb.x - R2); x <= Math.ceil(sb.x + R2); x++) {
           const q = (y - y0) * w + (x - x0);
+          const re = sb.r + (LB[q] - 0.35) * 1.3;
+          const d2 = (x - sb.x) * (x - sb.x) + (y - sb.y) * (y - sb.y);
+          if (d2 > re * re + re * 0.4) continue;
+          const hh = sb.z + Math.sqrt(Math.max(0, sb.r * sb.r - d2));
           if (hh > H[q]) {
             H[q] = hh;
             win[q] = si;
           }
         }
     });
-    const inM = (x, y) => x >= x0 && y >= y0 && x <= x1 && y <= y1 && win[(y - y0) * w + (x - x0)] >= 0;
+    // drop lone pixels / 1px spurs so the outline stays clean
+    const inRaw = (x, y) => x >= x0 && y >= y0 && x <= x1 && y <= y1 && win[(y - y0) * w + (x - x0)] >= 0;
+    const kill = [];
+    for (let y = y0; y <= y1; y++)
+      for (let x = x0; x <= x1; x++) {
+        if (!inRaw(x, y)) continue;
+        const n = inRaw(x + 1, y) + inRaw(x - 1, y) + inRaw(x, y + 1) + inRaw(x, y - 1);
+        if (n <= 1) kill.push((y - y0) * w + (x - x0));
+      }
+    for (const q of kill) win[q] = -1;
+    const inM = inRaw;
+    // macro volume: blurred coverage (two box passes, radius rb)
+    const rb = o.blur || 5;
+    let A = new Float32Array(w * h);
+    for (let q = 0; q < w * h; q++) A[q] = win[q] >= 0 ? 1 : 0;
+    const box = (src, horiz) => {
+      const dst = new Float32Array(w * h);
+      const n = horiz ? w : h;
+      const m2 = horiz ? h : w;
+      for (let j = 0; j < m2; j++) {
+        let acc = 0;
+        const at = (i) => (horiz ? src[j * w + i] : src[i * w + j]);
+        for (let i = -rb; i <= rb; i++) if (i >= 0 && i < n) acc += at(i);
+        for (let i = 0; i < n; i++) {
+          if (horiz) dst[j * w + i] = acc / (2 * rb + 1);
+          else dst[i * w + j] = acc / (2 * rb + 1);
+          const a = i - rb;
+          const b = i + rb + 1;
+          if (a >= 0) acc -= at(a);
+          if (b < n) acc += at(b);
+        }
+      }
+      return dst;
+    };
+    A = box(box(box(box(A, true), false), true), false);
+    const Aat = (x, y) => (x < x0 || y < y0 || x > x1 || y > y1 ? 0 : A[(y - y0) * w + (x - x0)]);
     const bias = o.bias || 0;
-    const jit = o.jit === undefined ? 0.07 : o.jit;
+    const LxN = L3[0];
+    const LyN = L3[1];
+    const LzN = L3[2];
+    const rimC = o.rim || null;
     for (let y = y0; y <= y1; y++)
       for (let x = x0; x <= x1; x++) {
         const q = (y - y0) * w + (x - x0);
@@ -249,10 +308,17 @@
         const c = clumps[sb.ci];
         const ramp = c.ramp;
         const top = ramp.length - 1;
-        // serrated leafy rim: nibble some edge pixels (never opening holes)
-        const nE = inM(x + 1, y) + inM(x - 1, y) + inM(x, y + 1) + inM(x, y - 1);
-        if (nE < 4 && nE >= 2 && HD.hash(x, y, 17) < 0.26) continue;
-        if (nE <= 1) continue;
+        // macro normal from the blurred silhouette
+        const gx = (Aat(x + 1, y) - Aat(x - 1, y)) * 0.5;
+        const gy = (Aat(x, y + 1) - Aat(x, y - 1)) * 0.5;
+        let Mx = -gx * 7;
+        let My = -gy * 7;
+        let Mz = 0.35 + Aat(x, y) * 0.65;
+        let ml = Math.hypot(Mx, My, Mz) || 1;
+        Mx /= ml;
+        My /= ml;
+        Mz /= ml;
+        // micro normal from the sub-sphere
         let nx = (x - sb.x) / sb.r;
         let ny = (y - sb.y) / sb.r;
         const n2 = nx * nx + ny * ny;
@@ -262,13 +328,37 @@
           ny *= k;
         }
         const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-        const dif = Math.max(0, nx * L3[0] + ny * L3[1] + nz * L3[2]);
-        const low = clamp((sb.y - c.y) / Math.max(2, c.r), -1, 1);
-        let v = 0.1 + 0.85 * dif - 0.16 * low + bias + (HD.hash(x >> 1, y >> 1, 23) - 0.5) * jit;
+        const difM = Math.max(0, Mx * LxN + My * LyN + Mz * LzN);
+        const difm = Math.max(0, nx * LxN + ny * LyN + nz * LzN);
+        let v = 0.06 + 0.62 * difM + 0.34 * difm + bias + (LB[q] - 0.3) * 0.16;
+        // the crown is darker low down and inside
+        const low = clamp((y - c.y) / Math.max(3, c.r), -1, 1);
+        v -= 0.1 * Math.max(0, low);
+        // crease: a higher sphere towards the light casts a crescent
+        for (const [ox, oy] of [[1, -1], [2, -2], [1, -2]]) {
+          const xx = x + ox;
+          const yy = y + oy;
+          if (!inM(xx, yy)) continue;
+          const q2 = (yy - y0) * w + (xx - x0);
+          if (win[q2] !== si && H[q2] > H[q] + 1.6) {
+            v -= 0.22;
+            break;
+          }
+        }
         let i = clamp(Math.floor(v * top + 0.5), 0, top);
-        if (!inM(x, y + 1) && i > 1) i = 1; // underside in shade
-        if (i === top && !(inM(x + 1, y - 1) && inM(x, y - 1)) === false && dif < 0.9) i = top - 1;
+        if (!inM(x, y + 1) && i > 1) i = Math.max(1, i - 2); // shaded underside lip
         let col = ramp[i];
+        // cold rim on the moon-facing outline
+        if (m && rimC) {
+          const dx = m.x - x;
+          const dy = m.y - y;
+          const dm = Math.hypot(dx, dy);
+          if (dm < m.r + 34 && dm > m.r + 0.5) {
+            const sx = Math.round(dx / dm);
+            const sy = Math.round(dy / dm);
+            if (!inM(x + sx, y + sy) && (sx || sy)) col = rimC;
+          }
+        }
         if (m && Math.hypot(x - m.x, y - m.y) < m.r + 0.5) col = o.sil || ramp[0];
         B.set(x, y, col);
       }
@@ -374,7 +464,8 @@
         clumps.push(c);
       }
       const F = new K.Buf(K.TX0 - 14, K.TY0 - 10, K.TW + 28, K.TH + 12);
-      canopy(F, clumps, m, { bias });
+      const rim = !m ? null : style === 'summer' ? mix(P.leaf[7], P.moon[2], 0.45) : style === 'blossom' ? mix(P.blossom[7], P.moon[3], 0.35) : mix(P.autumn[7], P.gold[5], 0.45);
+      canopy(F, clumps, m, { bias, rim, sil: style === 'blossom' ? P.blossom[0] : undefined });
       foliage = F.bake();
     }
     // plum: blossoms sit right on the dark branches, in little sprays
