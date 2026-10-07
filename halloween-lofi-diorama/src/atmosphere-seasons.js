@@ -284,8 +284,11 @@
         glowCtx = glowCv.getContext('2d');
       }
       const ctx = g.ctx;
-      for (const l of HD.lights.list) {
-        if (!(l.r >= 26) || l.y > SKY_Y0 + SKY_H + 8) continue;
+      // only the few strongest flashes relight the smoke (bounded cost)
+      const cand = [];
+      for (const l of HD.lights.list) if (l.r >= 26 && l.i >= 0.06 && l.y <= SKY_Y0 + SKY_H + 8) cand.push(l);
+      if (cand.length > 3) cand.sort((p, q) => q.i - p.i).length = 3;
+      for (const l of cand) {
         const r = Math.min(90, Math.round(l.r * 0.85));
         const cx = Math.round(l.x);
         const cy = Math.round(l.y) - SKY_Y0;
