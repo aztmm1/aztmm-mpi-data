@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-06T20:46:10Z",
+  "computed_at": "2026-10-07T01:14:24Z",
   "asOf": "2026-10-06",
   "stale_threshold_hours": 18,
   "data": {
@@ -24,7 +24,7 @@
     },
     "volatility": {
       "vix": 15.52,
-      "vix3m": 18.0,
+      "vix3m": 17.64,
       "vrp": 5.09,
       "term_shape": "Contango",
       "realized_vol_20d_pct": 10.43
@@ -63,13 +63,13 @@
       "volatility": {
         "score": 78.2,
         "vix": 15.52,
-        "vix3m": 18.0,
+        "vix3m": 17.64,
         "vix_percentile_1y": 18.3,
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 68.8,
-        "t10y2y_pct": 0.47,
+        "score": 69.2,
+        "t10y2y_pct": 0.48,
         "dgs10": 5.31,
         "dgs2": 4.84
       },
@@ -79,8 +79,8 @@
         "ig_oas_pct": 0.84
       },
       "sentiment": {
-        "score": 47.3,
-        "cnn_fg": 47.3
+        "score": 47.4,
+        "cnn_fg": 47.4
       },
       "rotation": {
         "score": 72.2,
