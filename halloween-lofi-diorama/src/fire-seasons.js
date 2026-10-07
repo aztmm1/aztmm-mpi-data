@@ -67,9 +67,9 @@
     for (const t of types) t[1] /= sum;
     return {
       f,
-      slots: f > 0 ? Math.round(3 + 5 * f) : 0,
+      slots: f > 0 ? Math.round(3 + 6 * f) : 0,
       keep: 0.45 + 0.27 * f, // chance a slot fires in a given cycle
-      size: 0.86 + 0.26 * f, // burst scale
+      size: 0.84 + 0.3 * f, // burst scale
       colors: ed.fireworkColors && ed.fireworkColors.length ? ed.fireworkColors : ['gold', 'white'],
       types,
       moon: ed.moon && ed.moon !== 'none',
@@ -87,7 +87,9 @@
     const xMax = ZONE.x1 - Rr - 2;
     const yMin = ZONE.y0 + Rr * 0.9;
     const yMax = ZONE.y1 - Rr * 0.35;
-    let bx = xMin + rx * (xMax - xMin);
+    // 70% of bursts in the open sky between the roof and the tree crown
+    const split = Math.min(xMax, 338);
+    let bx = rx < 0.7 ? xMin + (rx / 0.7) * (split - xMin) : split + ((rx - 0.7) / 0.3) * (xMax - split);
     // near (big) bursts sit higher, far (small) ones lower over the hills
     const yk = Math.min(1, Math.max(0, (1 - depth) * 0.62 + ry * 0.5));
     const by = yMin + yk * (yMax - yMin);
@@ -106,7 +108,7 @@
 
   /** state of slot i at time t, or null when idle. Plain object (cycle() is shared). */
   function shellState(t, i, s) {
-    const per = 10.5 + HD.hash(i, 5, 71) * 4.5;
+    const per = 9.5 + HD.hash(i, 5, 71) * 4.5;
     const c = T.cycle(t, i, per, 6060);
     if (c.rnd(0) > s.keep) return null;
     const type = pickType(s, c.rnd(2));
@@ -128,8 +130,8 @@
       life,
       seed: (i * 977 + c.c * 131 + 17) | 0,
       depth,
-      far: depth < 0.3,
-      R: (type === 'willow' ? 23 : 15 + 14 * depth) * s.size * (type === 'crackle' ? 0.8 : 1),
+      far: depth < 0.22,
+      R: (type === 'willow' ? 27 + 7 * depth : 18 + 19 * depth) * s.size * (type === 'crackle' ? 0.8 : 1),
       col,
       col2,
       tilt: 0.35 + 0.45 * c.rnd(12),
@@ -190,10 +192,6 @@
   // ------------------------------------------------------------------
   // burst drawing
   // ------------------------------------------------------------------
-  // brightness level along a star's life u (0..1)
-  function lvlAt(u) {
-    return u < 0.05 ? 6 : u < 0.13 ? 5 : u < 0.28 ? 4 : u < 0.52 ? 3 : u < 0.72 ? 2 : u < 0.88 ? 1 : 0;
-  }
   const DRAG = { peony: 0.3, chrys: 0.36, ring: 0.28, willow: 0.5, crackle: 0.26 };
   const GRAV = { peony: 5, chrys: 6, ring: 4, willow: 15, crackle: 5 };
 
@@ -227,6 +225,28 @@
     if (u < 0.85) g.px(R(hx), R(hy) + 1, TAIL[2]);
   }
 
+  // a comet streak from (x0,y0) (tail) to (x1,y1) (head): the head is ramp[lv],
+  // the tail fades `fade` levels; pixels are stepped so the streak stays 1px thin
+  function streak(g, x0, y0, x1, y1, rp, lv, fade) {
+    x0 = R(x0);
+    y0 = R(y0);
+    x1 = R(x1);
+    y1 = R(y1);
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let s = 0; s < n; s++) {
+      const u = s / n; // 0 = tail
+      const l = lv - Math.ceil((1 - u) * fade);
+      if (l < 0) continue;
+      g.px(R(x0 + (x1 - x0) * u), R(y0 + (y1 - y0) * u), rp[l]);
+    }
+    if (lv >= 0) g.px(x1, y1, rp[lv]);
+  }
+
+  // head brightness over a star's life u (0..1)
+  function headLvl(u) {
+    return u < 0.07 ? 6 : u < 0.24 ? 5 : u < 0.44 ? 4 : u < 0.62 ? 3 : u < 0.78 ? 2 : u < 0.9 ? 1 : 0;
+  }
+
   function drawBurst(g, sh, t) {
     const tb = sh.tau - sh.rise;
     const type = sh.type;
@@ -239,94 +259,131 @@
     const tk = HD._fire.tick(t, 12);
     const cx = sh.bx;
     const cy = sh.by;
-
-    // break flash: a tiny white-hot core for the first instant
-    if (tb < 0.16) {
-      const lvC = tb < 0.08 ? 6 : 5;
-      g.px(R(cx), R(cy), ramp[lvC]);
-      g.px(R(cx) - 1, R(cy), ramp[lvC - 1]);
-      g.px(R(cx) + 1, R(cy), ramp[lvC - 1]);
-      g.px(R(cx), R(cy) - 1, ramp[lvC - 1]);
-      g.px(R(cx), R(cy) + 1, ramp[lvC - 1]);
-    }
-
-    const n = type === 'ring' ? Math.round(18 + Rr * 0.5) : type === 'willow' ? 26 : Math.round(16 + Rr * 0.95);
-    const trailN = type === 'chrys' ? 4 : type === 'willow' ? 8 : type === 'crackle' ? 1 : 2;
-    const trailDt = type === 'willow' ? 0.12 : type === 'chrys' ? 0.075 : 0.05;
     const cr = Math.cos(sh.rot);
     const sr = Math.sin(sh.rot);
     const rot0 = HD.hash(sh.seed, 3, 9) * TAU;
-    for (let j = 0; j < n; j++) {
-      // direction: Fibonacci sphere (filled disc, denser rim) or a tilted ring
-      let dx;
-      let dy;
-      let front = 1;
-      if (type === 'ring') {
-        const a = (j / n) * TAU + rot0;
-        const ex = Math.cos(a);
-        const ey = Math.sin(a) * sh.tilt;
-        dx = ex * cr - ey * sr;
-        dy = ex * sr + ey * cr;
-        front = Math.sin(a) > 0 ? 1 : 0.7;
-      } else {
-        const z = 1 - (2 * (j + 0.5)) / n;
-        const rr = Math.sqrt(1 - z * z);
-        const ph = j * GOLDEN + rot0;
-        dx = rr * Math.cos(ph);
-        dy = rr * Math.sin(ph);
-        front = z > -0.25 ? 1 : 0.7;
-        if (type === 'willow') {
-          // willow stars are thrown mostly sideways/up, then hang down
-          dy = dy * 0.8 - 0.25;
+
+    // break: a small white-hot ball for the first instant
+    if (tb < 0.14) {
+      const lvC = tb < 0.07 ? 6 : 5;
+      const x = R(cx);
+      const y = R(cy);
+      g.px(x - 1, y, ramp[lvC - 1]);
+      g.px(x + 1, y, ramp[lvC - 1]);
+      g.px(x, y - 1, ramp[lvC - 1]);
+      g.px(x, y + 1, ramp[lvC - 1]);
+      g.px(x, y, ramp[lvC]);
+    }
+
+    // shells: [count, radius scale, ramp, life scale]
+    const shells = [];
+    if (type === 'ring') shells.push([Math.round(20 + Rr * 0.45), 1, ramp, 1]);
+    else if (type === 'willow') shells.push([Math.round(18 + Rr * 0.4), 1, ramp, 1]);
+    else if (type === 'crackle') shells.push([Math.round(16 + Rr * 0.5), 1, ramp, 0.5]);
+    else {
+      shells.push([Math.round(18 + Rr * 0.55), 1, ramp, 1]);
+      if (ramp2) shells.push([Math.round(8 + Rr * 0.2), 0.48, ramp2, 0.75]);
+    }
+
+    for (let si = 0; si < shells.length; si++) {
+      const [n, rs, rp, ls] = shells[si];
+      for (let j = 0; j < n; j++) {
+        const h1 = HD.hash(sh.seed, j, 21 + si);
+        const h2 = HD.hash(sh.seed, j, 31 + si);
+        const h3 = HD.hash(sh.seed, j, 41 + si);
+        const lifeJ = sh.life * ls * (0.8 + 0.2 * h3);
+        if (tb > lifeJ) continue;
+        // direction: rim-weighted sphere (|z| < 0.55) so the burst reads as a clean ball
+        const a = ((j + (h1 - 0.5) * 0.5) / n) * TAU + rot0 + si * 0.5;
+        let dx;
+        let dy;
+        let back = 0;
+        if (type === 'ring') {
+          const ex = Math.cos(a);
+          const ey = Math.sin(a) * sh.tilt;
+          dx = ex * cr - ey * sr;
+          dy = ex * sr + ey * cr;
+          back = Math.sin(a) < -0.2 ? 1 : 0;
+        } else {
+          const z = (h2 - 0.5) * 1.1;
+          const rr = Math.sqrt(1 - z * z);
+          dx = rr * Math.cos(a);
+          dy = rr * Math.sin(a);
+          back = z < -0.35 ? 1 : 0;
+          if (type === 'willow') dy = dy * 0.75 - 0.2;
         }
-      }
-      const hj = HD.hash(sh.seed, j, 21);
-      const sp = Rr * (0.9 + 0.18 * hj);
-      const lifeJ = sh.life * (0.78 + 0.22 * HD.hash(sh.seed, j, 22));
-      if (tb > lifeJ) continue;
-      const useCol2 = ramp2 && (j & 1) === 0 && type !== 'chrys';
-      const rp = useCol2 ? ramp2 : ramp;
-      const back = front < 1 ? 1 : 0;
-      // trail samples (oldest first), then the star head
-      for (let q = trailN; q >= 0; q--) {
-        const tq = tb - q * trailDt;
-        if (tq < 0) continue;
-        const uq = tb / lifeJ;
-        let lv = lvlAt(uq) - dim - back - (q === 0 ? 0 : type === 'willow' ? 1 + (q >> 2) : q);
-        if (q > 0 && type === 'chrys') lv = Math.min(lv, 3);
+        const sp = Rr * rs * (0.93 + 0.12 * h3);
+        const u = tb / lifeJ;
+        let lv = headLvl(u) - dim - back;
         if (lv < 0) continue;
-        // late glitter: willow / crackle stars twinkle off now and then
-        if (uq > 0.6 && (type === 'willow' || type === 'crackle') && HD.hash(sh.seed, j * 16 + q, tk) < 0.3) continue;
-        const e = expand(tq, k);
-        const x = cx + dx * sp * e;
-        const y = cy + dy * sp * e + droop(tq, G);
-        g.px(R(x), R(y), rp[lv]);
-      }
-      // two-tone pistil: an inner, smaller sphere in the second colour
-      if (ramp2 && type === 'chrys' && j % 3 === 0) {
+        // glitter: late willow / crackle stars twinkle
+        const glit = u > 0.55 && (type === 'willow' || type === 'crackle') && HD.hash(sh.seed, j * 8 + si, tk) < 0.28;
         const e = expand(tb, k);
-        const lv = lvlAt(tb / lifeJ) - dim;
-        if (lv >= 0 && tb < lifeJ * 0.7) g.px(R(cx + dx * sp * 0.45 * e), R(cy + dy * sp * 0.45 * e + droop(tb, G)), ramp2[lv]);
+        const hx = cx + dx * sp * e;
+        const hy = cy + dy * sp * e + droop(tb, G);
+        if (type === 'willow') {
+          // long hanging trail: a polyline through earlier positions, fading to amber
+          let px = hx;
+          let py = hy;
+          for (let q = 1; q <= 7; q++) {
+            const tq = tb - q * 0.14;
+            if (tq < 0) break;
+            const eq = expand(tq, k);
+            const qx = cx + dx * sp * eq;
+            const qy = cy + dy * sp * eq + droop(tq, G);
+            const l = lv - 1 - (q >> 1);
+            if (l < 0) break;
+            streak(g, qx, qy, px, py, rp, l, 1);
+            px = qx;
+            py = qy;
+          }
+          if (!glit) g.px(R(hx), R(hy), rp[Math.min(6, lv + 1)]);
+          continue;
+        }
+        // comet streak: long spokes while fast, dots once the star slows
+        const dt = type === 'chrys' ? 0.24 : type === 'ring' ? 0.07 : 0.1;
+        const t0 = Math.max(0, tb - dt);
+        const e0 = expand(t0, k);
+        const tx = cx + dx * sp * e0;
+        const ty = cy + dy * sp * e0 + droop(t0, G);
+        if (type === 'chrys') {
+          // the trail burns gold whatever the head colour
+          streak(g, tx, ty, hx, hy, RAMPS.willow, Math.min(5, lv), 4);
+          if (!glit) g.px(R(hx), R(hy), rp[lv]);
+        } else if (!glit) streak(g, tx, ty, hx, hy, rp, lv, 3);
       }
-      // crackle: after the stars die down, each one pops into a few tiny flashes
-      if (type === 'crackle') {
-        const t0 = lifeJ * 0.42;
-        if (tb > t0) {
-          const e = expand(t0, k);
-          const sx = cx + dx * sp * e;
-          const sy = cy + dy * sp * e + droop(t0, G);
-          for (let m = 0; m < 3; m++) {
-            const at = t0 + HD.hash(sh.seed, j, 40 + m) * (lifeJ - t0);
-            const dtm = tb - at;
-            if (dtm < 0 || dtm > 0.17) continue;
-            const ox = R((HD.hash(sh.seed, j, 50 + m) - 0.5) * 7);
-            const oy = R((HD.hash(sh.seed, j, 60 + m) - 0.5) * 7 + droop(tb, G) - droop(t0, G));
-            const W = RAMPS.white;
-            g.px(R(sx) + ox, R(sy) + oy, dtm < 0.08 ? W[6] : W[4]);
-            if (dtm < 0.06) {
-              g.px(R(sx) + ox - 1, R(sy) + oy, W[3]);
-              g.px(R(sx) + ox + 1, R(sy) + oy, W[3]);
-            }
+    }
+
+    // crackle: once the gold stars burn out, each pops into a few tiny white flashes
+    if (type === 'crackle') {
+      const n = Math.round(16 + Rr * 0.5);
+      const W = RAMPS.white;
+      for (let j = 0; j < n; j++) {
+        const h1 = HD.hash(sh.seed, j, 21);
+        const h2 = HD.hash(sh.seed, j, 31);
+        const h3 = HD.hash(sh.seed, j, 41);
+        const t0 = sh.life * 0.5 * (0.8 + 0.2 * h3) * 0.85;
+        if (tb < t0) continue;
+        const a = ((j + (h1 - 0.5) * 0.5) / n) * TAU + rot0;
+        const z = (h2 - 0.5) * 1.1;
+        const rr = Math.sqrt(1 - z * z);
+        const e = expand(t0, k);
+        const sp = Rr * (0.93 + 0.12 * h3);
+        const sx = cx + rr * Math.cos(a) * sp * e;
+        const sy = cy + rr * Math.sin(a) * sp * e + droop(tb, G);
+        for (let m = 0; m < 3; m++) {
+          const at = t0 + HD.hash(sh.seed, j, 40 + m) * (sh.life - t0 - 0.2);
+          const dtm = tb - at;
+          if (dtm < 0 || dtm > 0.2) continue;
+          const ox = R(sx + (HD.hash(sh.seed, j, 50 + m) - 0.5) * 8);
+          const oy = R(sy + (HD.hash(sh.seed, j, 60 + m) - 0.5) * 8);
+          const lvp = dtm < 0.08 ? 6 : dtm < 0.14 ? 4 : 2;
+          g.px(ox, oy, W[lvp - dim]);
+          if (dtm < 0.08) {
+            g.px(ox - 1, oy, W[3]);
+            g.px(ox + 1, oy, W[3]);
+            g.px(ox, oy - 1, W[3]);
+            g.px(ox, oy + 1, W[3]);
           }
         }
       }
@@ -350,8 +407,8 @@
       const fl = flashOf(sh);
       if (fl <= 0.02) continue;
       const col = HD.LIGHT.firework[sh.col] || HD.LIGHT.firework.gold;
-      const rad = Math.max(12, Math.round((sh.R * 1.5) / 4) * 4);
-      HD.glow(g, sh.bx, sh.by, rad, col, 0.2 * fl);
+      const rad = Math.max(12, Math.round((sh.R * 1.7) / 4) * 4);
+      HD.glow(g, sh.bx, sh.by, rad, col, 0.3 * fl);
     }
     for (const sh of list) {
       if (sh.tau < sh.rise) drawRocket(g, sh, t);
@@ -529,6 +586,8 @@
       L.add({ x: R(st.bx), y: R(st.by), r: 30, color: SPK_LIGHT, i, bands: 4, pow: 1.8 });
     }
   }
+
+  HD._fireworks = { show, liveShells, flashOf };
 
   // ------------------------------------------------------------------
   // module (registered under the same name so --only/--skip fire covers it)

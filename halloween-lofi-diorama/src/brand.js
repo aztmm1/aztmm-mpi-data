@@ -1,7 +1,8 @@
 /*
  * AZTMM marks, built into the diorama rather than stamped on top of it.
- *  1. A brass nameplate on the front of the diorama base (every edition),
- *     with a slow cyan-to-violet glint in the AZTMM brand gradient.
+ *  1. A pewter maker's mark on the front of the diorama base (every edition):
+ *     the AZTMM HLDGS badge as a pixel medallion beside an engraved AZTMM
+ *     plate, with a rare cyan-to-violet glint in the brand gradient.
  *  2. "AZ" carved into the tree trunk (an easter egg, every edition).
  *  3. Midnight Fireworks only: once per loop one rocket bursts into the
  *     letters AZTMM in the brand gradient.
@@ -13,8 +14,6 @@
   const C = HD.color;
 
   const BRAND = { cyan: '#22d3ee', violet: '#a78bfa' };
-  // brass derived from the AZTMM gold (#c9a961), dimmed for the night base
-  const BRASS = ['#17120a', '#2a2214', '#463823', '#6b5836', '#8f7a4c', '#b39b66', '#c9a961'];
   const GRAD = C.ramp(BRAND.cyan, BRAND.violet, 6);
   const GRAD_HOT = C.ramp('#d6fbff', '#efe6ff', 6);
   const GRAD_EMBER = C.ramp('#0f5a68', '#4a3a78', 6);
@@ -44,46 +43,125 @@
   }
 
   // ------------------------------------------------------------------
-  // 1. nameplate
+  // 1. maker's mark: a pewter medallion of the AZTMM HLDGS badge (ring,
+  //    lettering band, the two towers and the bridge pylons) beside an
+  //    engraved AZTMM plate, low on the dark front of the diorama base.
+  //    Pewter matches the silver-on-black logo and the cold night palette.
   // ------------------------------------------------------------------
-  const PLATE = { x: 431, y: 254 };
+  // dark pewter so the mark sits quietly in the shadow of the base
+  const PEWTER = ['#0a0b0e', '#131418', '#1c1e23', '#272a31', '#363a43', '#4a4f5a', '#646a77'];
+  const MR = 11; // medallion radius
+  const MD = MR * 2 + 1;
   const TXT = word(SMALL, 'AZTMM', 1);
   const PW = TXT.w + 8;
   const PH = 11;
-  let plate = null;
-  let letterMask = null;
-  function bakePlate() {
-    letterMask = new Set(TXT.pts.map(([x, y]) => x + 4 + ',' + (y + 3)));
-    plate = HD.bake(PW, PH, (g) => {
-      g.rect(0, 0, PW, PH, BRASS[0]);
-      g.rect(1, 1, PW - 2, PH - 2, BRASS[2]);
-      g.hline(1, PW - 2, 1, BRASS[4]); // top bevel catches light
-      g.vline(1, 1, PH - 2, BRASS[3]);
-      g.hline(1, PW - 2, PH - 2, BRASS[1]); // bottom bevel in shadow
-      g.vline(PW - 2, 2, PH - 2, BRASS[1]);
-      g.px(2, 5, BRASS[5]); // screws
-      g.px(PW - 3, 5, BRASS[5]);
+  const GAP = 3;
+  const BADGE = { x: 403, y: 245, w: MD + GAP + PW, h: MD };
+  let badge = null;
+  let glintable = null; // metal-face pixels the glint may light
+  function bakeBadge() {
+    glintable = new Set();
+    const face = (x, y) => glintable.add(x + ',' + y);
+    badge = HD.bake(BADGE.w, BADGE.h, (g) => {
+      // --- medallion ---
+      const c = MR;
+      for (let y = 0; y < MD; y++) {
+        for (let x = 0; x < MD; x++) {
+          const dx = x - c;
+          const dy = y - c;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d > MR + 0.45) continue;
+          let col = PEWTER[2];
+          if (d > MR - 0.85) {
+            // raised rim: lit from the upper left, shadowed lower right
+            const lit = -dx - dy;
+            col = lit > 4 ? PEWTER[5] : lit < -4 ? PEWTER[1] : PEWTER[3];
+          } else if (d > 6.9 && d < 7.9) col = PEWTER[4]; // inner ring
+          else if (d >= 7.9) {
+            // lettering band: tiny raised marks suggest the circular text
+            const a = Math.atan2(dy, dx);
+            const k = Math.floor(((a + Math.PI) / (Math.PI * 2)) * 44);
+            col = d > 8.5 && d < 9.6 && k % 2 === 0 && HD.hash(k, 3, 19) < 0.8 ? PEWTER[4] : PEWTER[2];
+            if (col === PEWTER[2]) face(x, y);
+          } else face(x, y);
+          g.px(x, y, col);
+        }
+      }
+      const L = PEWTER[6];
+      const M = PEWTER[4];
+      const D = PEWTER[1];
+      const P = (x, y, col) => {
+        const dx = x;
+        const dy = y;
+        if (dx * dx + dy * dy > 6.8 * 6.8) return; // clip to inside the inner ring
+        g.px(c + x, c + y, col);
+        glintable.delete(c + x + ',' + (c + y));
+      };
+      // bridge pylons with a short fan of cables, dimmer than the towers
+      for (const sx of [-6, 6]) {
+        const o = Math.sign(sx);
+        for (let y = -2; y <= 5; y++) P(sx, y, M);
+        P(sx - o, -1, M);
+        P(sx - o * 2, 0, M);
+        P(sx - o * 3, 1, M);
+      }
+      for (const x of [-6, -5, 5, 6]) P(x, 3, M); // deck
+      // left tower: shaft, stepped crown, antenna
+      for (let y = -2; y <= 7; y++) {
+        P(-4, y, L);
+        P(-3, y, y % 3 === 0 ? D : M);
+        P(-2, y, L);
+      }
+      for (let x = -5; x <= -1; x++) P(x, -3, L);
+      P(-4, -4, M);
+      P(-3, -4, M);
+      P(-2, -4, M);
+      for (let y = -7; y <= -5; y++) P(-3, y, L);
+      // right slab tower, taller, with a slanted roof line and a shaded face
+      for (let y = -6; y <= 7; y++) {
+        if (y > -6) P(0, y, M);
+        P(1, y, L);
+        P(2, y, y % 2 ? D : M);
+        P(3, y, M);
+        P(4, y, L);
+      }
+      for (let x = 1; x <= 4; x++) P(x, -6, L);
+      P(0, -5, L);
+
+      // --- engraved plate ---
+      const ox = MD + GAP;
+      const oy = (MD - PH) >> 1;
+      g.rect(ox, oy, PW, PH, PEWTER[0]);
+      g.rect(ox + 1, oy + 1, PW - 2, PH - 2, PEWTER[2]);
+      g.hline(ox + 1, ox + PW - 2, oy + 1, PEWTER[4]);
+      g.vline(ox + 1, oy + 1, oy + PH - 2, PEWTER[3]);
+      g.hline(ox + 1, ox + PW - 2, oy + PH - 2, PEWTER[1]);
+      g.vline(ox + PW - 2, oy + 2, oy + PH - 2, PEWTER[1]);
+      g.px(ox + 2, oy + 5, PEWTER[5]);
+      g.px(ox + PW - 3, oy + 5, PEWTER[5]);
+      const cut = new Set(TXT.pts.map(([x, y]) => x + ',' + y));
+      for (let y = oy + 2; y < oy + PH - 2; y++) for (let x = ox + 2; x < ox + PW - 2; x++) face(x, y);
       for (const [x, y] of TXT.pts) {
-        g.px(x + 4, y + 3, BRASS[0]); // engraved letter
-        const k = x + 4 + ',' + (y + 4);
-        if (!letterMask.has(k) && y + 4 < PH - 2) g.px(x + 4, y + 4, BRASS[4]); // lit lower lip of the cut
+        g.px(ox + 4 + x, oy + 3 + y, PEWTER[0]);
+        glintable.delete(ox + 4 + x + ',' + (oy + 3 + y));
+        if (!cut.has(x + ',' + (y + 1)) && y + 1 < 5) g.px(ox + 4 + x, oy + 4 + y, PEWTER[4]);
+        else if (y === 4) g.px(ox + 4 + x, oy + 4 + y, PEWTER[4]);
       }
     });
   }
   function drawPlate(g, t) {
-    if (!plate) bakePlate();
-    g.sprite(plate, PLATE.x, PLATE.y);
-    // a slow glint sweeps across the plate about every 24 s, in brand colours
-    const ph = T.phase(t, 24, 0.31);
-    if (ph < 0.07) {
-      const pos = (ph / 0.07) * (PW + 12) - 6;
-      for (let y = 1; y < PH - 1; y++) {
-        for (let x = 1; x < PW - 1; x++) {
+    if (!badge) bakeBadge();
+    g.sprite(badge, BADGE.x, BADGE.y);
+    // now and then a slow glint in the AZTMM cyan-to-violet sweeps across the metal
+    const ph = T.phase(t, 48, 0.31);
+    if (ph < 0.04) {
+      const pos = (ph / 0.04) * (BADGE.w + 16) - 8;
+      for (let y = 0; y < BADGE.h; y++) {
+        for (let x = 0; x < BADGE.w; x++) {
           const d = x + y * 0.6 - pos;
-          if (d < 0 || d >= 2.2) continue;
-          if (letterMask.has(x + ',' + y)) continue;
-          const gi = Math.min(5, Math.floor((x / PW) * 6));
-          g.px(PLATE.x + x, PLATE.y + y, d < 1.1 ? GRAD_HOT[gi] : GRAD[gi]);
+          if (d < 0 || d >= 2.2 || !glintable.has(x + ',' + y)) continue;
+          const gi = Math.min(5, Math.floor((x / BADGE.w) * 6));
+          g.px(BADGE.x + x, BADGE.y + y, d < 1.1 ? GRAD_HOT[gi] : GRAD[gi]);
         }
       }
     }

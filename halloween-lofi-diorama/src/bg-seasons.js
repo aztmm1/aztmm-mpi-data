@@ -206,7 +206,7 @@
     const py = y - MW.ay;
     const along = (px * ux + py * uy) / len; // 0..1
     const d = px * -uy + py * ux; // signed distance from the spine
-    const half = 17 + 6 * Math.sin(along * 5.1 + 0.6) + 5 * along;
+    const half = 22 + 7 * Math.sin(along * 5.1 + 0.6) + 7 * along;
     const n = 0.55 * vnoise(x, y, 11, 31) + 0.3 * vnoise(x, y, 5, 32) + 0.15 * vnoise(x, y, 2.5, 33);
     let dens = Math.exp(-((d / half) * (d / half))) * (0.45 + 0.75 * n);
     // dark dust rift running along one side of the spine
@@ -257,8 +257,9 @@
       }
       x = Math.round(x);
       y = Math.round(y);
-      if (x < 2 || x >= W - 2 || y < 2 || y > 150) continue;
-      if (y > 96 && rng() < (y - 96) / 50) continue; // horizon haze swallows the faint ones
+      if (x < 2 || x >= W - 2 || y < 2 || y > 140) continue;
+      if (y > 90 && rng() < (y - 90) / 40) continue; // horizon haze swallows the faint ones
+      if (x > 34 && x < 104 && y > 92) continue; // leave the chapel's silhouette clean
       if (x >= ts.x0 && x <= ts.x1 && y >= ts.y0 && y <= ts.y1 && rng() < 0.7) continue; // calm title area
       if (mr) {
         const dx = x - MOON.x;
@@ -342,16 +343,15 @@
       const glow = mix(P.moon[2], P.spirit[3], 0.3);
       const core = mix(P.moon[3], P.amber[7], 0.25);
       for (let y = 0; y < 165; y++)
-        for (let x = 120; x < 400; x++) {
+        for (let x = 100; x < 420; x++) {
           const f = milkyField(x, y);
-          if (f.dens < 0.12) continue;
-          const b = HD.bayer(x, y);
+          if (f.dens < 0.1) continue;
+          // flat tone levels with a narrow ordered-dither seam between them
+          const q = f.dens * 3.2 + (HD.bayer(x, y) - 0.5) * 0.8;
+          const lv = q < 0.6 ? 0 : q < 1.45 ? 1 : q < 2.3 ? 2 : 3;
+          if (!lv) continue;
           const band = skyAt(lk, x, y);
-          let c = null;
-          if (f.dens > 0.78 && b < (f.dens - 0.78) * 3) c = mix(band, core, 0.2);
-          else if (f.dens > 0.42 && b < (f.dens - 0.3) * 1.6) c = mix(band, glow, 0.13);
-          else if (b < (f.dens - 0.12) * 1.2) c = mix(band, glow, 0.07);
-          if (c) im.set(x, y, c);
+          im.set(x, y, lv === 1 ? mix(band, glow, 0.07) : lv === 2 ? mix(band, glow, 0.14) : mix(band, core, 0.22));
         }
     }
     paintHalo(im, lk, ed.moon);
@@ -474,8 +474,9 @@
         chapel: mix(N[2], V[2], 0.45),
         forest: mix(P.leaf[1], N[2], 0.55),
         pine: mix(P.leaf[1], N[2], 0.45),
-        pineSnow: mix(P.snow[5], V[3], 0.12),
+        pineSnow: mix(P.snow[5], V[3], 0.2),
         pineSnowTop: mix(P.snow[6], V[4], 0.1),
+        pineSnowMid: mix(mix(P.leaf[1], N[2], 0.45), P.snow[4], 0.45),
         roofSnow: mix(P.snow[6], V[4], 0.12),
         cotRoof: mix(P.snow[5], V[4], 0.2),
         cotWall: mix(N[2], V[2], 0.4),
@@ -483,9 +484,9 @@
     } else if (kind === 'spring') {
       const fresh = mix(P.leaf[6], P.vine[4], 0.35);
       c = {
-        hillA: mix(fresh, N[6], 0.5),
-        crestA: mix(P.leaf[7], N[8], 0.45),
-        hillB: mix(mix(P.leaf[4], P.vine[3], 0.3), N[3], 0.4),
+        hillA: mix(fresh, N[7], 0.32),
+        crestA: mix(P.leaf[7], N[9], 0.3),
+        hillB: mix(mix(P.leaf[4], P.vine[3], 0.35), N[3], 0.3),
         crestB: mix(P.leaf[5], N[5], 0.35),
         chapel: mix(N[2], V[2], 0.45),
         forest: mix(P.leaf[2], N[2], 0.4),
@@ -493,10 +494,11 @@
         canopy: [
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
           { base: mix(mix(P.leaf[5], P.vine[4], 0.4), N[4], 0.3), light: mix(P.leaf[7], N[7], 0.3), dark: mix(P.leaf[3], N[3], 0.3) },
-          { base: mix(P.blossom[3], N[4], 0.35), light: mix(P.blossom[5], N[6], 0.3), dark: mix(P.blossom[2], N[3], 0.35), blossom: true },
+          { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
+          { base: mix(P.blossom[5], N[7], 0.55), light: mix(P.blossom[6], N[9], 0.45), dark: mix(P.leaf[3], N[3], 0.35), blossom: true },
         ],
-        speck: mix(P.blossom[6], N[8], 0.3),
-        speck2: mix(P.blossom[7], N[9], 0.25),
+        speck: mix(P.blossom[6], N[8], 0.4),
+        speck2: mix(P.blossom[7], N[10], 0.3),
         cotRoof: mix(N[3], P.stone[3], 0.5),
         cotWall: mix(N[3], P.stone[2], 0.4),
       };
@@ -519,17 +521,18 @@
     } else {
       // autumn: rust and gold
       c = {
-        hillA: mix(P.autumn[3], V[4], 0.6),
-        crestA: mix(P.autumn[5], V[5], 0.5),
-        hillB: mix(P.autumn[2], N[3], 0.55),
-        crestB: mix(P.autumn[4], V[4], 0.5),
-        chapel: mix(N[2], V[2], 0.45),
-        forest: mix(P.autumn[1], N[2], 0.5),
+        hillA: mix(P.autumn[2], V[3], 0.5),
+        crestA: mix(P.autumn[4], V[4], 0.5),
+        hillB: mix(P.autumn[1], N[2], 0.5),
+        crestB: mix(P.autumn[3], V[3], 0.5),
+        chapel: mix(N[1], V[1], 0.5),
+        forest: mix(P.autumn[0], N[1], 0.5),
         pine: mix(P.leaf[1], N[2], 0.5),
         canopy: [
-          { base: mix(P.autumn[3], N[3], 0.4), light: mix(P.autumn[5], N[5], 0.35), dark: mix(P.autumn[1], N[2], 0.4) },
-          { base: mix(P.autumn[4], N[3], 0.42), light: mix(P.autumn[6], N[5], 0.35), dark: mix(P.autumn[2], N[2], 0.4) },
-          { base: mix(mix(P.autumn[6], P.gold[3], 0.5), N[4], 0.45), light: mix(P.gold[5], N[6], 0.4), dark: mix(P.autumn[3], N[3], 0.4) },
+          { base: mix(P.autumn[3], N[3], 0.42), light: mix(P.autumn[5], N[4], 0.4), dark: mix(P.autumn[1], N[2], 0.45) },
+          { base: mix(P.autumn[4], N[3], 0.45), light: mix(P.autumn[6], N[5], 0.42), dark: mix(P.autumn[2], N[2], 0.45) },
+          { base: mix(P.autumn[3], N[3], 0.42), light: mix(P.autumn[5], N[4], 0.4), dark: mix(P.autumn[1], N[2], 0.45) },
+          { base: mix(mix(P.autumn[6], P.gold[3], 0.5), N[4], 0.5), light: mix(P.gold[4], N[6], 0.45), dark: mix(P.autumn[3], N[3], 0.45) },
         ],
         cotRoof: mix(N[3], P.stone[3], 0.5),
         cotWall: mix(N[3], P.stone[2], 0.4),
@@ -611,11 +614,11 @@
     } else if (c.canopy) {
       // the bare far tree beside the chapel is in leaf
       const cp = c.canopy[kind === 'spring' ? 2 : 0];
-      for (let dy = -3; dy <= 2; dy++)
+      for (let dy = -4; dy <= 3; dy++)
         for (let dx = -4; dx <= 4; dx++) {
-          const e = (dx * dx) / 18 + (dy * dy) / 8;
+          const e = (dx * dx) / 14 + ((dy + 0.5) * (dy + 0.5)) / 13;
           if (e > 1) continue;
-          S(91 + dx, 129 + dy, dy < -1 && dx > -1 ? cp.light : dy > 0 ? cp.dark : cp.base);
+          S(91 + dx, 131 + dy, e > 0.55 && dy < 0 && dx >= 0 ? cp.light : dy > 1 ? cp.dark : cp.base);
         }
     }
 
@@ -629,23 +632,28 @@
       else drawCanopy(S, tr, c, kind, moonSide && tr.x > 290, rimTint);
     }
 
-    // spring: little blossoming orchards dotted on the near hills
+    // spring: two or three small orchards of blossoming trees on the near hills
     if (kind === 'spring') {
-      for (let x = 6; x < W; x += 9) {
-        const h = HD.hash(x, 77, 1, 2);
-        if (h < 0.45) continue;
-        const ty = L.topB[x] + 3 + Math.round(h * 4);
-        if (labAt(x, ty) !== LB.hillB && labAt(x, ty) !== LB.hazeB) continue;
-        if (ty >= L.topC[x] - 1) continue;
-        S(x, ty, c.speck);
-        S(x + 1, ty, c.speck);
-        S(x, ty - 1, c.speck2);
-        S(x + 1, ty + 1, mix(c.hillB, N[1], 0.4));
-        if (h > 0.8) {
-          S(x + 3, ty + 1, c.speck);
-          S(x + 3, ty, c.speck2);
+      const orchards = [
+        [106, 6, 5],
+        [228, 5, 5],
+        [352, 7, 5],
+      ];
+      for (const o of orchards)
+        for (let i = 0; i < o[1]; i++) {
+          const x = o[0] + i * o[2] + (i & 1);
+          const ty = L.topB[x] + 6 + ((i * 3) % 4);
+          if (ty >= L.topC[x] - 2 || labAt(x, ty) === LB.hillA) continue;
+          // [.ab] [aab] [.s.] : a 3px crown with a lit top-right, on a dark stem
+          S(x, ty - 1, c.speck);
+          S(x + 1, ty - 1, c.speck2);
+          S(x - 1, ty, mix(c.speck, c.hillB, 0.4));
+          S(x, ty, c.speck);
+          S(x + 1, ty, c.speck);
+          S(x + 2, ty, mix(c.speck, c.hillB, 0.4));
+          S(x, ty + 1, mix(c.hillB, N[1], 0.45));
+          S(x + 1, ty + 1, mix(c.hillB, N[1], 0.3));
         }
-      }
     }
     return im.canvas();
   }
@@ -659,8 +667,13 @@
       const above = r === 0 ? -1 : K.pineHalf(r - 1, tr.hw);
       for (let xx = tr.x - half; xx <= tr.x + half; xx++) {
         let col = c.pine;
-        if (snow && (r === 0 || Math.abs(xx - tr.x) > above)) col = r < 2 ? c.pineSnowTop : c.pineSnow;
-        else if (snow && r % 3 === 1 && Math.abs(xx - tr.x) === half && half > 0) col = mix(c.pine, c.pineSnow, 0.45);
+        if (snow) {
+          const m = r % 3;
+          if (r < 2) col = c.pineSnowTop;
+          else if (m === 0) col = c.pineSnow;
+          else if (m === 1) col = xx <= tr.x ? c.pineSnow : c.pineSnowMid;
+          else if (Math.abs(xx - tr.x) > above) col = c.pineSnowMid;
+        }
         S(xx, y, col);
       }
       if (rim && !snow && r > 1 && r % 3 !== 0 && half > 0) S(tr.x + half, y, rimC);
@@ -673,7 +686,7 @@
     const rx = Math.max(2, tr.hw + 1);
     const ry = Math.max(2, Math.round(tr.h * 0.42));
     const cy = tr.b - Math.round(tr.h * 0.48);
-    const twin = tr.h > 9 && pick > 0.5; // wide crowns get a second lobe
+    const twin = (tr.h > 9 && pick > 0.5) || (cp.blossom && tr.h > 6); // wide crowns get a second lobe
     const lobes = [[tr.x, cy, rx, ry]];
     if (twin) lobes.push([tr.x + (pick > 0.75 ? 2 : -2), cy - 2, rx - 1, ry - 1]);
     const inside = (x, y) => {

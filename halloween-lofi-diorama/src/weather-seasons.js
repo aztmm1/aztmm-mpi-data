@@ -138,12 +138,12 @@
         g.rect(x - 1, y, 1, 2, lo);
         g.rect(x + 2, y, 1, 2, lo);
       } else {
-        // small near flake: a plus
+        // small near flake: a soft 2x2, lit from the top-left
+        const mid = SN[1 - dim][lv];
         g.rect(x, y, 1, 1, hi);
-        g.rect(x - 1, y, 1, 1, lo);
-        g.rect(x + 1, y, 1, 1, lo);
-        g.rect(x, y - 1, 1, 1, lo);
-        g.rect(x, y + 1, 1, 1, lo);
+        g.rect(x + 1, y, 1, 1, mid);
+        g.rect(x, y + 1, 1, 1, mid);
+        g.rect(x + 1, y + 1, 1, 1, lo);
       }
     }
   }
@@ -441,12 +441,12 @@
   const FF_N = 56;
   const FF = [];
   const FF_ZONES = [
-    { x: 60, y: 222 },
-    { x: 150, y: 224 },
-    { x: 250, y: 224 },
-    { x: 345, y: 220 },
-    { x: 412, y: 160 },
-    { x: 440, y: 222 },
+    { x: 26, y: 200 },
+    { x: 180, y: 224 },
+    { x: 280, y: 222 },
+    { x: 340, y: 206 },
+    { x: 412, y: 150 },
+    { x: 446, y: 222 },
   ];
   for (let i = 0; i < FF_N; i++) {
     const h = (k) => hash(i, k, 9601);
@@ -455,14 +455,20 @@
     let hy;
     let ax;
     let ay;
-    if (i < 34) {
-      kind = 0; // meadow
+    const fireX = LY.campfire.x;
+    if (i < 26) {
+      kind = 0; // low over the meadow; the bonfire would drown them, so keep clear of it
       hx = 8 + h(1) * 464;
-      hy = 194 + h(2) * 38;
-      // keep the campfire/bonfire core clear
-      if (Math.abs(hx - LY.campfire.x) < 16 && hy > 200) hx += hx < LY.campfire.x ? -18 : 18;
+      if (Math.abs(hx - fireX) < 44) hx = fireX + 44 + h(8) * 70;
+      hy = 200 + h(2) * 32;
       ax = 10 + h(3) * 10;
       ay = 3 + h(4) * 4;
+    } else if (i < 34) {
+      kind = 0; // higher, against the dark hedges either side of the house
+      hx = h(1) < 0.4 ? 6 + h(9) * 40 : 306 + h(9) * 40;
+      hy = 166 + h(2) * 30;
+      ax = 8 + h(3) * 8;
+      ay = 5 + h(4) * 5;
     } else if (i < 48) {
       kind = 1; // around the tree
       hx = TREE.x - 55 + h(1) * 110;
@@ -531,10 +537,10 @@
         g.rect(x - 1, y, 3, 1, FFC[1]);
         g.rect(x, y - 1, 1, 3, FFC[1]);
         g.rect(x, y, 1, 1, FFC[4]);
-      } else if (e > 0.42) {
+      } else if (e > 0.4) {
         g.rect(x, y, 1, 1, FFC[3]);
       } else {
-        g.rect(x, y, 1, 1, FFC[1]);
+        g.rect(x, y, 1, 1, FFC[2]);
       }
     }
   }

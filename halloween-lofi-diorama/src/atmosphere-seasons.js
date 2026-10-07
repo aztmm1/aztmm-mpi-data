@@ -338,9 +338,11 @@
     if (env > 0.45) g.px(xi - 1, yi, core);
     if (env > 0.7 && n > 5) g.px(xi - 1, yi - 1, rim);
     const solid = Math.max(2, Math.round(n * 0.55));
+    const thick = n > 9 ? Math.round(n * 0.35) : 0; // big gusts get a 2px body
     for (let k = 2; k <= n; k++) {
       const yy = yi - (k > solid ? 1 : 0) - (k > n * 0.85 && n > 7 ? 1 : 0);
       if (k <= solid || ((k + par) & 1) === 0) g.px(xi - k, yy, rim);
+      if (k <= thick) g.px(xi - k, yy - 1, k < 3 ? core : rim);
     }
   }
 
@@ -360,10 +362,13 @@
         const env = Math.sin(Math.PI * a);
         if (env < 0.12) continue;
         const sc = 0.55 + 0.6 * depth;
-        const y0 = o.y0 + depth * (o.y1 - o.y0);
+        // most gusts run along the back edge (against the dark pines) or
+        // spill over the front lip (against the soil), where powder reads
+        const dz = depth < 0.4 ? depth * 0.5 : depth < 0.7 ? 0.2 + (depth - 0.4) * 2 : 0.8 + (depth - 0.7) * 0.66;
+        const y0 = o.y0 + dz * (o.y1 - o.y0);
         const x0 = -20 + r1 * (W + 10);
         const x = x0 + (o.travel + o.travelR * r3) * sc * a;
-        const y = y0 - env * (1.5 + 3.5 * r4) * sc;
+        const y = y0 - env * (2 + 6 * r4) * sc;
         streak(g, x, y, (o.len + o.lenR * r3) * sc, Math.min(1, env * o.dens), cols, par);
       }
       // spindrift off the roof ridge and turret, carried downwind
@@ -405,10 +410,10 @@
       return {
         // cold still air: the column climbs tall and straight
         chim: chim({ tone: s, rise: 66, driftK: 0.5, gust: 12, lvK: 1.55 }),
-        far: farBands({ cols: [mix(P.night[6], P.ice[2], 0.4), mix(P.night[7], P.ice[3], 0.4)], alpha: 0.5, seed: 211, gain: 0.85 }),
-        ground: [groundBand({ cols: [mix(P.ice[2], P.night[7], 0.35), mix(P.ice[3], P.snow[6], 0.45)], alpha: 0.32, c: 10, up: 2.5, down: 4, lo: 0.2, hi: 0.8, seed: 231, holes: [PORCH_HOLE] })],
+        far: farBands({ cols: [mix(P.night[7], P.ice[3], 0.4), mix(P.night[8], P.ice[4], 0.4)], alpha: 0.5, seed: 211, gain: 0.85 }),
+        ground: [groundBand({ cols: [mix(P.ice[3], P.night[8], 0.3), mix(P.ice[4], P.snow[7], 0.45)], alpha: 0.36, c: 10, up: 2.5, down: 4, lo: 0.2, hi: 0.8, seed: 231, holes: [PORCH_HOLE] })],
         front: [frontBand({ cols: [mix(P.ice[2], P.night[7], 0.35), mix(P.ice[3], P.snow[6], 0.45)], alpha: 0.3, n: 5, seed: 241, holes: [] })],
-        sky: skyHaze({ cols: [mix(P.night[3], P.stone[3], 0.5), mix(P.night[4], P.violet[4], 0.5)], alpha: 0.32, seed: 251, n: 5, lit: 0.5 }),
+        sky: skyHaze({ cols: [mix(P.night[5], P.stone[4], 0.5), mix(P.night[6], P.stone[5], 0.45)], alpha: 0.3, seed: 251, n: 5, lit: 0.5 }),
       };
     },
     spring(ed) {
@@ -424,15 +429,15 @@
     },
     summer(ed) {
       const s = SMOKE.moon();
-      const warm = [mix(P.night[6], P.amber[2], 0.3), mix(P.night[7], P.amber[3], 0.32)];
+      const warm = [mix(P.night[7], P.amber[3], 0.3), mix(P.night[8], P.amber[4], 0.28)];
       return {
         // thin wisp from the hearth on the warm night
         chim: chim({ tone: s, n: 22, rad0: 1.8, radK: 4.6, lvK: 1.4, hlK: 1.1, life: 12, rise: 52, curl: 2.8 }),
         // the midsummer bonfire: taller, wider column, more puffs
-        camp: camp({ tone: campTones(s), n: 58, life: 9, sy: CF.base - 50, rise: 104, riseR: 14, spread: 6, curl: 3.2, rad0: 1.2, radK: 7.2, lvK: 1.6, gust: 14 }),
+        camp: camp({ tone: campTones(s), n: 64, life: 9, sy: CF.base - 54, rise: 108, riseR: 14, spread: 7, curl: 3.4, rad0: 1.4, radK: 8.4, lvK: 1.85, hlK: 1.4, gust: 14 }),
         far: farBands({ cols: [mix(P.night[5], P.amber[2], 0.32), mix(P.night[6], P.amber[3], 0.3)], alpha: 0.5, seed: 411, gain: 0.9 }),
         // warm low haze lying over the meadow
-        ground: [groundBand({ cols: warm, alpha: 0.34, c: 10, up: 3, down: 7, lo: 0.05, hi: 0.6, gain: 0.75, floor: 0.25, seed: 431, holes: [PORCH_HOLE, ...fireHoles(ed)] })],
+        ground: [groundBand({ cols: warm, alpha: 0.4, c: 10, up: 3.5, down: 7, lo: 0.05, hi: 0.6, gain: 0.75, floor: 0.25, seed: 431, holes: [PORCH_HOLE, ...fireHoles(ed)] })],
         front: [frontBand({ cols: warm, alpha: 0.3, n: 5, seed: 441, holes: fireFront(ed) })],
       };
     },
@@ -459,7 +464,7 @@
           groundBand({ cols: lamp, alpha: 0.3, c: 9, up: 4, down: 6, lo: 0.05, hi: 0.65, gain: 0.7, floor: 0.2, seed: 631, holes: [PORCH_HOLE, { x: 220, y: 221, rx: 22, ry: 7 }] }),
         ],
         front: [frontBand({ cols: lamp, alpha: 0.26, n: 4, seed: 641, holes: [] })],
-        sky: skyHaze({ cols: [mix(P.night[3], P.wood[4], 0.4), mix(P.night[4], P.wood[5], 0.4)], alpha: 0.24, seed: 651, n: 5, lit: 0.45 }),
+        sky: skyHaze({ cols: [mix(P.night[5], P.wood[5], 0.4), mix(P.night[6], P.wood[6], 0.4)], alpha: 0.24, seed: 651, n: 5, lit: 0.45 }),
       };
     },
     winter(ed) {
@@ -467,22 +472,24 @@
       const haze = [mix(P.snow[4], P.violet[5], 0.15), mix(P.snow[5], P.snow[6], 0.5)];
       return {
         // dense, slow, billowing hearth smoke on the coldest night
-        chim: chim({ tone: s, n: 40, life: 16, rise: 62, radK: 8.6, lvK: 1.85, hlK: 1.4 }),
+        chim: chim({ tone: s, n: 46, life: 16, rise: 64, rad0: 2.8, radK: 9.4, lvK: 2.1, hlK: 1.6, gust: 14 }),
         far: farBands({ cols: [mix(P.snow[3], P.violet[4], 0.25), mix(P.snow[4], P.violet[5], 0.2)], alpha: 0.62, seed: 711, gain: 1, floor: 0.45, up: 6, down: 4 }),
         // low snow haze hugging the drifts
-        ground: [groundBand({ cols: haze, alpha: 0.4, c: 10, up: 3, down: 6, lo: 0.1, hi: 0.7, gain: 0.85, floor: 0.15, seed: 731, holes: [PORCH_HOLE] })],
+        ground: [
+          groundBand({ cols: haze, alpha: 0.4, c: 10, up: 3, down: 6, lo: 0.1, hi: 0.7, gain: 0.85, floor: 0.15, seed: 731, k: 2, holes: [PORCH_HOLE] }),
+        ],
         front: [frontBand({ cols: haze, alpha: 0.4, n: 7, seed: 741, holes: [] })],
         near: powder({
-          cols: [P.snow[8], P.snow[6]],
-          n: 16,
+          cols: [P.snow[8], P.snow[7]],
+          n: 24,
           life: 6,
           seed: 761,
-          y0: 204,
-          y1: 240,
+          y0: 202,
+          y1: 242,
           travel: 46,
           travelR: 40,
-          len: 7,
-          lenR: 8,
+          len: 10,
+          lenR: 12,
           dens: 1.3,
           roof: [
             { x0: 222, y0: 77, x1: 246, y1: 99, life: 11, on: 0.35 },
@@ -496,11 +503,11 @@
       return {
         chim: chim({ tone: s, rise: 64, driftK: 0.55, gust: 14 }),
         camp: camp({ tone: campTones(s) }),
-        far: farBands({ cols: [mix(P.night[6], P.ice[2], 0.4), mix(P.night[7], P.ice[3], 0.4)], alpha: 0.48, seed: 811, gain: 0.85 }),
+        far: farBands({ cols: [mix(P.night[7], P.ice[3], 0.4), mix(P.night[8], P.ice[4], 0.4)], alpha: 0.46, seed: 811, gain: 0.85 }),
         ground: [
           groundBand({
-            cols: [mix(P.ice[2], P.night[7], 0.35), mix(P.ice[3], P.snow[6], 0.45)],
-            alpha: 0.3,
+            cols: [mix(P.ice[3], P.night[8], 0.3), mix(P.ice[4], P.snow[7], 0.45)],
+            alpha: 0.34,
             c: 10,
             up: 2.5,
             down: 4,
@@ -518,7 +525,7 @@
           }),
         ],
         // a big show leaves more smoke hanging over the hills
-        sky: skyHaze({ cols: [mix(P.night[3], P.stone[3], 0.5), mix(P.night[4], P.violet[4], 0.5)], alpha: 0.4, seed: 851, n: 8, a: 0.7, lit: 0.55, moon: LY.moon }),
+        sky: skyHaze({ cols: [mix(P.night[5], P.stone[4], 0.5), mix(P.night[6], P.stone[5], 0.45)], alpha: 0.36, seed: 851, n: 8, a: 0.7, lit: 0.55, moon: LY.moon }),
       };
     },
   };

@@ -8,6 +8,8 @@
 //     [--crop x,y,w,h]                render only this region of the 480x270 frame
 //     [--pad WxH]                     centre the scaled picture on a black WxH canvas
 //   e.g. vertical 9:16 short: --loop 60 --crop 152,0,154,270 --scale 7 --pad 1080x1920
+//     [--fade S]                      fade in from / out to black over S seconds
+//     [--edition id]                  which Rainy Hollow edition to render
 // Frame i shows t = start + i/fps, and frame LOOP*fps would equal frame 0,
 // so repeating the file back-to-back is seamless.
 import { spawn } from 'node:child_process';
@@ -36,7 +38,10 @@ const SW = crop.w * scale;
 const SH = crop.h * scale;
 const [OW, OH] = pad || [SW, SH];
 if (OW < SW || OH < SH) throw new Error(`--pad ${OW}x${OH} is smaller than the scaled picture ${SW}x${SH}`);
-const padF = pad ? `,pad=${OW}:${OH}:${(OW - SW) >> 1}:${(OH - SH) >> 1}:color=black` : '';
+const fade = Number(a.fade || 0);
+const padF =
+  (pad ? `,pad=${OW}:${OH}:${(OW - SW) >> 1}:${(OH - SH) >> 1}:color=black` : '') +
+  (fade > 0 ? `,fade=t=in:st=0:d=${fade},fade=t=out:st=${(seconds - fade).toFixed(3)}:d=${fade}` : '');
 const color709 = ['-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv'];
 const vfYuv = `scale=${SW}:${SH}:flags=neighbor:out_color_matrix=bt709:out_range=tv${padF}`;
 const enc = {
