@@ -539,7 +539,7 @@
       // overhead deck: big heavy masses hanging from the ceiling (2 tiles / loop)
       near: { y: 0, w: 480, h: 66, k: 2, rows: DECK_ROWS.near, tn: genDeck(7717, 480, 66, local(DECK_ROWS.near, 0), 0) },
       // lower deck towards the horizon: long flat masses (1 tile / loop)
-      mid: { y: 40, w: 600, h: 104, k: 1, rows: DECK_ROWS.mid, tn: genDeck(9151, 600, 104, local(DECK_ROWS.mid, 40), 0) },
+      mid: { y: 28, w: 600, h: 116, k: 1, rows: DECK_ROWS.mid, tn: genDeck(9151, 600, 116, local(DECK_ROWS.mid, 28), 0) },
     };
     return deckGeo;
   }
@@ -547,8 +547,9 @@
   function deckPalette(rows, dk) {
     const pal = [];
     for (const r of rows) {
+      // overhead bellies are softer (calm title area); far rows need the contrast
       const body = mix(dk.top, dk.hor, Math.pow(r.depth, 0.85));
-      pal.push(mix(body, dk.belly, 0.62), mix(body, dk.belly, 0.3), body);
+      pal.push(mix(body, dk.belly, 0.46 + 0.16 * r.depth), mix(body, dk.belly, 0.2 + 0.1 * r.depth), body);
     }
     return pal;
   }
