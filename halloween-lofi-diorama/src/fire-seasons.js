@@ -178,8 +178,14 @@
     }
   }
 
+  // lights() and the draw pass ask for the same frame: compute the list once
   const LIVE = [];
+  let liveT = NaN;
+  let liveS = null;
   function liveShells(t, s) {
+    if (t === liveT && s === liveS) return LIVE;
+    liveT = t;
+    liveS = s;
     LIVE.length = 0;
     for (let i = 0; i < s.slots; i++) {
       const sh = shellState(t, i, s);
@@ -425,7 +431,7 @@
       const fl = flashOf(sh);
       if (fl <= 0.02) continue;
       const col = HD.LIGHT.firework[sh.col] || HD.LIGHT.firework.gold;
-      const rad = Math.max(12, Math.round((sh.R * 1.7) / 4) * 4);
+      const rad = Math.max(12, Math.round((sh.R * 1.45) / 4) * 4);
       HD.glow(g, sh.bx, sh.by, rad, col, 0.3 * fl);
     }
     for (const sh of list) {
