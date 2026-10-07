@@ -74,6 +74,7 @@
       clouds: {
         far: [mix(N[4], V[3], 0.45), mix(N[6], V[4], 0.4), mix(N[6], P.blossom[3], 0.32), mix(N[6], P.blossom[4], 0.3)],
         mid: [mix(N[3], V[2], 0.45), mix(N[4], V[3], 0.35), mix(N[5], V[3], 0.3), mix(N[7], P.blossom[4], 0.25)],
+        near: [mix(N[2], V[1], 0.5), mix(N[3], V[2], 0.4), mix(N[4], V[2], 0.4), mix(N[6], P.blossom[3], 0.3)],
         lit: { tgt: [P.moon[0], P.moon[0], P.moon[1]], k: [[0.04, 0.07, 0.12, 0.24], [0.08, 0.13, 0.22, 0.42], [0.14, 0.22, 0.36, 0.6]], r: [[52, 10], [34, 7], [20, 4]] },
       },
     },
@@ -92,6 +93,7 @@
       clouds: {
         far: [mix(N[4], V[3], 0.5), mix(V[4], P.autumn[3], 0.32), mix(V[5], P.autumn[3], 0.34), mix(V[5], P.autumn[4], 0.3)],
         mid: [mix(N[2], V[2], 0.5), mix(N[3], V[3], 0.45), mix(N[4], V[3], 0.45), mix(N[5], V[4], 0.45)],
+        near: [mix(N[1], V[1], 0.55), mix(N[2], V[2], 0.5), mix(N[3], V[2], 0.5), mix(N[4], V[3], 0.55)],
         lit: { tgt: [P.amber[2], P.amber[3], P.amber[4]], k: [[0.08, 0.12, 0.2, 0.4], [0.14, 0.22, 0.36, 0.62], [0.24, 0.36, 0.52, 0.85]], r: [[84, 12], [56, 8], [34, 5]] },
       },
     },
@@ -554,6 +556,60 @@
     return pal;
   }
 
+  // ------------------------------------------------------------------
+  // Broken sky (spring, harvest): a third, near layer so the sky is mostly
+  // cloud with gaps of stars. Wide banks hang from the top of the frame with
+  // lumpy, uneven undersides; a few lower clumps drift beneath the moon's
+  // height. Shaded with the classic cloud() so all three layers match, and
+  // lit around the moon like the others. (2 tiles / loop, faster than mid.)
+  // ------------------------------------------------------------------
+  let brokenGeo = null;
+  function brokenNear() {
+    if (brokenGeo) return brokenGeo;
+    const w = 480;
+    const h = 112;
+    const rng = HD.rng(5309);
+    const tn = new K.Tones(w, h);
+    // overhead banks [x, width, depth]: their tops run out of the frame
+    for (const b of [[4, 150, 1], [196, 112, 0.7], [338, 128, 0.85]]) {
+      const x0 = b[0] + rng() * 14;
+      const bw = b[1];
+      const n = Math.max(5, Math.round(bw / 13));
+      const body = [];
+      for (let i = 0; i < n; i++) {
+        const u = (i + 0.5) / n;
+        const hump = Math.sin(Math.PI * Math.pow(u, 0.85));
+        const ry = 4 + hump * 8 * b[2] + rng() * 3;
+        body.push([x0 + u * bw + (rng() - 0.5) * 6, 4 + hump * 12 * b[2] + rng() * 6 - ry * 0.4, ry * (1.3 + rng() * 0.5), ry, undefined, rng() < 0.45]);
+        body.push([x0 + u * bw, -8, (bw / n) * 1.3, 10, undefined, false]); // the part above the frame
+      }
+      K.cloud(tn, body, true, 3);
+      // a straggling tail hanging under one end of the bank
+      const tx = x0 + (rng() < 0.5 ? bw * 0.15 : bw * 0.8);
+      const tail = [];
+      for (let j = 0; j < 3; j++) tail.push([tx + j * (8 + rng() * 5), 22 + b[2] * 10 + rng() * 4, 7 + rng() * 5, 3 + rng() * 2, undefined, j > 0]);
+      K.cloud(tn, tail, true, 2);
+    }
+    // lower clumps [x, width, base y], staggered under the gaps between banks
+    for (const c of [[150, 70, 96], [300, 92, 104], [440, 64, 92]]) {
+      const x0 = c[0] + rng() * 12;
+      const cw = c[1];
+      const yb = c[2];
+      const body = [];
+      const n = Math.max(4, Math.round(cw / 12));
+      for (let i = 0; i < n; i++) {
+        const u = (i + 0.5) / n;
+        const hump = Math.sin(Math.PI * Math.pow(u, 0.8));
+        const ry = 3 + hump * 6 + rng() * 2;
+        body.push([x0 + u * cw + (rng() - 0.5) * 5, yb - ry * 0.55 - rng() * 2, ry * (1.3 + rng() * 0.5), ry, yb + (rng() < 0.3 ? 2 : 0), rng() < 0.4]);
+      }
+      K.cloud(tn, body, true, 3);
+    }
+    K.tidy(tn, 2);
+    brokenGeo = { y: 0, w, h, k: 2, tn };
+    return brokenGeo;
+  }
+
   function bakeClouds(ed) {
     const lk = lookOf(ed);
     const cl = lk.clouds;
@@ -564,7 +620,7 @@
     if (cl.lit && ed.moon !== 'none') masks = cl.lit.r.map((r) => K.radialMask(MR.w, MR.h, MOON.x - MR.x, MOON.y - MR.y, r[0], r[1]));
     const deck = cl.deck ? deckLayers() : null;
     K.LAYERS.forEach((Ly0, i) => {
-      const Ly = deck ? deck[ids[i]] : Ly0;
+      const Ly = deck ? deck[ids[i]] : ids[i] === 'near' ? brokenNear() : Ly0;
       const pal = deck ? Ly && deckPalette(Ly.rows, cl.deck) : cl[ids[i]];
       if (!pal) return;
       const L = { Ly, cv: K.tonesToCanvas(Ly.tn, pal), lit: null, masks };
@@ -578,6 +634,8 @@
     return out;
   }
   const cloudArt = HD.perEdition(bakeClouds);
+  // read-only handle for the QA tools (cloud coverage, palette probes)
+  HD._bgSeasons = { cloudArt, lookOf };
 
   function drawClouds(g, t, id) {
     const all = cloudArt();

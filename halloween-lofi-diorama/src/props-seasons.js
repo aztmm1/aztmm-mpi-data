@@ -335,6 +335,7 @@
         const low = clamp((y - c.y) / Math.max(3, c.r), -1, 1);
         v -= 0.1 * Math.max(0, low);
         // crease: a higher sphere towards the light casts a crescent
+        let crease = false;
         for (const [ox, oy] of [[1, -1], [2, -2], [1, -2]]) {
           const xx = x + ox;
           const yy = y + oy;
@@ -342,12 +343,14 @@
           const q2 = (yy - y0) * w + (xx - x0);
           if (win[q2] !== si && H[q2] > H[q] + 1.6) {
             v -= 0.22;
+            crease = true;
             break;
           }
         }
         let i = clamp(Math.floor(v * top + 0.5), 0, top);
         if (!inM(x, y + 1) && i > 1) i = Math.max(1, i - 2); // shaded underside lip
         let col = ramp[i];
+        if (crease && o.crease && i <= 2) col = o.crease;
         // cold rim on the moon-facing outline
         if (m && rimC) {
           const dx = m.x - x;
@@ -362,6 +365,11 @@
         }
         if (m && Math.hypot(x - m.x, y - m.y) < m.r + 0.5) col = o.sil || ramp[0];
         B.set(x, y, col);
+        // which clump owns this pixel (lets the caller split the mass into sway layers)
+        if (o.who) {
+          const k = B.i(x, y);
+          if (k >= 0) o.who[k] = sb.ci;
+        }
       }
   }
   /** older per-clump painter, still used for small bushes */
@@ -406,9 +414,11 @@
     return {
       summer: [[P.leaf[0], P.leaf[1], P.leaf[2], P.leaf[3], P.leaf[4], P.leaf[5], mix(P.leaf[6], P.moon[0], 0.25)]],
       summerDeep: [[P.leaf[0], P.leaf[0], P.leaf[1], P.leaf[2], P.leaf[3], P.leaf[4], P.leaf[5]]],
+      // night cherry: held a step or two below the cottage's warm light; blossom[5]
+      // only on the most lit petals, blossom[6] is kept for the moon rim
       blossom: [
-        [P.blossom[0], P.blossom[1], P.blossom[2], P.blossom[3], P.blossom[4], P.blossom[5], P.blossom[6]],
-        [P.blossom[0], P.blossom[1], P.blossom[2], P.blossom[3], P.blossom[4], mix(P.blossom[5], P.blossom[6], 0.5), P.blossom[7]],
+        [P.violet[1], P.blossom[0], P.blossom[1], P.blossom[2], P.blossom[3], mix(P.blossom[3], P.blossom[4], 0.5), P.blossom[4]],
+        [P.violet[1], P.blossom[0], P.blossom[1], P.blossom[2], P.blossom[3], P.blossom[4], mix(P.blossom[4], P.blossom[5], 0.5)],
       ],
       autumn: [
         // orange
@@ -434,7 +444,9 @@
     let cfg = null;
     if (style === 'summer') cfg = { tipP: 1, tipR: [7, 9.5], sub: 4.4, step: 8, iw: [1.45, 6], iR: [7.5, 10.5], pad: 3 };
     if (style === 'blossom') cfg = { tipP: 1, tipR: [5.5, 8], sub: 3.8, step: 8, iw: [1.45, 4.8], iR: [6, 9], pad: 1 };
-    if (style === 'autumn') cfg = { tipP: 0.6, tipR: [4.5, 6.5], sub: 3.2, step: 11, iw: [1.45, 4.4], iR: [5, 7.5], pad: 0 };
+    // autumn: every limb anchor keeps its clump and most twigs end in one, big enough that
+    // neighbours merge into a few masses per limb; only the outer tips stay bare
+    if (style === 'autumn') cfg = { tipP: 0.9, tipR: [5.5, 7.5], sub: 3.6, step: 9, iw: [1.45, 4.6], iR: [6.5, 9], pad: 1 };
     const pickRamp = (x, y) => {
       if (style === 'summer') return HD.hash(Math.floor(x / 18), Math.floor(y / 16), 5) < 0.3 ? RP.summerDeep[0] : RP.summer[0];
       if (style === 'blossom') return RP.blossom[HD.hash(Math.floor(x / 14), Math.floor(y / 12), 6) < 0.6 ? 0 : 1];

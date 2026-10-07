@@ -1,6 +1,7 @@
-# Rainy Hollow: a pixel-art Halloween diorama for lofi
+# Kitty Diary 2026: a pixel-art year of seasons, festivals and a family of cats
 
-Rainy Hollow is an animated pixel-art Halloween diorama built to be the looping
+Kitty Diary 2026 is an animated pixel-art diary of a year. It began as **Rainy Hollow**, a Halloween
+diorama built to be the looping
 cover of a long lofi music video. A crooked cottage glows on a cold, rainy
 night. A campfire spits sparks, jack-o'-lanterns flicker, smoke drifts from
 the chimney, and a black cat watches the rain from the window. The ground is
@@ -19,7 +20,7 @@ cut away like a diorama to show the soil, roots and a buried coffin.
 
 ## Watch it
 
-Open `index.html` in a browser, or `dist/rainy-hollow.html` (the same page as one self-contained file).
+Open `index.html` in a browser, or `dist/kitty-diary-2026.html` (the same page as one self-contained file).
 
 | key | action |
 |---|---|
