@@ -19,6 +19,9 @@
  * loops seamlessly. Busy-ness scales with HD.edition.fireworks; colours come
  * from HD.edition.fireworkColors. The show is looked up from HD.edition at
  * draw time (prebuilt for every edition in init), so live switching works.
+ * Summer Story: `nyc` gets a calm red/white/blue July 4th show placed in the
+ * chapter's open sky pockets (STORY), `match` only a 3-burst goal cheer timed
+ * by HD.summer.goal (GOAL); the original editions' shows are untouched.
  * (The bonfire lives in fire.js as a scaled fire rig.)
  */
 (function () {
