@@ -48,6 +48,15 @@
     blowing(t) {
       return win(t, 98, 100);
     },
+    /** DC birthday: dad hands the niece her small yellow toy crane (0..1 in the
+     *  hand-over window); before the window the crane sits wrapped by the cake,
+     *  after it she plays with it for the rest of the loop */
+    gift(t) {
+      return win(t, 40, 46);
+    },
+    giftOpened(t) {
+      return sec(t) >= 46;
+    },
     /** Match Night goal: windows flash, cheer and mini fireworks */
     goal(t) {
       return win(t, 150, 158);

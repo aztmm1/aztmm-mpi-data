@@ -19,10 +19,10 @@ and Halloween staying pixel-identical. On top of that:
 |---|---|---|
 | you | the series' black cat (short fur) | sunglasses (black wayfarers or gold aviators); outfits by chapter: coral tee, plaid shirt, white tee, blue linen shirt |
 | partner | long-haired dark cat, long flowing fur that drifts in the breeze | white tee; sits close to you |
-| niece | small toddler kitten, dark fluffy fur with a little tuft | outfit by chapter: blue tee, striped navy/white tee + tiny life vest, burgundy floral dress + yellow sippy cup; tiny red/black/white sneakers. **Comes and goes:** walks in, stays a while, walks off, loop-safe |
+| niece | super-cute baby kitten: oversized round head, tiny body, big shiny eyes, a small sweet smile, dark-brown fluffy fur, a little top-knot tied with a BIG PINK BOW (an original design: do NOT imitate any existing character, e.g. no white cat with a red ear-bow and no mouth) | outfit by chapter: blue tee, striped navy/white tee + tiny life vest, burgundy floral dress + yellow sippy cup; tiny red/black/white sneakers. **Comes and goes:** walks in, stays a while, walks off, loop-safe |
 | sister | dark long-haired cat | blue bow headband, blue-and-white striped shirt |
 | brother-in-law | salt-and-pepper tabby | gold aviators, cream polo or striped shirt |
-| dad | older, slightly rounder cat; dark fur silvering at the muzzle and temples, grey whiskers, a big laugh | red polo with a white-tipped collar; carries the niece and plays with her; a yellow toy crane truck as a gift; birthday chapter only |
+| dad | older, slightly rounder cat; dark fur silvering at the muzzle and temples, grey whiskers, a big laugh | red polo with a white-tipped collar; carries the niece and plays with her; he gives her a SMALL YELLOW TOY CRANE (the gift moment: he hands it over, she plays with it by the cake); birthday chapter only |
 
 The cats are 10-16 px tall, the niece about 7-9 px. They have readable
 silhouettes and idle animation at 6-8 fps: blinks, tail swishes, ear flicks,
