@@ -871,9 +871,10 @@
       }
   }
 
-  // LA: you, niece, sister, brother-in-law
-  const LA_A = 116; // between her mum and you
-  const LA_B = 127; // three px from your feet
+  // LA: you, niece, sister, brother-in-law, gathered in the patio heater's glow
+  const LA_X = SU.heater.x - 10; // you, just left of the heater
+  const LA_A = LA_X - 18; // between her mum and you
+  const LA_B = LA_X - 7; // three px from your feet
   function laKit(t) {
     const s = HD.summer.sec(t);
     const trips = [
@@ -896,13 +897,13 @@
   }
   function drawLA(g, t) {
     const k = laKit(t);
-    drawAdult(g, t, Object.assign(BIL_LA, { tailSide: -1 }), 92, 228, 5, {});
-    drawAdult(g, t, Object.assign(SISTER, { tailSide: -1 }), 105, 230, 6, { br: R(HD.summer.breeze(t)), look: k.nearYou ? undefined : 1 });
+    drawAdult(g, t, Object.assign(BIL_LA, { tailSide: -1 }), LA_X - 42, 228, 5, {});
+    drawAdult(g, t, Object.assign(SISTER, { tailSide: -1 }), LA_X - 29, 230, 6, { br: R(HD.summer.breeze(t)), look: k.nearYou ? undefined : 1 });
     const ys = you('la');
     const yi = idle(t, 3);
     const ts = T.step(t, 8);
     const hop = !k.walking && k.nearYou && T.cycle(ts, 2, 13, 77).age * 13 < 1.5;
-    drawAdult(g, t, Object.assign(ys, { tailSide: 1 }), 134, 231, 3, { look: k.nearYou ? -1 : yi.look, mouth: hop ? 'laugh' : 'smile' });
+    drawAdult(g, t, Object.assign(ys, { tailSide: -1 }), LA_X, 231, 3, { look: k.nearYou ? -1 : yi.look, mouth: hop ? 'laugh' : 'smile' });
     const ki = kitIdle(t, 11);
     const wf = Math.floor(ts * 8) % 2;
     const kp = k.walking ? (wf ? 'walk' : 'stand') : 'stand';
@@ -914,11 +915,12 @@
       look: k.walking ? 0 : k.nearYou ? 1 : -1,
     });
   }
-  // San Diego: you with the niece on your shoulders, sister, brother-in-law
+  // San Diego: you with the niece on your shoulders, sister, brother-in-law,
+  // in the porch lantern's pool
   function drawSD(g, t) {
-    drawAdult(g, t, Object.assign(SISTER, { tailSide: -1 }), 94, 230, 6, { br: R(HD.summer.breeze(t)) });
-    drawAdult(g, t, Object.assign(BIL, { tailSide: -1 }), 107, 228, 5, { look: 1 });
-    const x = 133;
+    drawAdult(g, t, Object.assign(SISTER, { tailSide: -1 }), 150, 230, 6, { br: R(HD.summer.breeze(t)) });
+    drawAdult(g, t, Object.assign(BIL, { tailSide: -1 }), 163, 228, 5, { look: 1 });
+    const x = 180;
     const base = 232;
     const ys = you('sandiego');
     const yi = idle(t, 3);
