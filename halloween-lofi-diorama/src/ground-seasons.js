@@ -986,7 +986,7 @@
     pocket(K, 367, 253, 10, 4.2, (x, y) => (K.vn(x / 3, y / 2, 701) > 0.6 ? P.soil[2] : mix(P.soil[1], P.violet[1], 0.5)), P.soil[0], 702);
     const fr = { h: mix(P.leaf[7], P.gold[3], 0.22), G: mix(P.leaf[5], P.vine[4], 0.3), d: P.leaf[3], k: P.leaf[1], b: mix(P.bone[2], P.leaf[6], 0.45) };
     stamp(K, ['..hhh.......', '.hGGGh.hhh..', 'hGkkGGhGGGh.', 'GGGGGGGGGGGh', 'bGGGGdGGGGGd', 'bbGGdGGGGGd.', '.bbbddddd...'], 361, 250, fr);
-    return { breathe: [367, 250, fr.h] };
+    return { breathe: [369, 251, fr.h] };
   };
   // a rabbit asleep at the end of its burrow
   SECRET['rabbit-burrow'] = (K) => {
@@ -997,7 +997,7 @@
     const rbB = mix(P.stone[6], P.wood[6], 0.45);
     const rb = { E: mix(P.stone[5], P.wood[5], 0.4), p: P.blossom[4], B: rbB, h: mix(P.stone[7], P.bone[2], 0.5), k: P.soil[0], n: P.blossom[5], T: P.bone[3], b: mix(rbB, P.bone[2], 0.4), d: P.stone[2] };
     stamp(K, ['....EEEEE.....', '..EEppppEE....', '.hhBBBBBBhhh..', 'hBBkBBBBBBBBh.', 'nBBBBBBBBBBBBT', '.BBBbbbBBBBBTT', '..ddd..ddddd..'], 359, 249, rb);
-    return { breathe: [366, 251, rb.h] };
+    return { breathe: [369, 251, rb.h] };
   };
   // ant colony: tunnels, chambers with eggs, ants on the move (4 fps)
   const ANT_PATHS = [
