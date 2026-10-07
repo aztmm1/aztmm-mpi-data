@@ -1772,6 +1772,9 @@
   // bench / table are part of the stage and the cats gather round them.
   // ==================================================================
   const SU = L.summer;
+  // the 4-12 fps sprite cadences are phased half a frame off the loop seam,
+  // so LOOP -> 0 falls inside a held frame (still a pure, loop-safe f(t))
+  const Q = 0.05;
   const breeze01 = (t) => clamp((HD.summer.breeze(t) + 1) / 2, 0, 1);
 
   // ---- flag pole with the US flag (match, nyc, home) ------------------
@@ -1830,10 +1833,10 @@
     blit(g, lazy('flagPole', bakeFlagPole));
     if (!FLAG_TEX) FLAG_TEX = bakeFlagTex();
     g.em.px(FP.x + 6, FP.base - 2, P.amber[7]); // spotlight lens
-    const ts = T.step(t, 10);
-    const b = breeze01(ts);
+    // continuous time: the cloth's rounding steps already give it a pixel cadence
+    const b = breeze01(t);
     const amp = 0.6 + 1.3 * b;
-    const ph = T.phase(ts, 1.3);
+    const ph = T.phase(t, 1.3);
     for (let x = 0; x < FLAG.w; x++) {
       const u = x / (FLAG.w - 1);
       const a = Math.PI * 2 * (u * 1.4 - ph);
@@ -2688,7 +2691,7 @@
     if (HD.tag('birthday-table')) candleLights(t, Lt);
   }
   S.fxBoat = function (g, t) {
-    if (HD.tag('boat')) drawBoat(g, t);
+    if (HD.tag('boat')) drawBoat(g, t + Q);
   };
 
   // ------------------------------------------------------------------
@@ -2803,7 +2806,7 @@
         }
       }
     }
-    if (HD.tag('giraffes')) drawGiraffes(g, t); // behind the fence, in front of the tree
+    if (HD.tag('giraffes')) drawGiraffes(g, t + Q); // behind the fence, in front of the tree
     void ed;
   };
 
@@ -2811,7 +2814,7 @@
     const A = gardenArt();
     blit(g, A.fence);
     if (gardenKeeps(HD.edition, 'bird')) blit(g, A.bird);
-    if (HD.tag('balloons')) drawBalloons(g, t, BAL_BUNCHES);
+    if (HD.tag('balloons')) drawBalloons(g, t + Q, BAL_BUNCHES);
     if (HD.tag('diyas-yard')) FENCE_DIYAS.forEach(([x, y], i) => FX.diya(g, x + 3, y, t, 500 + i));
     if (HD.tag('birdhouse')) drawRobin(g, t);
   };
@@ -2825,7 +2828,7 @@
     if (HD.tag('hay-bales')) blit(g, lazy('hay', bakeHay)); // base 221..225
     if (HD.tag('brick-castle')) {
       blit(g, lazy('castle', bakeCastle)); // base 223
-      drawCastleFlag(g, t);
+      drawCastleFlag(g, t + Q);
     }
     blit(g, A.front); // shrubs, bases 222..226
     if (A.snowman) {
@@ -2841,7 +2844,7 @@
   };
 
   S.string = function (g, t) {
-    if (HD.tag('plaza-lights')) drawPlazaLights(g, t);
+    if (HD.tag('plaza-lights')) drawPlazaLights(g, t + Q);
     if (!HD.tag('paper-lantern-string')) return;
     const kind = HD.edition.id === 'harvest' ? 'harvest' : 'paper';
     for (const [x, y] of STRING.pts) g.px(x, y, P.night[1]);
@@ -2851,13 +2854,13 @@
   S.yardBack = function (g, t) {
     if (HD.tag('flower-beds')) blit(g, yardArt.beds());
     if (HD.tag('eggs')) blit(g, lazy('eggs', bakeEggs));
-    if (HD.edition.story) summerBack(g, t);
+    if (HD.edition.story) summerBack(g, t + Q);
   };
 
   S.yardMid = function (g, t) {
     if (HD.tag('harvest-pumpkins')) blit(g, lazy('harvest', bakeHarvestPumpkins));
     if (HD.tag('diyas-yard')) PATH_DIYAS.forEach(([x, y], i) => FX.diya(g, x, y, t, 520 + i));
-    if (HD.edition.story) summerMid(g, t);
+    if (HD.edition.story) summerMid(g, t + Q);
   };
 
   S.yardFront = function () {};
@@ -2875,7 +2878,7 @@
   // lights (aggregated)
   // ------------------------------------------------------------------
   S.lights = function (t, Lt) {
-    if (HD.edition.story) summerLights(t, Lt);
+    if (HD.edition.story) summerLights(t + Q, Lt);
     if (HD.tag('tree-red-lanterns') && redHooks) {
       redHooks.forEach((h, i) => {
         const seed = 900 + i * 7;

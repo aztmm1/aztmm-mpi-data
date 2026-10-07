@@ -1257,13 +1257,13 @@
         const fc = st < 0 ? Math.floor(w / 3) : Math.ceil((2 * w) / 3) - 1;
         const tri = rows[h - 1].indexOf('.') >= 0; // a pennant (pointed tip)
         for (let r = 0; r < h; r++) {
-          const sh = tri && st !== 0 && r >= h - 2 ? st : 0;
+          const sh = tri && st !== 0 && r === h - 1 ? st : 0; // only the tip swings
           for (let c = 0; c < w; c++) {
             let ch = rows[r][c];
             if (ch === '.') continue;
             if (!tri && st !== 0 && r === h - 1 && (st > 0 ? c === 0 : c === w - 1)) continue; // corner lifts
             let col;
-            if (st !== 0 && r > 0 && c === fc) col = colorOf(ch.toLowerCase());
+            if (!tri && st !== 0 && r > 0 && c === fc) col = colorOf(ch.toLowerCase());
             else if (!tri && st !== 0 && r > 0 && c === fc - st) col = lift(colorOf(ch));
             else col = colorOf(ch);
             g.px(1 + c + sh, dy[c] + r, col);
@@ -1306,14 +1306,14 @@
     if (!has(ed, 'bunting-party')) return null;
     const out = [];
     let k = 0;
-    const put = (cd, xa, xb) => {
-      for (let x = xa; x + 4 <= xb; x += 7) {
+    const put = (cd, xa, xb, pitch) => {
+      for (let x = xa; x + 4 <= xb; x += pitch) {
         const [c, d] = PARTY[k++ % PARTY.length];
         out.push(hangFlag(cd, x, PENNANT, (ch) => (ch === 'P' ? c : d)));
       }
     };
-    put(EAVE_CORD, 165, 275);
-    put(PORCH_CORD, 211, 234);
+    put(EAVE_CORD, 165, 275, 7);
+    put(PORCH_CORD, 210, 234, 6);
     return out;
   });
   /** stir state of the i-th flag on a string: the breeze runs along it */
@@ -1608,11 +1608,12 @@
       [3, 2, 0],
     ];
     for (const [x, y, big] of bl) {
-      putW(I, w, x, y, PLM[5]);
-      putW(I, w, x - 1, y, PLM[4]);
-      putW(I, w, x + 1, y, PLM[4]);
-      putW(I, w, x, y - 1, PLM[4]);
-      if (big) putW(I, w, x, y + 1, PLM[3]);
+      // deep red petals (the window light relights them crimson), a paler heart
+      putW(I, w, x, y, PLM[4]);
+      putW(I, w, x - 1, y, PLM[2]);
+      putW(I, w, x + 1, y, PLM[2]);
+      putW(I, w, x, y - 1, PLM[2]);
+      if (big) putW(I, w, x, y + 1, PLM[1]);
     }
     // the vase: a slim meiping, dark against the glow
     rowsW(I, w, ['.nn.', 'vvvv', 'vVvv', 'vVvv', 'vvvv', '.vv.', 'vvvv'], 11, 15, { n: A[0], v: A[0], V: A[1] });
@@ -1659,11 +1660,11 @@
       signArt();
     },
     winCfg: (win) => winSetup().cfg[win.index],
-    winBoost: (win, t) => winSetup().boost[win.index] * (1 + 0.6 * goalPulse(t)),
+    winBoost: (win, t) => winSetup().boost[win.index] * (1 + 0.95 * goalPulse(t)),
     /** window glass level: the goal cheer lifts every window for a few beats */
     level(i, lv, t) {
       const p = goalPulse(t);
-      return p > 0 ? Math.min(K.NL - 1, lv + RND(p * 3)) : lv;
+      return p > 0 ? Math.min(K.NL - 1, lv + RND(p * 5)) : lv;
     },
     catAway: () => has(HD.edition, 'cat-away'),
     glass(i, lv) {

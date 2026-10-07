@@ -26,6 +26,7 @@
   const mix = HD.color.mix;
   const css = HD.color.css;
   const sm = HD.smoothstep;
+  const TAU = Math.PI * 2;
   const CF = LY.campfire;
   const PORCH_HOLE = { x: 220, y: 204, rx: 22, ry: 7 };
 
@@ -564,6 +565,152 @@
   }
 
   // ---------------------------------------------------------------------
+  // burst smoke (Summer Story nyc): every firework leaves a soft cloud of
+  // smoke where it burst. It forms as the stars fade, swells, drifts
+  // downwind and thins out over ~20 s, so the sky high over the skyline
+  // carries a faint drifting haze only after the bursts. The show's shell
+  // list is fixed per edition, so each cloud is a pure function of t.
+  // A burst flashing nearby relights the smoke in its colour for a moment.
+  // ---------------------------------------------------------------------
+  function burstSmoke(o) {
+    const LIFE = o.life || 20;
+    const DRIFT = o.drift || 1.6; // px/s downwind, high up
+    const ALPHA = o.alpha || 0.5;
+    // tone sets: [level 0..3][rim, core] per light colour key
+    const base = o.cols;
+    const toneCache = new Map();
+    function tonesFor(key) {
+      let tt = toneCache.get(key);
+      if (tt) return tt;
+      const lc = HD.LIGHT.firework[key] || HD.LIGHT.firework.gold;
+      const tint = css(255 * lc[0], 255 * lc[1], 255 * lc[2]);
+      tt = [0, 0.16, 0.3, 0.46].map((k) => [mix(base[0], tint, k * 0.8), mix(base[1], tint, k)]);
+      toneCache.set(key, tt);
+      return tt;
+    }
+    const layouts = new WeakMap(); // show -> per-shell puff layout
+    function layoutFor(s) {
+      let lay = layouts.get(s);
+      if (lay) return lay;
+      lay = s.list.map((sh) => {
+        const rng = HD.rng(sh.seed ^ 0x51a7);
+        const n = sh.R > 26 ? 6 : 5;
+        const puffs = [];
+        for (let k = 0; k < n; k++) {
+          const th = ((k + 0.25 + 0.5 * rng()) / n) * TAU;
+          const rho = 0.28 + 0.38 * rng();
+          puffs.push({
+            dx: Math.cos(th) * rho,
+            dy: Math.sin(th) * rho * 0.85,
+            r: 0.2 + 0.1 * rng(),
+            a: 0.75 + 0.35 * rng(),
+            kx: (rng() * 8) | 0,
+            ky: (rng() * 8) | 0,
+          });
+        }
+        // willows and crackles leave more smoke, far shells less
+        const k = (sh.type === 'willow' ? 1.15 : sh.type === 'crackle' ? 1.1 : 1) * (sh.far ? 0.55 : 1);
+        return { puffs, k, sag: sh.type === 'willow' ? 0.32 : 0.14 };
+      });
+      layouts.set(s, lay);
+      return lay;
+    }
+    const flashAt = (sh, tt) => {
+      const L = HD.LOOP;
+      let d = tt - sh.t0;
+      d -= Math.floor(d / L) * L;
+      const tb = d - sh.rise;
+      if (tb < 0 || tb > sh.life + 1) return 0;
+      return (tb < 0.1 ? tb / 0.1 : Math.exp(-(tb - 0.1) / 0.65)) * (sh.far ? 0.55 : 1);
+    };
+    const flashes = [];
+    return function (g, t) {
+      const fw = HD._fireworks;
+      const s = fw && fw.show && fw.show();
+      if (!s || !s.list || !s.list.length) return;
+      const lay = layoutFor(s);
+      const L = HD.LOOP;
+      const tt = ((t % L) + L) % L;
+      // bursts lighting the sky right now
+      flashes.length = 0;
+      for (const sh of s.list) {
+        const f = flashAt(sh, tt);
+        if (f > 0.08) flashes.push(sh, f);
+      }
+      const at = A();
+      for (let i = 0; i < s.list.length; i++) {
+        const sh = s.list[i];
+        let d = tt - (sh.t0 + sh.rise);
+        d -= Math.floor(d / L) * L; // seconds since the burst
+        if (d >= LIFE) continue;
+        const env = sm(0.5, 2.4, d) * Math.pow(1 - sm(4, LIFE, d), 1.3);
+        if (env <= 0.03) continue;
+        const ly = lay[i];
+        // relight: the strongest flash near this cloud picks the tint
+        let best = 0;
+        let key = sh.col;
+        for (let j = 0; j < flashes.length; j += 2) {
+          const o2 = flashes[j];
+          const dd = Math.hypot(o2.bx - sh.bx, o2.by - sh.by) / (o2.R * 2.2 + 8);
+          if (dd >= 1) continue;
+          const v = flashes[j + 1] * (1 - dd);
+          if (v > best) {
+            best = v;
+            key = o2.col === 'willow' ? 'gold' : o2.col;
+          }
+        }
+        const lvl = best > 0.55 ? 3 : best > 0.3 ? 2 : best > 0.12 ? 1 : 0;
+        const tones = tonesFor(key === 'willow' ? 'gold' : key)[lvl];
+        const grow = 0.55 + 0.45 * sm(0, 1.6, d) + 0.5 * (d / LIFE);
+        const R = sh.R;
+        for (const p of ly.puffs) {
+          // upper puffs ride a slightly faster wind (gentle shear), all sink a little
+          const x = sh.bx + p.dx * R * grow + DRIFT * d * (1 - 0.35 * p.dy);
+          const y = sh.by + p.dy * R * grow + ly.sag * R * sm(0, 3, d) + 0.12 * d;
+          const rad = R * p.r * (1 + 0.9 * (d / LIFE)) + 1.5;
+          let lv = env * ly.k * p.a * o.dens;
+          lv *= keepTitle(x, y, rad) * keepTop(x, y, rad);
+          if (lv <= 0.04) continue;
+          const xi = Math.round(x);
+          const yi = Math.round(y);
+          // a solid soft body (faintness comes from the alpha, so it reads as
+          // a veil, not a dot screen), dithered only at its rim
+          at.srDisc(xi, yi, rad, tones[0], lv, 0.9, p.kx - xi, p.ky - yi);
+          if (rad > 3) at.srDisc(xi + 1, yi - 1, rad * 0.62, tones[1], lv * 0.85, 0.85, p.kx - xi, p.ky - yi);
+        }
+      }
+      const ga = g.ctx.globalAlpha;
+      g.ctx.globalAlpha = ALPHA;
+      at.srFlush(g);
+      g.ctx.globalAlpha = ga;
+    };
+  }
+
+  /** thin flat strata of sea mist lying on calm water (long streaks with gaps) */
+  function strataDens(tw, seed, o) {
+    const pn = A().pnoise;
+    const layers = o.layers.map((ly, k) => ({
+      y: ly.y,
+      th: ly.th,
+      gain: ly.gain,
+      wob: pn(tw, seed + k * 5, [[1, 1], [3, 0.5]]),
+      am: pn(tw, seed + k * 5 + 1, [[2, 1], [3, 0.7], [5, 0.5], [9, 0.25]]),
+      lo: ly.lo === undefined ? 0.3 : ly.lo,
+      hi: ly.hi === undefined ? 0.8 : ly.hi,
+    }));
+    return (x, y) => {
+      let d = 0;
+      for (const L of layers) {
+        const c = L.y + (L.wob[x] - 0.5) * 2;
+        const q = (y - c) / L.th;
+        if (q > 3 || q < -3) continue;
+        d += L.gain * Math.exp(-q * q) * sm(L.lo, L.hi, L.am[x]);
+      }
+      return Math.min(1, d);
+    };
+  }
+
+  // ---------------------------------------------------------------------
   // recipes
   // ---------------------------------------------------------------------
   const SMOKE = {
@@ -754,6 +901,114 @@
       };
     },
   };
+
+  // ---------------------------------------------------------------------
+  // Summer Story chapters (SUMMER.md): the cottage travels, the air changes.
+  // Thin chimney smoke, a warm low summer haze lying at the back of the yard,
+  // a soft city haze along the skyline base, sea mist on the bay in sandiego
+  // and firework smoke drifting high over New York after the bursts.
+  // ---------------------------------------------------------------------
+  const SU = LY.summer;
+  // where the family and the chapter's set pieces stand: the yard haze and
+  // the lip wisps stay off them so the cats always read at a glance
+  const STORY_HOLES = {
+    // you + partner on the porch steps; the niece's visits come by the steps
+    match: [{ x: 218, y: 206, rx: 22, ry: 13 }, { x: 198, y: 217, rx: 12, ry: 11 }, { x: 270, y: 228, rx: 13, ry: 11 }],
+    nyc: [{ x: SU.bench.x + 1, y: 218, rx: 26, ry: 14 }, { x: 140, y: 214, rx: 8, ry: 14 }],
+    la: [{ x: 114, y: 224, rx: 38, ry: 16 }, { x: SU.heater.x, y: 214, rx: 9, ry: 14 }],
+    sandiego: [{ x: 114, y: 220, rx: 38, ry: 18 }, { x: SU.brickCat.x, y: 222, rx: 10, ry: 8 }, { x: SU.castle.x, y: 213, rx: 16, ry: 12 }],
+    dc: [{ x: 114, y: 220, rx: 42, ry: 20 }],
+    home: [{ x: 198, y: 217, rx: 12, ry: 11 }, { x: 270, y: 228, rx: 13, ry: 11 }],
+  };
+  const DUSK = new Set(['sandiego', 'home']);
+  // dusk smoke: lilac-grey with a rose highlight, so it sits in a pink sky
+  // (mid values close to a dusk sky, so the thin thread never turns to beads)
+  const duskSmoke = () => [mix(P.stone[6], P.blossom[5], 0.3), mix(P.stone[5], P.blossom[4], 0.28), mix(P.stone[5], P.violet[5], 0.4), mix(P.stone[4], P.violet[4], 0.45), mix(P.night[4], P.violet[3], 0.45)];
+  // per chapter: yard haze, skyline haze (cols / alpha)
+  const STORY_AIR = {
+    // Boston, a warm June night: green-gold meadow haze, a cool harbour haze
+    match: { yard: [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)], yardA: 0.28, city: [mix(P.night[5], P.amber[2], 0.22), mix(P.night[6], P.amber[3], 0.2)], cityA: 0.42 },
+    // New York on the Fourth: the skyline glows a little warmer
+    nyc: { yard: [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)], yardA: 0.26, city: [mix(P.night[5], P.amber[3], 0.3), mix(P.night[6], P.amber[4], 0.26)], cityA: 0.44 },
+    // Los Angeles: an amber smog glow over the basin, a warmer yard haze
+    la: { yard: [mix(P.leaf[4], P.amber[4], 0.5), mix(P.leaf[5], P.amber[5], 0.5)], yardA: 0.26, city: [mix(P.night[5], P.amber[3], 0.48), mix(P.night[6], P.amber[4], 0.42)], cityA: 0.5, cityGain: 1 },
+    // San Diego at dusk: rose-lilac haze (the bay gets its own sea mist)
+    sandiego: { yard: [mix(P.leaf[5], P.blossom[5], 0.42), mix(P.leaf[6], P.blossom[6], 0.42)], yardA: 0.26 },
+    // Washington in August: the most humid night, a fuller green-gold haze
+    dc: { yard: [mix(P.leaf[5], P.amber[4], 0.38), mix(P.leaf[6], P.amber[5], 0.38)], yardA: 0.34, yardGain: 0.95, city: [mix(P.night[6], P.leaf[5], 0.25), mix(P.night[7], P.amber[3], 0.25)], cityA: 0.46, cityFloor: 0.4 },
+    // home to Boston under a pink-violet late dusk: end-of-summer calm
+    home: { yard: [mix(P.leaf[5], P.blossom[5], 0.4), mix(P.leaf[6], P.blossom[6], 0.4)], yardA: 0.28, city: [mix(P.violet[5], P.blossom[4], 0.5), mix(P.violet[6], P.blossom[5], 0.5)], cityA: 0.44 },
+  };
+
+  /** sea mist on the bay: long thin strata lying on the calm water band */
+  function seaMist() {
+    const cols = [mix(P.blossom[5], P.night[10], 0.45), mix(P.blossom[6], P.moon[3], 0.45)];
+    return [
+      band({
+        tw: 480,
+        sub: 0.5,
+        y0: 176,
+        h: 30,
+        cols,
+        alpha: 0.46,
+        core: 0.55,
+        dens: strataDens(480, 911, {
+          layers: [
+            { y: 20, th: 2.4, gain: 1.15 }, // the bright streak lying right on the water
+            { y: 13, th: 3.2, gain: 0.6, lo: 0.4, hi: 0.9 }, // a softer veil over the far shore's foot
+            { y: 25, th: 1.8, gain: 0.8, lo: 0.35, hi: 0.85 },
+          ],
+        }),
+      }),
+      band({
+        tw: 240,
+        sub: 0.23,
+        y0: 184,
+        h: 20,
+        cols: [mix(P.blossom[4], P.night[9], 0.5), mix(P.blossom[5], P.night[10], 0.5)],
+        alpha: 0.34,
+        core: 0.5,
+        dens: strataDens(240, 921, { layers: [{ y: 10, th: 2, gain: 0.85, lo: 0.35, hi: 0.9 }] }),
+      }),
+    ];
+  }
+
+  function storyRecipe(ed) {
+    const id = ed.id;
+    const air = STORY_AIR[id];
+    const holes = [PORCH_HOLE, ...(STORY_HOLES[id] || [])];
+    const r = {
+      // a thin thread from the hearth on a warm night (more, smaller puffs
+      // so the thread stays continuous; no tiny highlight beads)
+      chim: chim({ tone: DUSK.has(id) ? duskSmoke() : SMOKE.moon(), n: 28, rad0: 1.7, radK: 4.3, lvK: 1.25, hlK: 1.05, hlMin: 2.2, life: 15, rise: 50, curl: 1.4 }),
+      far: air.city
+        ? farBands({ cols: air.city, alpha: air.cityA, seed: 1011 + id.length, gain: air.cityGain || 0.85, floor: air.cityFloor === undefined ? 0.25 : air.cityFloor })
+        : [],
+      // warm low summer haze lying over the back of the meadow (behind the
+      // family), warm-lit near the chapter's lights
+      ground: [
+        groundBand({
+          cols: air.yard,
+          alpha: air.yardA,
+          c: 8,
+          up: 3,
+          down: 5,
+          lo: 0.22,
+          hi: 0.8,
+          gain: air.yardGain || 0.82,
+          floor: 0.1,
+          seed: 1031 + id.length * 3,
+          holes,
+        }),
+      ],
+      // the faintest wisps over the diorama lip, never across the cats' feet
+      front: [frontBand({ cols: air.yard, alpha: 0.2, n: 4, seed: 1041 + id.length, holes })],
+    };
+    if (id === 'sandiego') r.far = seaMist();
+    if (id === 'nyc') r.sky = burstSmoke({ cols: [mix(P.night[5], P.stone[5], 0.45), mix(P.night[7], P.stone[6], 0.45)], alpha: 0.4, dens: 1.7, life: 20 });
+    return r;
+  }
+  for (const id of Object.keys(STORY_AIR)) RECIPES[id] = storyRecipe;
 
   HD.atmoSeasons = {
     build(ed) {
