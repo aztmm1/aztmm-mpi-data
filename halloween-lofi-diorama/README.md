@@ -32,7 +32,7 @@ URL options: `?t=42` start time, `?speed=0.5`, `?pause=1`, `?fit=stretch`
 `?loop=240` loop length in seconds, `?hud=1`. These debug views exist too:
 `?view=light`, `?view=albedo`, `?view=em`, `?only=bg,house` and `?skip=weather`.
 
-## Make the 1-hour video
+## Make the 30-minute video
 
 The renderer draws frames directly. There is no screen capture, so frames are
 exact and never dropped. Requirements: Node 18+, Playwright with Chromium, and ffmpeg.
@@ -41,9 +41,9 @@ exact and never dropped. Requirements: Node 18+, Playwright with Chromium, and f
 # 1. one seamless loop (240 s, 7200 frames) at 1080p, or --scale 8 for 4K
 node tools/render-video.mjs --out out/rainy-hollow-loop-1080p.mp4 --scale 4 --fps 30
 
-# 2. repeat it for 1 hour under your music, without re-encoding the picture
-#    (the last argument is hours: 1 by default, 0.5 for 30 minutes, 3 for three hours)
-tools/make-long.sh out/rainy-hollow-loop-1080p.mp4 my-lofi-mix.m4a 1
+# 2. repeat it for 30 minutes under your music, without re-encoding the picture
+#    (the last argument is minutes: 30 by default, e.g. 60 for an hour)
+tools/make-long.sh out/rainy-hollow-loop-1080p.mp4 my-lofi-mix.m4a 30
 ```
 
 If the loop was split into parts (for example `...-part1-of-6.mp4` to get under a

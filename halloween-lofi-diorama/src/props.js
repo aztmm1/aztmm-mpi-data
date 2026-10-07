@@ -458,6 +458,10 @@
     for (const [dx, dy] of [[-1, -5], [0, -6], [1, -5]]) Bt.set(hx + dx, hy + dy, P.violet[1]);
     TREE.has = has;
     TREE.body = Bt.bake();
+    // keep the raw field so seasonal editions can re-shade / dress the same skeleton
+    TREE.F = F;
+    TREE.tips = tips;
+    TREE.idx = idx;
 
     // ---- swaying tips: bake 3 states per group ------------------------------
     TREE.groups = [];
@@ -1442,6 +1446,18 @@
   }
 
   HD._propsDebug = { crowPose, CROWS, swayState, TREE };
+  // toolkit shared with props-seasons.js (seasonal editions)
+  HD._propsKit = {
+    Buf, bres, cells, spline, annotate, cleanPath, TREE, TX0, TY0, TW, TH, twigColour, rimColour, moonDist,
+    grassTuft, pumpkinBody, stem, leaf, shadow, vineCurve, curl, stoneBlob, logShape, findPerch, swayState, CROWS,
+    blit: (g, s) => g.sprite(s.cv, s.x, s.y),
+  };
+  // seasonal hooks live in props-seasons.js (loaded after this file); Halloween never calls them
+  const SEA = () => HD._propsSeasons;
+  const hook = (name, g, t) => {
+    const S = SEA();
+    if (S && S[name]) S[name](g, t);
+  };
   HD.module('props', {
     init() {
       buildTree();
@@ -1461,9 +1477,12 @@
         c.x = p.x;
         c.y = p.y;
       }
+      if (SEA() && SEA().init) SEA().init(HD._propsKit);
     },
     lights(t, Lt) {
       if (!ART) return;
+      if (HD.edition.id !== 'halloween' && SEA() && SEA().lights) SEA().lights(t, Lt);
+      if (!HD.tag('jackolanterns')) return;
       for (const j of ART.jacks) {
         const lv = jackLevel(t, j.seed);
         Lt.add({
@@ -1484,6 +1503,7 @@
         z: 12,
         id: 'tree',
         draw(g, t) {
+          if (HD.edition.tree !== 'bare' && SEA()) return hook('tree', g, t);
           blit(g, ART.tree);
           for (let gi = 0; gi < ART.groups.length; gi++) blit(g, ART.groups[gi][swayState(t, gi)]);
         },
@@ -1493,6 +1513,7 @@
         z: 13,
         id: 'crows',
         draw(g, t) {
+          if (!HD.tag('crows')) return;
           for (const c of CROWS) {
             const p = crowPose(t, c.seed);
             const spr = ART.crows[p.frame + c.near];
@@ -1503,9 +1524,18 @@
       },
       {
         layer: 'scene',
+        z: 13.5,
+        id: 'tree-dress',
+        draw(g, t) {
+          if (HD.edition.id !== 'halloween') hook('treeDress', g, t);
+        },
+      },
+      {
+        layer: 'scene',
         z: 14,
         id: 'fence',
-        draw(g) {
+        draw(g, t) {
+          if (!HD.tag('graveyard')) return hook('garden', g, t);
           blit(g, ART.fence);
         },
       },
@@ -1513,7 +1543,8 @@
         layer: 'scene',
         z: 16,
         id: 'tombstones',
-        draw(g) {
+        draw(g, t) {
+          if (!HD.tag('graveyard')) return hook('gardenFront', g, t);
           for (const s of ART.tombs) blit(g, s);
         },
       },
@@ -1521,15 +1552,35 @@
         layer: 'scene',
         z: 32,
         id: 'patch',
-        draw(g) {
+        draw(g, t) {
+          if (HD.edition.id !== 'halloween') hook('yardBack', g, t);
+          if (!HD.tag('pumpkin-patch')) return;
           blit(g, ART.patch);
+        },
+      },
+      {
+        layer: 'scene',
+        z: 30,
+        id: 'lantern-string',
+        draw(g, t) {
+          if (HD.edition.id !== 'halloween') hook('string', g, t);
+        },
+      },
+      {
+        layer: 'scene',
+        z: 36,
+        id: 'yard-mid',
+        draw(g, t) {
+          if (HD.edition.id !== 'halloween') hook('yardMid', g, t);
         },
       },
       {
         layer: 'scene',
         z: 38,
         id: 'campfire-back',
-        draw(g) {
+        draw(g, t) {
+          if (HD.edition.fire === 'none') return;
+          if (HD.edition.fire === 'bonfire' && SEA()) return hook('bonfireBack', g, t);
           blit(g, ART.fire.back);
         },
       },
@@ -1537,7 +1588,9 @@
         layer: 'scene',
         z: 46,
         id: 'campfire-front',
-        draw(g) {
+        draw(g, t) {
+          if (HD.edition.fire === 'none') return;
+          if (HD.edition.fire === 'bonfire' && SEA()) return hook('bonfireFront', g, t);
           blit(g, ART.fire.front);
         },
       },
@@ -1546,6 +1599,8 @@
         z: 47,
         id: 'jacks',
         draw(g, t) {
+          if (HD.edition.id !== 'halloween') hook('yardFront', g, t);
+          if (!HD.tag('jackolanterns')) return;
           for (const j of ART.jacks) {
             blit(g, j.body);
             const f = j.faces[jackLevel(t, j.seed)];
