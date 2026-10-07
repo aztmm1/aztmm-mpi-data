@@ -68,7 +68,10 @@
     if (k >= 0) M[k] |= b;
   };
 
-  // smooth value noise (init only)
+  // smooth value noise (init only). The four lattice hashes of the last cell
+  // are cached per seed slot, since neighbouring pixels mostly share a cell;
+  // the values are exactly the same as hashing every time.
+  const VC = new Float64Array(64 * 7).fill(NaN);
   function vn(x, y, s) {
     const xi = Math.floor(x);
     const yi = Math.floor(y);
@@ -76,10 +79,26 @@
     const fy = y - yi;
     const u = fx * fx * (3 - 2 * fx);
     const v = fy * fy * (3 - 2 * fy);
-    const a = HD.hash(xi, yi, s, 1);
-    const b = HD.hash(xi + 1, yi, s, 1);
-    const c = HD.hash(xi, yi + 1, s, 1);
-    const d = HD.hash(xi + 1, yi + 1, s, 1);
+    const o = (s & 63) * 7;
+    let a, b, c, d;
+    if (VC[o] === xi && VC[o + 1] === yi && VC[o + 2] === s) {
+      a = VC[o + 3];
+      b = VC[o + 4];
+      c = VC[o + 5];
+      d = VC[o + 6];
+    } else {
+      a = HD.hash(xi, yi, s, 1);
+      b = HD.hash(xi + 1, yi, s, 1);
+      c = HD.hash(xi, yi + 1, s, 1);
+      d = HD.hash(xi + 1, yi + 1, s, 1);
+      VC[o] = xi;
+      VC[o + 1] = yi;
+      VC[o + 2] = s;
+      VC[o + 3] = a;
+      VC[o + 4] = b;
+      VC[o + 5] = c;
+      VC[o + 6] = d;
+    }
     return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
   }
   const fbm = (x, y, s) => vn(x, y, s) * 0.6 + vn(x * 2.03, y * 2.03, s + 17) * 0.28 + vn(x * 4.1, y * 4.1, s + 33) * 0.12;
@@ -935,7 +954,17 @@
     raw: () => ({ C, LIT, M, OV }),
   };
 
-  const art = HD.perEdition((ed) => (ed.ground === 'wet-autumn' || !HD.groundSeasons ? buildHalloween() : HD.groundSeasons.build(ed, kit)));
+  // editions whose slabs come out identical share one bake (the Summer Story
+  // chapters all use the same meadow): the ground reads only these fields
+  const slabKey = (ed) =>
+    [ed.ground, ed.fire, ed.tags.filter((t) => t.startsWith('secret-') || t === 'frozen-puddles').join(','), ed.ground === 'thin-snow' ? ed.id : ''].join('|');
+  const slabs = new Map();
+  const art = HD.perEdition((ed) => {
+    const key = slabKey(ed);
+    let v = slabs.get(key);
+    if (!v) slabs.set(key, (v = ed.ground === 'wet-autumn' || !HD.groundSeasons ? buildHalloween() : HD.groundSeasons.build(ed, kit)));
+    return v;
+  });
 
   const WORM_BODY = P.wood[7];
   const WORM_HEAD = mix(P.wood[7], P.bone[2], 0.35);
@@ -946,6 +975,20 @@
   HD.module('ground', {
     init() {
       art();
+      // bake every other edition's slab now, once, before any frame is shown,
+      // so a live HD.setEdition() switch never stalls a frame while it rasterises
+      const cur = HD.edition;
+      for (const e of HD.EDITIONS || []) {
+        if (e === cur) continue;
+        HD.edition = e;
+        try {
+          art();
+        } catch (err) {
+          // left unbaked: drawing that edition retries the bake and reports the error
+        } finally {
+          HD.edition = cur;
+        }
+      }
     },
     passes: [
       {

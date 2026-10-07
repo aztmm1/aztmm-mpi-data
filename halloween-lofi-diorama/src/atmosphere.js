@@ -41,8 +41,8 @@
   const litSet = (c, levels) => (levels || LEVEL_L).map((L) => relit(c, L));
   // smoke catches light more softly than mist (it would turn ember-orange)
   const SMOKE_L = [0, 0.1, 0.2, 0.34];
-  function level(x, y) {
-    const l = HD.lights.lum(x, y);
+  function level(x, y, boost) {
+    const l = boost ? HD.lights.lum(x, y) * boost : HD.lights.lum(x, y);
     return l < 0.07 ? 0 : l < 0.2 ? 1 : l < 0.42 ? 2 : 3;
   }
 
@@ -151,12 +151,29 @@
     if (xb > SR.x1) SR.x1 = xb;
     if (yb > SR.y1) SR.y1 = yb;
   }
+  // Drawing a canvas that was just written takes a snapshot of its whole
+  // backing store, so the touched rectangle goes through a small canvas
+  // (pooled by 32px size buckets) instead of the full-frame one.
+  const flushPool = new Map();
+  function flushCanvas(w, h) {
+    const bw = (w + 31) & ~31;
+    const bh = (h + 31) & ~31;
+    const key = bw * 1024 + bh;
+    let c = flushPool.get(key);
+    if (!c) {
+      const cv = HD.canvas(bw, bh, true);
+      c = { cv, ctx: cv.getContext('2d') };
+      flushPool.set(key, c);
+    }
+    return c;
+  }
   function srFlush(g) {
     if (SR.x1 < SR.x0) return;
     const w = SR.x1 - SR.x0 + 1;
     const h = SR.y1 - SR.y0 + 1;
-    SR.ctx.putImageData(SR.img, 0, 0, SR.x0, SR.y0, w, h);
-    g.ctx.drawImage(SR.cv, SR.x0, SR.y0, w, h, SR.x0, SR.y0, w, h);
+    const fc = flushCanvas(w, h);
+    fc.ctx.putImageData(SR.img, -SR.x0, -SR.y0, SR.x0, SR.y0, w, h);
+    g.ctx.drawImage(fc.cv, 0, 0, w, h, SR.x0, SR.y0, w, h);
     for (let y = SR.y0; y <= SR.y1; y++) SR.u32.fill(0, y * W + SR.x0, y * W + SR.x1 + 1);
     SR.x0 = W;
     SR.y0 = H;
@@ -199,8 +216,12 @@
       const x = S.sx + drift + curl;
       const y = S.sy - rise;
       const rad = S.rad0 + S.radK * Math.pow(a, 0.7) * (0.85 + 0.3 * r3);
-      const lv = Math.min(1, a / 0.04) * Math.pow(1 - a, 0.8);
+      let lv = Math.min(1, a / 0.04) * Math.pow(1 - a, 0.8);
       if (lv <= 0.02) return;
+      if (S.keep) {
+        lv *= S.keep(x, y, rad);
+        if (lv <= 0.02) return;
+      }
       const xi = Math.round(x);
       const yi = Math.round(y);
       const ox = kx - xi;
@@ -239,8 +260,12 @@
       const y = S.sy - rise;
       // emerges as a thin solid thread from the flame tips, widens and thins out
       const rad = S.rad0 + S.radK * Math.pow(a, 0.85);
-      const lv = Math.min(1, a / 0.02) * Math.min(1, 0.45 + a / 0.1) * Math.pow(1 - a, 0.9);
+      let lv = Math.min(1, a / 0.02) * Math.min(1, 0.45 + a / 0.1) * Math.pow(1 - a, S.tailK || 0.9);
       if (lv <= 0.02) return;
+      if (S.keep) {
+        lv *= S.keep(x, y, rad);
+        if (lv <= 0.02) return;
+      }
       const xi = Math.round(x);
       const yi = Math.round(y);
       const ox = kx - xi;
@@ -275,26 +300,44 @@
     return out;
   }
 
+  /** opaque RGBA word for a hex colour (little-endian ImageData layout) */
+  function rgba32(c) {
+    const a = hex(c);
+    return ((255 << 24) | (a[2] << 16) | (a[1] << 8) | a[0]) >>> 0;
+  }
+  /** bake a w x h canvas straight from a Uint32 pixel callback (fast at switch time) */
+  function bakePixels(w, h, fill) {
+    const c = HD.canvas(w, h, true);
+    const cx = c.getContext('2d');
+    const im = cx.createImageData(w, h);
+    fill(new Uint32Array(im.data.buffer), im);
+    cx.putImageData(im, 0, 0);
+    return c;
+  }
+
   /**
    * Bake one dithered texture per light level (or a single cold one).
    * Colour cols[1] (core) where bayer < (d - core) * 1.6, cols[0] where bayer < d.
    */
   function bakeTile(tw, h, dens, cols, lit, core, levels) {
-    const sets = cols.map((c) => (lit ? litSet(c, levels) : [c]));
+    const sets = cols.map((c) => (lit ? litSet(c, levels) : [c]).map(rgba32));
     const nv = lit ? LEVEL_L.length : 1;
     const D = new Float32Array(tw * h);
     for (let y = 0; y < h; y++) for (let x = 0; x < tw; x++) D[y * tw + x] = dens(x, y);
     const out = [];
     for (let v = 0; v < nv; v++) {
+      const c0 = sets[0][v];
+      const c1 = sets[1][v];
       out.push(
-        HD.bake(tw, h, (g) => {
+        bakePixels(tw, h, (u32) => {
           for (let y = 0; y < h; y++)
             for (let x = 0; x < tw; x++) {
-              const d = D[y * tw + x];
+              const p = y * tw + x;
+              const d = D[p];
               if (d <= 0) continue;
               const b = HD.bayer(x, y);
-              if (b < (d - core) * 1.6) g.px(x, y, sets[1][v]);
-              else if (b < d) g.px(x, y, sets[0][v]);
+              if (b < (d - core) * 1.6) u32[p] = c1;
+              else if (b < d) u32[p] = c0;
             }
         }),
       );
@@ -302,9 +345,13 @@
     return out;
   }
 
-  /** screen-space keep-out mask (opaque = erase mist), soft dithered rims */
-  function bakeMask(y0, h, holes) {
-    return HD.bake(W, h, (g) => {
+  /**
+   * screen-space keep-out mask (opaque = erase mist), soft dithered rims.
+   * Optional `keeps`: the mist survives only inside these ellipses.
+   */
+  function bakeMask(y0, h, holes, keeps) {
+    const WHITE = 0xffffffff;
+    return bakePixels(W, h, (u32) => {
       for (let y = 0; y < h; y++)
         for (let x = 0; x < W; x++) {
           let k = 0;
@@ -314,42 +361,64 @@
             const e = Math.sqrt(qx * qx + qy * qy);
             k = Math.max(k, 1 - HD.smoothstep(0.75, 1.35, e));
           }
-          if (k > 0 && HD.bayer(x, y) < k) g.px(x, y, '#fff');
+          if (keeps) {
+            let kk = 0;
+            for (const o of keeps) {
+              const qx = (x - o.x) / o.rx;
+              const qy = (y + y0 - o.y) / o.ry;
+              kk = Math.max(kk, (o.k || 1) * (1 - HD.smoothstep(0.35, 1, Math.sqrt(qx * qx + qy * qy))));
+            }
+            k = 1 - (1 - k) * kk;
+          }
+          if (k > 0 && HD.bayer(x, y) < k) u32[y * W + x] = WHITE;
         }
     });
   }
 
-  let tmp = null;
-  let tmpCtx = null;
-  let tmpG = null;
-
-  function drawBand(g, B, t) {
+  /** scroll offset of a band at t (whole tile widths per loop) */
+  function bandOff(B, t) {
     const tw = B.tw;
     // == floor(phase(t, LOOP / k) * tw + sub), computed so t and t + LOOP round
     // alike; `sub` staggers the 1px steps so the bands never all jump together
-    const off = ((Math.floor((t * B.k * tw) / HD.LOOP + B.sub) % tw) + tw) % tw;
+    return ((Math.floor((t * B.k * tw) / HD.LOOP + B.sub) % tw) + tw) % tw;
+  }
+
+  /** the band's own (w x h) scratch canvas (small canvases snapshot cheaply) */
+  function bandScratch(B) {
+    if (!B.scr) {
+      const cv = HD.canvas(B.w || W, B.h, true);
+      const ctx = cv.getContext('2d');
+      B.scr = { cv, ctx, g: HD.makeGfx(ctx), off: -1 };
+    }
+    return B.scr;
+  }
+
+  /**
+   * Tile the band texture across screen columns [B.x0, B.x0 + B.w) (the whole
+   * frame by default) at y = dy on `dst`, shifted left by `sx` (0 when drawing
+   * straight to the frame, B.x0 when drawing into the band's scratch canvas).
+   */
+  function tileBand(dst, B, off, dy, sx) {
+    const tw = B.tw;
     const lit = B.tex.length > 1;
-    const dst = B.mask ? tmpG : g;
-    const dy = B.mask ? 0 : B.y0;
-    const ga = g.ctx.globalAlpha;
-    if (B.mask) tmpCtx.clearRect(0, 0, W, B.h);
-    else g.ctx.globalAlpha = B.alpha || 1;
     const CW = 8;
-    let x = 0;
-    let lv = lit ? level(x + 4, B.ly) : 0;
-    while (x < W) {
+    const xa = B.x0 || 0;
+    const xe = xa + (B.w || W);
+    let x = xa;
+    let lv = lit ? level(x + 4, B.ly, B.lb) : 0;
+    while (x < xe) {
       let x1 = x + CW;
       let nl = lv;
-      while (x1 < W) {
-        nl = lit ? level(x1 + 4, B.ly) : 0;
+      while (x1 < xe) {
+        nl = lit ? level(x1 + 4, B.ly, B.lb) : 0;
         if (nl !== lv) break;
         x1 += CW;
       }
-      if (x1 > W) x1 = W;
+      if (x1 > xe) x1 = xe;
       const img = B.tex[lv];
       let s = (((x - off) % tw) + tw) % tw;
       let w = x1 - x;
-      let dx = x;
+      let dx = x - sx;
       while (w > 0) {
         const part = Math.min(w, tw - s);
         dst.blit(img, s, 0, part, B.h, dx, dy);
@@ -360,12 +429,37 @@
       x = x1;
       lv = nl;
     }
+  }
+
+  /**
+   * Render a masked band (texture minus its keep-out mask, which covers the
+   * band's own rectangle) into the band's scratch canvas and return it.
+   * Unlit bands only change when the scroll offset steps a pixel, so their
+   * result is reused until then (a pure cache keyed by the offset).
+   */
+  function maskedBand(B, t) {
+    const off = bandOff(B, t);
+    const S = bandScratch(B);
+    const unlit = B.tex.length === 1;
+    if (unlit && S.off === off) return S.cv;
+    S.ctx.clearRect(0, 0, B.w || W, B.h);
+    tileBand(S.g, B, off, 0, B.x0 || 0);
+    S.ctx.globalCompositeOperation = 'destination-out';
+    S.ctx.drawImage(B.mask, 0, 0);
+    S.ctx.globalCompositeOperation = 'source-over';
+    S.off = unlit ? off : -1;
+    return S.cv;
+  }
+
+  function drawBand(g, B, t) {
+    const ga = g.ctx.globalAlpha;
     if (B.mask) {
-      tmpCtx.globalCompositeOperation = 'destination-out';
-      tmpCtx.drawImage(B.mask, 0, 0);
-      tmpCtx.globalCompositeOperation = 'source-over';
+      const cv = maskedBand(B, t);
       g.ctx.globalAlpha = B.alpha || 1;
-      g.blit(tmp, 0, 0, W, B.h, 0, B.y0);
+      g.blit(cv, 0, 0, B.w || W, B.h, B.x0 || 0, B.y0);
+    } else {
+      g.ctx.globalAlpha = B.alpha || 1;
+      tileBand(g, B, bandOff(B, t), B.y0, 0);
     }
     g.ctx.globalAlpha = ga;
   }
@@ -373,7 +467,13 @@
   // ---------------------------------------------------------------------
   // vignette (baked once)
   // ---------------------------------------------------------------------
-  function bakeVignette() {
+  /**
+   * tonal = false: the Halloween vignette, hard near-black ordered dots.
+   * tonal = true: same darkening footprint, but each pixel is darkened by a
+   * dithered step of 1/16, so bright grounds (snow, meadow) darken as a tone
+   * instead of showing a coarse dot screen.
+   */
+  function bakeVignette(tonal) {
     const c = HD.canvas(W, H, true);
     const cx = c.getContext('2d');
     const im = cx.createImageData(W, H);
@@ -393,11 +493,24 @@
         if (ny > 0) dens += 0.14 * sm(0.4, 1, ny) * sm(0.6, 1, ax);
         if (dens <= 0) continue;
         const b = HD.bayer(x, y);
+        const q = (y * W + x) * 4;
+        if (tonal) {
+          // mean darkening of the dot version at this density
+          const dk = (190 / 255) * Math.min(1, dens) + (150 / 255) * Math.max(0, Math.min(1, dens * 1.5) - dens);
+          const f = dk * 16;
+          const lo = Math.floor(f);
+          const lvl = lo + (b < f - lo ? 1 : 0);
+          if (lvl <= 0) continue;
+          d[q] = k0[0];
+          d[q + 1] = k0[1];
+          d[q + 2] = k0[2];
+          d[q + 3] = Math.round((255 * lvl) / 16);
+          continue;
+        }
         let col = null;
         if (b < dens) col = k0;
         else if (b < dens * 1.5) col = k1;
         if (!col) continue;
-        const q = (y * W + x) * 4;
         d[q] = col[0];
         d[q + 1] = col[1];
         d[q + 2] = col[2];
@@ -413,6 +526,14 @@
   let GROUND = null;
   let FRONT = null;
   let vignette = null;
+
+  // bright grounds get the tonal vignette (same footprint, no dot screen)
+  const TONAL_GROUNDS = new Set(['snow', 'thin-snow', 'spring', 'summer']);
+  let vignetteTone = null;
+  const vignetteFor = HD.perEdition((ed) => {
+    if (ed.id === 'halloween' || !TONAL_GROUNDS.has(ed.ground)) return vignette;
+    return vignetteTone || (vignetteTone = bakeVignette(true));
+  });
 
   // per-edition recipe (null = Halloween, the original layers above)
   const season = HD.perEdition((ed) => (ed.id === 'halloween' || !HD.atmoSeasons ? null : HD.atmoSeasons.build(ed) || null));
@@ -435,7 +556,10 @@
     drawCamp,
     srDisc,
     srFlush,
-    scratch: () => ({ tmp, tmpCtx, tmpG }),
+    bandOff,
+    maskedBand,
+    bakePixels,
+    rgba32,
   };
 
   HD.module('atmosphere', {
@@ -455,9 +579,6 @@
         litSet(mix(P.night[3], P.stone[2], 0.45), SMOKE_L),
       ];
 
-      tmp = HD.canvas(W, 96, true);
-      tmpCtx = tmp.getContext('2d');
-      tmpG = HD.makeGfx(tmpCtx);
       srInit();
 
       // --- distant mist banks along the hill bases (bg z 26)
@@ -597,7 +718,7 @@
         };
       }
 
-      vignette = bakeVignette();
+      vignette = bakeVignette(false);
     },
 
     // Halloween draws the original layers (season() is null); every other
@@ -679,7 +800,7 @@
         z: 95,
         id: 'vignette',
         draw(g) {
-          g.sprite(vignette, 0, 0);
+          g.sprite(vignetteFor(), 0, 0);
         },
       },
     ],

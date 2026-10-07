@@ -13,7 +13,7 @@ sky/weather/ground/tree/fire/fireworks.
 
 | # | id | name | festival | sky / moon | weather | ground | tree | fire | fireworks |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `lunar` | Red Lanterns | Lunar New Year | clear, stars / none | light snow, a few plum petals | thin snow | plum | none | 0.45 red & gold |
+| 1 | `lunar` | Red Lanterns | Lunar New Year | clear, stars / none | light snow | thin snow | snowy (red lanterns hang in it; plum blossoms in a window vase, as Boston has none outdoors in February) | none | 0.45 red & gold |
 | 2 | `spring` | Blossom Rain | Easter | broken / crescent | soft rain + petals | spring | blossom | none | - |
 | 3 | `summer` | Firefly Midsummer | Midsummer | clear, Milky Way / full | fireflies | summer | summer | bonfire | - |
 | 4 | `harvest` | Harvest Moon | Harvest & Mid-Autumn | broken / big harvest moon | falling leaves | leafy | autumn | campfire | - |

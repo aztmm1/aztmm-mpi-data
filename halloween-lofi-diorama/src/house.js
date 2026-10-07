@@ -856,7 +856,9 @@
     put(T2, 255, 112);
   }
 
-  function rimPass(R) {
+  function rimPass(R, ed) {
+    // no moon (new-moon Diwali, overcast winter...): only a dim sky-glow edge
+    const moonless = ed.id !== 'halloween' && ed.moon === 'none';
     const rimTags = new Set([TG.roof, TG.cone, TG.chim, TG.turret, TG.porch, TG.gutter, TG.moss]);
     const marks = [];
     for (let y = BY; y < BY + BH; y++)
@@ -868,6 +870,10 @@
         else if (R.get(x + 2, y) === null) marks.push([x, y, 1]);
       }
     for (const [x, y, k] of marks) {
+      if (moonless) {
+        if (k === 2) R.mod(x, y, (c) => moonlit(c, 1));
+        continue;
+      }
       if (k === 2) R.mod(x, y, (c) => (lum(c) < 30 ? N[6] : P.moon[0]));
       else R.mod(x, y, (c) => moonlit(c, 2));
     }
@@ -1030,7 +1036,7 @@
     paintPorch(R);
     paintSteps(R);
     paintMoss(R);
-    rimPass(R);
+    rimPass(R, ed);
     if (ed.id !== 'halloween' && KIT.seasons) KIT.seasons.decorateHouse(R, ed);
     return R.toCanvas();
   }
@@ -1191,6 +1197,20 @@
       catBody = HD.sprite(CAT_BODY, catMap);
       catHeads = {};
       for (const k in CAT_HEAD) catHeads[k] = HD.sprite(CAT_HEAD[k], catMap);
+
+      // pre-bake every edition's house, interiors and window glass now, so a
+      // live edition switch never stalls a frame (no effect on any pixel)
+      const cur = HD.edition;
+      try {
+        for (const e of HD.EDITIONS || []) {
+          HD.edition = e;
+          houseArt();
+          interiorArt();
+          if (e.id !== 'halloween' && KIT.seasons && KIT.seasons.warm) KIT.seasons.warm();
+        }
+      } finally {
+        HD.edition = cur;
+      }
     },
 
     lights(t, L) {

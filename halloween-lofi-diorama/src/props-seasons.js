@@ -5,11 +5,14 @@
  * every other edition (HD._propsSeasons.*). Everything static is baked once
  * per edition with HD.perEdition and blitted; HD.edition is read at draw time.
  *
- *   tree         z12   bark re-shaded per moon, snow caps, foliage clumps (blossom,
- *                      autumn, summer), plum blossoms; tip clumps sway with the twigs
- *   treeDress    z13.5 red lanterns, wound fairy lights, hammock
- *   garden       z14   picket fence, back shrubs, birdhouse post (+ fence diyas)
- *   gardenFront  z16   bench, front shrubs, snowman, sled, hay bales, scarecrow, frog
+ *   tree         z12   bark re-shaded per moon, snow caps, foliage (blossom, autumn,
+ *                      summer) shaded as one mass: limb clumps are static, the clumps at
+ *                      the twig ends are baked in 3 sway states per twig group and ride
+ *                      on their twig (same K.swayState); plum blossoms
+ *   treeDress    z13.5 red lanterns on limb hooks, wound fairy lights
+ *   garden       z14   picket fence, birdhouse on a sturdy post (+ robin, fence diyas)
+ *   gardenFront  z16   hammock, sled, scarecrow, hay bales, front shrubs, snowman,
+ *                      bench, frog on its stone (painted back to front)
  *   string       z30   paper / harvest lantern string from the house hook to a branch
  *   yardBack     z32   flower beds, eggs + basket
  *   yardMid      z36   harvest pumpkins and gourds, path diyas
@@ -544,18 +547,21 @@
     }
     // plum: five-petal blossoms and buds gathered in sprays on the branch tops,
     // with bare stretches between them (deliberate clusters, never confetti)
+    // red plum: crimson petals (plum pushed towards festive red), plum[5] only on the one
+    // petal that catches the light, a dark gold eye
     const PC = {
-      lit: P.plum[5],
-      mid: P.plum[4],
-      sh: P.plum[3],
-      dk: P.plum[2],
-      eye: mix(P.plum[5], P.gold[6], 0.55),
+      top: P.plum[5],
+      lit: mix(P.plum[4], P.red[4], 0.45),
+      mid: mix(P.plum[3], P.red[4], 0.35),
+      sh: P.plum[2],
+      dk: P.plum[1],
+      eye: mix(P.gold[4], P.plum[4], 0.3),
     };
     const flower = (B, x, y, kind) => {
       if (inDisc(m, x, y, 2)) return;
       if (kind === 0) {
         // open blossom, lit from the upper right
-        B.set(x, y - 1, PC.lit);
+        B.set(x, y - 1, PC.top);
         B.set(x + 1, y, PC.lit);
         B.set(x - 1, y, PC.mid);
         B.set(x, y + 1, PC.sh);
@@ -670,16 +676,44 @@
   // ------------------------------------------------------------------
   // tree dressing: red lanterns, fairy lights, hammock
   // ------------------------------------------------------------------
+  // hand-picked hooks: (x, y) is a pixel on the UNDERSIDE of a solid limb (wood above,
+  // open air below, limb >= 2.5px thick) with room under it for the lantern
   const RED_LANTERNS = [
-    { tx: 358, ty: 150, size: 'big', len: 6 },
-    { tx: 432, ty: 136, size: 'big', len: 4 },
-    { tx: 386, ty: 110, size: 'small', len: 5 },
-    { tx: 343, ty: 118, size: 'small', len: 3 },
-    { tx: 452, ty: 112, size: 'small', len: 6 },
-    { tx: 420, ty: 92, size: 'small', len: 3 },
-    { tx: 466, ty: 92, size: 'big', len: 3 },
-    { tx: 333, ty: 140, size: 'small', len: 4 },
+    { x: 379, y: 122, size: 'big', len: 4 }, // under the big left limb
+    { x: 431, y: 145, size: 'big', len: 3 }, // under the long right arm
+    { x: 461, y: 122, size: 'big', len: 3 }, // far right
+    { x: 358, y: 93, size: 'small', len: 4 },
+    { x: 367, y: 154, size: 'small', len: 3 },
+    { x: 402, y: 62, size: 'small', len: 4 },
+    { x: 417, y: 110, size: 'small', len: 5 },
+    { x: 429, y: 96, size: 'small', len: 3 },
   ];
+  const CORD = mix(P.red[2], P.wood[4], 0.3); // silk cord: dark red, still reads on the night sky
+  /** snap a wanted hook to a real limb underside nearby (never a floating point) */
+  function limbHook(hx, hy, size, len) {
+    const TR = K.TREE;
+    const has = TR.has;
+    const big = size === 'big';
+    // the cord needs a narrow shaft, the lantern body (+ tassel) a wider box under it
+    const room = (x, y) => {
+      for (let dy = 1; dy <= len; dy++) for (let dx = -1; dx <= 1; dx++) if (has(x + dx, y + dy)) return false;
+      for (let dy = len + 1; dy <= len + (big ? 14 : 8); dy++) for (let dx = big ? -4 : -3; dx <= (big ? 4 : 3); dx++) if (has(x + dx, y + dy)) return false;
+      return true;
+    };
+    const ok = (x, y) => {
+      if (!has(x, y) || !has(x, y - 1) || has(x, y + 1)) return false;
+      const q = TR.idx(x, y);
+      return q >= 0 && TR.F.w[q] >= 2.5 && room(x, y);
+    };
+    let best = null;
+    for (let y = hy - 6; y <= hy + 6; y++)
+      for (let x = hx - 6; x <= hx + 6; x++) {
+        if (!ok(x, y)) continue;
+        const d = Math.hypot(x - hx, y - hy);
+        if (!best || d < best.d) best = { x, y: y + 1, d };
+      }
+    return best;
+  }
   let redHooks = null;
   let fairy = null; // [{x,y,k,col}] + light centroids
 
@@ -722,50 +756,75 @@
   }
   const FAIRY_COLS = ['gold', 'gold', 'white', 'gold', 'gold'];
 
-  // hammock between the trunk and a post (summer)
-  const HAM = { x0: 414, y0: 191, x1: 455, y1: 196, post: 457 };
-  function hammockArt() {
-    const B = new K.Buf(HAM.x0 - 2, HAM.y0 - 12, HAM.post - HAM.x0 + 8, 40);
-    // the post
-    for (let y = HAM.y1 - 6; y <= 216; y++) {
-      B.set(HAM.post, y, P.wood[3]);
-      B.set(HAM.post + 1, y, y < HAM.y1 - 4 ? P.wood[5] : P.wood[4]);
-    }
-    B.set(HAM.post, HAM.y1 - 7, P.wood[4]);
-    B.set(HAM.post + 1, HAM.y1 - 7, P.wood[6]);
-    // rope bands around the trunk
-    B.set(HAM.x0 - 1, HAM.y0, P.bone[0]);
-    B.set(HAM.x0, HAM.y0 + 1, P.bone[1]);
-    return B.bake();
-  }
-  function drawHammock(g, t) {
-    const sway = R(T.wave(t, 7.5, 0.2) * 1.2);
-    const n = HAM.x1 - HAM.x0;
-    const midSag = 11;
-    const ys = [];
+  // hammock (summer): a canvas hammock with spreader bars, slung from the trunk to the
+  // sturdy birdhouse post, in front of the picket fence
+  const HAM = { ax: 411, ay: 188, bx: 464, by: 194, xa: 420, xb: 456, ya: 193, yb: 197, bar: 3, sag: 6 };
+  const CANVAS = [mix(P.night[2], P.bone[0], 0.45), mix(P.bone[0], P.night[5], 0.3), mix(P.bone[1], P.wood[6], 0.3), mix(P.bone[2], P.wood[7], 0.2), mix(P.bone[3], P.gold[6], 0.1)];
+  const BLANKET = [mix(P.red[1], P.violet[3], 0.4), mix(P.red[2], P.violet[4], 0.35), mix(P.red[3], P.violet[5], 0.3)];
+  function hammockBed(sw) {
+    const B = new K.Buf(HAM.xa - 4, HAM.ya - 4, HAM.xb - HAM.xa + 10, 22);
+    const n = HAM.xb - HAM.xa;
+    const top = (u) => HAM.ya + (HAM.yb - HAM.ya) * u;
+    const prof = [];
     for (let i = 0; i <= n; i++) {
       const u = i / n;
-      ys.push(HAM.y0 + (HAM.y1 - HAM.y0) * u + midSag * Math.pow(Math.sin(Math.PI * u), 1.3));
+      const S = Math.sin(Math.PI * u);
+      const yFar = R(top(u) + HAM.sag * 0.7 * S);
+      const yNear = R(top(u) + HAM.bar + HAM.sag * 0.95 * S);
+      const yBot = Math.max(yNear, R(top(u) + HAM.bar + HAM.sag * 1.05 * S + 2.4 * Math.pow(S, 0.7)));
+      prof.push({ yFar, yNear, yBot });
+      const x = HAM.xa + i + sw;
+      // far rim, then the inside seen from above (darker as it dips away)
+      B.set(x, yFar, CANVAS[3]);
+      for (let y = yFar + 1; y < yNear; y++) B.set(x, y, y - yFar <= 1 ? CANVAS[2] : CANVAS[1]);
+      // near rim catches the moon, the near side's belly rounds off into shadow
+      B.set(x, yNear, CANVAS[4]);
+      for (let y = yNear + 1; y <= yBot; y++) B.set(x, y, y === yBot ? CANVAS[0] : y - yNear <= 1 ? CANVAS[3] : CANVAS[2]);
     }
-    // ropes fanning to the ends
-    const bedA = 9;
-    const bedB = n - 7;
-    const sx = (i) => HAM.x0 + i + (i > bedA && i < bedB ? sway * Math.sin((Math.PI * (i - bedA)) / (bedB - bedA)) : 0);
-    g.line(HAM.x0, HAM.y0, sx(bedA), ys[bedA] - 1, P.bone[1]);
-    g.line(HAM.x0, HAM.y0, sx(bedA), ys[bedA] + 2, P.bone[0]);
-    g.line(HAM.x1, HAM.y1, sx(bedB), ys[bedB] - 1, P.bone[1]);
-    g.line(HAM.x1, HAM.y1, sx(bedB), ys[bedB] + 2, P.bone[0]);
-    // the fabric bed: striped canvas, lit top edge, shaded belly
-    const STR = [P.red[2], P.bone[1], P.night[6], P.bone[1]];
-    for (let i = bedA; i <= bedB; i++) {
-      const x = R(sx(i));
-      const y = R(ys[i]);
-      const st = STR[Math.floor((i - bedA) / 3) % STR.length];
-      g.px(x, y - 1, P.bone[2]);
-      g.px(x, y, st);
-      g.px(x, y + 1, st);
-      g.px(x, y + 2, mix(st, P.night[1], 0.45));
+    // spreader bars at both ends (seen end-on, slightly from above)
+    for (const [x, y] of [[HAM.xa - 1, HAM.ya], [HAM.xb + 1, HAM.yb]]) {
+      B.set(x + sw, y - 1, P.wood[6]);
+      for (let k = 0; k <= HAM.bar; k++) B.set(x + sw, y + k, k === 0 ? P.wood[6] : P.wood[4]);
+      B.set(x + sw, y + HAM.bar + 1, P.wood[2]);
     }
+    // a pillow at the trunk end
+    for (let i = 1; i <= 6; i++) {
+      const pr = prof[i];
+      const x = HAM.xa + i + sw;
+      B.set(x, pr.yFar - 1, i === 1 || i === 6 ? CANVAS[3] : P.bone[3]);
+      B.set(x, pr.yFar, i > 4 ? P.bone[2] : P.bone[3]);
+      B.set(x, pr.yFar + 1, P.bone[2]);
+    }
+    // a blanket thrown over the near rim, one corner hanging down
+    const b0 = Math.round(n * 0.46);
+    const b1 = Math.round(n * 0.78);
+    for (let i = b0; i <= b1; i++) {
+      const pr = prof[i];
+      const x = HAM.xa + i + sw;
+      const hang = 1 + Math.round(2.5 * Math.sin((Math.PI * (i - b0)) / (b1 - b0)) + (i > b1 - 4 ? (i - (b1 - 4)) * 0.8 : 0));
+      B.set(x, pr.yNear - 1, BLANKET[1]);
+      B.set(x, pr.yNear, BLANKET[2]);
+      for (let k = 1; k <= hang; k++) B.set(x, pr.yNear + k, k === hang ? BLANKET[0] : BLANKET[1]);
+      if ((i - b0) % 4 === 1) B.set(x, pr.yNear + 1, BLANKET[0]); // folds
+    }
+    return B.bake();
+  }
+  function hammockArt() {
+    return { beds: [-1, 0, 1].map((sw) => hammockBed(sw)) };
+  }
+  function drawHammock(g, t, art) {
+    const sw = R(T.wave(t, 7.5, 0.2) * 1.2);
+    blit(g, art.beds[sw + 1]);
+    // ropes fan from the ties to the ends of the spreader bars
+    g.line(HAM.ax, HAM.ay, HAM.xa - 1 + sw, HAM.ya - 1, P.bone[1]);
+    g.line(HAM.ax, HAM.ay, HAM.xa - 1 + sw, HAM.ya + HAM.bar, P.bone[0]);
+    g.line(HAM.bx, HAM.by, HAM.xb + 1 + sw, HAM.yb - 1, P.bone[1]);
+    g.line(HAM.bx, HAM.by, HAM.xb + 1 + sw, HAM.yb + HAM.bar, P.bone[0]);
+    // rope wraps on the trunk and the post
+    g.px(HAM.ax - 1, HAM.ay, P.bone[1]);
+    g.px(HAM.ax - 1, HAM.ay + 1, P.bone[0]);
+    g.hline(HAM.bx + 1, HAM.bx + 3, HAM.by, P.bone[1]);
+    g.hline(HAM.bx + 1, HAM.bx + 3, HAM.by + 1, P.bone[0]);
   }
 
   // ------------------------------------------------------------------
@@ -775,58 +834,119 @@
   const FENCE_POSTS = [313, 331, 349, 367, 385, 421, 439, 457, 475];
   const BENCH = { x: 366, base: 226, w: 24 };
   const BIRD = { x: 466, base: 217 };
-  const SHRUBS_BACK = [
-    { x: 321, y: 206, r: 8.5 },
-    { x: 436, y: 207, r: 7.5 },
-    { x: 340, y: 208, r: 5.5 },
-  ];
-  const SHRUBS_FRONT = [{ x: 474, y: 222, r: 7.5 }, { x: 427, y: 221, r: 5 }];
-
-  function shrubRamp(ed) {
-    if (ed.season === 'winter') return [P.leaf[0], P.leaf[0], P.leaf[1], P.leaf[2], mix(P.leaf[3], P.moss[4], 0.5), P.moss[5]];
-    if (ed.season === 'autumn') return ed.id === 'harvest' ? [P.plum[0], P.plum[1], P.autumn[2], P.autumn[3], P.autumn[4], P.autumn[5]] : [P.plum[0], P.plum[0], P.plum[1], P.autumn[2], P.autumn[3], P.autumn[4]];
-    if (ed.season === 'spring') return [P.leaf[0], P.leaf[1], P.leaf[2], P.leaf[3], P.leaf[4], P.leaf[6]];
-    return [P.leaf[0], P.leaf[1], P.leaf[2], P.leaf[3], P.leaf[4], P.leaf[5], P.leaf[6]];
+  // garden shrubs stand IN FRONT of the picket fence, clear of the frame edge; which
+  // ones depends on what else the edition puts in the corner
+  const SHRUB_L = { x: 321, y: 214, r: 11.5, seed: 41 }; // left, by the fence corner
+  const SHRUB_M = { x: 443, y: 216, r: 10, seed: 42 }; // right of the trunk
+  const SHRUB_R = { x: 465, y: 219, r: 8.5, seed: 43 }; // at the foot of the birdhouse post
+  function shrubsFor(ed) {
+    if (ed.tagSet.has('sled')) return [SHRUB_M, SHRUB_R]; // the sled + snowman fill the left
+    if (ed.tagSet.has('scarecrow')) return [SHRUB_R]; // hay on the left, scarecrow mid-right
+    if (ed.tagSet.has('hammock')) return [SHRUB_L, SHRUB_R]; // nothing under the hammock
+    return [SHRUB_L, SHRUB_M, SHRUB_R];
   }
 
-  function paintShrub(B, ed, sh, seed) {
+  // shrub ramps: the lit top sits a clear step above the grass of that edition
+  function shrubRamp(ed) {
+    if (ed.season === 'winter') return [P.night[1], P.leaf[0], P.leaf[1], P.leaf[2], mix(P.leaf[3], P.moss[4], 0.5), P.moss[5], mix(P.moss[6], P.moon[0], 0.2)];
+    if (ed.season === 'autumn')
+      return ed.id === 'harvest'
+        ? [P.violet[0], P.plum[0], P.plum[1], P.autumn[2], P.autumn[3], P.autumn[4], P.autumn[5]]
+        : [P.violet[0], P.plum[0], P.plum[1], P.autumn[2], P.autumn[3], P.autumn[4], mix(P.autumn[5], P.gold[3], 0.3)];
+    if (ed.season === 'spring') return [P.night[1], P.leaf[0], P.leaf[2], P.leaf[3], P.leaf[5], P.leaf[6], P.leaf[7]];
+    // summer: lush, a lighter fresh green than the meadow
+    return [P.night[1], P.leaf[1], P.leaf[3], P.leaf[4], P.leaf[5], P.leaf[6], P.leaf[7], mix(P.leaf[7], P.moon[1], 0.3)];
+  }
+
+  function paintShrub(B, ed, sh) {
+    const seed = sh.seed;
     const rnd = HD.rng(seed);
-    const c = makeClump(rnd, sh.x, sh.y, sh.r, ed.season === 'summer' ? 3 : 2.6);
-    // flatten the bottom onto the ground
+    const base = R(sh.y + sh.r * 0.72);
+    // dark contact shadow: dense under the shrub, dithered out towards its ends
+    for (let x = R(sh.x - sh.r - 1); x <= R(sh.x + sh.r + 1); x++) {
+      const k = Math.abs(x - sh.x) / (sh.r + 1);
+      if (k < 0.7 || (k < 1 && (x & 1))) B.set(x, base + 1, P.night[1]);
+    }
+    const c = makeClump(rnd, sh.x, sh.y, sh.r, ed.season === 'summer' ? 3.4 : 3);
     const ramp = shrubRamp(ed);
-    paintClump(B, c, ramp, 0, null, { bias: -0.04 });
-    const base = R(sh.y + sh.r * 0.75);
-    for (let y = base + 1; y < base + 6; y++) for (let x = R(sh.x - sh.r - 2); x <= R(sh.x + sh.r + 2); x++) B.del(x, y);
-    // contact shadow
-    for (let x = R(sh.x - sh.r); x <= R(sh.x + sh.r); x++) if (!B.get(x, base + 1) && HD.bayer(x, base + 1) < 0.7) B.set(x, base + 1, P.soil[2]);
+    const Bc = new K.Buf(B.x0, B.y0, B.w, B.h);
+    paintClump(Bc, c, ramp, 0, null, { bias: 0.02, blur: 4 });
+    // flatten the bottom onto the ground
+    for (let k = 0; k < Bc.c.length; k++) {
+      if (!Bc.c[k]) continue;
+      const y = Bc.y0 + Math.floor(k / Bc.w);
+      if (y <= base) B.c[k] = Bc.c[k];
+    }
+    // separate the mass from the grass: dark outline round the shaded lower half,
+    // a cold rim on the moon-side shoulder, a darker skirt at the ground line
+    const inS = (x, y) => y <= base && !!Bc.get(x, y);
+    const edits = [];
+    for (let y = R(sh.y - sh.r - 3); y <= base; y++)
+      for (let x = R(sh.x - sh.r - 3); x <= R(sh.x + sh.r + 3); x++) {
+        if (!inS(x, y)) continue;
+        const edge = !inS(x - 1, y) || !inS(x + 1, y) || !inS(x, y - 1);
+        if (!edge) continue;
+        if (y > sh.y - sh.r * 0.15 || x < sh.x - sh.r * 0.55) edits.push([x, y, ramp[0]]);
+        else if (x > sh.x - 1 && !inS(x, y - 1)) edits.push([x, y, ramp[ramp.length - 1]]);
+      }
+    for (const [x, y, c] of edits) B.set(x, y, c);
+    for (let x = R(sh.x - sh.r - 1); x <= R(sh.x + sh.r + 1); x++) if (B.get(x, base) && B.get(x, base) !== ramp[0]) B.set(x, base, ramp[1]);
     const top = (x) => {
-      for (let y = R(sh.y - sh.r - 3); y <= base; y++) if (B.get(x, y)) return y;
+      for (let y = R(sh.y - sh.r - 3); y <= base; y++) {
+        if (B.get(x, y)) return y;
+      }
       return null;
     };
     if (isSnow(ed)) {
+      // a snow cap that follows the crown, deeper in the middle, lit on the moon side
       const heavy = ed.ground === 'snow';
       for (let x = R(sh.x - sh.r - 1); x <= R(sh.x + sh.r + 1); x++) {
         const y = top(x);
         if (y === null) continue;
         const k = Math.abs(x - sh.x) / sh.r;
-        if (k > 0.92) continue;
-        const d = heavy ? (k < 0.5 ? 3 : k < 0.8 ? 2 : 1) : k < 0.6 ? 2 : 1;
-        for (let j = 0; j < d; j++) B.set(x, y + j - (heavy ? 1 : 0), j === 0 ? (x > sh.x - 2 ? P.snow[8] : P.snow[7]) : P.snow[5 + (j === 1 ? 1 : 0)]);
+        if (k > 0.95) continue;
+        const d = heavy ? (k < 0.45 ? 3 : k < 0.75 ? 2 : 1) : k < 0.55 ? 2 : 1;
+        for (let j = 0; j < d; j++) B.set(x, y + j - (heavy ? 1 : 0), j === 0 ? (x > sh.x - 2 ? P.snow[8] : P.snow[7]) : j === 1 ? P.snow[6] : P.snow[5]);
+        // a few drips of snow lower on the shrub
+        if (HD.hash(x, seed, 7) < 0.18) B.set(x, y + d + 2, P.snow[6]);
       }
     } else if (ed.season === 'spring' || ed.season === 'summer') {
-      // flowers in deliberate little trusses on the lit upper half
-      const cols = ed.season === 'spring' ? [[P.blossom[5], P.blossom[7]], [P.bone[2], P.bone[4]], [P.blossom[4], P.blossom[6]]] : [[P.violet[5], P.violet[6]], [P.ice[3], P.ice[5]], [P.blossom[4], P.blossom[6]]];
+      // flower trusses (spring: pink and white blossom; summer: pale hydrangea heads),
+      // each a small 2x2..3x2 cluster with a lit pixel, on the upper and lit half
+      const cols = ed.season === 'spring'
+        ? [[P.blossom[3], P.blossom[5], P.blossom[6]], [P.bone[0], P.bone[2], P.bone[3]], [P.blossom[3], P.blossom[4], P.blossom[6]]]
+        : [[P.ice[2], P.ice[3], P.ice[4]], [P.violet[4], P.violet[5], P.violet[6]], [P.ice[1], P.ice[2], P.ice[3]]];
       const cc = cols[seed % cols.length];
-      const n = Math.round(sh.r * 0.8);
+      const n = Math.round(sh.r * (ed.season === 'spring' ? 1.1 : 0.7));
       for (let k = 0; k < n; k++) {
-        const a = -2.6 + (k / Math.max(1, n - 1)) * 2.2 + (rnd() - 0.5) * 0.4;
-        const d = sh.r * (0.35 + rnd() * 0.45);
+        const a = -2.9 + (k / Math.max(1, n - 1)) * 2.8 + (rnd() - 0.5) * 0.3;
+        const d = sh.r * (0.3 + rnd() * 0.5);
         const fx = R(sh.x + Math.cos(a) * d);
-        const fy = R(sh.y + Math.sin(a) * d * 0.8);
+        const fy = R(sh.y + Math.sin(a) * d * 0.75);
+        if (fy > base - 2 || !B.get(fx, fy)) continue;
         B.set(fx, fy, cc[1]);
-        B.set(fx - 1, fy, cc[0]);
+        B.set(fx + 1, fy, cc[1]);
         B.set(fx, fy + 1, cc[0]);
-        if (rnd() < 0.5) B.set(fx + 1, fy + 1, cc[0]);
+        B.set(fx + 1, fy + 1, cc[0]);
+        B.set(fx + 1, fy - 1, cc[2]);
+        if (rnd() < 0.5) B.set(fx - 1, fy, cc[0]);
+      }
+      if (ed.season === 'summer') {
+        // dark berries tucked in the shade side
+        for (let k = 0; k < 5; k++) {
+          const bx = R(sh.x - sh.r * 0.6 + rnd() * sh.r * 0.8);
+          const by = R(sh.y + rnd() * sh.r * 0.4);
+          if (by < base - 1 && B.get(bx, by)) {
+            B.set(bx, by, mix(P.violet[4], P.red[2], 0.4));
+            B.set(bx + 1, by - 1, P.violet[5]);
+          }
+        }
+      }
+    } else if (ed.season === 'autumn') {
+      // a few fallen leaves at the foot
+      for (let k = 0; k < 5; k++) {
+        const lx = R(sh.x - sh.r + rnd() * sh.r * 2.2);
+        B.set(lx, base + 1, rnd() < 0.5 ? P.autumn[4] : P.plum[2]);
       }
     }
   }
@@ -896,10 +1016,13 @@
     const b = BIRD;
     const B = new K.Buf(b.x - 8, b.base - 36, 17, 40);
     const top = b.base - 22;
+    // a sturdy 3px post (it also takes the hammock rope in summer)
     for (let y = top; y <= b.base; y++) {
-      B.set(b.x, y, P.wood[3]);
-      B.set(b.x + 1, y, P.wood[5]);
+      B.set(b.x - 1, y, P.wood[2]);
+      B.set(b.x, y, P.wood[4]);
+      B.set(b.x + 1, y, y < top + 3 ? P.wood[6] : P.wood[5]);
     }
+    for (let x = b.x - 2; x <= b.x + 3; x++) if (HD.bayer(x, b.base + 1) < 0.7) B.set(x, b.base + 1, P.soil[1]);
     // the little house: body, round door, perch, pitched roof
     const by0 = top - 8;
     for (let y = by0; y < top; y++)
@@ -911,6 +1034,9 @@
     B.set(b.x + 1, by0 + 4, P.night[1]);
     B.set(b.x, by0 + 6, P.wood[2]);
     B.set(b.x + 1, by0 + 6, P.wood[4]);
+    // a side perch twig on the right face, where the bird sits
+    for (let x = b.x + 5; x <= b.x + 9; x++) B.set(x, by0 + 6, x === b.x + 9 ? P.wood[4] : P.wood[5]);
+    B.set(b.x + 5, by0 + 7, P.wood[2]);
     const roofC = ed.season === 'winter' ? [P.red[1], P.red[2], P.red[3]] : [P.stone[2], P.stone[4], P.stone[5]];
     for (let k = 0; k <= 5; k++) {
       B.set(b.x - 4 + k, by0 - k + 1, roofC[1]);
@@ -1017,11 +1143,17 @@
     B.set(s.x, hy, P.pumpkin[4]);
     for (const dy of [-2, 1]) B.set(s.x, balls[1].y + dy, P.night[0]);
     B.set(s.x, balls[0].y - 3, P.night[0]);
-    // stick arms
-    const arm = [[-5, -1], [-7, -3], [-9, -4], [-10, -6], [-11, -4]];
-    for (const [dx, dy] of arm) B.set(s.x + dx, balls[1].y + dy, P.wood[4]);
-    B.set(s.x - 9, balls[1].y - 6, P.wood[3]);
-    for (const [dx, dy] of [[5, -1], [7, -2], [9, -4], [10, -5], [11, -5], [10, -7]]) B.set(s.x + dx, balls[1].y + dy, P.wood[4]);
+    // stick arms: dark twigs raised up above the fence top (y < 198) so they read
+    // against the sky / far snow, each ending in a little fork
+    const ay = balls[1].y;
+    const armL = [[-5, -1], [-6, -2], [-7, -3], [-7, -4], [-8, -5], [-9, -6], [-9, -7], [-10, -8], [-10, -9], [-11, -10], [-11, -11], [-12, -12], [-12, -13], [-13, -14]];
+    const forkL = [[-14, -15], [-15, -16], [-13, -15], [-13, -16], [-8, -8], [-7, -9]];
+    const armR = [[5, -1], [6, -2], [7, -3], [8, -4], [8, -5], [9, -6], [10, -7], [10, -8], [11, -9], [11, -10], [12, -11], [12, -12], [13, -13]];
+    const forkR = [[14, -14], [15, -15], [13, -14], [13, -15], [9, -8], [8, -9]];
+    for (const [dx, dy] of armL.concat(armR)) B.set(s.x + dx, ay + dy, P.wood[1]);
+    for (const [dx, dy] of forkL.concat(forkR)) B.set(s.x + dx, ay + dy, P.wood[1]);
+    // a lit upper edge along the outer arm segments (moon side)
+    for (const [dx, dy] of [[12, -10], [13, -12]]) B.set(s.x + dx, ay + dy, P.wood[4]);
     // hat: a little black top hat (winter) or a striped party cone (new year)
     const ty = hy - 4;
     if (ed.id === 'newyear') {
@@ -1065,54 +1197,62 @@
       B.set(x, by, P.red[1]);
     }
     for (const [dx, dy, c] of [[W - 2, -2, P.red[4]], [W - 1, -3, P.red[4]], [W - 1, -4, P.red[3]], [W - 2, -5, P.red[2]], [W - 3, -4, P.red[2]], [W - 2, -1, P.red[2]]]) B.set(x0 + dx, by + dy, c);
-    // struts
+    // struts between runner and deck
     for (const dx of [2, 7, 12, 16]) B.set(x0 + dx, by - 2, P.wood[2]);
-    // deck slats (3/4 top)
-    for (let x = x0 + 1; x <= x0 + W - 4; x++) {
-      B.set(x, by - 3, P.wood[3]);
-      B.set(x, by - 4, (x - x0) % 4 === 0 ? P.wood[4] : P.wood[6]);
-      B.set(x, by - 5, (x - x0) % 4 === 0 ? P.wood[5] : P.wood[7]);
+    // slatted deck seen a little from above: lit slat tops with dark gaps, dark front edge
+    for (let x = x0; x <= x0 + W - 4; x++) {
+      const gap = (x - x0) % 4 === 3;
+      B.set(x, by - 5, gap ? P.wood[3] : x > x0 + W - 8 ? P.wood[7] : P.wood[6]);
+      B.set(x, by - 4, gap ? P.wood[2] : P.wood[5]);
+      B.set(x, by - 3, P.wood[2]);
     }
-    // snow on the deck
-    for (let x = x0 + 3; x <= x0 + 11; x++) B.set(x, by - 6, x < x0 + 5 ? P.snow[6] : P.snow[7]);
-    for (let x = x0 + 5; x <= x0 + 9; x++) B.set(x, by - 7, P.snow[8]);
-    // pull rope looping onto the snow
-    for (const [dx, dy] of [[W - 2, -6], [W - 1, -7], [W, -7], [W + 1, -6], [W + 2, -5], [W + 2, -4], [W + 3, -3], [W + 4, -2], [W + 5, -1], [W + 6, -1]]) B.set(x0 + dx, by + dy, P.bone[1]);
+    // a little snow on the back of the deck only
+    for (let x = x0 + 1; x <= x0 + 6; x++) B.set(x, by - 6, x < x0 + 3 ? P.snow[6] : P.snow[7]);
+    for (let x = x0 + 2; x <= x0 + 4; x++) B.set(x, by - 7, P.snow[8]);
+    // pull rope: a short loop from the curl, lying on the snow before the snowman
+    for (const [dx, dy] of [[W - 2, -6], [W - 1, -7], [W, -7], [W + 1, -6], [W + 1, -5], [W + 2, -4], [W + 2, -3], [W + 2, -2], [W + 1, -1], [W + 2, 0]]) B.set(x0 + dx, by + dy, P.bone[1]);
     for (let x = x0 - 1; x <= x0 + W; x++) if (HD.bayer(x, by + 1) < 0.5) B.set(x, by + 1, P.snow[3]);
     return B.bake();
   }
 
   // hay bales (harvest)
-  const HAY = [mix(P.gold[0], P.stone[1], 0.4), mix(P.gold[1], P.stone[2], 0.45), mix(P.gold[1], P.stone[4], 0.4), mix(P.gold[2], P.stone[4], 0.45), mix(P.gold[3], P.stone[5], 0.5)];
+  // straw at night: gold pulled down with the purple-brown wood ramp (warm, not olive)
+  const HAY_D = mix(P.gold[0], P.violet[1], 0.4);
+  const HAY = [mix(P.gold[1], P.wood[2], 0.4), mix(P.gold[2], P.wood[3], 0.45), mix(P.gold[2], P.wood[5], 0.3), mix(P.gold[3], P.wood[6], 0.4), mix(P.gold[4], P.wood[7], 0.45)];
   function hayBale(B, x, base, w, h, seed) {
     const x0 = x - (w >> 1);
+    const x1 = x0 + w - 1;
     const top = base - h;
     const td = 3; // visible top face depth
     for (let y = top; y <= base; y++)
-      for (let xx = x0; xx < x0 + w; xx++) {
-        const corner = (y === top || y === base) && (xx === x0 || xx === x0 + w - 1);
-        if (corner) continue;
+      for (let xx = x0; xx <= x1; xx++) {
+        // rounded corners
+        if ((y === top || y === base) && (xx === x0 || xx === x1)) continue;
         let c;
         if (y < top + td) {
+          // top face seen from above: lit back edge, then a second lighter-mid tone,
+          // straw lying along the bale in short dashes
           c = y === top ? HAY[4] : HAY[3];
-          if ((xx * 3 + y) % 7 === 0) c = HAY[2];
+          if (y > top && HD.hash(xx >> 1, y, seed) < 0.3) c = y === top + 1 ? HAY[4] : HAY[2];
+          if (xx === x0) c = HAY[2];
         } else {
+          // front face: horizontal straw striation, darker under the top lip
+          const row = y - (top + td);
           c = HAY[2];
-          // vertical straw streaks in tidy columns
-          const col = HD.hash(xx, seed, 3);
-          if (col < 0.35 && (y + Math.floor(col * 20)) % 5 < 3) c = HAY[1];
-          else if (col > 0.82 && (y + xx) % 4 < 2) c = HAY[3];
-          if (xx === x0 || y === base) c = HAY[1];
-          if (y === top + td) c = HAY[1];
-          if (xx === x0 + w - 1) c = HAY[3];
+          if (row % 2 === 1 && HD.hash(xx >> 2, y, seed + 3) < 0.65) c = HAY[1];
+          else if (HD.hash(xx, y, seed + 5) < 0.1) c = HAY[3];
+          if (row === 0) c = HAY[1];
+          if (xx === x0) c = HAY[1];
+          if (xx === x1) c = row === 0 ? HAY[2] : HAY[3];
+          if (y === base) c = HAY_D;
         }
         // two twine bands
-        if (xx === x0 + Math.round(w * 0.28) || xx === x0 + Math.round(w * 0.72)) c = y < top + td ? P.wood[3] : P.wood[2];
+        if (xx === x0 + Math.round(w * 0.28) || xx === x0 + Math.round(w * 0.72)) c = y < top + td ? P.wood[4] : P.wood[2];
         B.set(xx, y, c);
       }
-    // stray straws on top
-    for (const [dx, dy] of [[3, -1], [4, -2], [w - 5, -1], [w - 4, -1], [8, -1]]) B.set(x0 + dx, top + dy, HAY[3]);
-    for (let xx = x0 - 1; xx <= x0 + w; xx++) if (HD.bayer(xx, base + 1) < 0.65) B.set(xx, base + 1, P.soil[2]);
+    // stray straws poking out of the top and the lit end
+    for (const [sx, sy, c] of [[x0 + 3, top - 1, HAY[4]], [x0 + 2, top - 2, HAY[3]], [x1 - 4, top - 1, HAY[4]], [x1 - 3, top - 2, HAY[4]], [x1 - 2, top - 3, HAY[3]], [x1 + 1, top + td + 2, HAY[3]], [x1 + 2, top + td + 1, HAY[4]]]) B.set(sx, sy, c);
+    for (let xx = x0 - 1; xx <= x1 + 1; xx++) B.set(xx, base + 1, xx > x0 && xx < x1 ? P.night[1] : P.soil[1]);
   }
   function bakeHay() {
     const B = new K.Buf(300, 190, 80, 40);
@@ -1124,7 +1264,8 @@
     return B.bake();
   }
 
-  // scarecrow (harvest): friendly burlap face, straw hat, patched plaid shirt
+  // scarecrow (harvest): friendly burlap sack face (button eyes, stitched smile) under a
+  // straw hat, patched plaid shirt, straw hands; outlined so it separates from the fence
   const SCARE_ROWS = [
     '..........hhh.........',
     '.........hHHHh........',
@@ -1133,13 +1274,13 @@
     '.....hhhHHHHHHHHhh....',
     '......hhhhhhhhhhh.....',
     '.........ss.sss.......',
-    '........sbBBBBBB......',
-    '........bbBBBBBB......',
-    '........beeBBeeB......',
-    '........bBBBBBBB......',
-    '........bBkBkBkB......',
-    '.........bbBBBB.......',
-    '...........yY.........',
+    '........obBBBBHo......',
+    '........obBBBBHo......',
+    '........obEcBEco......',
+    '........obBBBBBo......',
+    '........obkBBBko......',
+    '.........obkkkbo......',
+    '..........oyYo........',
     '.yy..pppPPPPPPPP..YY..',
     'yYyppppPPPPPPPPPPPPyYy',
     '.y.ppp.pppPPPPP.PPPPY.',
@@ -1168,10 +1309,14 @@
       r: P.red[2],
       R: P.red[4],
       s: HAY[1],
-      b: mix(P.bone[0], P.wood[5], 0.45),
-      B: mix(P.bone[1], P.wood[6], 0.35),
-      e: P.night[0],
-      k: P.wood[2],
+      // burlap sack: warm tan, darker on the shadow side, lit edge towards the moon
+      b: mix(P.gold[1], P.wood[5], 0.5),
+      B: mix(P.gold[2], P.wood[6], 0.5),
+      H2: mix(P.gold[3], P.wood[7], 0.45),
+      o: P.wood[1], // outline round the head
+      E: P.wood[1], // button eyes ...
+      c: mix(P.bone[3], P.gold[5], 0.2), // ... with a catch-light
+      k: P.wood[3], // stitched smile
       p: P.red[1],
       P: P.red[3],
       q: P.ice[1],
@@ -1181,84 +1326,121 @@
       w: P.wood[3],
       W: P.wood[5],
     };
-    const spr = HD.sprite(SCARE_ROWS, map);
-    return { cv: spr, x: s.x - 11, y: s.base - SCARE_ROWS.length + 1 };
+    const x0 = s.x - 11;
+    const y0 = s.base - SCARE_ROWS.length + 1;
+    const B = new K.Buf(x0 - 1, y0, 24, SCARE_ROWS.length);
+    const at = (x, y) => (y >= 0 && y < SCARE_ROWS.length && x >= 0 && x < SCARE_ROWS[y].length ? SCARE_ROWS[y][x] : '.');
+    SCARE_ROWS.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        const ch = row[x];
+        if (ch === '.') continue;
+        let c = ch === 'H' && y >= 7 ? map.H2 : map[ch];
+        // plaid: darker 1px checks across the shirt
+        if ((ch === 'p' || ch === 'P') && y >= 14 && y <= 19 && (x % 3 === 1 || y % 3 === 0)) c = ch === 'p' ? P.red[0] : P.red[2];
+        B.set(x0 + x, y0 + y, c);
+      }
+    });
+    // dark silhouette edge on the shadow (left) side of cloth, sack and pole
+    SCARE_ROWS.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        const ch = row[x];
+        if ('bBpPdDwW'.indexOf(ch) < 0 || at(x - 1, y) !== '.') continue;
+        B.set(x0 + x - 1, y0 + y, P.night[1]);
+      }
+    });
+    // contact shadow at the foot of the pole
+    for (let x = s.x - 3; x <= s.x + 4; x++) if (HD.bayer(x, s.base + 1) < 0.7) B.set(x, s.base + 1, P.soil[1]);
+    return B.bake();
   }
 
-  // flower beds (spring tulips & daffodils, summer cosmos & daisies)
+  // flower beds (spring tulips & daffodils, summer daisies, cosmos, lavender, rudbeckia).
+  // Flowers grow in clumps of 2-3 stems of one kind so the heads form clusters; the bed
+  // box is two low planks. Summer planks are dark: the bonfire relights mid-tones to red.
   function bakeBeds(ed) {
     const B = new K.Buf(0, 196, 60, 44);
+    const summer = ed.id === 'summer';
     const beds = [
       { x0: 5, x1: 31, base: 222 },
       { x0: 20, x1: 52, base: 234 },
     ];
-    const rnd = HD.rng(ed.id === 'spring' ? 71 : 72);
-    for (const b of beds) {
-      // flowers first (behind the front plank)
-      const n = Math.round((b.x1 - b.x0) / 2.3);
-      for (let k = 0; k < n; k++) {
-        const x = b.x0 + 2 + Math.round((k / n) * (b.x1 - b.x0 - 3)) + (rnd() < 0.3 ? 1 : 0);
-        const tall = ed.id === 'summer' ? 6 + Math.floor(rnd() * 5) : 4 + Math.floor(rnd() * 3);
-        const y0 = b.base - 4;
-        for (let j = 1; j <= tall; j++) B.set(x, y0 - j, j < 3 ? P.leaf[3] : P.leaf[4]);
-        if (rnd() < 0.5) {
-          B.set(x - 1, y0 - 2, P.leaf[5]);
-          B.set(x + 1, y0 - 3, P.leaf[4]);
-        }
-        const fy = y0 - tall;
-        const kind = Math.floor(rnd() * 3);
-        if (ed.id === 'spring') {
-          if (kind === 2) {
-            // daffodil: pale star with a deep trumpet
-            const c = mix(P.gold[4], P.night[9], 0.25);
-            B.set(x - 1, fy, c);
-            B.set(x + 1, fy, c);
-            B.set(x, fy - 1, c);
-            B.set(x, fy + 1, mix(P.gold[3], P.night[8], 0.3));
-            B.set(x, fy, P.marigold[3]);
-          } else {
-            // tulip cup
-            const tc = kind === 0 ? [P.red[3], P.red[5]] : [P.blossom[4], P.blossom[6]];
-            B.set(x, fy, tc[0]);
-            B.set(x + 1, fy, tc[0]);
-            B.set(x, fy - 1, tc[1]);
-            B.set(x + 1, fy - 1, tc[0]);
-            B.set(x - 1, fy - 1, tc[0]);
-            B.set(x + 1, fy - 2, tc[1]);
-            B.set(x - 1, fy - 2, tc[0]);
-          }
+    const PL = summer ? { top: P.wood[3], face: P.wood[2], dark: P.wood[1], post: P.wood[2], postLit: P.wood[3] } : { top: P.wood[6], face: P.wood[4], dark: P.wood[2], post: P.wood[3], postLit: P.wood[7] };
+    const rnd = HD.rng(summer ? 72 : 71);
+    const head = (x, y, kind) => {
+      if (summer) {
+        if (kind === 0) {
+          // daisy: white plus with a gold eye
+          for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) B.set(x + dx, y + dy, P.bone[2]);
+          B.set(x + 1, y - 1, P.bone[1]);
+          B.set(x + 1, y, P.bone[3]);
+          B.set(x, y, P.gold[3]);
+        } else if (kind === 1) {
+          // cosmos: pink ring
+          for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1]]) B.set(x + dx, y + dy, P.blossom[3]);
+          B.set(x + 1, y - 1, P.blossom[5]);
+          B.set(x, y, P.gold[2]);
+        } else if (kind === 2) {
+          // lavender: a spike
+          for (let j = 0; j < 4; j++) B.set(x, y - j + 1, j % 2 ? P.violet[5] : P.violet[4]);
+          B.set(x + 1, y - 1, P.violet[4]);
+          B.set(x - 1, y, P.violet[3]);
         } else {
-          if (kind === 0) {
-            // daisy
-            for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) B.set(x + dx, fy + dy, P.bone[3]);
-            B.set(x, fy, P.gold[4]);
-          } else if (kind === 1) {
-            // lavender spike
-            for (let j = 0; j < 4; j++) B.set(x, fy - j, j % 2 ? P.violet[6] : P.violet[5]);
-            B.set(x + 1, fy - 1, P.violet[5]);
-          } else {
-            // cosmos
-            const c = [P.blossom[4], P.blossom[6]];
-            B.set(x - 1, fy, c[0]);
-            B.set(x + 1, fy, c[0]);
-            B.set(x, fy - 1, c[1]);
-            B.set(x, fy + 1, c[0]);
-            B.set(x, fy, P.gold[3]);
-          }
+          // rudbeckia: gold petals round a dark cone
+          for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, -1]]) B.set(x + dx, y + dy, mix(P.gold[3], P.wood[5], 0.25));
+          B.set(x, y, P.wood[1]);
         }
+        return;
       }
-      // raised bed box: soil top, two planks, corner posts
-      for (let x = b.x0; x <= b.x1; x++) {
-        B.set(x, b.base - 4, P.soil[4]);
-        B.set(x, b.base - 3, x === b.x0 || x === b.x1 ? P.wood[3] : P.wood[6]);
-        B.set(x, b.base - 2, P.wood[4]);
-        B.set(x, b.base - 1, x % 6 === 0 ? P.wood[2] : P.wood[5]);
-        B.set(x, b.base, P.wood[2]);
-        if (HD.bayer(x, b.base + 1) < 0.6) B.set(x, b.base + 1, P.soil[2]);
+      if (kind === 2) {
+        // daffodil: pale star with a deep trumpet
+        const c = mix(P.gold[4], P.night[9], 0.25);
+        B.set(x - 1, y, c);
+        B.set(x + 1, y, c);
+        B.set(x, y - 1, c);
+        B.set(x + 1, y - 1, mix(P.gold[5], P.night[9], 0.2));
+        B.set(x, y + 1, mix(P.gold[3], P.night[8], 0.3));
+        B.set(x, y, P.marigold[3]);
+      } else {
+        // tulip cup
+        const tc = kind === 0 ? [P.red[3], P.red[5]] : kind === 1 ? [P.blossom[4], P.blossom[6]] : [P.gold[3], P.gold[5]];
+        B.set(x, y, tc[0]);
+        B.set(x + 1, y, tc[0]);
+        B.set(x, y - 1, tc[1]);
+        B.set(x + 1, y - 1, tc[0]);
+        B.set(x - 1, y - 1, tc[0]);
+        B.set(x + 1, y - 2, tc[1]);
+        B.set(x - 1, y - 2, tc[0]);
       }
-      for (const x of [b.x0, b.x1]) {
-        B.set(x, b.base - 5, P.wood[5]);
-        for (let y = b.base - 4; y <= b.base; y++) B.set(x, y, x === b.x1 ? P.wood[7] : P.wood[3]);
+    };
+    for (const b of beds) {
+      const y0 = b.base - 3; // soil line
+      // clumps of one kind, stems ~1.7px apart
+      let x = b.x0 + 2;
+      while (x <= b.x1 - 2) {
+        const kind = Math.floor(rnd() * (summer ? 4 : 3));
+        const n = 2 + Math.floor(rnd() * 2);
+        const hBase = summer ? 5 + Math.floor(rnd() * 4) : 4 + Math.floor(rnd() * 2);
+        for (let k = 0; k < n && x <= b.x1 - 2; k++, x += 2) {
+          const tall = hBase + (k % 2 ? -1 : 1) + (rnd() < 0.3 ? 1 : 0);
+          for (let j = 1; j <= tall; j++) B.set(x, y0 - j, j < 3 ? P.leaf[3] : P.leaf[4]);
+          if (rnd() < 0.6) {
+            B.set(x - 1, y0 - 1, P.leaf[5]);
+            B.set(x + 1, y0 - 2, P.leaf[4]);
+          }
+          head(x, y0 - tall, kind);
+        }
+        x += rnd() < 0.5 ? 0 : 1;
+      }
+      // the bed box: soil line, two low planks, corner posts
+      for (let xx = b.x0; xx <= b.x1; xx++) {
+        B.set(xx, b.base - 3, P.soil[4]);
+        B.set(xx, b.base - 2, PL.top);
+        B.set(xx, b.base - 1, xx % 7 === 3 ? PL.dark : PL.face);
+        B.set(xx, b.base, PL.dark);
+        B.set(xx, b.base + 1, P.night[1]);
+      }
+      for (const xx of [b.x0, b.x1]) {
+        B.set(xx, b.base - 4, PL.postLit);
+        for (let y = b.base - 3; y <= b.base; y++) B.set(xx, y, xx === b.x1 ? PL.postLit : PL.post);
       }
     }
     return B.bake();
@@ -1344,21 +1526,84 @@
     return B.bake();
   }
 
-  // frog on the puddle edge (spring): blinks and croaks now and then
-  const FROG = { x: 334, base: 229 };
+  // frog (spring): sits on a moonlit stone at the right rim of the small puddle, outlined
+  // so it separates from the grass; blinks, and croaks about every half minute
+  const FROG = { x: 338, base: 228 };
   const FROG_ROWS = {
-    idle: ['..e.e..', '.gGgGg.', 'gGGGGGg', 'gglllgg', '.g...g.'],
-    blink: ['..g.g..', '.gGgGg.', 'gGGGGGg', 'gglllgg', '.g...g.'],
-    croak: ['..e.e..', '.gGgGg.', 'gGGGGGg', 'gLLLLLg', '.LLLLL.'],
+    idle: ['.oo...oo.', 'oWPo.oPWo', 'oHHHHHHHo', 'omGGGGGmo', 'ogmmmmmgo', '.oTTTTTo.', 'ofgo.ogfo'],
+    blink: ['.oo...oo.', 'oHHo.oHHo', 'oHHHHHHHo', 'omGGGGGmo', 'ogmmmmmgo', '.oTTTTTo.', 'ofgo.ogfo'],
+    croak: ['.oo...oo.', 'oWPo.oPWo', 'oHHHHHHHo', 'omGGGGGmo', 'ogmmmmmgo', 'oTTTTTTTo', 'ofTTTTTfo'],
   };
   let FROG_SPR = null;
+  let FROG_STONE = null;
   function frogFrame(t) {
     const ts = T.step(t, 8);
-    const c = T.cycle(ts, 0, 9.5, 404);
+    const c = T.cycle(ts, 0, 31, 404);
     const ct = c.age * c.P;
     if ((ct > 3 && ct < 3.5) || (ct > 3.75 && ct < 4.25)) return 'croak';
     if (T.noise(ts, 3.1, 405) > 0.86) return 'blink';
     return 'idle';
+  }
+  function bakeFrogStone() {
+    const B = new K.Buf(FROG.x - 8, FROG.base - 3, 17, 8);
+    const cx = FROG.x;
+    const cy = FROG.base + 2;
+    for (let y = cy - 2; y <= cy + 2; y++)
+      for (let x = cx - 6; x <= cx + 6; x++) {
+        const nx = (x - cx) / 5.6;
+        const ny = (y - cy) / 1.9;
+        if (nx * nx + ny * ny > 1) continue;
+        const top = !(((x - cx) / 5.6) ** 2 + ((y - 1 - cy) / 1.9) ** 2 <= 1);
+        let c = y > cy ? P.stone[2] : P.stone[4];
+        if (top) c = x > cx ? P.stone[6] : P.stone[5];
+        if (y === cy + 2 || (y > cy && Math.abs(nx) > 0.8)) c = P.stone[1];
+        B.set(x, y, c);
+      }
+    // the frog's contact shadow on the stone
+    for (let x = cx - 3; x <= cx + 3; x++) B.set(x, FROG.base + 1, x > cx + 1 ? P.stone[3] : P.stone[2]);
+    // wet dark rim where the stone meets the puddle
+    for (let x = cx - 7; x <= cx + 6; x++) if (HD.bayer(x, cy + 3) < 0.6) B.set(x, cy + 3, P.soil[1]);
+    return B.bake();
+  }
+
+  // robin on the birdhouse (spring): sits on the side perch, looks about, and every
+  // ~24 s hops up and into the hole, later peeks out and hops back
+  const ROBIN = {
+    perch: ['.ohho...', 'bhehho..', '.orrhwwo', '..orwwwt', '...l.l..'],
+    fly: ['...ww...', '.ohwwo..', 'bhehho..', '.orrhwwt', '..oooo..'],
+  };
+  let ROBIN_SPR = null;
+  function drawRobin(g, t) {
+    const ts = T.step(t, 8);
+    const c = T.cycle(ts, 0, 24, 811);
+    const u = c.age; // 0..1 over ~24 s
+    const bx = BIRD.x + 4; // just right of the box (box face x 463..470)
+    const by = BIRD.base - 22 - 8 + 1; // box top (by0) + 1
+    const hole = [BIRD.x, BIRD.base - 22 - 8 + 3];
+    if (u < 0.6 || u >= 0.94) {
+      // on the side perch, facing the box; turns to look out now and then
+      const look = T.noise(ts, 4.5, 812) > 0.62;
+      const hopB = u >= 0.94 && u < 0.955; // landing bob
+      g.sprite(ROBIN_SPR.perch, bx, by + (hopB ? -1 : 0), look);
+    } else if (u < 0.615) {
+      g.sprite(ROBIN_SPR.fly, bx - 2, by - 3, false); // hop up towards the hole
+    } else if (u < 0.635) {
+      // going in: only the tail is left sticking out of the hole
+      g.px(hole[0], hole[1] + 1, P.wood[4]);
+      g.px(hole[0] + 1, hole[1] + 1, P.night[1]);
+      g.px(hole[0], hole[1] + 2, P.wood[3]);
+    } else if (u < 0.9) {
+      // inside
+    } else if (u < 0.925) {
+      // peeking out
+      g.px(hole[0], hole[1], P.night[1]);
+      g.px(hole[0] + 1, hole[1], mix(P.stone[5], P.wood[6], 0.5));
+      g.px(hole[0], hole[1] + 1, mix(P.pumpkin[4], P.red[3], 0.4));
+      g.px(hole[0] + 1, hole[1] + 1, mix(P.stone[5], P.wood[6], 0.5));
+      g.px(hole[0] - 1, hole[1] + 1, P.gold[2]);
+    } else {
+      g.sprite(ROBIN_SPR.fly, bx - 2, by - 3, false); // hop back out
+    }
   }
 
   // harvest pumpkins and gourds around the fire and on the steps
@@ -1396,17 +1641,47 @@
     return B.bake();
   }
 
-  // diyas along the path and the fence posts (Festival of Lights)
-  const PATH_DIYAS = [
-    [196, 216],
-    [244, 216],
-    [194, 224],
-    [248, 224],
-    [186, 232],
-    [214, 233],
-    [178, 238],
-    [204, 239],
-  ];
+  // diyas along the path and the fence posts (Festival of Lights). The path lamps are
+  // generated from the shared path: even arc lengths, 8px either side along the normal,
+  // nudged off the rangoli onto its rim, never on the diorama lip.
+  function buildPathDiyas() {
+    const pts = L.path;
+    const segs = [];
+    let tot = 0;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [x0, y0] = pts[i];
+      const [x1, y1] = pts[i + 1];
+      const len = Math.hypot(x1 - x0, y1 - y0);
+      segs.push({ x0, y0, tx: (x1 - x0) / len, ty: (y1 - y0) / len, s0: tot, len });
+      tot += len;
+    }
+    const at = (sv) => {
+      const g = segs.find((q) => sv <= q.s0 + q.len) || segs[segs.length - 1];
+      const u = sv - g.s0;
+      return { x: g.x0 + g.tx * u, y: g.y0 + g.ty * u, nx: -g.ty, ny: g.tx };
+    };
+    const rg = SL.rangoli;
+    const offRangoli = (x, y) => {
+      const ex = (x - rg.x) / (rg.rx + 3);
+      const ey = (y - rg.y) / (rg.ry + 2);
+      const d = Math.hypot(ex, ey);
+      if (d >= 1) return [x, y];
+      const k = 1 / Math.max(1e-3, d);
+      return [rg.x + ex * k * (rg.rx + 3), rg.y + ey * k * (rg.ry + 2)];
+    };
+    const sides = [[], []];
+    for (const sv of [9, 17, 25]) {
+      const p = at(sv);
+      [-1, 1].forEach((sg, si) => {
+        let [x, y] = offRangoli(p.x + p.nx * 8 * sg, p.y + p.ny * 8 * sg);
+        y = Math.min(y, L.ground.front - 3);
+        sides[si].push([R(x), R(y)]);
+      });
+    }
+    return sides;
+  }
+  const PATH_SIDES = buildPathDiyas();
+  const PATH_DIYAS = PATH_SIDES[0].concat(PATH_SIDES[1]);
   const FENCE_DIYAS = FENCE_POSTS.map((x) => [x - 3, FENCE.top - 4]);
 
   // bonfire: tall teepee of logs in a wide stone ring
@@ -1441,10 +1716,31 @@
     K.logShape(front, cx - 20, cy + 2, cx + 3, cy - 4, 5.2, { end: 'a', char: 'b', seed: 11 });
     K.logShape(front, cx + 21, cy + 2, cx - 1, cy - 4, 5.0, { end: 'a', char: 'b', seed: 12 });
     for (const s of stones) if (Math.sin(s.a) > 0.15) K.stoneBlob(front, s.x, s.y + 1, s.rx, s.ry, (cx - s.x) * 0.05, -0.9, s.seed, true);
-    // a little woodpile beside the bonfire
-    for (let k = 0; k < 3; k++) K.logShape(front, cx + 30 + k * 3, cy + 6 - k * 0, cx + 42 + k * 3, cy + 4 - k * 0, 3.6, { end: 'a', seed: 20 + k });
-    K.logShape(front, cx + 33, cy + 2, cx + 45, cy + 0, 3.6, { end: 'a', seed: 24 });
-    return { back: back.bake(), front: front.bake() };
+    // a tidy woodpile off to the side, out of the brightest firelight: two rows of three
+    // split logs, end grain to the camera (bark ring, pale sapwood, ring, dark heart)
+    const wx = cx + 45;
+    const wb = cy + 4;
+    const pile = new K.Buf(wx - 4, wb - 16, 24, 20);
+    // the logs' bark tops receding behind the upper row
+    for (let x = wx - 1; x <= wx + 14; x++) {
+      pile.set(x + 1, wb - 13, P.wood[4]);
+      pile.set(x, wb - 12, x % 5 === 2 ? P.wood[2] : P.wood[3]);
+    }
+    const disc = (ex, ey) => {
+      for (let dy = -2; dy <= 2; dy++)
+        for (let dx = -2; dx <= 2; dx++) {
+          const d = Math.hypot(dx, dy * 1.05);
+          if (d > 2.45) continue;
+          let c = d > 1.75 ? P.wood[2] : d > 1.15 ? P.wood[7] : d > 0.5 ? P.wood[5] : P.wood[3];
+          if (d > 1.75 && dy < 0 && dx >= 0) c = P.wood[4]; // bark rim catching light
+          pile.set(ex + dx, ey + dy, c);
+        }
+    };
+    for (let k = 0; k < 3; k++) disc(wx + 2 + k * 5, wb - 2); // bottom row
+    for (let x = wx - 1; x <= wx + 14; x++) pile.set(x, wb - 5, P.night[1]); // dark gap
+    for (let k = 0; k < 3; k++) disc(wx + 2 + k * 5, wb - 8); // top row
+    for (let x = wx - 1; x <= wx + 15; x++) pile.set(x, wb + 1, P.night[1]);
+    return { back: back.bake(), front: front.bake(), pile: pile.bake() };
   }
 
   // paper / harvest lantern string from the house hook to a branch
@@ -1479,13 +1775,10 @@
     K = kit;
     treeArt = HD.perEdition((ed) => buildTreeArt(ed));
     gardenArt = HD.perEdition((ed) => {
-      const back = new K.Buf(300, 180, 180, 50);
-      SHRUBS_BACK.forEach((sh, i) => paintShrub(back, ed, sh, 31 + i));
-      const front = new K.Buf(300, 180, 180, 50);
-      SHRUBS_FRONT.forEach((sh, i) => paintShrub(front, ed, sh, 41 + i));
+      const front = new K.Buf(300, 180, 180, 54);
+      shrubsFor(ed).forEach((sh) => paintShrub(front, ed, sh));
       return {
         fence: bakeFenceGarden(ed),
-        back: back.bake(),
         bird: bakeBirdhouse(ed),
         bench: bakeBench(ed),
         front: front.bake(),
@@ -1501,14 +1794,41 @@
       eggs: null,
       harvest: null,
       bonfire: null,
+      frogStone: null,
     };
     FROG_SPR = {};
-    const fm = { e: P.bone[2], g: mix(P.leaf[4], P.vine[3], 0.5), G: P.leaf[6], l: P.leaf[2], L: mix(P.leaf[7], P.bone[3], 0.45) };
+    const fm = {
+      o: P.night[1],
+      W: P.bone[4],
+      P: P.night[0],
+      H: mix(P.leaf[7], P.gold[5], 0.45), // moonlit lime back
+      G: mix(P.leaf[7], P.gold[4], 0.15),
+      g: P.leaf[5],
+      m: P.leaf[2], // the wide smile
+      T: mix(P.bone[3], P.gold[5], 0.25), // pale throat
+      f: P.leaf[4],
+    };
     for (const k in FROG_ROWS) FROG_SPR[k] = HD.sprite(FROG_ROWS[k], fm);
-    redHooks = RED_LANTERNS.map((r) => {
-      const h = findHook(r.tx, r.ty, 10, r.size === 'big' ? 16 : 10) || { x: r.tx, y: r.ty };
-      return { ...r, x: h.x, y: h.y };
-    });
+    ROBIN_SPR = {};
+    const rm = {
+      o: P.night[1],
+      b: P.gold[2],
+      h: mix(P.stone[6], P.wood[7], 0.5),
+      e: P.night[0],
+      r: mix(P.pumpkin[5], P.red[4], 0.3),
+      w: P.wood[6],
+      t: P.wood[4],
+      l: P.wood[2],
+    };
+    for (const k in ROBIN) ROBIN_SPR[k] = HD.sprite(ROBIN[k], rm);
+    redHooks = [];
+    for (const r of RED_LANTERNS) {
+      const h = limbHook(r.x, r.y, r.size, r.len);
+      // a lantern never hangs from thin air: if the tree changed (?treeSeed) and no limb is
+      // near, leave that lantern out and say so
+      if (!h) console.warn('props: no limb for the red lantern at ' + r.x + ',' + r.y);
+      else redHooks.push({ ...r, x: h.x, y: h.y });
+    }
     fairy = buildFairy();
     STRING = buildString();
   };
@@ -1533,7 +1853,13 @@
   S.treeDress = function (g, t) {
     const ed = HD.edition;
     if (HD.tag('tree-red-lanterns')) {
-      redHooks.forEach((h, i) => FX.lantern(g, h.x, h.y, t, 900 + i * 7, 'red', { len: h.len, size: h.size, amp: 0.1 }));
+      redHooks.forEach((h, i) => {
+        // swing about the limb hook; the lantern body hangs from the swung cord end
+        const seed = 900 + i * 7;
+        const [bx, by] = FX.lanternPos(h.x, h.y, t, seed, { len: h.len, amp: 0.1 });
+        FX.lantern(g, bx, by, t, seed, 'red', { len: 0, size: h.size });
+        g.line(h.x, h.y, bx, by, CORD);
+      });
     }
     if (HD.tag('tree-fairy-lights')) {
       const ts = T.step(t, 6);
@@ -1556,53 +1882,29 @@
 
   S.garden = function (g, t) {
     const A = gardenArt();
-    blit(g, A.back);
     blit(g, A.fence);
     blit(g, A.bird);
     if (HD.tag('diyas-yard')) FENCE_DIYAS.forEach(([x, y], i) => FX.diya(g, x + 3, y, t, 500 + i));
-    if (HD.tag('birdhouse')) {
-      // a little bird on the birdhouse perch: looks around, ducks in now and then
-      const ts = T.step(t, 8);
-      const c = T.cycle(ts, 0, 23, 811);
-      const ct = c.age * c.P;
-      if (ct < 15) {
-        const bx = BIRD.x + 3;
-        const by = BIRD.base - 22 - 3;
-        const look = T.noise(ts, 4.5, 812) > 0.55;
-        const peck = ct > 6 && ct < 6.6 && (ct * 4) % 1 < 0.5;
-        g.px(bx, by, P.night[5]);
-        g.px(bx + 1, by, P.night[6]);
-        g.px(bx + 2, by, P.night[6]);
-        g.px(bx, by - 1, P.night[5]);
-        g.px(bx + 1, by - 1, P.red[3]);
-        g.px(bx + 1, by - 2 + (peck ? 1 : 0), P.night[6]);
-        g.px(bx + (look ? 0 : 2), by - 2 + (peck ? 1 : 0), P.night[6]);
-        g.px(bx + (look ? -1 : 3), by - 2 + (peck ? 1 : 0), P.gold[3]);
-        g.px(bx - 1, by - 1, P.night[4]);
-        g.px(bx - 2, by - 2, P.night[4]);
-      }
-    }
+    if (HD.tag('birdhouse')) drawRobin(g, t);
   };
 
+  // front of the garden, painted back to front (by ground contact)
   S.gardenFront = function (g, t) {
     const A = gardenArt();
-    blit(g, A.bench);
-    blit(g, A.front);
-    if (HD.tag('sled')) blit(g, lazy('sled', bakeSled));
-    if (HD.tag('hay-bales')) blit(g, lazy('hay', bakeHay));
-    if (HD.tag('scarecrow')) blit(g, lazy('scare', bakeScarecrow));
+    if (HD.tag('hammock') && A.ham) drawHammock(g, t, A.ham); // hangs ~y206, tied to trunk + post
+    if (HD.tag('sled')) blit(g, lazy('sled', bakeSled)); // base 214
+    if (HD.tag('scarecrow')) blit(g, lazy('scare', bakeScarecrow)); // base 220
+    if (HD.tag('hay-bales')) blit(g, lazy('hay', bakeHay)); // base 221..225
+    blit(g, A.front); // shrubs, bases 222..226
     if (A.snowman) {
       blit(g, A.snowman);
       drawScarf(g, t);
     }
-    if (HD.tag('hammock') && A.ham) {
-      // slung between the trunk and a post, in front of the picket fence
-      blit(g, A.ham);
-      drawHammock(g, t);
-    }
+    blit(g, A.bench); // base 226
     if (HD.tag('frog')) {
+      blit(g, lazy('frogStone', bakeFrogStone));
       const spr = FROG_SPR[frogFrame(t)];
-      g.sprite(spr, FROG.x - 3, FROG.base - spr.height + 1);
+      g.sprite(spr, FROG.x - 4, FROG.base - spr.height + 1);
     }
   };
 
@@ -1630,7 +1932,9 @@
     blit(g, lazy('bonfire', bakeBonfire).back);
   };
   S.bonfireFront = function (g) {
-    blit(g, lazy('bonfire', bakeBonfire).front);
+    const A = lazy('bonfire', bakeBonfire);
+    blit(g, A.front);
+    blit(g, A.pile);
   };
 
   // ------------------------------------------------------------------
@@ -1638,7 +1942,11 @@
   // ------------------------------------------------------------------
   S.lights = function (t, Lt) {
     if (HD.tag('tree-red-lanterns') && redHooks) {
-      redHooks.forEach((h, i) => FX.lanternLight(Lt, h.x, h.y, t, 900 + i * 7, 'red', { len: h.len, size: h.size, amp: 0.1, i: h.size === 'big' ? 0.34 : 0.2 }));
+      redHooks.forEach((h, i) => {
+        const seed = 900 + i * 7;
+        const [bx, by] = FX.lanternPos(h.x, h.y, t, seed, { len: h.len, amp: 0.1 });
+        FX.lanternLight(Lt, bx, by, t, seed, 'red', { len: 0, size: h.size, i: h.size === 'big' ? 0.34 : 0.2 });
+      });
     }
     if (HD.tag('tree-fairy-lights') && fairy) {
       for (const gr of fairy.groups) Lt.add({ x: gr.x, y: gr.y, r: 22 + gr.n * 0.4, color: HD.LIGHT.bulb.gold, i: 0.14 + gr.n * 0.004, bands: 4, halo: { r: 12, a: 0.05 } });
@@ -1648,12 +1956,14 @@
       STRING.lan.forEach((l) => FX.lanternLight(Lt, l.x, l.y, t, l.seed, kind, { len: 2, size: l.size, amp: 0.08 }));
     }
     if (HD.tag('diyas-yard')) {
-      // one light per pair of diyas
-      for (let i = 0; i < PATH_DIYAS.length; i += 2) {
-        const a = PATH_DIYAS[i];
-        const b = PATH_DIYAS[i + 1];
-        FX.diyaLight(Lt, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, t, 520 + i, 26, 0.36);
-      }
+      // aggregated along each side of the path: one light per pair of neighbours
+      PATH_SIDES.forEach((side, si) => {
+        for (let i = 0; i < side.length; i += 2) {
+          const a = side[i];
+          const b = side[Math.min(side.length - 1, i + 1)];
+          FX.diyaLight(Lt, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, t, 520 + si * 7 + i, 24, b === a ? 0.26 : 0.34);
+        }
+      });
       for (let i = 0; i < FENCE_DIYAS.length; i += 3) {
         const a = FENCE_DIYAS[i];
         const b = FENCE_DIYAS[Math.min(FENCE_DIYAS.length - 1, i + 2)];

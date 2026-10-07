@@ -75,63 +75,92 @@
   // ===================================================================
   // SNOW (baked into the house raster)
   // ===================================================================
-  const ICICLES = []; // filled per bake, consumed immediately
-  function icicleRun(R, xa, xb, yAt, seed, maxLen, density) {
+  /**
+   * Hang a run of icicles from y = yAt(x). `out` is the raster they are painted
+   * into (the house itself, or the overlay drawn in front of the string
+   * lights); `R` is the house (windows stop them). `avoid` holds the string
+   * bulbs (key x*512+y): an icicle never touches a bulb, so the two read
+   * separately, and next to a string the icicles are long enough (minLen) to
+   * hang clear below the bulb row.
+   */
+  const key = (x, y) => x * 512 + y;
+  function icicleRun(out, R, xa, xb, yAt, seed, minLen, maxLen, density, avoid) {
     let last = -9;
     for (let x = xa; x <= xb; x++) {
       const y = yAt(x);
       if (y === null) continue;
       const h = HD.hash(x, seed, 11);
       if (h > density || x - last < 2) continue;
+      const len = minLen + Math.floor(Math.pow(HD.hash(x, seed, 12), 1.8) * (maxLen - minLen + 1));
+      let clash = false;
+      if (avoid && avoid.size)
+        for (let dx = -1; dx <= 1 && !clash; dx++) for (let yy = y - 1; yy <= y + len; yy++) if (avoid.has(key(x + dx, yy))) clash = true;
+      if (clash) continue;
       last = x;
-      const len = 1 + Math.floor(Math.pow(HD.hash(x, seed, 12), 2.2) * maxLen);
       for (let k = 0; k < len; k++) {
         const yy = y + k;
-        const cur = R.get(x, yy);
-        if (cur === HOLE) break;
+        if (R.get(x, yy) === HOLE) break;
         const c = k === len - 1 ? IC[5] : k === 0 ? IC[4] : k === len - 2 ? IC[4] : IC[3];
-        R.set(x, yy, c, TG.gutter);
+        out.set(x, yy, c, TG.gutter);
       }
-      if (len >= 4) R.set(x + 1, y, IC[2], TG.gutter);
+      if (len >= 4) out.set(x + 1, y, IC[2], TG.gutter);
     }
   }
 
-  function snowRoof(R, heavy) {
+  /** soft left->right sky-glow gradient on snow: level lo..lo+1, Bayer-dithered */
+  const snowLvl = (x, y, lo) => lo + (HD.bayer(x, y) < HD.smoothstep(0.25, 0.8, (x - RF.x0) / (RF.x1 - RF.x0)) ? 1 : 0);
+
+  function snowRoof(R, heavy, ice, avoid) {
     const rows = K.courses(21, RF.x0 - 4, RF.x1 + 4, 6, 10);
     const pillows = K.courses(61, RF.x0 - 4, RF.x1 + 4, 8, 17);
     const x0 = RF.x0 - 2;
     const x1 = RF.x1 + 2;
     const lipBottom = new Map();
+    // where the slate shows through (thin snow at the verges, by the chimney)
+    const nearEdge = (x, y) => {
+      for (let k = 1; k <= 3; k++) if (R.get(x - k, y) === null || R.get(x + k, y) === null) return true;
+      return false;
+    };
+    const nearChimney = (x, y) => x >= CHM.x0 - 2 && x <= CHM.x1 + 1 && y <= 114;
     // --- slope -----------------------------------------------------
     for (let y = RF.peakY - 5; y <= RF.eave + 2; y++)
       for (let x = x0; x <= x1; x++) {
         const tg = R.tg(x, y);
         if (tg !== TG.roof && tg !== TG.moss) continue;
-        const right = x >= RF.peakX;
+        const dip = K.roofDip(x);
         if (heavy) {
-          // soft pillows of snow over the slate courses: broken ledges with a
-          // lit lip above a shadow line, sagging with the roof like the slates
-          const dip = K.roofDip(x);
+          // a deep, even blanket (one plane, no seam: the night is overcast and
+          // moonless) broken by pillows of drifted snow on every other band of
+          // slates: a lit, rounded top, a body, and a shadow line under the
+          // overhang. Kept a step darker than fresh snow so the roof stays in
+          // the cold part of the frame and the windows stay the brightest thing.
           const rc = RF.eave - 2 + Math.round(dip) - y;
+          let c = SN[4];
           const band = Math.floor(rc / 8);
           const v = ((rc % 8) + 8) % 8;
           const pj = pillows(band);
           const pk = K.seg(pj, x);
           const pa = pj[pk];
           const pb = pk + 1 < pj.length ? pj[pk + 1] : x + 99;
-          const on = HD.hash(band, pk, 63) < 0.62 && band > 0;
-          let c = right ? SN[6] : SN[5];
-          if (on && v === 0 && x > pa + 1 && x < pb - 2) c = right ? SN[5] : SN[4];
-          else if (on && v === 1 && x > pa + 2 && x < pb - 3) c = right ? SN[7] : SN[6];
-          else if (on && v === 7 && x > pa + 4 && x < pb - 5 && HD.hash(band, pk, 64) < 0.5) c = right ? SN[7] : SN[6];
+          if (HD.hash(band, pk, 63) < 0.6 && band > 0) {
+            const tone = HD.hash(band, pk, 65) < 0.45 ? -1 : 0; // vary each pillow by a step
+            if (v === 0 && x > pa + 1 && x < pb - 2) c = SN[3];
+            else if (v === 1 && x > pa && x < pb - 1) c = SN[6 + tone];
+            else if (v === 2 && x > pa + 1 && x < pb - 2) c = SN[6 + tone];
+            else if (v === 3 && x > pa + 3 && x < pb - 4) c = SN[7 + tone];
+          }
+          // slate shadow lines peeking through where the snow is thin
+          if (((rc % 4) + 4) % 4 === 3 && (nearEdge(x, y) || nearChimney(x, y))) {
+            const rr = Math.floor(rc / 4);
+            if (HD.hash(rr, K.seg(rows(rr), x), 66) < 0.55) c = S[2];
+          }
           const up = R.tg(x, y - 1);
-          if (up !== TG.roof && up !== TG.moss) c = SN[7];
-          if (R.get(x - 1, y) === null) c = SN[4];
-          if (R.get(x + 1, y) === null) c = SN[8];
+          if (up !== TG.roof && up !== TG.moss) c = SN[6];
+          if (R.get(x - 1, y) === null) c = SN[3];
+          else if (R.get(x + 1, y) === null) c = SN[6]; // a soft sky-glow edge (moonless: no rim)
           R.set(x, y, c, TG.roof);
         } else {
           // a dusting: snow resting on the lip of every other slate
-          const dip = K.roofDip(x);
           const gy = RF.eave - 1 + (dip > 1.6 ? 1 : 0);
           if (y >= gy) continue;
           const rc = RF.eave - 2 + Math.round(dip) - y;
@@ -143,13 +172,13 @@
           if (x === js[k]) continue;
           const dens = 0.42 + 0.25 * (1 - (RF.eave - y) / (RF.eave - RF.peakY));
           if (HD.hash(rr, k, 77) > dens) continue;
-          if (v === 0) R.set(x, y, right ? SN[6] : SN[5], TG.roof);
-          else if (v === 1 && x > js[k] + 1 && x < nxt - 2) R.set(x, y, right ? SN[5] : SN[4], TG.roof);
+          if (v === 0) R.set(x, y, SN[snowLvl(x, y, 5)], TG.roof);
+          else if (v === 1 && x > js[k] + 1 && x < nxt - 2) R.set(x, y, SN[snowLvl(x, y, 4)], TG.roof);
         }
       }
     // --- ridge crest + eave lip ------------------------------------
     for (let x = x0; x <= x1; x++) {
-      // top edge: the ridge line gets a bright crest
+      // top edge: the ridge line gets a crest
       let ytop = null;
       for (let y = RF.peakY - 5; y <= RF.eave; y++) {
         const tg = R.tg(x, y);
@@ -158,8 +187,8 @@
           break;
         }
       }
-      if (ytop !== null && heavy && R.get(x, ytop - 1) === null) R.set(x, ytop - 1, x >= RF.peakX ? SN[7] : SN[6], TG.roof);
-      else if (ytop !== null && !heavy) R.set(x, ytop, x >= RF.peakX ? SN[6] : SN[5], TG.roof);
+      if (ytop !== null && heavy && R.get(x, ytop - 1) === null) R.set(x, ytop - 1, HD.hash(x >> 2, 7, 67) < 0.3 ? SN[7] : SN[6], TG.roof);
+      else if (ytop !== null && !heavy) R.set(x, ytop, SN[snowLvl(x, ytop, 5)], TG.roof);
       // the gutter row
       let yb = null;
       for (let y = RF.eave + 2; y >= RF.eave - 3; y--) {
@@ -170,9 +199,10 @@
       }
       if (yb === null) continue;
       if (heavy) {
-        for (let y = yb - 2; y <= yb; y++) if (R.tg(x, y) === TG.gutter || R.tg(x, y) === TG.roof) R.set(x, y, SN[6], TG.roof);
+        // the thick front edge of the blanket, curling over the gutter
+        for (let y = yb - 2; y <= yb; y++) if (R.tg(x, y) === TG.gutter || R.tg(x, y) === TG.roof) R.set(x, y, y === yb - 2 ? SN[6] : SN[5], TG.roof);
         const lip = bump(x, 3, 6) > 0.45 ? 2 : 1;
-        for (let d = 1; d <= lip; d++) R.set(x, yb + d, d === lip ? SN[3] : SN[5], TG.roof);
+        for (let d = 1; d <= lip; d++) R.set(x, yb + d, d === lip ? SN[3] : SN[4], TG.roof);
         lipBottom.set(x, yb + lip + 1);
       } else {
         if (bump(x, 4, 5) > 0.3) R.set(x, yb - 1, SN[6], TG.roof);
@@ -180,17 +210,18 @@
       }
     }
     if (heavy) {
-      icicleRun(R, RF.x0 + 1, RF.x1 - 2, (x) => (lipBottom.has(x) ? lipBottom.get(x) : null), 41, 6, 0.42);
+      // icicles along the eave hang in front of the string lights (overlay)
+      icicleRun(ice, R, RF.x0 + 1, RF.x1 - 2, (x) => (lipBottom.has(x) ? lipBottom.get(x) : null), 41, 4, 7, 0.75, avoid);
       // the round attic window: a cap of snow on its frame, a shadow pocket under the sill
       const a = LH.windows.find((w) => w.round);
-      R.rows(['..mmmmm..', '.mlllllm.', 'm.......m'], a.cx - 4, a.cy - a.r - 4, { m: SN[6], l: SN[7] }, TG.roof);
-      R.hl(a.cx - 4, a.cx + 4, a.cy + a.r + 4, SN[4], TG.roof);
-      R.hl(a.cx - 2, a.cx + 2, a.cy + a.r + 5, SN[5], TG.roof);
+      R.rows(['..mmmmm..', '.mlllllm.', 'm.......m'], a.cx - 4, a.cy - a.r - 4, { m: SN[5], l: SN[6] }, TG.roof);
+      R.hl(a.cx - 4, a.cx + 4, a.cy + a.r + 4, SN[3], TG.roof);
+      R.hl(a.cx - 2, a.cx + 2, a.cy + a.r + 5, SN[4], TG.roof);
     }
   }
 
   const CONE_TILE = ['BBBBBB', 'BBBBBB', 'OBHHBO', 'BOOOOB'];
-  function snowCone(R, heavy) {
+  function snowCone(R, heavy, ice, avoid) {
     const lip = new Map();
     for (let y = TU.peakY; y <= TU.top + 1; y++) {
       const hw = K.coneHW(Math.min(y, TU.top));
@@ -219,12 +250,13 @@
         const edgeR = R.get(x + 1, y) === null;
         if (heavy) {
           let c;
+          // a step darker than fresh snow, like the main roof
           if (ch === 'L') c = SN[3];
-          else if (ch === 'T') c = SN[6 + (sh > 0 ? 1 : 0)];
-          else if (ch === 'O') c = SN[4 + Math.max(0, sh)];
-          else if (ch === 'H') c = SN[7];
-          else c = SN[5 + Math.max(0, sh)];
-          if (edgeR) c = SN[8];
+          else if (ch === 'T') c = SN[5 + (sh > 0 ? 1 : 0)];
+          else if (ch === 'O') c = SN[3 + Math.max(0, sh)];
+          else if (ch === 'H') c = SN[6];
+          else c = SN[4 + Math.max(0, sh)];
+          if (edgeR) c = SN[6]; // soft sky-glow edge (the heavy-snow night is moonless)
           if (R.get(x - 1, y) === null && ch !== 'L') c = SN[4];
           R.set(x, y, c, TG.cone);
           if (ch === 'L') lip.set(x, y);
@@ -242,7 +274,7 @@
       R.hl(tx - 1, tx + 1, TU.peakY - 1, SN[6], TG.fin);
       // droopy brim and icicles over the turret wall
       for (const [x, y] of lip) if (bump(x, 9, 4) > 0.5) R.set(x, y + 1, SN[3], TG.cone);
-      icicleRun(R, TU.x0 + 1, TU.x1 - 2, (x) => (lip.has(x) ? lip.get(x) + (bump(x, 9, 4) > 0.5 ? 2 : 1) : null), 43, 5, 0.45);
+      icicleRun(ice, R, TU.x0 + 1, TU.x1 - 2, (x) => (lip.has(x) ? lip.get(x) + (bump(x, 9, 4) > 0.5 ? 2 : 1) : null), 43, 4, 6, 0.7, avoid);
     }
   }
 
@@ -265,7 +297,7 @@
     }
   }
 
-  function snowPorch(R, heavy) {
+  function snowPorch(R, heavy, ice, avoid) {
     const x0 = PO.x0;
     const x1 = PO.x1 - 1;
     const y0 = PO.roofY;
@@ -278,7 +310,8 @@
         if (bump(x, 22, 5) > 0.55) R.set(x, y0 + 1, SN[4], TG.porch);
       }
       R.set(x0 - 1, y0 - 1, SN[4], TG.porch);
-      icicleRun(R, x0 + 2, x1 - 2, (x) => (x > x0 + 10 && x < x1 - 9 ? y0 + 9 : y0 + 8), 47, 4, 0.36);
+      // (clear of the iron lantern's hook; the porch string rides the fascia above)
+      icicleRun(R, R, x0 + 2, x1 - 2, (x) => (Math.abs(x - LH.lantern.hookX) <= 3 ? null : x > x0 + 10 && x < x1 - 9 ? y0 + 9 : y0 + 8), 47, 2, 5, 0.5, avoid);
     } else {
       for (let x = x0 + 1; x <= x1 - 1; x++) if (bump(x, 23, 4) > 0.25) R.set(x, y0, SN[6], TG.porch);
       for (let x = x0 + 4; x <= x1 - 4; x++) if (bump(x, 24, 5) > 0.55) R.set(x, y0 - 1, SN[6], TG.porch);
@@ -350,11 +383,11 @@
     }
   }
 
-  function snowAll(R, heavy) {
-    snowRoof(R, heavy);
-    snowCone(R, heavy);
+  function snowAll(R, heavy, ice, avoid) {
+    snowRoof(R, heavy, ice, avoid);
+    snowCone(R, heavy, ice, avoid);
     snowChimney(R, heavy);
-    snowPorch(R, heavy);
+    snowPorch(R, heavy, ice, avoid);
     snowSills(R, heavy);
     snowFooting(R, heavy);
     // ridge finial cap
@@ -545,7 +578,10 @@
       }
   }
 
-  const ROSETTE = ['.r.r.', 'rrrrr', '.r.r.', 'rrrrr', '.r.r.'];
+  // red paper-cut flowers. Neither may read as a glyph (no straight crossing
+  // strokes: avoid shapes like 十 井 口 田 王 回): a round blossom of four notched
+  // petals around a gold heart, and a small diamond ring.
+  const BLOSSOM = ['.rrr.', 'rr.rr', 'r.g.r', 'rr.rr', '.rrr.'];
   const ROSETTE2 = ['..r..', '.rrr.', 'rr.rr', '.rrr.', '..r..'];
 
   // menorah, local coords in ground-left (18 x 22), centred on lx 8
@@ -602,15 +638,15 @@
         l: LF[5],
         b: A[0],
       });
-      // a second dish on the parlour side table
-      rowsW(I, gl, ['.oO.', 'oooo', 'bbbb'], 12, 12, { o: F[5], O: F[7], b: A[0] });
+      // (no second dish in the parlour: orange fruit vanish on its hearth-orange
+      // glass, so the ground-right bowl carries the motif on its own)
     }
     if (has(ed, 'paper-cuts')) {
-      const rc = { r: RD[4] };
-      rowsW(I, ul, ROSETTE, 0, 2, rc);
+      const rc = { r: RD[4], g: GD[4] };
+      rowsW(I, ul, BLOSSOM, 0, 2, rc);
       rowsW(I, ul, ROSETTE2, 8, 2, rc);
       rowsW(I, gl, ROSETTE2, 2, 4, rc);
-      rowsW(I, gl, ROSETTE, 11, 4, rc);
+      rowsW(I, gl, BLOSSOM, 11, 4, rc);
       rowsW(I, tl, ROSETTE2, 3, 2, rc);
     }
     if (has(ed, 'seedlings')) {
@@ -647,6 +683,8 @@
       bal(1, 2, [RD[1], RD[3], RD[5]], 4);
       bal(6, 0, [GD[1], GD[3], GD[5]], 6);
       bal(10, 3, [P.night[4], P.night[7], P.night[9]], 3);
+      // two raised glasses on the inner sill, where the pumpkin sat
+      rowsW(I, gr, ['k.k..k.k', 'kkk..kkk', '.k....k.', '.k....k.', 'kkk..kkk'], 4, gr.gh - 5, { k: A[0] });
       for (let lx = 0; lx < ul.gw; lx++) {
         putW(I, ul, lx, 2 + ((lx >> 1) & 1), A[1]);
         if (lx % 4 === 1) putW(I, ul, lx, 4 + ((lx >> 2) & 1), A[1]);
@@ -700,7 +738,7 @@
     if (has(ed, 'leaf-wreath')) wreath(I, 'leaf');
     if (has(ed, 'flower-garland')) flowerGarland(I, PO.x0 + 3, PO.x1 - 4, PO.roofY + 8, 2, 3);
     if (has(ed, 'marigolds')) {
-      toran(I, DX0 - 4, DX1 + 4, PO.roofY + 8, 3, 2);
+      toran(I, DX0 - 4, DX1 + 4, PO.roofY + 9, 3, 2);
       for (const id of ['ground-left', 'ground-right', 'upper-left', 'upper-right']) {
         const w = WIN[id].w;
         const n = w.w > 16 ? 3 : 2;
@@ -710,52 +748,59 @@
     if (has(ed, 'red-banners')) {
       // a plain red diamond on the door, gold edged (no characters)
       stamp(I, ['...g...', '..grg..', '.grRrg.', 'grRRRrg', '.grRrg.', '..grg..', '...g...'], DX0 + 4, DY0 + 10, { g: GD[3], r: RD[3], R: RD[4] });
-      // plain red vertical banners on both porch posts, gold flecks
-      for (const bx of [PO.postL, PO.postR - 2]) {
-        I.hl(bx - 1, bx + 3, 178, W[1], 0);
-        for (let y = 179; y <= 200; y++)
-          for (let k = 0; k < 3; k++) {
-            let c = k === 0 ? RD[2] : k === 1 ? RD[4] : RD[3];
-            if (HD.hash(bx + k, y, 51) < 0.07 && k > 0) c = GD[4];
+      // plain red vertical banners pasted on the door frame (the inner jambs of
+      // the stone surround), gold flecks; the porch posts stay clear
+      for (const [bx, lit] of [
+        [DX0 - 2, 1],
+        [DX1 + 1, 0],
+      ]) {
+        for (let y = K.DAY; y <= 203; y++)
+          for (let k = 0; k < 2; k++) {
+            let c = y === K.DAY || y === 203 ? RD[2] : k === lit ? RD[4] : RD[3];
+            if (y > K.DAY && y < 203 && HD.hash(bx + k, y, 51) < 0.08) c = GD[4];
             I.set(bx + k, y, c, 0);
           }
-        I.hl(bx, bx + 2, 201, RD[2], 0);
-        I.set(bx + 1, 202, RD[3], 0);
       }
     }
     if (has(ed, 'firecrackers')) {
-      const FC = ['..k..', '..k..', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '.rkr.', '..k..', '.ggg.', '.rrr.', '.r.r.', 'r...r'];
-      stamp(I, FC, PO.x1 - 1, PO.roofY + 7, { k: GD[2], r: RD[4], R: RD[3], g: GD[4] });
+      // a string of firecrackers tied to the right porch post, below its
+      // lantern and well clear of the ground-right window
+      const FC = ['..k..', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '.rkr.', 'RrkrR', '..k..', '.ggg.', '.r.r.'];
+      stamp(I, FC, PO.postR - 1, 191, { k: GD[2], r: RD[4], R: RD[3], g: GD[4] });
     }
     if (has(ed, 'corn-bundles')) {
-      // corn shocks: a sheaf of dry stalks tied to each porch post, tassels
-      // fanning above the twine, two ears of corn leaning at the foot.
-      // Lit side faces the door (the lanterns), so the right shock is mirrored.
+      // corn shocks: a sheaf of dry stalks tied to each porch post. Above the
+      // twine the stalk tops arch out and droop like a fountain; below it the
+      // sheaf flares, lit gold on the side facing the door (the lanterns),
+      // with a dark crease for volume and two ears leaning at the foot. Painted
+      // in dark straw (night colours), so the lantern light relights it to
+      // gold-tan instead of white. The right shock is mirrored.
       const SHOCK = [
-        '.b.....a.',
-        '..b.a.b..',
-        'b..bab..a',
-        '.b.bab.b.',
-        '..babab..',
-        '...bab...',
-        '...bab...',
+        '.....a...',
+        '.b..b..a.',
+        'b.b.b.a.a',
+        '..b.b.a..',
+        '...bba...',
+        'bb.bba.aa',
+        'b.bbbaa.a',
+        '...cba...',
         '...ttt...',
-        '..lcabl..',
-        '.l.cabbl.',
-        'l.ccabb.l',
-        '..cbabb..',
-        '..cbabbc.',
-        '.ccbabbc.',
-        '.cbcabbc.',
-        '.cbcababc',
-        'ccbcababc',
-        'cbcbababc',
-        'cbcbababc',
-        'cbcbababc',
-        'dcdcdbdbd',
+        '..lcbal..',
+        '.l.cbaa.l',
+        'l..cbaa..',
+        '..dcbaab.',
+        '..dcbaab.',
+        '.cdcbaab.',
+        '.cdcbaaba',
+        'ccdcbaaba',
+        'ccdcbaaba',
+        'cdcdbabaa',
+        'cdcdbabaa',
+        'cdcdbabab',
+        'ndndnbnbn',
       ];
       const EAR = ['.h', 'hy', 'yY', 'yY', 'yy', 'y.'];
-      const map = { a: BN[2], b: BN[1], c: BN[0], d: W[2], l: AU[3], t: RD[3], h: BN[2], y: GD[2], Y: GD[3] };
+      const map = { a: GD[2], b: GD[1], c: AU[2], d: W[2], n: W[2], l: AU[3], t: RD[3], h: AU[3], y: GD[1], Y: GD[2] };
       const flip = (rows) => rows.map((r) => r.split('').reverse().join(''));
       const baseY = 206 - SHOCK.length;
       stamp(I, SHOCK, PO.postL - 4, baseY, map);
@@ -764,23 +809,25 @@
       stamp(I, flip(EAR), PO.postR + 4, 200, map);
     }
     if (has(ed, 'bunting')) {
-      const cols = [GD[4], RD[4], P.night[9], BN[4], V[5]];
-      const xs = [PO.x0 + 4, Math.round((PO.x0 + PO.x1) / 2), PO.x1 - 5];
+      // party pennants: little 5-3-1 triangles (dark leading edge, lit body)
+      // on a sagging cord, hung under the porch string
+      const flags = [
+        [GD[3], GD[5]],
+        [RD[3], RD[5]],
+        [P.night[8], P.night[10]],
+        [BN[2], BN[3]],
+        [V[4], V[6]],
+      ];
+      const by = PO.roofY + 9;
+      const xs = [PO.x0 + 6, Math.round((PO.x0 + PO.x1) / 2), PO.x1 - 5];
+      for (let x = xs[0]; x <= xs[2]; x++) I.set(x, swagY(x, xs, by, 3), S[1], 0);
+      const H = [1, 2, 3, 2, 1];
       let k = 0;
-      for (let x = xs[0]; x <= xs[2]; x++) {
-        const y = swagY(x, xs, PO.roofY + 8, 3);
-        I.set(x, y, S[1], 0);
-        const off = x - xs[0];
-        if (off % 5 === 1 && x + 3 <= xs[2]) {
-          const c = cols[k++ % cols.length];
-          for (let dx = 0; dx < 3; dx++) {
-            const yy = swagY(x + dx, xs, PO.roofY + 8, 3);
-            I.set(x + dx, yy + 1, dx === 0 ? K.dk(c) : c, 0);
-            if (dx === 1) {
-              I.set(x + dx, yy + 2, c, 0);
-              I.set(x + dx, yy + 3, K.dk(c), 0);
-            } else I.set(x + dx, yy + 2, dx === 0 ? K.dk(c) : c, 0);
-          }
+      for (let x = xs[0] + 1; x + 4 <= xs[2]; x += 6) {
+        const [d, c] = flags[k++ % flags.length];
+        for (let dx = 0; dx < 5; dx++) {
+          const yy = swagY(x + dx, xs, by, 3);
+          for (let h = 1; h <= H[dx]; h++) I.set(x + dx, yy + h, h === dx + 1 ? d : c, 0);
         }
       }
     }
@@ -789,11 +836,20 @@
   // ===================================================================
   // per-edition window glow
   // ===================================================================
-  const shiftRamp = (ramp, k) =>
-    ramp.map((c) => {
-      for (let i = 0; i < Math.abs(k); i++) c = k > 0 ? K.lt(c) : K.dk(c);
-      return c;
-    });
+  // party light is WARMER, not paler: each amber glass step becomes the fire
+  // step of about the same brightness (more orange, more saturated), and the
+  // pale A[7] core is capped at A[6]. The extra brightness goes into the
+  // light the window casts (winBoost), not into the glass.
+  const WARM = new Map([
+    [A[1], F[2]],
+    [A[2], F[3]],
+    [A[3], F[4]],
+    [A[4], F[6]],
+    [A[5], F[7]],
+    [A[6], F[8]],
+    [A[7], A[6]],
+  ]);
+  const warmRamp = (ramp) => ramp.map((c) => WARM.get(c) || c);
   const winSetup = HD.perEdition((ed) => {
     const cfg = K.WINS.map((w) => w.c);
     const boost = K.WINS.map(() => 1);
@@ -803,8 +859,14 @@
           boost[i] = 1.12;
           return;
         }
-        cfg[i] = Object.assign({}, w.c, { ramp: shiftRamp(w.c.ramp, 1), speed: w.c.speed * 1.8, amp: Math.min(1, w.c.amp * 1.5) });
-        boost[i] = 1.2;
+        boost[i] = 1.25;
+        // the hearth window is already fire-coloured and the two candle
+        // windows (hearth, turret-lower) already flicker nervously: keep both
+        const liven = w.w.id !== 'ground-left' && w.w.id !== 'turret-lower';
+        const ramp = warmRamp(w.c.ramp);
+        const same = ramp.every((c, k) => c === w.c.ramp[k]);
+        if (same && !liven) return;
+        cfg[i] = Object.assign({}, w.c, { ramp }, liven ? { speed: w.c.speed * 1.25, amp: Math.min(0.7, w.c.amp * 1.3) } : null);
       });
     }
     if (has(ed, 'menorah')) {
@@ -846,33 +908,55 @@
     [265, 130],
     [271, 130],
   ];
+  // the porch string rides the fascia board, above the toran / bunting /
+  // icicles that hang from the bottom of the porch roof
   const PORCH = [
-    [PO.x0 + 1, PO.roofY + 7],
-    [Math.round((PO.x0 + PO.x1) / 2), PO.roofY + 8],
-    [PO.x1 - 2, PO.roofY + 7],
+    [PO.x0 + 1, PO.roofY + 4],
+    [Math.round((PO.x0 + PO.x1) / 2), PO.roofY + 5],
+    [PO.x1 - 2, PO.roofY + 4],
   ];
   const TURRET = [
     [TU.x0 + 1, TU.top + 3],
     [TU.x0 + 15, TU.top + 4],
     [TU.x1 - 1, TU.top + 3],
   ];
-  const STR_COLOR = { colors: ['red', 'gold', 'green', 'blue'], spacing: 4, sag: 2, twinkle: 0.8 };
-  const STR_GOLD = { colors: ['gold'], spacing: 4, sag: 2, twinkle: 0.45 };
+  const STR_COLOR = { colors: ['red', 'gold', 'green', 'blue'], spacing: 4, sag: 2, twinkle: 0.8, wire: S[1] };
+  const STR_GOLD = { colors: ['gold'], spacing: 4, sag: 2, twinkle: 0.45, wire: S[1] };
   const strings = (ed) => {
     if (has(ed, 'string-lights-color')) return { o: STR_COLOR, paths: [EAVE, PORCH, TURRET] };
-    if (has(ed, 'string-lights-gold')) return { o: STR_GOLD, paths: has(ed, 'bunting') ? [EAVE] : [EAVE, PORCH] };
+    if (has(ed, 'string-lights-gold')) return { o: STR_GOLD, paths: [EAVE, PORCH] };
     return null;
   };
+  /** every pixel a string bulb can light up (key x*512+y), from the real helper */
+  function bulbMask(ed) {
+    const m = new Set();
+    const st = strings(ed);
+    if (!st) return m;
+    const cv = HD.bake(K.BX + K.BW, K.BY + K.BH, (g) => {
+      for (const pts of st.paths) FE.bulbs(g, pts, 0, Object.assign({}, st.o, { wire: '#010203' }));
+    });
+    const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+    for (let p = 0, i = 0; p < d.length; p += 4, i++) {
+      if (!d[p + 3] || (d[p] === 1 && d[p + 1] === 2 && d[p + 2] === 3)) continue;
+      m.add(key(i % cv.width, Math.floor(i / cv.width)));
+    }
+    return m;
+  }
+  const ICE_ART = new Map(); // edition id -> icicle overlay (baked with the house)
 
   // lanterns per edition: [x, y, kind, size, len]
+  // [hook x, hook y, kind, size, cord length, swing amplitude (rad)]: long
+  // enough cords that each body swings about a pixel (a sway you can see),
+  // hooked high so the bodies hang where they did; the two have different
+  // seeds, so different periods and phases
   const LANTERNS = {
     lunar: [
-      [PO.x0 + 8, PO.roofY + 8, 'red', 'big', 2],
-      [PO.x1 - 9, PO.roofY + 8, 'red', 'big', 2],
+      [PO.postL + 1, PO.roofY + 6, 'red', 'big', 5, 0.22],
+      [PO.postR - 3, PO.roofY + 6, 'red', 'big', 5, 0.22],
     ],
     harvest: [
-      [DX0, PO.roofY + 8, 'harvest', 'big', 2],
-      [DX1 + 1, PO.roofY + 8, 'harvest', 'big', 2],
+      [DX0, PO.roofY + 6, 'harvest', 'big', 4, 0.28],
+      [DX1 + 1, PO.roofY + 6, 'harvest', 'big', 4, 0.28],
     ],
   };
 
@@ -890,13 +974,15 @@
     sill('upper-right', [-3, 20]); // sill ends, clear of the cat
     sill('turret-lower', [3]);
     sill('turret-upper', [3]);
+    // steps: one lamp at each end of each step, staggered so the clay bodies
+    // (and the flames, which sit right of each spout) stay 2 px apart
     g.push([
-      [STP.x0 + 3, 205],
-      [STP.x0 + 1, 208],
+      [STP.x0 + 2, 210],
+      [STP.x0 + 9, 206],
     ]);
     g.push([
-      [STP.x1 - 6, 205],
-      [STP.x1 - 4, 208],
+      [STP.x1 - 9, 206],
+      [STP.x1 - 3, 210],
     ]);
     return g;
   })();
@@ -944,18 +1030,32 @@
   function drawCurtains(g, t) {
     for (const [id, side, per, seed] of CURTAINS) {
       const win = WIN[id];
-      const drift = 0.6 + 2.6 * T.fbm(t, per, seed, 2);
-      const top = win.gy + 1;
-      const n = win.gh - 2;
+      const drift = 0.4 + 3.2 * T.fbm(t, per, seed, 2); // how far the hem blows out (px)
+      const flut = T.wave(t, per * 0.37, seed * 0.13);
+      const n = win.gh - 1; // rod (k = 0) .. hem
+      const tie = Math.round(n * 0.38);
+      const edge = side < 0 ? win.gx : win.gx + win.gw - 1;
+      const fold = Math.round(drift * 1.5);
       for (let k = 0; k < n; k++) {
-        const u = k / (n - 1);
-        const o = Math.round(drift * Math.pow(u, 1.5) + 0.6 * u * T.wave(t, per * 0.37, seed * 0.13 + u * 0.4));
-        const xEdge = side < 0 ? win.gx - o : win.gx + win.gw - 1 + o;
-        const xIn = side < 0 ? xEdge + 2 : xEdge - 2;
-        const y = top + k;
-        g.px(xEdge, y, BN[3]);
-        g.px((xEdge + xIn) >> 1, y, BN[2]);
-        g.px(xIn, y, BN[1]);
+        // the upper third hangs straight inside the frame, the tie-back pinches
+        // it, and only the lower half bells out of the open window
+        let wd = 3;
+        let o = 0;
+        if (k === tie) wd = 2;
+        else if (k > tie) {
+          const u = (k - tie) / (n - 1 - tie);
+          wd = Math.round(2 + 3 * Math.pow(u, 0.8));
+          o = Math.round(drift * Math.pow(u, 1.5) + 0.6 * u * flut);
+        }
+        const y = win.gy + k;
+        for (let j = 0; j < wd; j++) {
+          const x = side < 0 ? edge - o + j : edge + o - j; // j = 0: the outer edge
+          let c = j === 0 ? BN[3] : j === wd - 1 ? BN[1] : BN[2];
+          // a fold line that rolls across the cloth as the breeze changes
+          if (wd >= 4 && j === 1 + ((fold + (k >> 2)) % (wd - 2))) c = BN[1];
+          if (k === tie) c = W[3];
+          g.px(x, y, c);
+        }
       }
     }
   }
@@ -964,27 +1064,15 @@
     const ed = HD.edition;
     const st = strings(ed);
     if (st) for (let i = 0; i < st.paths.length; i++) FE.bulbs(g, st.paths[i], t, Object.assign({ seed: 7 + i }, st.o));
+    const ice = ICE_ART.get(ed.id);
+    if (ice) g.sprite(ice, K.BX, K.BY);
     const ls = LANTERNS[ed.id];
-    if (ls) for (let i = 0; i < ls.length; i++) FE.lantern(g, ls[i][0], ls[i][1], t, 60 + i, ls[i][2], { size: ls[i][3], len: ls[i][4], amp: 0.1 });
+    if (ls) for (let i = 0; i < ls.length; i++) FE.lantern(g, ls[i][0], ls[i][1], t, 60 + i, ls[i][2], { size: ls[i][3], len: ls[i][4], amp: ls[i][5] });
     if (has(ed, 'diyas-house')) {
       let s = 0;
       for (const grp of DIYA_GROUPS) for (const [x, y] of grp) FE.diya(g, x, y, t, 80 + s++);
     }
     if (has(ed, 'open-windows')) drawCurtains(g, t);
-    if (has(ed, 'pie-sill')) {
-      // a thin curl of steam from the pie
-      const w = WIN['ground-left'].w;
-      const px = w.x + 9;
-      const py = w.y + w.h - 4;
-      for (let i = 0; i < 3; i++) {
-        const c = T.cycle(t, i, 3.4, 610);
-        const a = c.age;
-        if (a > 0.85) continue;
-        const x = px + (i - 1) * 2 + Math.round(1.2 * Math.sin(a * 6 + i));
-        const y = py - Math.round(a * 9);
-        g.px(x, y, a < 0.5 ? BN[2] : BN[1]);
-      }
-    }
   }
 
   function lights(t, L) {
@@ -994,7 +1082,7 @@
       for (let i = 0; i < st.paths.length; i++)
         FE.bulbLights(L, st.paths[i], t, { colors: st.o.colors, sag: st.o.sag, every: 20, r: 16, i: has(ed, 'string-lights-color') ? 0.15 : 0.17 });
     const ls = LANTERNS[ed.id];
-    if (ls) for (let i = 0; i < ls.length; i++) FE.lanternLight(L, ls[i][0], ls[i][1], t, 60 + i, ls[i][2], { size: ls[i][3], len: ls[i][4], amp: 0.1, r: 34, i: 0.5 });
+    if (ls) for (let i = 0; i < ls.length; i++) FE.lanternLight(L, ls[i][0], ls[i][1], t, 60 + i, ls[i][2], { size: ls[i][3], len: ls[i][4], amp: ls[i][5], r: 34, i: 0.5 });
     if (has(ed, 'diyas-house')) {
       let s = 0;
       for (const grp of DIYA_GROUPS) {
@@ -1039,11 +1127,17 @@
   K.seasons = {
     omit,
     decorateHouse(R, ed) {
-      if (has(ed, 'roof-snow')) snowAll(R, true);
-      else if (has(ed, 'roof-snow-light')) snowAll(R, false);
+      if (has(ed, 'roof-snow')) {
+        // eave and turret icicles go on an overlay drawn in front of the
+        // string lights, so the wire never cuts them at the root
+        const ice = K.raster();
+        snowAll(R, true, ice, bulbMask(ed));
+        ICE_ART.set(ed.id, ice.toCanvas());
+      } else if (has(ed, 'roof-snow-light')) snowAll(R, false, null, null);
       if (has(ed, 'paper-lantern-string')) paintHook(R);
     },
     decorateInterior,
+    warm: () => winSetup(),
     winCfg: (win) => winSetup().cfg[win.index],
     winBoost: (win) => winSetup().boost[win.index],
     glass(i, lv) {

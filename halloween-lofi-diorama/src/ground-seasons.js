@@ -72,7 +72,10 @@
   function mudSpotsFor(ed, o) {
     const s = [];
     const cf = L.campfire;
-    if (ed.fire !== 'none' && !o.noFire) s.push({ x: cf.x, y: cf.base, rx: ed.fire === 'bonfire' ? 34 : 30, ry: ed.fire === 'bonfire' ? 9.5 : 8.5, k: 1.15, fire: true });
+    if (ed.fire !== 'none' && !o.noFire) {
+      const [rx, ry] = o.fireR || (ed.fire === 'bonfire' ? [34, 9.5] : [30, 8.5]);
+      s.push({ x: cf.x, y: cf.base, rx, ry, k: 1.15, fire: true });
+    }
     const st = L.house.steps;
     if (!o.noSteps) s.push({ x: (st.x0 + st.x1) / 2, y: st.y1 + 1, rx: 17, ry: 3.2, k: o.k || 0.9 });
     if (!o.noPuddles) for (const p of L.puddles) s.push({ x: p.x, y: p.y + 0.5, rx: p.rx + 5, ry: p.ry + 2.2, k: o.k || 0.85 });
@@ -329,18 +332,22 @@
    * frozen layer with glassy ice lenses and a fringe of needle ice where it
    * meets the unfrozen soil below.
    */
-  function frozenLayer(K, thick) {
+  function frozenLayer(K, thickness) {
     const { FRONT } = K;
     const { C } = K.raw();
-    const memo = new Map();
+    const memo = [new Map(), new Map()];
     const frost = (c, k) => {
-      const key = c + k;
-      let v = memo.get(key);
-      if (!v) memo.set(key, (v = mix(c, P.ice[2], k)));
+      const m = memo[k > 0.5 ? 0 : 1];
+      let v = m.get(c);
+      if (!v) m.set(c, (v = mix(c, P.ice[2], k)));
       return v;
     };
-    const fl = (x) => FRONT + 2 + thick + Math.round((K.vn(x / 11, 5, 61) - 0.5) * 2.6);
+    // thickness may vary along x (it thaws to nothing under a fire)
+    const th = typeof thickness === 'function' ? thickness : () => thickness;
+    const thin = (x) => th(x) < 1.5;
+    const fl = (x) => FRONT + 2 + Math.round(th(x) + (K.vn(x / 11, 5, 61) - 0.5) * 2.6 * Math.min(1, th(x) / 4));
     for (let x = 0; x < W; x++) {
+      if (th(x) < 0.5) continue;
       const yb = fl(x);
       for (let y = FRONT + 2; y <= yb; y++) {
         const k = K.at(x, y);
@@ -349,9 +356,10 @@
         C[k] = frost(C[k], deep < 0.75 ? 0.55 : 0.38);
       }
       // the frost front: a broken pale line with needle ice hanging from it
+      if (thin(x)) continue;
       if (HD.hash(x, 9, 61) > 0.22) K.set(x, yb + 1, mix(P.soil[3], P.ice[3], 0.45));
       const nd = K.vn(x / 5, 6, 62);
-      if (nd > 0.55 && HD.hash(x, 10, 61) < 0.55) {
+      if (nd > 0.55 && HD.hash(x, 10, 61) < 0.55 && th(x) >= 3) {
         const len = 1 + Math.floor(HD.hash(x, 13, 61) * 2.4);
         for (let j = 0; j < len; j++) K.set(x, yb + 2 + j, j === len - 1 ? P.ice[2] : mix(P.ice[3], P.soil[3], 0.3));
       }
@@ -363,6 +371,7 @@
       const yb = fl(x);
       const y = FRONT + 4 + Math.floor(r() * Math.max(1, yb - FRONT - 4));
       const len = 3 + Math.floor(r() * 4);
+      if (th(x) < 3 || th(x + len) < 3) continue;
       for (let j = 0; j < len; j++) K.set(x + j, y, j === 0 ? P.ice[5] : j < len - 1 ? P.ice[4] : P.ice[3]);
       K.set(x + 1, y + 1, P.ice[1]);
     }
@@ -391,6 +400,15 @@
     [198, 235],
     [195, 238],
   ];
+  // the winter trail wanders a little: a gentle S through the deep snow
+  const WTRAIL = [
+    [221, 213],
+    [219, 218],
+    [213, 223],
+    [205, 228],
+    [199, 233],
+    [197, 238],
+  ];
   const SNOWMAN_TRAIL = [
     [224, 215],
     [262, 219],
@@ -398,30 +416,68 @@
     [337, 223],
   ];
 
-  /** footprints along a polyline: alternating left/right prints */
+  /** nearest point on a polyline: distance, side (+1 right of travel, -1 left) and arc position */
+  const PINFO = { d: 0, side: 1, s: 0 };
+  function pathInfo(x, y, pts) {
+    let best = 1e9;
+    let side = 1;
+    let at = 0;
+    let acc = 0;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [ax, ay] = pts[i];
+      const [bx, by] = pts[i + 1];
+      const dx = bx - ax;
+      const dy = by - ay;
+      const len2 = dx * dx + dy * dy;
+      const len = Math.sqrt(len2);
+      const k = clamp(((x - ax) * dx + (y - ay) * dy) / len2, 0, 1);
+      const ex = x - ax - dx * k;
+      const ey = y - ay - dy * k;
+      const d = Math.hypot(ex, ey);
+      if (d < best) {
+        best = d;
+        side = ex * dy - ey * dx >= 0 ? 1 : -1;
+        at = acc + k * len;
+      }
+      acc += len;
+    }
+    PINFO.d = best;
+    PINFO.side = side;
+    PINFO.s = at;
+    return PINFO;
+  }
+
+  /**
+   * Footprints along a polyline: small pressed ovals (2x1 `toe` plus a `heel`
+   * pixel behind them), alternating left/right of the line every `step` px.
+   */
   function footprints(K, pts, o) {
     let acc = 0;
     let n = 0;
-    const step = o.step || 3.6;
+    const step = o.step || 4;
+    const off = o.off === undefined ? 1.5 : o.off;
     for (let i = 0; i + 1 < pts.length; i++) {
       const [ax, ay] = pts[i];
       const [bx, by] = pts[i + 1];
       const len = Math.hypot(bx - ax, by - ay);
-      const nx = -(by - ay) / len;
-      const ny = (bx - ax) / len;
+      const ux = (bx - ax) / len;
+      const uy = (by - ay) / len;
       for (; acc <= len; acc += step, n++) {
-        const k = acc / len;
         const side = n % 2 ? 1 : -1;
-        const w = o.wide || 1;
-        const x = Math.round(ax + (bx - ax) * k + nx * side * 1.6 * w);
-        const y = Math.round(ay + (by - ay) * k + ny * side * 0.7 * w);
-        if (o.onlyOn && !o.onlyOn(x, y)) continue;
-        if (K.mask(x, y) & (K.PUD | K.RIM)) continue;
-        K.set(x, y, o.dark);
-        K.set(x + 1, y, o.mid);
-        if (o.lip) {
-          K.set(x, y + 1, o.lip); // pressed-up rim on the near side
-          K.set(x + 1, y + 1, o.lip);
+        const fx = ax + ux * acc + uy * side * off;
+        const fy = ay + uy * acc - ux * side * off * 0.7;
+        const x = Math.round(fx);
+        const y = Math.round(fy);
+        if (o.onlyOn && !(o.onlyOn(x, y) && o.onlyOn(x + 1, y))) continue;
+        if ((K.mask(x, y) | K.mask(x + 1, y)) & (K.PUD | K.RIM)) continue;
+        if (o.skip && o.skip(x, y)) continue;
+        K.set(x, y, o.toe);
+        K.set(x + 1, y, o.toe);
+        if (o.heel) {
+          // the heel sits behind the print, back toward where the walker came from
+          const hx = Math.round(fx + 0.5 - ux * 1.6);
+          const hy = Math.round(fy - uy * 1.6);
+          if (hy !== y || hx < x || hx > x + 1) K.set(hx, hy, o.heel);
         }
       }
       acc -= len;
@@ -429,72 +485,155 @@
   }
 
   /**
-   * Soft drift lenses: each drift is a raised lens of brighter snow with a
-   * moonlit crest on its far edge and a cold shadow tucked under its near
-   * edge. Drawn back to front so nearer drifts overlap farther ones.
+   * Wind-blown drifts as a little heightfield. The wind blows from the left
+   * (the rain slants that way in Halloween), so each drift has a long tapering
+   * tail on its windward (left) side and a short steep lee face on the right.
+   * Kernels are merged with max(), so neighbours join into continuous ridges.
+   *   [crest x, crest y, windward length, lee length, half depth, height, bend]
    */
   const DRIFTS = [
-    // x, y (centre), rx, ry, seed
-    [22, 210, 26, 4.2, 1],
-    [64, 212, 22, 3.4, 2],
-    [124, 207, 20, 2.6, 3],
-    [302, 209, 14, 2.4, 4],
-    [368, 209, 18, 2.6, 5],
-    [446, 211, 24, 4.0, 6],
-    [44, 222, 24, 3.6, 7],
-    [98, 220, 18, 3.0, 8],
-    [162, 218, 18, 3.0, 9],
-    [282, 217, 16, 2.6, 10],
-    [404, 221, 22, 3.6, 11],
-    [470, 222, 16, 3.4, 12],
-    [16, 232, 22, 4.0, 13],
-    [118, 232, 26, 4.2, 14],
-    [176, 233, 14, 3.0, 15],
-    [270, 234, 18, 3.0, 16],
-    [344, 233, 24, 3.8, 17],
-    [440, 233, 22, 3.8, 18],
+    // a few big ones
+    [101, 225, 78, 5, 4.4, 3.4, 1.6],
+    [46, 212, 40, 4, 3.0, 2.2, -1.2],
+    [176, 230, 50, 4, 3.4, 2.4, 1.4],
+    [151, 214, 34, 3, 2.4, 1.6, -0.8],
+    [478, 227, 66, 4, 4.0, 3.0, 1.4],
+    [392, 231, 40, 4, 2.8, 2.0, 1.0],
+    [298, 234, 46, 4, 2.6, 1.8, -0.8],
+    [448, 212, 30, 3, 2.4, 1.6, -0.8],
+    [372, 216, 22, 3, 2.0, 1.4, -0.6],
   ];
-  function drifts(K, list, skip) {
-    const { BACK, FRONT, PUD, RIM } = K;
-    const sorted = list.slice().sort((a, b) => a[1] - b[1]);
-    for (const [cx, cy, rx, ry, sd] of sorted) {
-      const inL = (x, y) => {
-        const u = (x - cx) / rx;
-        const v = (y - cy) / ry;
-        return u * u + v * v + (K.vn(x / 7, y / 2, 330 + sd) - 0.5) * 0.45 < 1;
-      };
-      const x0 = Math.floor(cx - rx - 2);
-      const x1 = Math.ceil(cx + rx + 2);
-      for (let y = Math.floor(cy - ry - 2); y <= Math.ceil(cy + ry + 3); y++) {
-        if (y < BACK + 1 || y >= FRONT - 1) continue;
-        for (let x = x0; x <= x1; x++) {
-          if (K.mask(x, y) & (PUD | RIM) || (skip && skip(x, y))) continue;
-          const u = Math.abs(x - cx) / rx;
-          if (inL(x, y)) {
-            let c = S[6];
-            if (!inL(x, y - 1)) c = u < 0.6 ? S[7] : S[6]; // moonlit crest
-            else if (!inL(x, y + 1)) c = S[5]; // rolling down to the near edge
-            K.set(x, y, c);
-          } else if (inL(x, y - 1) && u < 0.85) K.set(x, y, u < 0.55 || bayer(x, y) < 0.5 ? S[4] : S[5]); // soft shadow under it
-          else if (inL(x, y - 2) && u < 0.45 && bayer(x, y) < 0.35) K.set(x, y, S[4]);
+  function driftList(K) {
+    // plus many small ones scattered off-grid (seeded, deterministic)
+    const r = HD.rng(3301);
+    const out = DRIFTS.slice();
+    for (let tries = 0; tries < 400 && out.length < 34; tries++) {
+      const x = Math.round(r() * W);
+      const y = Math.round(K.BACK + 6 + r() * (K.FRONT - K.BACK - 10));
+      if (out.some((d) => Math.abs(d[1] - y) < 3 && x > d[0] - d[2] - 4 && x < d[0] + d[3] + 6)) continue;
+      const big = r();
+      out.push([x, y, 8 + big * 14, 2 + Math.round(r()), 1.4 + big * 1.1, 0.9 + big * 0.9, (r() - 0.5) * 1.6]);
+    }
+    return out;
+  }
+  function driftField(K, list, atten) {
+    const { BACK, FRONT } = K;
+    const HF = new Float32Array(W * (FRONT - BACK));
+    for (const [cx, cy, lw, ll, ry, h, bend] of list) {
+      for (let x = Math.floor(cx - lw); x <= Math.ceil(cx + ll); x++) {
+        if (x < 0 || x >= W) continue;
+        const dx = x - cx;
+        const fw = 1 + dx / lw;
+        if (fw <= 0) continue;
+        const yc = cy + (dx < 0 ? bend * (dx / lw) ** 2 : 0); // a crescent: the tail curls
+        const ryx = ry * (dx < 0 ? 0.5 + 0.5 * fw : 1);
+        for (let y = Math.floor(yc - ryx - 1); y <= Math.ceil(yc + ryx + 1); y++) {
+          if (y < BACK || y >= FRONT) continue;
+          const v = (y - yc) / ryx;
+          if (v * v >= 1) continue;
+          // long smooth windward tail; on the lee side a blunt rounded end
+          // whose face drops away steeply
+          let px;
+          if (dx < 0) px = fw * fw * (3 - 2 * fw);
+          else {
+            const lr = ll * Math.sqrt(1 - v * v) + 0.4;
+            const fl = 1 - dx / lr;
+            if (fl <= 0) continue;
+            px = Math.pow(fl, 0.35);
+          }
+          const hh = h * px * Math.pow(1 - v * v, 1.3) * (0.82 + 0.36 * K.vn(x / 9, y / 2.5, 335)) * atten(x, y);
+          const k = (y - BACK) * W + x;
+          if (hh > HF[k]) HF[k] = hh;
         }
+      }
+    }
+    return HF;
+  }
+  /**
+   * Rasterise the drift heightfield over the snow, front to back like a
+   * voxel terrain, so a nearer drift hides the snow behind it. Drift bodies
+   * sit a step brighter than the flat snow, the short lee face on the right
+   * is one solid shadow step, and the silhouette top carries a broken crest
+   * of short bright segments.
+   */
+  function paintDrifts(K, HF, base) {
+    const { BACK, FRONT, PUD, RIM } = K;
+    const hAt = (x, y) => (x < 0 || x >= W || y < BACK || y >= FRONT ? 0 : HF[(y - BACK) * W + x]);
+    const OFF = 6;
+    const N = FRONT - BACK + OFF + 2;
+    const ownH = new Float32Array(N); // per screen row of this column: height of the snow that drew it
+    const ownLee = new Uint8Array(N);
+    for (let x = 0; x < W; x++) {
+      let ybuf = FRONT - 1; // screen rows >= ybuf are already drawn by nearer snow
+      ownH.fill(0);
+      ownLee.fill(0);
+      for (let y = FRONT - 2; y > BACK; y--) {
+        const h = hAt(x, y);
+        if (K.mask(x, y) & (PUD | RIM)) {
+          ybuf = Math.min(ybuf, y);
+          continue;
+        }
+        const ys = y - Math.round(h);
+        if (ys >= ybuf) continue; // hidden behind a nearer drift
+        if (h < 0.3) {
+          ybuf = y;
+          continue; // flat snow: keep the base pixel
+        }
+        const lee = h > 1.4 && (hAt(x + 1, y) - hAt(x - 1, y)) / 2 < -0.4; // steep drop to the right, near the crest
+        const b = base[(y - BACK) * W + x];
+        // lit from above: the rounded top a step brighter, the face toward
+        // us easing back into the flat snow; the lee face one solid shadow step
+        const c = lee ? (b <= 4 ? 3 : 4) : clamp(b + (h > 0.8 ? 1 : 0) + (h > 2.2 ? 1 : 0), 4, 6);
+        for (let s = ys; s < ybuf; s++) {
+          K.set(x, s, S[lee || s === ys ? c : clamp(c - (s - ys >= 2 ? 1 : 0), Math.min(c, b), 6)]);
+          const q = s - BACK + OFF;
+          if (q >= 0) {
+            ownH[q] = h;
+            ownLee[q] = lee ? 1 : 0;
+          }
+        }
+        ybuf = ys;
+      }
+      // broken crest: short bright segments along the silhouette top of the bigger drifts
+      for (let q = 1; q < N; q++) {
+        const h = ownH[q];
+        if (h < 1.3 || ownH[q - 1] > h - 0.6 || ownLee[q]) continue;
+        const s = q + BACK - OFF;
+        if (K.vn(x / 3.2, s / 3, 337) > 0.5) K.set(x, s, S[7]);
       }
     }
   }
 
   function deepSnow(K) {
     const { BACK, FRONT } = K;
+    const base = new Uint8Array(W * (FRONT - BACK));
     for (let y = BACK; y < FRONT; y++) {
       const d = K.depth(y);
       for (let x = 0; x < W; x++) {
         let v = 4.75 + d * 0.95 + (K.fbm(x / 26, y / 5, 317) - 0.5) * 1.0;
         if (y < BACK + 3) v -= (BACK + 3 - y) * 0.45;
-        K.set(x, y, S[K.qd(v, x, y, 4, 6, 0.3)]);
+        const i = K.qd(v, x, y, 4, 6, 0);
+        base[(y - BACK) * W + x] = i;
+        K.set(x, y, S[i]);
       }
     }
     despeckle(K, BACK + 1, FRONT - 1);
-    const trailD = (x, y) => distToPath(x, y, TRAIL, 1);
-    drifts(K, DRIFTS, (x, y) => trailD(x, y) < 5.5 || (x > 202 && x < 238 && y < 216));
+    const trailI = (x, y) => pathInfo(x, y, WTRAIL);
+    // trail half-width wanders between 2.5 and 4 px
+    const hw = (s) => 2.5 + 1.5 * K.vn(s / 6, 3, 319);
+    const sm = (a, b, v) => HD.smoothstep(a, b, v);
+    const atten = (x, y) => {
+      let a = sm(4.5, 10, trailI(x, y).d);
+      for (const p of L.puddles) {
+        const e = ((x - p.x) / (p.rx + 4)) ** 2 + ((y - p.y) / (p.ry + 2.5)) ** 2;
+        a *= sm(1, 1.7, e);
+      }
+      if (x > 220 && x < 348 && y > 210 && y < 227) a *= 1 - sm(0, 6, Math.min(x - 220, 348 - x, y - 210, 227 - y)); // snowman & sled tracks
+      if (y < 218) a *= Math.max(sm(212, 218, y), 1 - sm(150, 160, x), sm(298, 308, x)); // the house front
+      a *= sm(FRONT - 1, FRONT - 5, y) * sm(BACK + 1, BACK + 6, y);
+      return a;
+    };
+    paintDrifts(K, driftField(K, driftList(K), atten), base);
     // snow banked against the house and turret walls, with a contact shadow
     for (let x = 164; x <= 302; x++) {
       if (x >= 204 && x <= 236) continue;
@@ -504,16 +643,24 @@
       for (let j = 0; j < hb; j++) K.set(x, 208 + j, j === 0 ? S[7] : S[6]);
       K.set(x, 208 + hb, S[5]);
     }
-    // the trodden trail from the steps to the front lip: packed, greyer snow
-    // between two shoved-up banks
+    // the trodden trail from the steps to the front lip: packed, greyer snow.
+    // The far (left) bank shows a broken bright crest; the near side has a
+    // cold inner shadow and a soft dithered bank.
     for (let y = 210; y < FRONT; y++)
       for (let x = 180; x < 240; x++) {
-        const tp = trailD(x, y);
-        if (tp < 3.2) K.set(x, y, HD.hash(x >> 1, y, 318) < 0.18 ? S[3] : S[4]);
-        else if (tp < 4.4) K.set(x, y, trailD(x, y - 1) >= 4.4 ? S[7] : S[6]); // shoved-up banks else if (tp < 5.4 && bayer(x, y) < 0.5) K.set(x, y, S[5]);
+        const pi = trailI(x, y);
+        const w = hw(pi.s);
+        const tp = pi.d + (K.vn(x / 2, y / 1.3, 321) - 0.5) * 1.1; // ragged, trampled edges
+        if (tp < w) {
+          const inner = tp > w - 1 && pi.side > 0 && K.vn(x / 3, y / 2, 322) > 0.35;
+          K.set(x, y, inner ? S[3] : K.vn(x / 4, y / 2, 318) < 0.26 ? S[3] : S[4]);
+        } else if (tp < w + 1.1 && pi.side < 0) {
+          const v = K.vn(x / 2.5, y / 2, 320);
+          if (v > 0.25) K.set(x, y, v > 0.55 ? S[7] : S[6]); // far bank crest, broken
+        } else if (tp < w + 2.2 && pi.side > 0 && bayer(x, y) < 0.5) K.set(x, y, S[5]); // soft near bank
       }
-    footprints(K, TRAIL, { dark: S[2], mid: S[3], lip: S[6], step: 3.4, wide: 1.4 });
-    footprints(K, SNOWMAN_TRAIL, { dark: S[3], mid: S[4], lip: S[7], step: 4.2 });
+    footprints(K, WTRAIL, { toe: S[2], heel: S[3], step: 4, off: 1.5 });
+    footprints(K, SNOWMAN_TRAIL, { toe: S[3], heel: S[4], step: 4.6, off: 1.4 });
     // sled runner tracks curving away from the sled
     {
       const runner = [
@@ -536,6 +683,13 @@
         }
       }
     }
+    // where the trail reaches the lip it dents the cornice
+    const dent = new Uint8Array(W);
+    for (let x = 180; x < 240; x++) {
+      const pi = trailI(x, FRONT - 1);
+      if (pi.d < hw(pi.s) - 0.5) dent[x] = 1;
+    }
+    return { dent: (x) => dent[x] === 1 };
   }
 
   function snowBackEdge(K) {
@@ -561,6 +715,7 @@
    */
   function snowLip(K, o) {
     const { FRONT } = K;
+    const deep = o.depth > 2;
     const prof = new Int8Array(W);
     for (let x = 0; x < W; x++) {
       if (o.cover && !o.cover(x)) {
@@ -576,27 +731,55 @@
       }
       prof[x] = Math.max(1, Math.round(od));
     }
+    // short runs of snow read as pegs on the edge: drop them
+    const minRun = o.minRun || 0;
+    for (let x = 0; x < W; ) {
+      if (prof[x] < 0) {
+        x++;
+        continue;
+      }
+      let e = x;
+      while (e + 1 < W && prof[e + 1] >= 0) e++;
+      if (e - x + 1 < minRun) for (let k = x; k <= e; k++) prof[k] = -1;
+      x = e + 1;
+    }
     // round off single-pixel steps so the hanging edge reads as soft
     for (let x = 1; x < W - 1; x++) if (prof[x] > 0 && prof[x - 1] > 0 && prof[x + 1] > 0 && prof[x] > prof[x - 1] && prof[x] > prof[x + 1]) prof[x]--;
+    // distance to the nearest end of the run (frame edges don't count)
+    const endD = new Int16Array(W).fill(99);
+    for (let x = 0, d = 99; x < W; x++) endD[x] = d = prof[x] < 0 ? -1 : d + 1;
+    for (let x = W - 1, d = 99; x >= 0; x--) {
+      d = prof[x] < 0 ? -1 : d + 1;
+      endD[x] = Math.min(endD[x], d);
+    }
     for (let x = 0; x < W; x++) {
-      const od = prof[x];
-      if (od < 0) continue;
-      K.setLit(x, FRONT - 1, S[o.depth > 2 ? 7 : 6], 1);
-      K.setLit(x, FRONT, o.depth > 2 ? S[7] : S[6], 1);
+      if (prof[x] < 0) continue;
+      // the ends of a run taper over three pixels: thinner overhang, dimmer crest
+      const tap = Math.max(0, 2 - endD[x]);
+      const dent = o.dent && o.dent(x);
+      const od = prof[x] - tap - (dent ? 1 : 0);
+      if (deep) {
+        // the crest bulges up where the cornice droops (same lumps as the underside)
+        const up = dent ? 0 : clamp(Math.round((prof[x] - o.depth) * 0.45 + (K.vn(x / 13, 4, 54) - 0.5) * 1.3), 0, 2);
+        const lit = K.vn(x / 3.5, 6, 55) > (up > 0 ? 0.3 : 0.8); // highlights sit on the lumps, not one ruler line
+        if (!dent) for (let j = 0; j <= up; j++) K.setLit(x, FRONT - 1 - j, j === up && lit ? S[7] : S[6], 1);
+        K.setLit(x, FRONT, dent ? S[5] : S[6], 1);
+      } else {
+        const c = S[6 - tap];
+        if (tap < 2) K.setLit(x, FRONT - 1, c, 1);
+        K.setLit(x, FRONT, c, 1);
+      }
       for (let j = 1; j <= od; j++) {
         let c = S[5];
         if (j === od) c = S[3]; // cold underside
         else if (j === od - 1 && od > 2) c = S[4];
-        else if (j === 1) c = S[6];
+        else if (j === 1) c = S[deep ? 6 : 5];
         K.setLit(x, FRONT + j, c, 1);
       }
-      // the end of a run of snow tapers
-      const edge = (x > 0 && prof[x - 1] < 0) || (x < W - 1 && prof[x + 1] < 0);
-      if (edge) K.setLit(x, FRONT + od, S[3], 1);
-      K.setLit(x, FRONT + od + 1, P.soil[0], 0);
-      if (o.depth > 2 && HD.hash(x, 2, 53) < 0.6) K.setLit(x, FRONT + od + 2, P.soil[1], 0);
+      if (od > 0 || deep) K.setLit(x, FRONT + Math.max(0, od) + 1, P.soil[0], 0);
+      if (deep && HD.hash(x, 2, 53) < 0.6) K.setLit(x, FRONT + Math.max(0, od) + 2, P.soil[1], 0);
       // icicles under the overhang (tapering, glassy)
-      if (o.icicles && HD.hash(x, 11, 53) < 0.06 && !edge) {
+      if (o.icicles && HD.hash(x, 11, 53) < 0.06 && !tap && !dent) {
         const len = 1 + Math.floor(HD.hash(x, 12, 53) * 3.2);
         for (let j = 0; j < len; j++) K.setLit(x, FRONT + od + 1 + j, j === len - 1 ? P.ice[5] : j === 0 ? P.ice[3] : P.ice[4], 0);
       }
@@ -642,9 +825,9 @@
         else if (!g(x, y + 1)) i = 3;
         else if (!g(x - 1, y) || !g(x + 1, y)) i = 4;
         else {
-          const n = K.vn(x / 9, y / 2.2, seed + 4);
-          if (n > 0.7) i = 6; // soft brighter mounds
-          else if (n < 0.18 && bayer(x, y) < 0.5) i = 4;
+          // soft brighter lumps and solid shallower hollows (no checker dither)
+          if (K.vn(x / 7, y / 3, seed + 4) > 0.7) i = 6;
+          else if (K.vn(x / 6, y / 2.2, seed + 5) < 0.2) i = 4;
         }
         // snow near the campfire: keep it a step darker so the warm relight
         // reads as glow on snow instead of blowing out to paper-white
@@ -690,27 +873,43 @@
   function leafCarpet(K, ed) {
     const { BACK, FRONT, FIRE, PUD, RIM } = K;
     const cols = LEAF_COLS();
+    const cf = L.campfire;
+    const ring = (x, y) => ((x - cf.x) / 27) ** 2 + ((y - cf.base) / 8) ** 2; // just outside the scorched patch
     const dens = (x, y) => {
       let s = K.fbm(x / 16, y / 3.8, 501) - 0.5;
       if (x > 350) s += 0.22 + (x > 380 && x < 440 ? 0.12 : 0); // under the tree
       if (y < BACK + 7) s += 0.12; // blown against the back and the house
       if (x < 44) s += 0.1;
-      if (distToPath(x, y, TRAIL) < 3) s -= 0.25;
+      if (x > 140 && x < 350) s += 0.1; // the open middle of the yard
+      if (distToPath(x, y, TRAIL) < 3.2) s -= 0.6; // the trodden strip along the path
+      if (ed.fire !== 'none') {
+        if (ring(x, y) < 1) s -= 0.6; // a narrow ring of grass around the fire
+        else if (glow(x, y) < 1) s -= 0.18 * (1 - glow(x, y)); // sparser where the fire lights it
+      }
       return s;
     };
-    // leaf litter base in dense drifts
+    // close to the fire the litter is darker, so the relight reads as a warm
+    // glow on leaves instead of flattening the pumpkins into one orange sheet
+    const glow = (x, y) => ((x - cf.x) / 66) ** 2 + ((y - cf.base) / 15) ** 2;
+    const darkLit = mix(P.autumn[1], P.wood[3], 0.4);
+    const brownLit = mix(P.autumn[2], P.wood[4], 0.45);
+    // leaf litter base: a thick carpet in rusty mid-tones that pick up the
+    // fire and window light
     for (let y = BACK + 2; y < FRONT - 1; y++)
       for (let x = 0; x < W; x++) {
         if (K.mask(x, y) & (FIRE | PUD | RIM | K.STONE)) continue;
         const s = dens(x, y);
-        if (s > 0.12) K.set(x, y, K.vn(x / 3, y / 1.4, 503) > 0.5 ? P.autumn[1] : mix(P.autumn[1], P.wood[2], 0.5));
+        if (s <= -0.08) continue;
+        const v = K.vn(x / 3, y / 1.4, 503);
+        const near = ed.fire !== 'none' && glow(x, y) < 1;
+        K.set(x, y, near ? (v > 0.6 ? P.autumn[2] : v > 0.3 ? P.autumn[1] : darkLit) : v > 0.66 ? P.autumn[3] : v > 0.32 ? P.autumn[2] : brownLit);
       }
     const r = HD.rng(5050);
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < 2600; i++) {
       const x = Math.floor(r() * W);
       const y = BACK + 3 + Math.floor(r() * (FRONT - BACK - 4));
       const s = dens(x, y);
-      if (r() > (s > 0 ? 0.1 + s * 1.5 : 0.05 + s * 0.1)) continue;
+      if (r() > (s > 0 ? 0.25 + s * 1.5 : s > -0.08 ? 0.12 : 0.02)) continue;
       if (K.mask(x, y) & FIRE && r() < 0.9) continue;
       const hue = K.vn(x / 26, y / 6, 507);
       const ci = hue < 0.28 ? 3 : hue < 0.45 ? 1 : hue < 0.62 ? 0 : hue < 0.8 ? 2 : r() < 0.5 ? 4 : 0;
@@ -825,47 +1024,69 @@
 
   function summerMeadow(K) {
     const G = RAMP.summer;
-    // clover patches: tiny three-leaf clusters
+    const bad = (x, y) => K.mask(x, y) & (K.PUD | K.RIM | K.STONE | K.FIRE);
+    // clover: drifts of little trefoils in a lighter, bluer green than the
+    // grass, a white clover head in about one cluster in five
+    const CL = mix(mix(P.leaf[7], P.moss[6], 0.4), P.night[11], 0.3);
+    const CLd = mix(P.leaf[7], P.moss[6], 0.4);
+    const CLk = mix(P.leaf[5], P.moss[5], 0.4);
     const r = HD.rng(8080);
-    for (let i = 0; i < 260; i++) {
-      const x = Math.floor(r() * W);
-      const y = K.BACK + 5 + Math.floor(r() * (K.FRONT - K.BACK - 6));
-      if (K.vn(x / 18, y / 4, 809) < 0.55) continue;
-      if (K.mask(x, y) & (K.PUD | K.RIM | K.STONE | K.FIRE)) continue;
-      K.set(x, y, P.leaf[5]);
-      K.set(x + 1, y, P.leaf[4]);
-      K.set(x, y - 1, P.leaf[6]);
-      if (r() < 0.12) K.set(x, y - 2, P.bone[2]); // white clover head
+    let made = 0;
+    for (let tries = 0; tries < 1200 && made < 60; tries++) {
+      const cx = Math.floor(r() * W);
+      const cy = K.BACK + 6 + Math.floor(r() * (K.FRONT - K.BACK - 8));
+      if (K.vn(cx / 18, cy / 4, 809) < 0.5 || bad(cx, cy)) continue;
+      made++;
+      const n = 4 + Math.floor(r() * 6);
+      const head = r() < 0.2;
+      for (let k = 0; k < n; k++) {
+        const x = Math.round(cx + (r() - 0.5) * 11);
+        const y = Math.round(cy + (r() - 0.5) * 3);
+        if (bad(x, y) || bad(x - 1, y) || bad(x + 1, y)) continue;
+        K.set(x - 1, y, CLd);
+        K.set(x + 1, y, CLd);
+        K.set(x, y - 1, CL);
+        K.set(x, y, CLk);
+        if (head && k < 2) {
+          K.set(x, y - 2, P.bone[3]);
+          K.set(x + 1, y - 2, P.bone[2]);
+        }
+      }
     }
+    // wildflowers with 2x2-ish heads, bright enough to survive the cold ambient
+    const corn = [mix(P.night[10], P.violet[6], 0.5), mix(P.night[9], P.violet[5], 0.5)];
     const daisy = (x, y, r) => {
       const h = 2 + Math.floor(r() * 3);
       for (let j = 0; j < h; j++) K.set(x, y - j, G[3]);
       K.set(x - 1, y - h, P.bone[3]);
       K.set(x + 1, y - h, P.bone[3]);
-      K.set(x, y - h - 1, P.bone[4]);
       K.set(x, y - h, P.gold[4]);
+      K.set(x, y - h - 1, P.bone[4]);
     };
-    const corn = (x, y, r) => {
+    const cornflower = (x, y, r) => {
       const h = 3 + Math.floor(r() * 2);
       for (let j = 0; j < h; j++) K.set(x, y - j, G[3]);
-      K.set(x, y - h, P.night[8]);
-      K.set(x - 1, y - h, P.night[7]);
-      K.set(x + 1, y - h - 1, P.night[9]);
+      K.set(x, y - h, corn[1]);
+      K.set(x + 1, y - h, corn[0]);
+      K.set(x, y - h - 1, corn[0]);
+      K.set(x + 1, y - h - 1, corn[1]);
     };
     const butter = (x, y, r) => {
       const h = 2 + Math.floor(r() * 2);
       for (let j = 0; j < h; j++) K.set(x, y - j, G[4]);
       K.set(x, y - h, P.gold[4]);
       K.set(x + 1, y - h, P.gold[3]);
+      K.set(x, y - h - 1, P.gold[5]);
     };
     const pink = (x, y, r) => {
       const h = 3 + Math.floor(r() * 2);
       for (let j = 0; j < h; j++) K.set(x, y - j, G[3]);
-      K.set(x, y - h, P.violet[5]);
-      K.set(x, y - h - 1, P.violet[6]);
-      K.set(x + 1, y - h, P.violet[4]);
+      K.set(x, y - h, P.blossom[5]);
+      K.set(x + 1, y - h, P.blossom[4]);
+      K.set(x, y - h - 1, P.blossom[6]);
+      K.set(x + 1, y - h - 1, P.blossom[5]);
     };
-    const kinds = [daisy, corn, butter, pink];
+    const kinds = [daisy, cornflower, butter, pink];
     const clumps = [
       [40, 216, 6, 21],
       [150, 214, 5, 22],
@@ -877,8 +1098,22 @@
       [345, 236, 4, 28],
       [460, 233, 4, 29],
       [60, 236, 3, 30],
+      // the right half and the garden corner
+      [300, 224, 5, 31],
+      [330, 214, 4, 32],
+      [358, 226, 5, 33],
+      [384, 233, 5, 34],
+      [396, 212, 4, 35],
+      [420, 228, 5, 36],
+      [446, 218, 4, 37],
+      [470, 210, 4, 38],
+      [252, 230, 4, 39],
+      [318, 234, 4, 40],
     ];
-    flowerClumps(K, clumps, (x, y, r, i) => kinds[(Math.floor(r() * 4) + i) % 4](x, y, r));
+    flowerClumps(K, clumps, (x, y, r, i) => {
+      if (bad(x, y)) return;
+      kinds[(Math.floor(r() * 4) + i) % 4](x, y, r);
+    });
   }
 
   // ------------------------------------------------------------------
@@ -887,19 +1122,39 @@
   function sweptPath(K) {
     const { BACK, FRONT, MUD } = K;
     const R = L.seasonal.rangoli;
+    const dust = mix(P.soil[6], P.stone[5], 0.45); // packed, swept dust: lighter and cooler than the dry grass
+    const dustLo = mix(P.soil[5], P.stone[4], 0.45);
+    const arcC = mix(P.soil[6], P.stone[6], 0.5); // broom strokes
+    const E = new Float32Array(W * (FRONT - BACK));
+    const ev = (x, y) => (x < 0 || x >= W || y < BACK || y >= FRONT ? 9 : E[(y - BACK) * W + x]);
+    for (let y = BACK; y < FRONT; y++)
+      for (let x = 0; x < W; x++) {
+        let e = 9;
+        if (x >= 150 && x < 280 && y >= BACK + 4) {
+          const dp = distToPath(x, y, TRAIL) / 6.2;
+          const da = Math.sqrt(((x - R.x) / (R.rx + 6)) ** 2 + ((y - R.y + 0.5) / (R.ry + 3)) ** 2);
+          e = Math.min(dp, da) + (K.vn(x / 3, y / 1.5, 611) - 0.5) * 0.3;
+        }
+        E[(y - BACK) * W + x] = e;
+      }
     for (let y = BACK + 4; y < FRONT; y++)
-      for (let x = 160; x < 270; x++) {
-        const dp = distToPath(x, y, TRAIL) / 6.2;
-        const da = Math.sqrt(((x - R.x) / (R.rx + 6)) ** 2 + ((y - R.y + 0.5) / (R.ry + 3)) ** 2);
-        const e = Math.min(dp, da) + (K.vn(x / 3, y / 1.5, 611) - 0.5) * 0.3;
-        if (e > 1) continue;
+      for (let x = 150; x < 280; x++) {
+        const e = ev(x, y);
+        if (e > 1) {
+          // a windrow of swept grass and leaf bits along the edge
+          if (e < 1.25 && (ev(x - 1, y) <= 1 || ev(x + 1, y) <= 1 || ev(x, y - 1) <= 1 || ev(x, y + 1) <= 1)) {
+            const h = HD.hash(x, y, 615);
+            K.set(x, y, h < 0.1 ? P.autumn[3] : h < 0.18 ? P.autumn[2] : RAMP.dry[1]);
+          }
+          continue;
+        }
         K.addMask(x, y, MUD);
-        let c = P.soil[5];
-        if (e > 0.82) c = P.soil[4];
-        else if (K.vn(x / 4, y / 1.6, 613) > 0.66) c = P.soil[6];
+        let c = dust;
+        if (e > 0.86) c = dustLo;
+        else if (K.vn(x / 4, y / 1.6, 613) > 0.7) c = dustLo;
         // broom strokes: short arcs
         const arc = Math.sin((x - R.x) * 0.55 + (y - R.y) * 1.9);
-        if (arc > 0.9 && e < 0.8 && HD.hash(x, y, 614) < 0.6) c = mix(P.soil[6], P.stone[5], 0.4);
+        if (arc > 0.9 && e < 0.8 && HD.hash(x, y, 614) < 0.6) c = arcC;
         K.set(x, y, c);
       }
   }
@@ -911,10 +1166,14 @@
     const [mag, ora, yel, grn, blu, pur, wht] = C;
     const rx = R.rx + 0.5;
     const ry = R.ry + 0.5;
+    // the near half is a pixel flatter so the pattern stays on dry ground,
+    // clear of the big puddle in front of the steps
+    const wet = (x, y) => K.mask(x, y) & (K.PUD | K.RIM);
     for (let y = Math.floor(R.y - ry); y <= Math.ceil(R.y + ry); y++)
       for (let x = Math.floor(R.x - rx); x <= Math.ceil(R.x + rx); x++) {
+        if (wet(x, y)) continue;
         const u = (x - R.x) / rx;
-        const v = (y - R.y) / ry;
+        const v = (y - R.y) / (y > R.y ? ry - 1 : ry);
         const rr = Math.hypot(u, v);
         if (rr > 1) continue;
         const th = Math.atan2(v, u);
@@ -937,8 +1196,10 @@
     const N = 28;
     for (let i = 0; i < N; i++) {
       const a = (i / N) * Math.PI * 2;
+      const sn = Math.sin(a);
       const x = Math.round(R.x + Math.cos(a) * (R.rx + 2.6));
-      const y = Math.round(R.y + Math.sin(a) * (R.ry + 1.6));
+      const y = Math.round(R.y + sn * (R.ry + 1.6 - (sn > 0 ? 1 : 0)));
+      if (wet(x, y) || wet(x + 1, y) || wet(x - 1, y)) continue;
       if (K.get(x, y) !== wht) K.set(x, y, wht);
     }
   }
@@ -964,7 +1225,13 @@
         K.set(x, y, e > 0.82 ? rim : typeof fill === 'function' ? fill(x, y, e) : fill);
       }
   }
+  const TUN_FLOOR = [P.soil[6], P.stone[3]];
+  /**
+   * A dug tunnel along a polyline, w px tall: dark interior, a darker ceiling
+   * line and a pale packed floor, so the network has readable edges.
+   */
   function tunnel(K, pts, c, w) {
+    const inside = new Set();
     for (let i = 0; i + 1 < pts.length; i++) {
       const [ax, ay] = pts[i];
       const [bx, by] = pts[i + 1];
@@ -972,10 +1239,21 @@
       for (let s = 0; s <= n; s++) {
         const x = Math.round(ax + ((bx - ax) * s) / n);
         const y = Math.round(ay + ((by - ay) * s) / n);
-        for (let j = 0; j < (w || 2); j++) {
-          K.set(x, y + j, c);
-          K.addMask(x, y + j, K.COF);
-        }
+        for (let j = 0; j < (w || 2); j++) inside.add(x + ',' + (y + j));
+      }
+    }
+    const isIn = (x, y) => inside.has(x + ',' + y);
+    for (const k of inside) {
+      const [x, y] = k.split(',').map(Number);
+      K.set(x, y, c);
+      K.addMask(x, y, K.COF);
+    }
+    for (const k of inside) {
+      const [x, y] = k.split(',').map(Number);
+      if (!isIn(x, y - 1) && !(K.mask(x, y - 1) & K.COF) && y - 1 > K.FRONT + 1) K.set(x, y - 1, P.soil[1]);
+      if (!isIn(x, y + 1) && !(K.mask(x, y + 1) & K.COF)) {
+        K.set(x, y + 1, TUN_FLOOR[HD.hash(x, y, 977) < 0.35 ? 1 : 0]);
+        K.addMask(x, y + 1, K.COF);
       }
     }
   }
@@ -984,14 +1262,29 @@
   // hibernating frog curled in a mud pocket
   SECRET['hibernating-frog'] = (K) => {
     pocket(K, 367, 253, 10, 4.2, (x, y) => (K.vn(x / 3, y / 2, 701) > 0.6 ? P.soil[2] : mix(P.soil[1], P.violet[1], 0.5)), P.soil[0], 702);
-    const fr = { h: mix(P.leaf[7], P.gold[3], 0.22), G: mix(P.leaf[5], P.vine[4], 0.3), d: P.leaf[3], k: P.leaf[1], b: mix(P.bone[2], P.leaf[6], 0.45) };
-    stamp(K, ['..hhh.......', '.hGGGh.hhh..', 'hGkkGGhGGGh.', 'GGGGGGGGGGGh', 'bGGGGdGGGGGd', 'bbGGdGGGGGd.', '.bbbddddd...'], 361, 250, fr);
-    return { breathe: [369, 251, fr.h] };
+    // dormant colours: muted moss/vine greens, not the saturated leaf ramp
+    const fr = { h: mix(P.moss[6], P.vine[4], 0.35), G: mix(P.moss[5], P.vine[4], 0.5), d: P.leaf[3], k: P.soil[0], b: mix(P.bone[1], P.moss[5], 0.5), T: mix(P.bone[1], P.moss[6], 0.4) };
+    // curled up, head to the left: a hind leg folded along the lower right
+    // (its crease a darker line), two little toes tucked under the chin
+    stamp(K, [
+      '..hhh.......',
+      '.hGkGh..hh..',
+      'hGGGGGhhGGh.',
+      'GGGGGGdGGGGh',
+      'bGGGGdGhGGGd',
+      'bbGGdGGGGGd.',
+      '.TbT.dddd...',
+    ], 361, 250, fr);
+    // breathing: the back rises by a pixel across two columns
+    return { breathe: [[368, 250, fr.h], [369, 250, fr.h]] };
   };
   // a rabbit asleep at the end of its burrow
   SECRET['rabbit-burrow'] = (K) => {
-    tunnel(K, [[326, 241], [334, 245], [344, 249], [352, 252]], P.soil[1], 3);
+    tunnel(K, [[326, 241], [334, 245], [344, 249], [352, 252]], P.soil[0], 3);
+    // the burrow mouth: a dark notch just under the turf lip
+    for (let x = 323; x <= 329; x++) K.set(x, K.FRONT + 2, x === 323 || x === 329 ? P.soil[1] : P.soil[0]);
     pocket(K, 366, 253, 12, 4.6, P.soil[1], P.soil[0], 711);
+    for (let x = 355; x <= 377; x++) if (!(K.mask(x, 258) & K.COF)) K.set(x, 258, TUN_FLOOR[HD.hash(x, 258, 977) < 0.35 ? 1 : 0]);
     // dry grass bedding
     for (let x = 356; x <= 377; x++) if (HD.hash(x, 7, 712) < 0.7) K.set(x, 256 + (HD.hash(x, 8, 712) < 0.3 ? 1 : 0), P.vine[3]);
     const rbB = mix(P.stone[6], P.wood[6], 0.45);
@@ -1021,51 +1314,81 @@
       K.set(x + 1, y, P.bone[1]);
     }
     for (const [x, y] of [[378, 256], [380, 257], [382, 256]]) K.set(x, y, P.gold[3]);
-    // a pale packed floor under every tunnel so the network reads
+    // a pale packed floor under the chambers too, so the whole network reads
     for (let y = 240; y < 262; y++)
       for (let x = 298; x < 392; x++)
-        if (K.mask(x, y) & K.COF && !(K.mask(x, y + 1) & K.COF) && K.get(x, y) === P.soil[0]) K.set(x, y + 1, mix(P.soil[6], P.bone[0], 0.25));
+        if (K.mask(x, y) & K.COF && !(K.mask(x, y + 1) & K.COF) && K.get(x, y) === P.soil[0]) K.set(x, y + 1, TUN_FLOOR[HD.hash(x, y, 977) < 0.35 ? 1 : 0]);
     return { ants: true };
   };
   // a squirrel's acorn cache
   SECRET['squirrel-stash'] = (K) => {
-    tunnel(K, [[336, 241], [342, 245], [350, 249]], P.soil[1], 3);
+    tunnel(K, [[336, 241], [342, 245], [350, 249]], P.soil[0], 3);
     pocket(K, 364, 252.5, 13, 5.4, P.soil[1], P.soil[0], 721);
     for (let x = 354; x <= 375; x++) if (HD.hash(x, 7, 722) < 0.8) K.set(x, 256 + (HD.hash(x, 9, 722) < 0.3 ? 1 : 0), HD.hash(x, 5, 722) < 0.5 ? P.autumn[2] : P.autumn[1]);
-    const ac = { s: P.wood[2], c: P.wood[3], C: mix(P.wood[6], P.autumn[3], 0.35), N: P.autumn[6], n: P.autumn[4], d: P.autumn[2] };
-    const A = ['.s..', 'cCCc', 'nNNn', '.dd.'];
-    const B = ['..s.', 'cCCc', 'nNnn', '.dd.'];
-    const heap = [[358, 247], [363, 247], [355, 250], [360, 250], [365, 250], [352, 253], [357, 253], [362, 253], [367, 253], [372, 253]];
+    // muted, unlit nut browns (found in the soil, not glowing): caps dark
+    // with a darker rim underneath and one small highlight
+    const ac = { s: P.wood[3], c: P.wood[2], H: P.wood[5], u: P.wood[1], N: mix(P.wood[6], P.autumn[3], 0.35), n: P.wood[4], d: P.wood[2] };
+    const A = ['.s..', 'cHcc', 'uuuc', 'nNNn', '.nd.'];
+    const B = ['..s.', 'ccHc', 'cuuu', 'nNnn', '.dn.'];
+    // piled loosely, not in rows
+    const heap = [[359, 246], [364, 247], [354, 249], [360, 250], [366, 249], [351, 252], [356, 253], [362, 252], [367, 253], [372, 252]];
     heap.forEach(([x, y], i) => stamp(K, i % 2 ? A : B, x, y, ac));
     // one acorn rolled aside, and a lost cap
-    stamp(K, B, 377, 254, ac);
-    stamp(K, ['cCc'], 372, 249, ac);
+    stamp(K, B, 377, 253, ac);
+    stamp(K, ['cHc', 'uuu'], 372, 248, ac);
     return {};
   };
   // a clay pot of gold coins, tipped over
   SECRET['clay-pot'] = (K) => {
     pocket(K, 366, 253, 14, 5, P.soil[1], P.soil[0], 731);
-    const pc = { P: P.pumpkin[3], h: P.pumpkin[4], H: P.pumpkin[5], d: P.pumpkin[2], D: P.pumpkin[1], R: P.pumpkin[4], m: P.soil[0], c: P.gold[3], g: P.gold[4], G: P.gold[5] };
-    stamp(K, ['...dPPPPd....', '.dPhhHPPPPdRR', 'dPhHPPPPPPPRm', 'PPhPPPPPPPPmg', 'dPPPPPPPPPPRm', '.DdPPPPPPdDRR', '...DDDDDD....'], 352, 249, pc);
-    // coins spilling out
-    stamp(K, ['...G.....', '..cgg.G..', '.ggcGgcg.', 'cgcggcggc'], 365, 254, pc);
-    return { glint: [[369, 256], [366, 255], [372, 257]] };
+    // terracotta pot lying on its side: round belly, a narrower neck, then
+    // the rim seen as an upright ellipse around the dark mouth, facing right
+    const pc = { P: P.pumpkin[2], h: P.pumpkin[3], H: P.pumpkin[4], d: P.pumpkin[1], D: P.pumpkin[0], n: P.pumpkin[2], R: P.pumpkin[4], r: P.pumpkin[3], m: P.soil[0], k: P.gold[1], c: P.gold[2], g: P.gold[3], G: P.gold[4] };
+    stamp(K, [
+      '..DdPPdD........',
+      '.dPhhPPPPd...RR.',
+      'dPhHhPPPPPndrmmR',
+      'dPhhPPPPPPddrmmR',
+      'dPPPPPPPPPddrmmR',
+      '.DdPPPPPPd...RR.',
+      '..DDDDDDD.......',
+    ], 352, 249, pc);
+    // coins spilling from the mouth onto the floor of the hollow: dull gold,
+    // one small highlight (the occasional glint is animated)
+    stamp(K, [
+      '..g........',
+      '.cgc.......',
+      '.kcGgc.....',
+      'kcgcgckgc..',
+      '.kckcgkckck',
+    ], 365, 253, pc);
+    return { glint: [[368, 255], [367, 254], [372, 256]] };
   };
   // hedgehog asleep in a leaf nest
   SECRET['hedgehog'] = (K) => {
-    // a nest of dry leaves in a dark hollow
-    pocket(K, 366, 253, 12, 4.8, (x, y) => {
+    // a dark hollow; a cup of dry leaves (dull browns, a few rusty ones)
+    // lines its floor and sides
+    pocket(K, 366, 253, 12, 4.8, (x, y, e) => {
       const h = HD.hash(x >> 1, y, 742);
-      return K.vn(x / 2, y / 1.5, 741) > 0.62 ? P.autumn[3] : h < 0.35 ? P.autumn[2] : h < 0.6 ? P.wood[3] : P.soil[1];
+      const cup = y >= 254 || e > 0.55 + (y - 249) * 0.02;
+      if (!cup) return K.vn(x / 3, y / 2, 744) > 0.75 ? P.soil[1] : P.soil[0];
+      return h < 0.07 ? P.autumn[2] : K.vn(x / 2, y / 1.5, 741) > 0.55 ? P.wood[3] : h < 0.8 ? P.wood[2] : P.soil[1];
     }, P.soil[0], 743);
-    const hh = { s: mix(P.stone[6], P.bone[1], 0.5), t: mix(P.wood[4], P.stone[4], 0.5), T: P.wood[2], F: mix(P.bone[2], P.wood[6], 0.45), k: P.soil[0], e: P.wood[1] };
-    // spines in diagonal strokes (light tip, mid, dark root) sweeping back
-    stamp(K, ['...stTstTs...', '..tTstTstTs..', '.TstTstTstTs.', 'FestTstTstTst', 'kFFFTstTstTs.', '.FFFFTTTTTT..'], 359, 250, hh);
-    // a few leaves tucked over it
-    K.set(370, 249, P.autumn[4]);
-    K.set(371, 249, P.autumn[3]);
-    K.set(372, 250, P.autumn[4]);
-    return { breathe: [364, 250, hh.s] };
+    // curled up asleep, facing left: a domed dark spine mass with a few
+    // irregular pale tips, tapering to a pale pointed face with a dark nose
+    // and a closed eye
+    const hh = { T: P.wood[4], t: P.wood[2], u: P.wood[5], s: mix(P.stone[6], P.bone[1], 0.5), F: mix(P.bone[2], P.bone[1], 0.4), f: P.bone[1], g: mix(P.bone[1], P.wood[4], 0.5), k: P.soil[0], e: P.wood[1], d: P.soil[0] };
+    stamp(K, [
+      '.......sTtsu...',
+      '.....stTuTtTs..',
+      '...FfuTtTTsTu..',
+      '..FFeeTsTuTtTs.',
+      '.FFFfgTtTTuTTTd',
+      'kFfffgTTtTTtTTd',
+      '..dddddddddddd.',
+    ], 356, 249, hh);
+    // breathing: the dome swells by a pixel row
+    return { breathe: [[364, 248, hh.T], [365, 248, hh.s], [366, 248, hh.T]] };
   };
   // a small tin time capsule tied with a red ribbon
   SECRET['time-capsule'] = (K) => {
@@ -1120,7 +1443,7 @@
     leafy(K, ed) {
       const G = RAMP.leafy;
       fillTop(K, G, { lo: 1, hi: 4 });
-      K.paintMud(mudSpotsFor(ed, { k: 0.75, tree: 0.3 }), true);
+      K.paintMud(mudSpotsFor(ed, { k: 0.75, tree: 0.3, fireR: [22, 6.5] }), true);
       puddles(K, 'water', { far: P.soil[2], near: P.soil[1], end: P.soil[4] });
       grass(K, G, { dens: 0.75 });
       pathStones(K, G, {});
@@ -1138,7 +1461,6 @@
       puddles(K, 'water', { far: P.soil[2], near: P.soil[1], end: P.soil[4] });
       sweptPath(K);
       grass(K, G, { dens: 0.72, hk: 1.1 });
-      pathStones(K, G, { only: (s) => s.i === 3, mud: false });
       fallenLeaves(K);
       rangoli(K);
       backEdge(K, G[1], { stalks: 0.1 });
@@ -1147,11 +1469,11 @@
       return Object.assign(sec, { worm: true });
     },
     snow(K, ed) {
-      deepSnow(K);
+      const ds = deepSnow(K);
       puddles(K, ed.tagSet.has('frozen-puddles') ? 'ice' : 'water', { far: S[3], near: S[6], end: S[5] });
       snowBackEdge(K);
       const sec = under(K, ed, { frozen: 9 });
-      snowLip(K, { depth: 3, var: 2.2, icicles: true });
+      snowLip(K, { depth: 3, var: 2.2, icicles: true, dent: ds.dent });
       return sec;
     },
     'thin-snow'(K, ed) {
@@ -1175,7 +1497,7 @@
         if (r() < 0.5) K.set(x + (r() < 0.5 ? 1 : 0), y - 1, G[4]);
       }
       // footprints across the snow
-      if (ed.id === 'lunar') footprints(K, SNOWMAN_TRAIL, { dark: S[3], mid: S[4], step: 4.2, onlyOn: snowy });
+      if (ed.id === 'lunar') footprints(K, SNOWMAN_TRAIL, { toe: S[3], heel: S[4], step: 4.6, off: 1.4, onlyOn: snowy });
       else
         footprints(
           K,
@@ -1185,15 +1507,22 @@
             [150, 228],
             [132, 231],
           ],
-          { dark: S[3], mid: S[4], step: 4, onlyOn: snowy },
+          { toe: S[3], heel: S[4], step: 4.4, off: 1.4, onlyOn: snowy },
         );
       if (ed.id === 'lunar') redPaper(K);
       if (ed.id === 'newyear') confetti(K);
       backEdge(K, G[1], { top: (x) => (K.vn(x / 9, 0, 67) > 0.45 ? S[4] : null) });
-      const sec = under(K, ed, { frozen: 6 });
+      // the fire has thawed the ground under it: no snow on the lip there and
+      // the frozen topsoil thins out to nothing
+      const cfx = L.campfire.x;
+      const thaw = (x) => (fire ? clamp((Math.abs(x - cfx) - 34) / 26, 0, 1) : 1);
+      const sec = under(K, ed, { frozen: (x) => 6 * thaw(x) });
+      if (fire)
+        for (let x = cfx - 40; x <= cfx + 40; x++)
+          if (thaw(x) < 0.15 && HD.hash(x, 3, 771) < 0.7) K.set(x, K.FRONT + 2, mix(P.soil[1], P.night[2], 0.3)); // damp
       turfLip(K, G, { len: 0.7 });
-      const cover = (x) => snowy(x, K.FRONT - 1) || snowy(x, K.FRONT - 2);
-      snowLip(K, { depth: 1, var: 1.2, cover });
+      const cover = (x) => (snowy(x, K.FRONT - 1) || snowy(x, K.FRONT - 2)) && !(fire && Math.abs(x - cfx) < 40);
+      snowLip(K, { depth: 1, var: 1.2, cover, minRun: 14 });
       return sec;
     },
   };
@@ -1230,9 +1559,11 @@
   function makeAnim(sec) {
     const fns = [];
     if (sec.breathe) {
-      const [bx, by, c] = sec.breathe;
+      // [x, y, colour] of a single pixel swelling above it, or a list of
+      // [x, y, colour] pixels drawn as they are
+      const px = Array.isArray(sec.breathe[0]) ? sec.breathe : [[sec.breathe[0], sec.breathe[1] - 1, sec.breathe[2]]];
       fns.push((g, t) => {
-        if (T.phase(t, 4.2) < 0.42) g.em.px(bx, by - 1, c);
+        if (T.phase(t, 4.2) < 0.42) for (const [x, y, c] of px) g.em.px(x, y, c);
       });
     }
     if (sec.ants) {
@@ -1252,8 +1583,10 @@
       const head = P.red[3];
       fns.push((g, t) => {
         const ts = T.step(t, 4);
-        const wig = Math.floor(ts * 4) & 1;
-        for (const a of ants) {
+        const f4 = Math.floor(ts * 4);
+        for (let i = 0; i < ants.length; i++) {
+          const a = ants[i];
+          const wig = (f4 + i) & 1; // each ant bobs on its own beat
           const ph = T.phase(ts, a.per, a.off);
           const u = ph < 0.5 ? ph * 2 : 2 - ph * 2; // there and back
           const n = a.p.length;

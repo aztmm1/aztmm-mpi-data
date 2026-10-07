@@ -8,9 +8,11 @@
  *        summer Milky Way, the moon variant (full / harvest / crescent / none)
  *        + per frame: a few dozen twinkling stars
  *   z2   one subtle shooting star per loop (clear editions)
- *   z3   horizon cloud banks   (broken / overcast editions)
- *   z5   drifting cloud clumps (broken / overcast), lit around the moon
- *   z7   overcast ceiling      (winter snow clouds)
+ *   z3   horizon cloud banks   (broken editions)
+ *   z5   drifting cloud clumps (broken), or the lower snow-cloud deck (winter)
+ *   z7   near clouds: overhead banks with gaps of stars (broken), or the
+ *        heavy overhead snow-cloud deck (winter). Broken-sky layers are lit
+ *        around the moon through dithered masks.
  *   z10  the same hills, chapel and forest line, recoloured and redecorated per
  *        season (snow caps, blossom specks, lush canopies, rust & gold forest)
  *        + per frame: the chapel window, far cottages, chapel lamps in "lights"
@@ -62,10 +64,11 @@
   const LOOKS = {
     lunar: {
       // clear frosty night, a faint rosy glow of lanterns on the horizon
-      sky: [N[1], mix(N[1], N[2], 0.5), N[2], mix(N[3], V[1], 0.35), mix(N[4], V[2], 0.35), mix(N[4], V[3], 0.45), mix(N[5], P.red[2], 0.2), mix(N[6], P.red[3], 0.2)],
+      sky: [N[1], mix(N[1], N[2], 0.5), N[2], mix(N[3], V[1], 0.35), mix(N[4], V[2], 0.35), mix(mix(N[4], V[3], 0.45), P.red[2], 0.2), mix(N[5], P.red[2], 0.38), mix(N[6], P.red[3], 0.42)],
       land: 'snow',
       redLanterns: true,
-      shoot: { x: 336, y: 20, dx: -0.86, dy: 0.5, len: 58, at: 0.31 },
+      // open sky between the turret finial and the plum tree
+      shoot: { x: 312, y: 10, dx: -0.86, dy: 0.5, len: 38, at: 0.31 },
     },
     spring: {
       // soft rain night: lilac-blue with a blossom-pink horizon
@@ -103,7 +106,8 @@
       sky: [mix(N[0], N[1], 0.5), mix(N[1], V[0], 0.5), mix(N[2], V[1], 0.5), mix(N[3], V[2], 0.5), mix(N[3], V[3], 0.5), mix(V[3], P.amber[1], 0.2), mix(V[4], P.amber[2], 0.24), mix(V[4], P.amber[2], 0.34)],
       land: 'autumn',
       lamps: true,
-      shoot: { x: 430, y: 16, dx: -0.87, dy: 0.49, len: 64, at: 0.44 },
+      // open sky above the roof, clear of the turret and the autumn tree
+      shoot: { x: 300, y: 10, dx: -0.87, dy: 0.49, len: 48, at: 0.44 },
     },
     winter: {
       // heavy lilac-grey snow sky, softly bright
@@ -227,16 +231,16 @@
     const py = y - MW.ay;
     const along = (px * ux + py * uy) / len; // 0..1
     // signed distance from a bowed spine (+ = lower right, toward the roof)
-    const bow = -9 * Math.sin(Math.PI * along) + 4 * Math.sin(along * 7.4 + 1.1);
+    const bow = 6 * Math.sin(Math.PI * along) + 4 * Math.sin(along * 7.4 + 1.1);
     const d = px * -uy + py * ux - bow;
     const half = 17 + 8 * Math.sin(along * 4.6 + 0.4) + 5 * Math.sin(along * 12.3 + 2.2) + 6 * along;
     const n = 0.55 * vnoise(x, y, 11, 31) + 0.3 * vnoise(x, y, 5, 32) + 0.15 * vnoise(x, y, 2.5, 33);
     let dens = Math.exp(-((d / half) * (d / half))) * (0.42 + 0.78 * n);
     // dust rift: three or four separate dark blotches beside the spine
     const rift = d - (2 + 3 * Math.sin(along * 6.7));
-    const rw = 2.6 + 2.6 * vnoise(x, y, 6, 34);
-    const blot = smooth01((vnoise(x, y, 17, 35) - 0.5) / 0.14) * (along > 0.2 ? 1 : along / 0.2);
-    dens *= 1 - 0.7 * Math.exp(-((rift / rw) * (rift / rw))) * blot;
+    const rw = 2.2 + 2.2 * vnoise(x, y, 6, 34);
+    const blot = smooth01((vnoise(x, y, 15, 35) - 0.54) / 0.12) * (along > 0.2 ? 1 : along / 0.2);
+    dens *= 1 - 0.55 * Math.exp(-((rift / rw) * (rift / rw))) * blot;
     // the horizon haze swallows its foot
     if (y > 118) dens *= Math.max(0, 1 - (y - 118) / 34);
     return { dens, along, d, half };
@@ -427,21 +431,41 @@
   const MR = { x: MOON.x - 96, y: 0, w: 192, h: MOON.y + 96 };
   let tmp = null;
   let tctx = null;
-  function masked(ctx, tile, Ly, off, mask) {
+  /**
+   * Draw `tile` (scrolled by off) through a moonlight mask into the main
+   * buffer. Each mask covers only its own box (bounds of its dithered disc,
+   * aligned to the 8px Bayer grid of MR), and only the rows the layer
+   * occupies are composited, so the three lit levels stay cheap.
+   */
+  function masked(ctx, tile, Ly, off, m) {
+    const y0 = Math.max(m.y, Ly.y);
+    const y1 = Math.min(m.y + m.h, Ly.y + Ly.h);
+    if (y1 <= y0) return;
+    const h = y1 - y0;
     if (!tmp) {
       tmp = HD.canvas(MR.w, MR.h, true);
       tctx = tmp.getContext('2d');
       tctx.imageSmoothingEnabled = false;
     }
     tctx.globalCompositeOperation = 'source-over';
-    tctx.clearRect(0, 0, MR.w, MR.h);
-    let sx = (((off - MR.x) % Ly.w) + Ly.w) % Ly.w;
+    tctx.clearRect(0, 0, m.w, h);
+    let sx = (((off - m.x) % Ly.w) + Ly.w) % Ly.w;
     if (sx > 0) sx -= Ly.w;
-    for (; sx < MR.w; sx += Ly.w) tctx.drawImage(tile, sx, Ly.y - MR.y);
+    for (; sx < m.w; sx += Ly.w) tctx.drawImage(tile, sx, Ly.y - y0);
     tctx.globalCompositeOperation = 'destination-in';
-    tctx.drawImage(mask, 0, 0);
+    tctx.drawImage(m.cv, 0, m.y - y0);
     tctx.globalCompositeOperation = 'source-over';
-    ctx.drawImage(tmp, 0, 0, MR.w, MR.h, MR.x, MR.y, MR.w, MR.h);
+    ctx.drawImage(tmp, 0, 0, m.w, h, m.x, y0, m.w, h);
+  }
+  /** moonlight mask for lit level [R, soft], cropped to its own box inside MR */
+  function moonMask(R, soft) {
+    const ex = Math.ceil(R + soft / 2) + 1;
+    const ey = Math.ceil(ex / 1.15) + 1;
+    const x = Math.max(MR.x, MR.x + (((MOON.x - ex - MR.x) >> 3) << 3));
+    const y = Math.max(MR.y, MR.y + (((MOON.y - ey - MR.y) >> 3) << 3));
+    const w = Math.min(MR.x + MR.w, MOON.x + ex + 1) - x;
+    const h = Math.min(MR.y + MR.h, MOON.y + ey + 1) - y;
+    return { x, y, w, h, cv: K.radialMask(w, h, MOON.x - x, MOON.y - y, R, soft) };
   }
 
   // ------------------------------------------------------------------
@@ -608,7 +632,7 @@
       K.cloud(tn, tail, true, 2);
     }
     // small flat clumps and streaks at mid height (fewer under shallow banks)
-    for (const st of [[92, 62, 44], [262, 72, 52], [418, 56, 36]].slice(0, deep >= 1 ? 3 : 2)) {
+    for (const st of [[92, 62, 44], [262, 72, 52], [418, 56, 36], [176, 46, 40]].slice(0, deep >= 1 ? 4 : 2)) {
       const sx = st[0] + rng() * 16;
       const yb = st[1];
       const cw = st[2];
@@ -619,10 +643,10 @@
         body.push([sx + u * cw, yb - ry * 0.6, ry * (1.6 + rng() * 0.6), ry, yb + 1, i > 0 && rng() < 0.5]);
       }
       K.cloud(tn, body, true, 2);
-      cloud2(tn, [[sx + cw * (rng() < 0.5 ? -0.1 : 1.05), yb + 1, 10 + rng() * 8, 1.6, yb + 1, false]]);
+      K.cloud(tn, [[sx + cw * (rng() < 0.5 ? -0.1 : 1.05), yb + 1, 10 + rng() * 8, 1.6, yb + 1, false]], true, 1); // trailing streak
     }
     // lower clumps [x, width, base y], staggered under the gaps between banks
-    for (const c of [[150, 74, 96], [296, 96, 104], [440, 66, 92]]) {
+    for (const c of [[146, 88, 96], [292, 108, 104], [436, 80, 92]]) {
       const x0 = c[0] + rng() * 12;
       const cw = c[1];
       const yb = c[2];
@@ -641,7 +665,6 @@
     brokenGeo.set(deep, geo);
     return geo;
   }
-  const cloud2 = (tn, puffs) => K.cloud(tn, puffs, true, 1);
 
   function bakeClouds(ed) {
     const lk = lookOf(ed);
@@ -650,7 +673,7 @@
     const out = {};
     const ids = ['far', 'mid', 'near'];
     let masks = null;
-    if (cl.lit && ed.moon !== 'none') masks = cl.lit.r.map((r) => K.radialMask(MR.w, MR.h, MOON.x - MR.x, MOON.y - MR.y, r[0], r[1]));
+    if (cl.lit && ed.moon !== 'none') masks = cl.lit.r.map((r) => moonMask(r[0], r[1]));
     const deck = cl.deck ? deckLayers() : null;
     K.LAYERS.forEach((Ly0, i) => {
       const Ly = deck ? deck[ids[i]] : ids[i] === 'near' ? brokenNear(cl.deep || 1) : Ly0;
@@ -670,15 +693,21 @@
   // read-only handle for the QA tools (cloud coverage, palette probes)
   HD._bgSeasons = { cloudArt, lookOf };
 
+  // whole tiles per loop, like bg.js, but each layer gets its own fixed
+  // sub-pixel phase so two layers never step on the same frame at the loop
+  // point (a constant phase keeps it loop-safe)
+  const LAYER_SUB = { far: 0, mid: 0.5, near: 0.25 };
+  const layerOff = (t, Ly, id) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + LAYER_SUB[id] + 1e-6) % Ly.w;
+
   function drawClouds(g, t, id) {
     const all = cloudArt();
     const L = all && all[id];
     if (!L) return;
     const ctx = g.ctx;
     const Ly = L.Ly;
-    const off = K.layerOff(t, Ly);
+    const off = layerOff(t, Ly, id);
     for (let x = off - Ly.w; x < W; x += Ly.w) ctx.drawImage(L.cv, x, Ly.y);
-    if (L.lit && Ly.y < MR.y + MR.h) for (let i = 0; i < L.lit.length; i++) masked(ctx, L.lit[i], Ly, off, L.masks[i]);
+    if (L.lit) for (let i = 0; i < L.lit.length; i++) masked(ctx, L.lit[i], Ly, off, L.masks[i]);
   }
 
   // ------------------------------------------------------------------
@@ -722,7 +751,7 @@
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
           { base: mix(mix(P.leaf[5], P.vine[4], 0.4), N[4], 0.3), light: mix(P.leaf[7], N[7], 0.3), dark: mix(P.leaf[3], N[3], 0.3) },
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
-          { base: mix(P.blossom[4], N[5], 0.42), light: mix(P.blossom[5], N[8], 0.3), dark: mix(P.blossom[2], N[3], 0.4), blossom: true },
+          { base: mix(P.blossom[3], N[4], 0.5), light: mix(P.blossom[4], N[6], 0.45), dark: mix(P.blossom[2], N[3], 0.5), blossom: true },
         ],
         speck: mix(P.blossom[6], N[8], 0.4),
         speck2: mix(P.blossom[7], N[10], 0.3),
@@ -759,7 +788,7 @@
           { base: mix(P.autumn[3], N[3], 0.42), light: mix(P.autumn[5], N[4], 0.4), dark: mix(P.autumn[1], N[2], 0.45) },
           { base: mix(P.autumn[4], N[3], 0.45), light: mix(P.autumn[6], N[5], 0.42), dark: mix(P.autumn[2], N[2], 0.45) },
           { base: mix(P.autumn[3], N[3], 0.42), light: mix(P.autumn[5], N[4], 0.4), dark: mix(P.autumn[1], N[2], 0.45) },
-          { base: mix(mix(P.autumn[6], P.gold[3], 0.5), N[4], 0.5), light: mix(P.gold[4], N[6], 0.45), dark: mix(P.autumn[3], N[3], 0.45) },
+          { base: mix(mix(P.autumn[6], P.gold[3], 0.5), V[3], 0.5), light: mix(mix(P.gold[4], P.autumn[6], 0.4), V[4], 0.45), dark: mix(P.autumn[3], V[2], 0.5) },
         ],
         cotRoof: mix(N[3], P.stone[3], 0.5),
         cotWall: mix(N[3], P.stone[2], 0.4),
@@ -811,8 +840,11 @@
         if (labAt(x, ta) === LB.hillA || labAt(x, ta) === LB.rimA) S(x, ta, c.crestA);
         if (labAt(x, tb) === LB.hillB || labAt(x, tb) === LB.rimB) S(x, tb, c.crestB);
       } else if (!moonSide) {
-        if (labAt(x, ta) === LB.rimA) S(x, ta, mix(c.hillA, c.crestA, 0.55));
-        if (labAt(x, tb) === LB.rimB) S(x, tb, mix(c.hillB, c.crestB, 0.5));
+        // no moon, no moon-side rim: the same faint dithered ridge everywhere
+        const la = labAt(x, ta);
+        const lb = labAt(x, tb);
+        if (la === LB.hillA || la === LB.rimA) S(x, ta, HD.bayer(x, 0) < 0.5 ? mix(c.hillA, c.crestA, 0.55) : c.hillA);
+        if (lb === LB.hillB || lb === LB.rimB) S(x, tb, HD.bayer(x + 3, 1) < 0.5 ? mix(c.hillB, c.crestB, 0.5) : c.hillB);
       }
     }
 
@@ -861,26 +893,37 @@
 
     // spring: two or three small orchards of blossoming trees on the near hills
     if (kind === 'spring') {
+      // [x, width, trees]: hashed spacing, height and count, so no grid shows
       const orchards = [
-        [106, 6, 5],
-        [228, 5, 5],
-        [352, 7, 5],
+        [104, 30, 6],
+        [226, 26, 5],
+        [350, 36, 7],
       ];
-      for (const o of orchards)
-        for (let i = 0; i < o[1]; i++) {
-          const x = o[0] + i * o[2] + (i & 1);
-          const ty = L.topB[x] + 6 + ((i * 3) % 4);
-          if (ty >= L.topC[x] - 2 || labAt(x, ty) === LB.hillA) continue;
-          // [.ab] [aab] [.s.] : a 3px crown with a lit top-right, on a dark stem
-          S(x, ty - 1, c.speck);
-          S(x + 1, ty - 1, c.speck2);
-          S(x - 1, ty, mix(c.speck, c.hillB, 0.4));
-          S(x, ty, c.speck);
-          S(x + 1, ty, c.speck);
-          S(x + 2, ty, mix(c.speck, c.hillB, 0.4));
-          S(x, ty + 1, mix(c.hillB, N[1], 0.45));
-          S(x + 1, ty + 1, mix(c.hillB, N[1], 0.3));
+      const leaf = mix(c.hillB, mix(P.leaf[2], N[2], 0.4), 0.45);
+      const leafLo = mix(leaf, N[1], 0.3);
+      orchards.forEach((o, oi) => {
+        const n = o[2] - (HD.hash(oi, 3, 71, 2) < 0.5 ? 1 : 0);
+        let x = o[0];
+        for (let i = 0; i < n && x < o[0] + o[1] + 6; i++) {
+          const hs = (k) => HD.hash(oi, i, 72, k);
+          const ty = L.topB[x] + 5 + Math.floor(hs(1) * 5);
+          if (ty < L.topC[x] - 2 && labAt(x, ty) !== LB.hillA) {
+            // a small dark-green tree blob ...
+            S(x - 1, ty, leaf);
+            S(x, ty, leaf);
+            S(x + 1, ty, leaf);
+            if (hs(2) < 0.5) S(x + 2, ty, leafLo);
+            S(x, ty + 1, leafLo);
+            // ... wearing an irregular 2-3 px cluster of pale blossom
+            const lean = hs(3) < 0.5 ? 0 : -1;
+            S(x + lean, ty - 1, c.speck);
+            S(x + lean + 1, ty - 1, c.speck2);
+            if (hs(4) < 0.6) S(x + (hs(5) < 0.5 ? -1 : 1), ty, c.speck);
+            else if (hs(4) < 0.85) S(x + lean, ty - 2, c.speck);
+          }
+          x += 3 + Math.floor(hs(6) * 5);
         }
+      });
     }
     return im.canvas();
   }
@@ -888,78 +931,133 @@
   function drawPine(S, tr, c, kind, rim, rimTint) {
     const snow = kind === 'snow';
     const rimC = mix(c.pine, rimTint, 0.14);
+    // snowy pines: each tree's tier phase and base are hashed, so the snow
+    // rows of neighbouring trees never line up into stripes across the forest
+    const ph = snow ? Math.floor(HD.hash(tr.x, 61, 2, 7) * 3) : 0;
+    const b = snow ? tr.b + Math.floor(HD.hash(tr.x, 62, 2, 7) * 3) - 1 : tr.b;
+    const half = (r) => (r < 2 ? 0 : K.pineHalf(r + ph, tr.hw));
     for (let r = 0; r <= tr.h; r++) {
-      const y = tr.b - tr.h + r;
-      const half = K.pineHalf(r, tr.hw);
-      const above = r === 0 ? -1 : K.pineHalf(r - 1, tr.hw);
-      for (let xx = tr.x - half; xx <= tr.x + half; xx++) {
+      const y = b - tr.h + r;
+      const hw = half(r);
+      const above = r === 0 ? -1 : half(r - 1);
+      const m = (r + ph) % 3;
+      // about one tier in three carries no snow on its top
+      const bare = HD.hash(tr.x, Math.floor((r + ph) / 3), 63, 7) < 0.34;
+      for (let xx = tr.x - hw; xx <= tr.x + hw; xx++) {
         let col = c.pine;
         if (snow) {
-          // dark boughs with snow resting on each tier: the narrow first row of
-          // a tier is snow (shaded on the right), the drooping tips catch some too
-          const m = r % 3;
-          const edge = Math.abs(xx - tr.x) === half;
+          const edge = Math.abs(xx - tr.x) === hw;
           if (r === 0) col = c.pineSnowTop;
-          else if (r === 1) col = c.pine;
-          else if (m === 0) col = xx > tr.x && edge ? c.pineSnowMid : c.pineSnow;
-          else if (m === 1) col = edge && half > above ? (xx < tr.x ? c.pineSnow : c.pineSnowMid) : c.pine;
+          // drooping bough tips catch the snow: the main read
+          else if (r > 1 && edge && hw > above && hw > 0) col = xx < tr.x ? c.pineSnow : c.pineSnowMid;
+          // the top of a tier: snow on its upper-left only, centre and right stay dark
+          else if (r > 1 && m === 0 && !bare && xx < tr.x && xx >= tr.x - hw) col = xx === tr.x - 1 && hw > 1 ? c.pineSnowMid : c.pineSnow;
         }
         S(xx, y, col);
       }
-      if (rim && !snow && r > 1 && r % 3 !== 0 && half > 0) S(tr.x + half, y, rimC);
+      if (rim && !snow && r > 1 && r % 3 !== 0 && hw > 0) S(tr.x + hw, y, rimC);
     }
   }
 
+  // crown templates: leaf clumps as [u, v, r] in crown units (v < 0 = up)
+  const CROWNS = [
+    [[-0.5, 0.25, 0.55], [0.45, 0.2, 0.55], [-0.05, -0.42, 0.6], [0.15, 0.62, 0.42]],
+    [[-0.55, 0.05, 0.5], [0.4, 0.35, 0.52], [-0.15, -0.45, 0.55], [0.5, -0.25, 0.45], [-0.1, 0.62, 0.4]],
+    [[-0.35, 0.3, 0.6], [0.45, 0.1, 0.55], [0, -0.48, 0.52]],
+    [[-0.5, -0.1, 0.5], [0.3, -0.4, 0.55], [0.5, 0.35, 0.5], [-0.2, 0.5, 0.5]],
+  ];
+  /**
+   * A broadleaf (or blossoming) tree of the far forest: a crown of 3-5 leaf
+   * clumps of hashed size. The upper clumps overlap the lower ones and every
+   * clump's shadowed lower-left edge is dark, so the clumps separate with a
+   * thin dark gap; a small lit patch sits on top of the upper clumps (pale
+   * bloom in 2x2 clusters for blossom trees). A dark trunk shows beneath.
+   */
   function drawCanopy(S, tr, c, kind, rim, rimTint) {
     const pick = HD.hash(tr.x, 991, 7, 2);
-    const cp = c.canopy[Math.floor(pick * c.canopy.length) % c.canopy.length];
-    const small = cp.blossom ? 1 : 0; // blossom trees: smaller crowns on a visible trunk
-    const rx = Math.max(2, tr.hw + 1 - small);
-    const ry = Math.max(2, Math.round(tr.h * 0.42) - small);
-    const cy = tr.b - Math.round(tr.h * 0.48) - small;
-    const twin = tr.h > 9 && pick > 0.5 && !cp.blossom; // wide crowns get a second lobe
-    const lobes = [[tr.x, cy, rx, ry]];
-    if (twin) lobes.push([tr.x + (pick > 0.75 ? 2 : -2), cy - 2, rx - 1, ry - 1]);
-    const inside = (x, y) => {
-      for (const l of lobes) {
-        const dx = (x - l[0]) / (l[2] + 0.4);
-        const dy = (y - l[1]) / (l[3] + 0.4);
-        if (dx * dx + dy * dy <= 1) return true;
-      }
-      return false;
+    const vi = Math.floor(pick * c.canopy.length) % c.canopy.length;
+    const cp = c.canopy[vi];
+    const bloom = !!cp.blossom;
+    const rx = Math.max(2, tr.hw + (bloom ? 0 : 1));
+    const ry = Math.max(2, Math.round(tr.h * (bloom ? 0.36 : 0.42)));
+    const cy = tr.b - Math.round(tr.h * 0.5) - (bloom ? 1 : 0);
+    const tpl = CROWNS[Math.floor(HD.hash(tr.x, 77, 3, 1) * CROWNS.length)];
+    const flip = HD.hash(tr.x, 78, 3, 1) < 0.5 ? -1 : 1;
+    const twins = c.canopy.filter((q) => !!q.blossom === bloom);
+    const clumps = tpl
+      .map((q, k) => {
+        const R = Math.max(1.2, q[2] * (rx + ry) * (bloom ? 0.42 : 0.48) * (0.8 + 0.4 * HD.hash(tr.x, k, 33, 4)));
+        // per-clump colour: mostly the tree's own, sometimes a neighbouring tint
+        const col = HD.hash(tr.x, k, 34, 4) < 0.3 ? twins[(twins.indexOf(cp) + 1) % twins.length] : cp;
+        return {
+          x: tr.x + (q[0] * 1.2 * flip + (HD.hash(tr.x, k, 31, 4) - 0.5) * 0.35) * rx,
+          y: cy + (q[1] * 1.15 + (HD.hash(tr.x, k, 32, 4) - 0.5) * 0.35) * ry,
+          R,
+          v: q[1],
+          col,
+        };
+      })
+      .sort((a, b) => b.v - a.v); // lowest first: the upper clumps sit in front
+    const inC = (q, x, y) => {
+      const dx = x - q.x;
+      const dy = y - q.y;
+      const r = q.R + 0.35;
+      return dx * dx + dy * dy <= r * r;
     };
-    // trunk
-    for (let y = cy + ry - 1; y <= tr.b; y++) S(tr.x, y, c.forest);
-    const x0 = tr.x - rx - 3;
-    const x1 = tr.x + rx + 3;
-    const y0 = cy - ry - 3;
-    const y1 = cy + ry + 1;
+    // which clump owns each pixel (the last one painted there)
+    const x0 = Math.floor(tr.x - rx * 2 - 4);
+    const y0 = Math.floor(cy - ry * 2 - 4);
+    const bw = rx * 4 + 9;
+    const bh = ry * 4 + 9;
+    const own = new Int8Array(bw * bh).fill(-1);
+    const inBox = (x, y) => x >= x0 && y >= y0 && x < x0 + bw && y < y0 + bh;
+    const ownAt = (x, y) => (inBox(x, y) ? own[(y - y0) * bw + (x - x0)] : -1);
+    clumps.forEach((q, k) => {
+      for (let y = Math.floor(q.y - q.R - 1); y <= q.y + q.R + 1; y++)
+        for (let x = Math.floor(q.x - q.R - 1); x <= q.x + q.R + 1; x++) if (inBox(x, y) && inC(q, x, y)) own[(y - y0) * bw + (x - x0)] = k;
+    });
+    // trunk: darker than the forest band, peeking above it, with a twig
+    const trunk = mix(c.forest, N[0], 0.5);
+    let low = cy;
+    for (let y = y0; y < y0 + bh; y++) if (ownAt(tr.x, y) >= 0) low = y;
+    for (let y = low - 1; y <= tr.b; y++) S(tr.x, y, trunk);
+    if (tr.h > 8) S(tr.x + flip, low, trunk);
     const rimC = mix(cp.light, rimTint, 0.25);
-    for (let y = y0; y <= y1; y++)
-      for (let x = x0; x <= x1; x++) {
-        if (!inside(x, y)) continue;
-        let col = cp.base;
-        const upR = !inside(x + 1, y - 1) || !inside(x, y - 2);
-        const low = !inside(x - 1, y + 2) || !inside(x, y + 2);
-        if (low) col = cp.dark;
-        if (upR) col = cp.light;
-        if (rim && !inside(x + 1, y) && y < cy + 1) col = rimC;
+    for (let y = y0; y < y0 + bh; y++)
+      for (let x = x0; x < x0 + bw; x++) {
+        const k = ownAt(x, y);
+        if (k < 0) continue;
+        const q = clumps[k];
+        let col = q.col.base;
+        // shadowed lower-left edge of this clump's visible part: the dark gap
+        if (ownAt(x - 1, y + 1) !== k || ownAt(x, y + 1) !== k) col = q.col.dark;
+        if (rim && ownAt(x + 1, y) < 0 && y < cy) col = rimC;
         S(x, y, col);
       }
-    // spring: pale blossom specks resting on top of the green crowns
-    if (kind === 'spring' && !cp.blossom && HD.hash(tr.x, 13, 5, 1) < 0.55) {
-      const sx = tr.x + (pick > 0.5 ? 1 : -1);
-      const sy = cy - ry + 1;
-      S(sx, sy, c.speck2);
-      S(sx + 1, sy + 1, c.speck);
-      if (rx > 2) S(sx - 2, sy + 2, c.speck);
-    } else if (cp.blossom) {
-      // little clusters of pale bloom scattered through the pink crown
-      for (let y = y0; y <= y1; y++)
-        for (let x = x0; x <= x1; x++) {
-          if (!inside(x, y) || !inside(x + 1, y) || !inside(x, y + 1)) continue;
-          if (HD.hash(x >> 1, y >> 1, tr.x, 17) < 0.3 && ((x + y) & 1) === 0) S(x, y, HD.hash(x, y, 3, 9) < 0.5 ? c.speck2 : c.speck);
-        }
+    // lit patches on top of the upper clumps (bloom clusters on blossom trees)
+    for (let k = 0; k < clumps.length; k++) {
+      const q = clumps[k];
+      if (q.v > 0.3) continue;
+      if (bloom && q.x < tr.x - 0.5) continue; // bloom only on the lit upper-right lobes
+      const lx = Math.round(q.x + q.R * 0.3);
+      const ly = Math.round(q.y - q.R * 0.45);
+      const cells = q.R >= 1.9 ? [[0, 0], [1, 0], [0, 1], [1, 1]] : [[0, 0], [1, 0]];
+      const drop = Math.floor(HD.hash(tr.x, k, 41, 4) * 4); // knock a corner off the 2x2
+      cells.forEach((d, i) => {
+        const x = lx + d[0] - (q.R >= 1.9 ? 1 : 0);
+        const y = ly + d[1];
+        if (cells.length === 4 && i === drop) return;
+        if (ownAt(x, y) !== k || ownAt(x, y - 1) < 0) return;
+        S(x, y, bloom ? (d[1] === 0 ? c.speck2 : c.speck) : q.col.light);
+      });
+    }
+    // spring: a few pale blossom specks resting on the green crowns
+    if (kind === 'spring' && !bloom && HD.hash(tr.x, 13, 5, 1) < 0.55) {
+      const top = clumps[clumps.length - 1];
+      const sx = Math.round(top.x) + (pick > 0.5 ? 1 : -1);
+      const sy = Math.round(top.y - top.R) + 1;
+      if (ownAt(sx, sy) >= 0) S(sx, sy, c.speck2);
+      if (ownAt(sx - 2, sy + 2) >= 0) S(sx - 2, sy + 2, c.speck);
     }
   }
   const landArt = HD.perEdition(bakeLand);
@@ -997,10 +1095,17 @@
       g.px(C[i].x, C[i].y, k > 0.5 ? P.amber[4] : P.amber[3]);
     }
     if (lk.redLanterns) {
-      // a red lantern glows by each far cottage door
+      // a pair of red lanterns hangs by each far cottage door: a dark hook
+      // and a 1x2 glowing body, breathing slowly out of step
+      const hook = mix(N[1], V[1], 0.5);
       for (let i = 0; i < C.length; i++) {
-        const f = T.flicker(T.step(t, 8), 360 + i, 0.6);
-        g.px(C[i].x + 2, C[i].y, f > 0.45 ? P.red[6] : P.red[5]);
+        for (let j = 0; j < 2; j++) {
+          const lx = C[i].x + (j ? 3 : -2);
+          const f = T.flicker(T.step(t, 8), 360 + i * 2 + j, 0.6);
+          g.px(lx, C[i].y - 1, hook);
+          g.px(lx, C[i].y, f > 0.45 ? P.red[6] : P.red[5]);
+          g.px(lx, C[i].y + 1, f > 0.7 ? P.red[5] : P.red[4]);
+        }
       }
     }
     if (lk.lamps) {

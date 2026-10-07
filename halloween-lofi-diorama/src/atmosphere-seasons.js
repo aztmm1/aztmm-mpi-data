@@ -35,14 +35,21 @@
   // smoke styles
   // ---------------------------------------------------------------------
   const tones = (cols) => cols.map((c) => A().litSet(c, A().SMOKE_L));
-  const chim = (o) => Object.assign({}, A().CHIM, o, { tone: tones(o.tone) });
-  const camp = (o) => Object.assign({}, A().CAMP, o, { tone: tones(o.tone) });
+  const TS = LY.titleSafe;
+  /** lv factor: 0 while a puff's disc would reach into the title area, 1 once 8px clear of it */
+  const keepTitle = (x, y, rad) => Math.max(sm(0, 8, y - rad - 1 - TS.y1), sm(0, 8, x - rad - 1 - TS.x1));
+  /** lv factor: fade a plume head before it reaches the top edge of the frame */
+  const keepTop = (x, y, rad) => sm(2, 12, y - rad);
+  const chim = (o) => Object.assign({ keep: keepTop }, A().CHIM, o, { tone: tones(o.tone) });
+  const camp = (o) => Object.assign({ keep: keepTitle }, A().CAMP, o, { tone: tones(o.tone) });
 
   // ---------------------------------------------------------------------
   // band builders (baked tileable textures, see atmosphere.js drawBand)
   // ---------------------------------------------------------------------
   function band(o) {
     return {
+      x0: o.x0 || 0,
+      w: o.w || W,
       tw: o.tw,
       sub: o.sub === undefined ? 0.5 : o.sub,
       y0: o.y0,
@@ -51,7 +58,8 @@
       ly: o.ly === undefined ? o.y0 + (o.h >> 1) : o.ly,
       tex: A().bakeTile(o.tw, o.h, o.dens, o.cols, !!o.lit, o.core === undefined ? 0.45 : o.core, o.levels),
       alpha: o.alpha,
-      mask: o.mask || (o.holes && o.holes.length ? A().bakeMask(o.y0, o.h, o.holes) : null),
+      lb: o.lb, // light-level boost when picking the lit variant
+      mask: o.mask || ((o.holes && o.holes.length) || o.keeps ? A().bakeMask(o.y0, o.h, o.holes || [], o.keeps) : null),
     };
   }
 
@@ -146,7 +154,9 @@
       alpha: o.alpha,
       core: o.core === undefined ? 0.45 : o.core,
       holes: o.holes,
+      keeps: o.keeps,
       levels: o.levels,
+      lb: o.lb,
       dens: (x, y) => {
         const c = (o.c || 8) + (yc[x] - 0.5) * (o.wob === undefined ? 5 : o.wob);
         const q = (y - c) / (y < c ? o.up || 3 : o.down || 5.5);
@@ -188,13 +198,12 @@
 
   // ---------------------------------------------------------------------
   // firework smoke: a faint drifting haze high in the sky (bg z 8.5),
-  // relit in the colour of each burst flash that lands in it
+  // relit in the colour of each burst that flashes inside it
   // ---------------------------------------------------------------------
   const SKY_Y0 = 10;
   const SKY_H = 96;
-  let glowCv = null;
-  let glowCtx = null;
   const maskCache = new Map();
+  /** banded radial falloff (alpha) used to relight the haze around a burst */
   function radialMask(r) {
     let m = maskCache.get(r);
     if (m) return m;
@@ -218,6 +227,17 @@
     cx.putImageData(im, 0, 0);
     maskCache.set(r, m);
     return m;
+  }
+  // one small work canvas per relight radius (small canvases composite cheaply)
+  const glowPool = new Map();
+  function glowCanvas(r) {
+    let c = glowPool.get(r);
+    if (!c) {
+      const cv = HD.canvas(r * 2 + 1, r * 2 + 1, true);
+      c = { cv, ctx: cv.getContext('2d') };
+      glowPool.set(r, c);
+    }
+    return c;
   }
 
   /** lumpy smoke clouds: clusters of round puffs, wrapped on the tile */
@@ -251,18 +271,27 @@
 
   function skyHaze(o) {
     const tw = 480;
-    // erase mask: keep the haze inside the fireworks zone, clear of titleSafe
+    // erase mask: keep the haze inside the fireworks zone, well clear of
+    // titleSafe (it only starts 4px right of it) and of the moon
     const Z = LY.seasonal.fireworks;
-    const mask = HD.bake(W, SKY_H, (g) => {
+    const TS = LY.titleSafe;
+    const WHITE = 0xffffffff;
+    // the haze only exists right of X0, so only that part is ever composited
+    const X0 = TS.x1 + 4;
+    const BW = W - X0;
+    const mask = A().bakePixels(BW, SKY_H, (u32) => {
       for (let y = 0; y < SKY_H; y++)
-        for (let x = 0; x < W; x++) {
+        for (let i = 0; i < BW; i++) {
+          const x = X0 + i;
           const yy = y + SKY_Y0;
-          let keep = sm(Z.x0 + 10, Z.x0 + 80, x) * (1 - sm(Z.x1 - 10, W + 10, x)) * sm(SKY_Y0, SKY_Y0 + 18, yy) * (1 - sm(Z.y1 - 18, Z.y1 + 6, yy));
+          let keep = sm(X0, TS.x1 + 70, x) * (1 - sm(Z.x1 - 10, W + 10, x)) * sm(SKY_Y0, SKY_Y0 + 18, yy) * (1 - sm(Z.y1 - 18, Z.y1 + 6, yy));
           if (o.moon) keep *= sm(o.moon.r + 2, o.moon.r + 12, Math.hypot(x - o.moon.x, yy - o.moon.y)); // never veil the moon
-          if (HD.bayer(x, y) >= keep) g.px(x, y, '#fff');
+          if (HD.bayer(x, y) >= keep) u32[y * BW + i] = WHITE;
         }
     });
     const B = band({
+      x0: X0,
+      w: BW,
       tw,
       sub: 0.13,
       y0: SKY_Y0,
@@ -275,42 +304,53 @@
       dens: puffDens(tw, SKY_H, o.seed || 151, { n: o.n || 7, y0: 22, y1: 72, r: 6, rR: 6, a: o.a || 0.6 }),
     });
     const lit = o.lit === undefined ? 0.5 : o.lit;
+    const top = [];
     return function (g, t) {
-      const at = A();
-      at.drawBand(g, B, t); // leaves the masked haze in the shared scratch canvas
-      const { tmp } = at.scratch();
-      if (!glowCv) {
-        glowCv = HD.canvas(181, 181, true);
-        glowCtx = glowCv.getContext('2d');
-      }
+      // the masked haze only changes when the tile steps a pixel: cached
+      const hz = A().maskedBand(B, t);
       const ctx = g.ctx;
-      // only the few strongest flashes relight the smoke (bounded cost)
-      const cand = [];
-      for (const l of HD.lights.list) if (l.r >= 26 && l.i >= 0.06 && l.y <= SKY_Y0 + SKY_H + 8) cand.push(l);
-      if (cand.length > 3) cand.sort((p, q) => q.i - p.i).length = 3;
-      for (const l of cand) {
-        const r = Math.min(90, Math.round(l.r * 0.85));
-        const cx = Math.round(l.x);
-        const cy = Math.round(l.y) - SKY_Y0;
-        const sx0 = Math.max(0, cx - r);
+      ctx.globalAlpha = B.alpha;
+      ctx.drawImage(hz, 0, 0, BW, SKY_H, X0, SKY_Y0, BW, SKY_H);
+      ctx.globalAlpha = 1;
+      // relight the smoke around the (up to) three brightest live bursts
+      const fw = HD._fireworks;
+      const s = fw && fw.show();
+      if (!s) return;
+      top.length = 0;
+      for (const sh of fw.liveShells(t, s)) {
+        const f = fw.flashOf(sh);
+        if (f > 0.05) top.push([f, sh]);
+      }
+      if (!top.length) return;
+      if (top.length > 3) top.sort((p, q) => q[0] - p[0]).length = 3;
+      for (const [f, sh] of top) {
+        const r = Math.max(20, Math.min(88, Math.round((sh.R * 2.2) / 4) * 4));
+        const cx = Math.round(sh.bx);
+        const cy = Math.round(sh.by) - SKY_Y0;
+        const sx0 = Math.max(X0, cx - r);
         const sy0 = Math.max(0, cy - r);
         const sx1 = Math.min(W, cx + r + 1);
         const sy1 = Math.min(SKY_H, cy + r + 1);
         const w = sx1 - sx0;
         const h = sy1 - sy0;
         if (w <= 0 || h <= 0) continue;
-        const c = l.color || [1, 0.7, 0.4];
-        glowCtx.globalCompositeOperation = 'source-over';
-        glowCtx.clearRect(0, 0, w, h);
-        glowCtx.drawImage(tmp, sx0, sy0, w, h, 0, 0, w, h);
-        glowCtx.globalCompositeOperation = 'destination-in';
-        glowCtx.drawImage(radialMask(r), sx0 - (cx - r), sy0 - (cy - r), w, h, 0, 0, w, h);
-        glowCtx.globalCompositeOperation = 'source-in';
-        glowCtx.fillStyle = css(120 * c[0], 120 * c[1], 120 * c[2]);
-        glowCtx.fillRect(0, 0, w, h);
+        const ox = sx0 - (cx - r);
+        const oy = sy0 - (cy - r);
+        const c = HD.LIGHT.firework[sh.col] || HD.LIGHT.firework.gold;
+        const gl = glowCanvas(r);
+        const gx = gl.ctx;
+        gx.globalCompositeOperation = 'source-over';
+        gx.clearRect(0, 0, r * 2 + 1, r * 2 + 1);
+        gx.drawImage(hz, sx0 - X0, sy0, w, h, ox, oy, w, h);
+        gx.globalCompositeOperation = 'destination-in';
+        gx.drawImage(radialMask(r), 0, 0);
+        gx.globalCompositeOperation = 'source-in';
+        gx.fillStyle = css(120 * c[0], 120 * c[1], 120 * c[2]);
+        gx.fillRect(0, 0, r * 2 + 1, r * 2 + 1);
+        gx.globalCompositeOperation = 'source-over';
         ctx.globalCompositeOperation = 'lighter';
-        ctx.globalAlpha = Math.min(1, l.i * lit);
-        ctx.drawImage(glowCv, 0, 0, w, h, sx0, sy0 + SKY_Y0, w, h);
+        ctx.globalAlpha = Math.min(1, f * lit);
+        ctx.drawImage(gl.cv, ox, oy, w, h, sx0, sy0 + SKY_Y0, w, h);
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
       }
@@ -352,6 +392,7 @@
 
   function powder(o) {
     const cols = [o.cols[0], o.cols[1]].map((c) => A().litSet(c));
+    const drift = [o.roofCols[0], o.roofCols[1]].map((c) => A().litSet(c, A().SMOKE_L));
     const roof = o.roof || [];
     return function (g, t) {
       // yard gusts
@@ -375,22 +416,63 @@
         const y = y0 - env * (2 + 6 * r4) * sc;
         streak(g, x, y, (o.len + o.lenR * r3) * sc, Math.min(1, env * o.dens), cols, par);
       }
-      // spindrift off the roof ridge and turret, carried downwind
+      // spindrift: now and then a gust lifts a little powder off the roof
+      // snow and rolls it a short way down the slope as soft dithered puffs
+      // (snow[7] core, snow[6] rim) that hug the roof line and thin out
+      const at = A();
       for (let i = 0; i < roof.length * 2; i++) {
         const s = roof[i % roof.length];
         const c = T.cycle(t, i, s.life, o.seed + 31);
         const a = c.age;
-        if (a > s.on) continue; // quiet most of the time: a gust now and then
+        if (a > s.on) continue; // quiet most of the time
         const u = a / s.on;
         const env = Math.sin(Math.PI * u);
         const r1 = c.rnd(1);
+        const sz = 0.8 + 0.4 * c.rnd(3);
         const bx = s.x0 + (s.x1 - s.x0) * r1;
         const by = s.y0 + (s.y1 - s.y0) * r1;
-        const x = bx + 26 * u;
-        const y = by - 4 * Math.sin(Math.PI * Math.min(1, u * 1.4)) + 7 * u * u;
-        streak(g, x, y, 9 * (0.7 + 0.3 * c.rnd(3)), env, cols, i & 1);
+        const kx = (c.rnd(4) * 8) | 0;
+        const ky = (c.rnd(5) * 8) | 0;
+        // a short train of puffs: the lead one has travelled furthest
+        for (let k = 2; k >= 0; k--) {
+          const uk = u - k * 0.12;
+          if (uk <= 0) continue;
+          const d = s.run * sz * uk;
+          const x = bx + d;
+          const y = by + d * s.slope - s.lift - s.hop * Math.sin(Math.PI * Math.min(1, uk * 1.2));
+          const rad = (1.5 + 1.5 * uk) * (1 - 0.2 * k) * sz;
+          const lv = env * (1 - 0.25 * k) * (1 - 0.45 * uk);
+          if (lv <= 0.05) continue;
+          const xi = Math.round(x);
+          const yi = Math.round(y);
+          const L = at.level(xi, yi);
+          at.srDisc(xi, yi, rad, drift[1][L], lv, 0.7, kx - xi, ky - yi);
+          if (rad > 1.8) at.srDisc(xi, yi, rad * 0.55, drift[0][L], lv * 0.9, 0.5, kx - xi, ky - yi);
+        }
       }
+      at.srFlush(g);
     };
+  }
+
+  // ---------------------------------------------------------------------
+  // lamp smoke (lights): pockets around the yard diyas at fence-top height
+  // ---------------------------------------------------------------------
+  /**
+   * The diya lights have fixed positions (only their flicker changes), so the
+   * pockets are read from this frame's light list when the recipe is built
+   * (always during a frame, after every module has added its lights). Lamps
+   * on the cottage are skipped: the veil stays off the house.
+   */
+  function lampKeeps(y0, y1) {
+    const H0 = LY.house.roof.x0;
+    const H1 = LY.house.turret.x1 + 6;
+    const out = [];
+    for (const l of HD.lights.list) {
+      if (l.color !== HD.LIGHT.candle && l.color !== HD.LIGHT.diya) continue;
+      if (l.y < y0 || l.y > y1 || (l.x > H0 && l.x < H1)) continue;
+      out.push({ x: l.x, y: l.y - 2, rx: Math.max(14, (l.r || 16) * 0.8), ry: 8 });
+    }
+    return out;
   }
 
   // ---------------------------------------------------------------------
@@ -411,13 +493,17 @@
   const campTones = (s) => [s[1], mix(s[2], P.wood[5], 0.35), s[3], s[4]];
   // one step lighter: reads as pale smoke over snowy hills instead of a dark streak
   const campTonesPale = (s) => [s[0], mix(s[1], P.wood[6], 0.3), s[2], s[3]];
+  // harvest dusk: the plume rises over warm mauve hills and the dusk band
+  // (about #3a2645), so it ends at that value and dissolves instead of
+  // finishing as a dark sooty smudge
+  const campTonesDusk = () => [mix(P.stone[6], P.blossom[3], 0.25), mix(P.stone[5], P.wood[6], 0.4), mix(P.stone[4], P.violet[5], 0.35), mix(P.violet[4], P.wood[5], 0.4)];
 
   const RECIPES = {
     lunar(ed) {
       const s = SMOKE.frost();
       return {
         // cold still air: the column climbs tall and straight
-        chim: chim({ tone: s, rise: 66, driftK: 0.5, gust: 12, lvK: 1.55 }),
+        chim: chim({ tone: s, rise: 58, driftK: 0.5, gust: 12, lvK: 1.55 }),
         far: farBands({ cols: [mix(P.night[7], P.ice[3], 0.4), mix(P.night[8], P.ice[4], 0.4)], alpha: 0.5, seed: 211, gain: 0.85 }),
         ground: [groundBand({ cols: [mix(P.ice[3], P.night[8], 0.3), mix(P.ice[4], P.snow[7], 0.45)], alpha: 0.36, c: 10, up: 2.5, down: 4, lo: 0.2, hi: 0.8, seed: 231, holes: [PORCH_HOLE] })],
         front: [frontBand({ cols: [mix(P.ice[2], P.night[7], 0.35), mix(P.ice[3], P.snow[6], 0.45)], alpha: 0.3, n: 5, seed: 241, holes: [] })],
@@ -437,15 +523,18 @@
     },
     summer(ed) {
       const s = SMOKE.moon();
-      const warm = [mix(P.night[7], P.amber[3], 0.3), mix(P.night[8], P.amber[4], 0.28)];
+      // warm meadow haze: green-gold, close in hue to the grass it lies on
+      const warm = [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)];
       return {
         // thin wisp from the hearth on the warm night
-        chim: chim({ tone: s, n: 22, rad0: 1.8, radK: 4.6, lvK: 1.4, hlK: 1.1, life: 12, rise: 52, curl: 2.8 }),
-        // the midsummer bonfire: taller, wider column, more puffs
-        camp: camp({ tone: campTones(s), n: 72, life: 9, sy: CF.base - 54, rise: 108, riseR: 16, spread: 9, curl: 3.6, rad0: 1.8, radK: 10.2, lvK: 1.85, hlK: 1.4, gust: 14 }),
+        // (calm curl and more, smaller puffs so the thread stays continuous)
+        chim: chim({ tone: s, n: 26, rad0: 1.8, radK: 4.6, lvK: 1.2, hlK: 1.1, life: 12, rise: 52, curl: 1.6 }),
+        // the midsummer bonfire: wider column, more puffs; it leans downwind
+        // early so the head stays right of and below the title area
+        camp: camp({ tone: campTones(s), n: 72, life: 9, sy: CF.base - 54, rise: 84, riseR: 8, driftK: 1.15, spread: 6, curl: 2.6, rad0: 1.8, radK: 10.2, lvK: 1.85, hlK: 1.4, gust: 12 }),
         far: farBands({ cols: [mix(P.night[5], P.amber[2], 0.32), mix(P.night[6], P.amber[3], 0.3)], alpha: 0.5, seed: 411, gain: 0.9 }),
         // warm low haze lying over the meadow
-        ground: [groundBand({ cols: warm, alpha: 0.4, c: 10, up: 3.5, down: 7, lo: 0.05, hi: 0.6, gain: 0.75, floor: 0.25, seed: 431, holes: [PORCH_HOLE, ...fireHoles(ed)] })],
+        ground: [groundBand({ cols: warm, alpha: 0.3, c: 10, up: 3.5, down: 7, lo: 0.25, hi: 0.8, gain: 0.8, floor: 0, seed: 431, holes: [PORCH_HOLE, ...fireHoles(ed)] })],
         front: [frontBand({ cols: warm, alpha: 0.3, n: 5, seed: 441, holes: fireFront(ed) })],
       };
     },
@@ -454,9 +543,10 @@
       const gold = [mix(P.night[6], P.gold[2], 0.42), mix(P.night[7], P.gold[3], 0.42)];
       return {
         chim: chim({ tone: s }),
-        camp: camp({ tone: campTones(s) }),
-        // golden dusk haze along the hills, lit by the harvest moon
-        far: farBands({ cols: [mix(P.night[5], P.gold[2], 0.45), mix(P.night[6], P.gold[3], 0.45)], alpha: 0.6, seed: 511, gain: 1, floor: 0.35 }),
+        // the tail thins out a little faster too (tailK)
+        camp: camp({ tone: campTonesDusk(), tailK: 1.25 }),
+        // golden dusk haze lying on the visible hill faces above the shrubs
+        far: farBands({ cols: [mix(P.night[6], P.gold[3], 0.5), mix(P.autumn[5], P.gold[4], 0.5)], cols2: [mix(P.night[6], P.gold[3], 0.4), mix(P.autumn[4], P.gold[3], 0.45)], alpha: 0.34, alpha2: 0.18, seed: 511, gain: 0.85, floor: 0.4, y0: 158, c: 15, up: 6, down: 3 }),
         ground: [groundBand({ cols: gold, alpha: 0.36, seed: 531, lo: 0.2, hi: 0.8, holes: [PORCH_HOLE, ...fireHoles(ed)] })],
         front: [frontBand({ cols: gold, alpha: 0.34, n: 5, seed: 541, holes: fireFront(ed) })],
       };
@@ -464,33 +554,48 @@
     lights(ed) {
       const s = SMOKE.lamp();
       const lamp = [mix(P.stone[4], P.wood[6], 0.4), mix(P.stone[5], P.wood[7], 0.4)];
+      const lampVeil = () => {
+        const keeps = lampKeeps(176, 206);
+        if (!keeps.length) return [];
+        const TR = LY.tree;
+        return [
+          groundBand({
+            // warm smoke lit by the lamps it hangs around (never a cold grey veil)
+            cols: [mix(P.wood[5], P.autumn[3], 0.35), mix(P.wood[6], P.amber[3], 0.35)],
+            alpha: 0.18,
+            y0: 176,
+            h: 30,
+            c: 10, // hangs just above the flames, lit from below
+            up: 4.5,
+            down: 2.5,
+            wob: 3,
+            lo: 0.3,
+            hi: 0.85,
+            gain: 1.6, // dense core: a soft tint near the lamps, dither only at the rims
+            floor: 0.3,
+            seed: 671,
+            sub: 0.19,
+            ly: 189,
+            lb: 2.5, // the little flames are weak lights: let them warm it early
+            levels: [0, 0.45, 0.8, 1.1],
+            keeps,
+            // keep the tree trunk and the birdhouse crisp
+            holes: [
+              { x: TR.x - 2, y: 192, rx: TR.trunkW * 0.8 + 3, ry: 40 },
+              { x: 466, y: 188, rx: 11, ry: 13 },
+            ],
+          }),
+        ];
+      };
       return {
         chim: chim({ tone: s }),
         // smoky haze over the village and the lamp-lit yard
         far: farBands({ cols: [mix(P.night[4], P.wood[5], 0.4), mix(P.night[5], P.wood[6], 0.4)], alpha: 0.5, seed: 611, gain: 0.9 }),
         ground: [
           groundBand({ cols: lamp, alpha: 0.3, c: 9, up: 4, down: 6, lo: 0.05, hi: 0.65, gain: 0.7, floor: 0.2, seed: 631, holes: [PORCH_HOLE, { x: 220, y: 221, rx: 22, ry: 7 }] }),
-          // lamp smoke hanging at fence-top height: a thin smoky veil that
-          // only really shows where the rows of diyas light it up
-          groundBand({
-            cols: [mix(P.stone[5], P.wood[7], 0.45), mix(P.stone[6], P.amber[3], 0.22)],
-            alpha: 0.34,
-            y0: 176,
-            h: 30,
-            c: 15,
-            up: 4,
-            down: 4.5,
-            wob: 4,
-            lo: 0.05,
-            hi: 0.6,
-            gain: 0.9,
-            floor: 0.45,
-            seed: 671,
-            sub: 0.19,
-            ly: 192,
-            levels: [0, 0.5, 0.85, 1.2], // catches the little flames eagerly
-            holes: [{ x: 234, y: 192, rx: 70, ry: 60 }],
-          }),
+          // lamp smoke hanging at fence-top height: it only exists in pockets
+          // around the lamps that light it, never as a veil over the garden
+          ...lampVeil(),
         ],
         front: [frontBand({ cols: lamp, alpha: 0.26, n: 4, seed: 641, holes: [] })],
         sky: skyHaze({ cols: [mix(P.night[5], P.wood[5], 0.4), mix(P.night[6], P.wood[6], 0.4)], alpha: 0.24, seed: 651, n: 5, lit: 0.45 }),
@@ -501,7 +606,7 @@
       const haze = [mix(P.snow[4], P.violet[5], 0.15), mix(P.snow[5], P.snow[6], 0.5)];
       return {
         // dense, slow, billowing hearth smoke on the coldest night
-        chim: chim({ tone: s, n: 46, life: 16, rise: 64, rad0: 2.8, radK: 9.4, lvK: 2.1, hlK: 1.6, gust: 14 }),
+        chim: chim({ tone: s, n: 46, life: 16, rise: 56, rad0: 2.8, radK: 8.6, lvK: 2.1, hlK: 1.6, gust: 14 }),
         far: farBands({ cols: [mix(P.snow[3], P.violet[4], 0.25), mix(P.snow[4], P.violet[5], 0.2)], alpha: 0.62, seed: 711, gain: 1, floor: 0.45, up: 6, down: 4 }),
         // low snow haze hugging the drifts
         ground: [
@@ -520,9 +625,12 @@
           len: 10,
           lenR: 12,
           dens: 1.3,
+          // roof snow surfaces (on the slope lines), how far a gust rolls the
+          // powder down them (run, along `slope`) and how high it rides
+          roofCols: [P.snow[7], P.snow[6]],
           roof: [
-            { x0: 222, y0: 77, x1: 246, y1: 99, life: 11, on: 0.35 },
-            { x0: 286, y0: 62, x1: 292, y1: 82, life: 13, on: 0.3 },
+            { x0: 224, y0: 78, x1: 248, y1: 100, slope: 0.92, run: 15, lift: 3, hop: 2.5, life: 11, on: 0.4 },
+            { x0: 286, y0: 64, x1: 291, y1: 80, slope: 1.3, run: 8, lift: 2, hop: 2, life: 13, on: 0.32 },
           ],
         }),
       };
@@ -530,7 +638,7 @@
     newyear(ed) {
       const s = SMOKE.frost();
       return {
-        chim: chim({ tone: s, rise: 64, driftK: 0.55, gust: 14 }),
+        chim: chim({ tone: s, rise: 58, driftK: 0.55, gust: 14 }),
         camp: camp({ tone: campTonesPale(s) }),
         far: farBands({ cols: [mix(P.night[7], P.ice[3], 0.4), mix(P.night[8], P.ice[4], 0.4)], alpha: 0.46, seed: 811, gain: 0.85 }),
         ground: [
