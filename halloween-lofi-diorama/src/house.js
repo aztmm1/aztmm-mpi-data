@@ -954,7 +954,7 @@
       if (lx % 4 !== 0) put(w, lx, 2, F[2]);
       if (lx % 4 === 2) put(w, lx, 3, F[2]);
     }
-    vbar(w, 8, 0, w.gh - 1, true);
+    if (!omit.has('gl-vbar')) vbar(w, 8, 0, w.gh - 1, true);
     hbar(w, 9, 0, w.gw - 1);
 
     // ground-right: red curtains + a carved pumpkin on the inside sill
@@ -1218,7 +1218,7 @@
       for (const win of WINS) {
         const c = SE ? SE.winCfg(win) : win.c;
         const f = wflick(t, c);
-        const k = (0.86 + 0.28 * f) * (SE ? SE.winBoost(win) : 1);
+        const k = (0.86 + 0.28 * f) * (SE ? SE.winBoost(win, t) : 1);
         L.add({ x: Math.round(win.cx), y: Math.round(win.cy), r: c.light.r, color: c.light.col || HD.LIGHT.candle, i: c.light.i * k, halo: { r: Math.round(Math.max(win.gw, win.gh) * 0.75), a: c.halo } });
         if (c.spill) {
           L.add({
@@ -1255,7 +1255,8 @@
           g.sprite(houseArt(), BX, BY);
           for (let i = 0; i < WINS.length; i++) {
             const win = WINS[i];
-            const lv = Math.round(wflick(t, SE ? SE.winCfg(win) : win.c) * (NL - 1));
+            let lv = Math.round(wflick(t, SE ? SE.winCfg(win) : win.c) * (NL - 1));
+            if (SE) lv = SE.level(i, lv, t);
             LV[i] = lv;
             g.em.sprite(SE ? SE.glass(i, lv) : glass[i][lv], win.gx, win.gy);
           }
@@ -1264,7 +1265,7 @@
           drawCandle(g, t);
           if (ed.weather.rain > 0) drawDrops(g, t, LV, inter.drops);
           if (SE) SE.drawInside(g, t);
-          drawCat(g, t);
+          if (!SE || !SE.catAway()) drawCat(g, t);
           g.em.sprite(doorImgs[Math.round(wflick(t, DOORC) * (NL - 1))], BX, BY);
           if (!SE || SE.ironLantern()) drawLantern(g, t);
           if (SE) SE.drawFront(g, t);

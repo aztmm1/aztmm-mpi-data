@@ -6,7 +6,8 @@
  *   fx  z 31  campfire smoke wisps (warm at the bottom, cooling as they rise)
  *   fx  z 32  chimney smoke column (cold, moonlit upper-right, warm if lit)
  *   fx  z 61  faint foreground wisps near the diorama lip
- *   fx  z 95  static dithered vignette (baked once, single blit)
+ *   fx  z 95  static dithered vignette (baked once, single blit; bright
+ *             grounds get a tonal variant with the same footprint)
  *
  * Everything is a pure function of t: smoke puffs are stateless loop-snapped
  * particle lives, mist tiles scroll a whole number of tile widths per loop.
@@ -233,7 +234,7 @@
       srDisc(xi, yi, rad, chimTone[tone][L], lv * S.lvK, 0.9, ox, oy);
       // moon-facing highlight on the upper right
       const hr = rad * 0.55;
-      if (tone < 4 && hr >= 1.2) {
+      if (tone < 4 && hr >= (S.hlMin || 1.2)) {
         const hx = xi + Math.round(rad * 0.3);
         const hy = yi - Math.round(rad * 0.3);
         srDisc(hx, hy, hr, chimTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
@@ -349,11 +350,13 @@
    * screen-space keep-out mask (opaque = erase mist), soft dithered rims.
    * Optional `keeps`: the mist survives only inside these ellipses.
    */
-  function bakeMask(y0, h, holes, keeps) {
+  function bakeMask(y0, h, holes, keeps, mx0, mw) {
     const WHITE = 0xffffffff;
-    return bakePixels(W, h, (u32) => {
+    const X0 = mx0 || 0;
+    const MW = mw || W;
+    return bakePixels(MW, h, (u32) => {
       for (let y = 0; y < h; y++)
-        for (let x = 0; x < W; x++) {
+        for (let x = X0; x < X0 + MW; x++) {
           let k = 0;
           for (const o of holes) {
             const qx = (x - o.x) / o.rx;
@@ -370,7 +373,7 @@
             }
             k = 1 - (1 - k) * kk;
           }
-          if (k > 0 && HD.bayer(x, y) < k) u32[y * W + x] = WHITE;
+          if (k > 0 && HD.bayer(x, y) < k) u32[y * MW + x - X0] = WHITE;
         }
     });
   }
@@ -532,7 +535,7 @@
   let vignetteTone = null;
   const vignetteFor = HD.perEdition((ed) => {
     if (ed.id === 'halloween' || !TONAL_GROUNDS.has(ed.ground)) return vignette;
-    return vignetteTone || (vignetteTone = bakeVignette(true));
+    return vignetteTone;
   });
 
   // per-edition recipe (null = Halloween, the original layers above)
@@ -719,6 +722,9 @@
       }
 
       vignette = bakeVignette(false);
+      // the tonal variant is the same for every bright-ground edition: baked
+      // here so a live edition switch does not pay for it
+      vignetteTone = bakeVignette(true);
     },
 
     // Halloween draws the original layers (season() is null); every other

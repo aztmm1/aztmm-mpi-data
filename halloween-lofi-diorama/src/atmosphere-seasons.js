@@ -47,6 +47,17 @@
   // band builders (baked tileable textures, see atmosphere.js drawBand)
   // ---------------------------------------------------------------------
   function band(o) {
+    // a band that only lives inside `keeps` pockets is composited over their
+    // bounding columns only
+    if (o.keeps && o.keeps.length && o.x0 === undefined) {
+      let a = W;
+      let b = 0;
+      for (const k of o.keeps) {
+        a = Math.min(a, Math.floor(k.x - k.rx));
+        b = Math.max(b, Math.ceil(k.x + k.rx) + 1);
+      }
+      o = Object.assign({}, o, { x0: Math.max(0, a), w: Math.min(W, b) - Math.max(0, a) });
+    }
     return {
       x0: o.x0 || 0,
       w: o.w || W,
@@ -59,7 +70,7 @@
       tex: A().bakeTile(o.tw, o.h, o.dens, o.cols, !!o.lit, o.core === undefined ? 0.45 : o.core, o.levels),
       alpha: o.alpha,
       lb: o.lb, // light-level boost when picking the lit variant
-      mask: o.mask || ((o.holes && o.holes.length) || o.keeps ? A().bakeMask(o.y0, o.h, o.holes || [], o.keeps) : null),
+      mask: o.mask || ((o.holes && o.holes.length) || o.keeps ? A().bakeMask(o.y0, o.h, o.holes || [], o.keeps, o.x0 || 0, o.w || W) : null),
     };
   }
 
@@ -97,6 +108,7 @@
       for (const b of blobs) {
         let dx = x - b.x;
         dx -= tw * Math.round(dx / tw);
+        if (dx > b.rx * 1.75 || dx < -b.rx * 1.75) continue; // e >= 3 there anyway
         const qx = dx / b.rx;
         const qy = (y - b.y - (tilt[x] - 0.5) * (o.tilt || 4)) / b.ry;
         const e = qx * qx + qy * qy;
@@ -240,117 +252,193 @@
     return c;
   }
 
-  /** lumpy smoke clouds: clusters of round puffs, wrapped on the tile */
-  function puffDens(tw, h, seed, o) {
+  /**
+   * Lumpy smoke clouds: clusters of round puffs along a 480px tile. Each
+   * cluster is baked into its own small dithered sprite (dither in tile
+   * coordinates, so it travels with the smoke).
+   */
+  function puffClusters(tw, seed, o, cols) {
     const rng = HD.rng(seed);
-    const puffs = [];
+    const c0 = A().rgba32(cols[0]);
+    const c1 = A().rgba32(cols[1]);
+    const CORE = 0.5;
+    const out = [];
     for (let k = 0; k < o.n; k++) {
       const cx = (k + 0.2 + rng() * 0.6) * (tw / o.n);
       const cy = o.y0 + rng() * (o.y1 - o.y0);
       const m = 3 + Math.floor(rng() * 4);
       const a = o.a * (0.75 + 0.5 * rng());
+      const puffs = [];
       for (let j = 0; j < m; j++) {
         const r = o.r + rng() * o.rR;
         puffs.push({ x: cx + (j - (m - 1) / 2) * r * 1.1 + (rng() - 0.5) * 6, y: cy + (rng() - 0.5) * r * 0.9, rx: r, ry: r * (0.55 + 0.2 * rng()), a: a * (0.7 + 0.5 * rng()) });
       }
-    }
-    return (x, y) => {
-      let d = 0;
+      let x0 = Infinity;
+      let x1 = -Infinity;
+      let y0 = Infinity;
+      let y1 = -Infinity;
       for (const b of puffs) {
-        let dx = x - b.x;
-        dx -= tw * Math.round(dx / tw);
-        if (dx > b.rx * 2 || dx < -b.rx * 2) continue;
-        const qx = dx / b.rx;
-        const qy = (y - b.y) / b.ry;
-        const e = qx * qx + qy * qy;
-        if (e < 3.5) d += b.a * Math.exp(-1.4 * e);
+        x0 = Math.min(x0, b.x - b.rx * 1.9);
+        x1 = Math.max(x1, b.x + b.rx * 1.9);
+        y0 = Math.min(y0, b.y - b.ry * 1.9);
+        y1 = Math.max(y1, b.y + b.ry * 1.9);
       }
-      return Math.min(1, d);
-    };
+      const tx = Math.floor(x0);
+      const ty = Math.max(0, Math.floor(y0));
+      const bw = Math.ceil(x1) - tx + 1;
+      const bh = Math.min(o.h, Math.ceil(y1) + 1) - ty;
+      const spr = A().bakePixels(bw, bh, (u32) => {
+        for (let y = 0; y < bh; y++)
+          for (let x = 0; x < bw; x++) {
+            const px = tx + x;
+            const py = ty + y;
+            let d = 0;
+            for (const b of puffs) {
+              const qx = (px - b.x) / b.rx;
+              const qy = (py - b.y) / b.ry;
+              const e = qx * qx + qy * qy;
+              if (e < 3.5) d += b.a * Math.exp(-1.4 * e);
+            }
+            d = Math.min(1, d);
+            if (d <= 0) continue;
+            const bb = HD.bayer(px, py);
+            if (bb < (d - CORE) * 1.6) u32[y * bw + x] = c1;
+            else if (bb < d) u32[y * bw + x] = c0;
+          }
+      });
+      const scv = HD.canvas(bw, bh, true);
+      out.push({ tx: ((tx % tw) + tw) % tw, ty, bw, bh, spr, scv, sctx: scv.getContext('2d'), memo: NaN });
+    }
+    return out;
   }
 
   function skyHaze(o) {
     const tw = 480;
+    const sub = 0.13;
     // erase mask: keep the haze inside the fireworks zone, well clear of
     // titleSafe (it only starts 4px right of it) and of the moon
     const Z = LY.seasonal.fireworks;
     const TS = LY.titleSafe;
     const WHITE = 0xffffffff;
-    // the haze only exists right of X0, so only that part is ever composited
     const X0 = TS.x1 + 4;
-    const BW = W - X0;
-    const mask = A().bakePixels(BW, SKY_H, (u32) => {
+    const pre = new Int32Array((SKY_H + 1) * W); // per-column prefix counts of erased pixels
+    const kx = new Float32Array(W);
+    const ky = new Float32Array(SKY_H);
+    for (let x = 0; x < W; x++) kx[x] = sm(X0, TS.x1 + 70, x) * (1 - sm(Z.x1 - 10, W + 10, x));
+    for (let y = 0; y < SKY_H; y++) ky[y] = sm(SKY_Y0, SKY_Y0 + 18, y + SKY_Y0) * (1 - sm(Z.y1 - 18, Z.y1 + 6, y + SKY_Y0));
+    const mr = o.moon ? o.moon.r + 12 : 0;
+    const mask = A().bakePixels(W, SKY_H, (u32) => {
       for (let y = 0; y < SKY_H; y++)
-        for (let i = 0; i < BW; i++) {
-          const x = X0 + i;
+        for (let x = 0; x < W; x++) {
           const yy = y + SKY_Y0;
-          let keep = sm(X0, TS.x1 + 70, x) * (1 - sm(Z.x1 - 10, W + 10, x)) * sm(SKY_Y0, SKY_Y0 + 18, yy) * (1 - sm(Z.y1 - 18, Z.y1 + 6, yy));
-          if (o.moon) keep *= sm(o.moon.r + 2, o.moon.r + 12, Math.hypot(x - o.moon.x, yy - o.moon.y)); // never veil the moon
-          if (HD.bayer(x, y) >= keep) u32[y * BW + i] = WHITE;
+          let keep = kx[x] * ky[y];
+          // never veil the moon
+          if (o.moon && Math.abs(x - o.moon.x) < mr && Math.abs(yy - o.moon.y) < mr) keep *= sm(o.moon.r + 2, mr, Math.hypot(x - o.moon.x, yy - o.moon.y));
+          const er = HD.bayer(x, y) >= keep;
+          if (er) u32[y * W + x] = WHITE;
+          pre[(y + 1) * W + x] = pre[y * W + x] + (er ? 1 : 0);
         }
     });
-    const B = band({
-      x0: X0,
-      w: BW,
-      tw,
-      sub: 0.13,
-      y0: SKY_Y0,
-      h: SKY_H,
-      k: 1,
-      cols: o.cols,
-      alpha: o.alpha,
-      core: 0.5,
-      mask,
-      dens: puffDens(tw, SKY_H, o.seed || 151, { n: o.n || 7, y0: 22, y1: 72, r: 6, rR: 6, a: o.a || 0.6 }),
-    });
+    const clean = (xa, xb, ya, yb) => {
+      for (let x = xa; x < xb; x++) if (pre[yb * W + x] !== pre[ya * W + x]) return false;
+      return true;
+    };
+    const clusters = puffClusters(tw, o.seed || 151, { n: o.n || 7, y0: 22, y1: 72, r: 6, rR: 6, a: o.a || 0.6, h: SKY_H }, o.cols);
+    const alpha = o.alpha;
     const lit = o.lit === undefined ? 0.5 : o.lit;
     const top = [];
+    const drawn = []; // this frame's visible pieces, reused by the relight
     return function (g, t) {
-      // the masked haze only changes when the tile steps a pixel: cached
-      const hz = A().maskedBand(B, t);
       const ctx = g.ctx;
-      ctx.globalAlpha = B.alpha;
-      ctx.drawImage(hz, 0, 0, BW, SKY_H, X0, SKY_Y0, BW, SKY_H);
+      // the tile scrolls one tile width per loop (same stepping as drawBand)
+      const off = ((Math.floor((t * tw) / HD.LOOP + sub) % tw) + tw) % tw;
+      drawn.length = 0;
+      ctx.globalAlpha = alpha;
+      for (const c of clusters) {
+        // screen x of the sprite, wrapped so it is the copy nearest the haze area
+        const lo = X0 - c.bw;
+        const sx = ((((c.tx + off - lo) % tw) + tw) % tw) + lo;
+        const vx0 = Math.max(sx, X0);
+        const vx1 = Math.min(sx + c.bw, W);
+        if (vx1 <= vx0) continue;
+        let src = c.spr;
+        if (!clean(vx0, vx1, c.ty, c.ty + c.bh)) {
+          // touches a fade edge or the moon: mask a copy (cached until it moves)
+          if (c.memo !== sx) {
+            c.sctx.globalCompositeOperation = 'source-over';
+            c.sctx.clearRect(0, 0, c.bw, c.bh);
+            c.sctx.drawImage(c.spr, 0, 0);
+            c.sctx.globalCompositeOperation = 'destination-out';
+            c.sctx.drawImage(mask, vx0, c.ty, vx1 - vx0, c.bh, vx0 - sx, 0, vx1 - vx0, c.bh);
+            c.sctx.globalCompositeOperation = 'source-over';
+            c.memo = sx;
+          }
+          src = c.scv;
+        }
+        const w = vx1 - vx0;
+        ctx.drawImage(src, vx0 - sx, 0, w, c.bh, vx0, SKY_Y0 + c.ty, w, c.bh);
+        drawn.push(src, vx0 - sx, vx0, w, c.ty, c.bh);
+      }
       ctx.globalAlpha = 1;
-      // relight the smoke around the (up to) three brightest live bursts
+      if (!drawn.length) return;
+      // relight the smoke around the (up to) two brightest live bursts; a
+      // fading flash below ~0.12 would add only a few levels of tint
       const fw = HD._fireworks;
       const s = fw && fw.show();
       if (!s) return;
       top.length = 0;
       for (const sh of fw.liveShells(t, s)) {
         const f = fw.flashOf(sh);
-        if (f > 0.05) top.push([f, sh]);
+        if (f > 0.12) top.push([f, sh]);
       }
       if (!top.length) return;
-      if (top.length > 3) top.sort((p, q) => q[0] - p[0]).length = 3;
+      if (top.length > 2) top.sort((p, q) => q[0] - p[0]).length = 2;
       for (const [f, sh] of top) {
-        const r = Math.max(20, Math.min(88, Math.round((sh.R * 2.2) / 4) * 4));
-        const cx = Math.round(sh.bx);
-        const cy = Math.round(sh.by) - SKY_Y0;
-        const sx0 = Math.max(X0, cx - r);
-        const sy0 = Math.max(0, cy - r);
-        const sx1 = Math.min(W, cx + r + 1);
-        const sy1 = Math.min(SKY_H, cy + r + 1);
-        const w = sx1 - sx0;
-        const h = sy1 - sy0;
-        if (w <= 0 || h <= 0) continue;
-        const ox = sx0 - (cx - r);
-        const oy = sy0 - (cy - r);
-        const c = HD.LIGHT.firework[sh.col] || HD.LIGHT.firework.gold;
+        const r = Math.max(20, Math.min(80, Math.round((sh.R * 2) / 4) * 4));
+        const n = r * 2 + 1;
+        const bx = Math.round(sh.bx) - r; // glow canvas origin, screen space
+        const by = Math.round(sh.by) - r;
+        // work only on the part of the glow square that holds haze
+        let ux0 = n;
+        let uy0 = n;
+        let ux1 = 0;
+        let uy1 = 0;
+        for (let i = 0; i < drawn.length; i += 6) {
+          const x0 = Math.max(0, drawn[i + 2] - bx);
+          const x1 = Math.min(n, drawn[i + 2] + drawn[i + 3] - bx);
+          const y0 = Math.max(0, SKY_Y0 + drawn[i + 4] - by);
+          const y1 = Math.min(n, SKY_Y0 + drawn[i + 4] + drawn[i + 5] - by);
+          if (x1 <= x0 || y1 <= y0) continue;
+          ux0 = Math.min(ux0, x0);
+          uy0 = Math.min(uy0, y0);
+          ux1 = Math.max(ux1, x1);
+          uy1 = Math.max(uy1, y1);
+        }
+        if (ux1 <= ux0 || uy1 <= uy0) continue;
+        const uw = ux1 - ux0;
+        const uh = uy1 - uy0;
         const gl = glowCanvas(r);
         const gx = gl.ctx;
         gx.globalCompositeOperation = 'source-over';
-        gx.clearRect(0, 0, r * 2 + 1, r * 2 + 1);
-        gx.drawImage(hz, sx0 - X0, sy0, w, h, ox, oy, w, h);
+        gx.clearRect(ux0, uy0, uw, uh);
+        for (let i = 0; i < drawn.length; i += 6) {
+          const vx0 = drawn[i + 2];
+          const w = drawn[i + 3];
+          const y = SKY_Y0 + drawn[i + 4];
+          const h = drawn[i + 5];
+          if (vx0 >= bx + n || vx0 + w <= bx || y >= by + n || y + h <= by) continue;
+          gx.drawImage(drawn[i], drawn[i + 1], 0, w, h, vx0 - bx, y - by, w, h);
+        }
+        const c = HD.LIGHT.firework[sh.col] || HD.LIGHT.firework.gold;
         gx.globalCompositeOperation = 'destination-in';
-        gx.drawImage(radialMask(r), 0, 0);
+        gx.drawImage(radialMask(r), ux0, uy0, uw, uh, ux0, uy0, uw, uh);
         gx.globalCompositeOperation = 'source-in';
         gx.fillStyle = css(120 * c[0], 120 * c[1], 120 * c[2]);
-        gx.fillRect(0, 0, r * 2 + 1, r * 2 + 1);
+        gx.fillRect(ux0, uy0, uw, uh);
         gx.globalCompositeOperation = 'source-over';
         ctx.globalCompositeOperation = 'lighter';
         ctx.globalAlpha = Math.min(1, f * lit);
-        ctx.drawImage(gl.cv, ox, oy, w, h, sx0, sy0 + SKY_Y0, w, h);
+        ctx.drawImage(gl.cv, ux0, uy0, uw, uh, bx + ux0, by + uy0, uw, uh);
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
       }
@@ -527,8 +615,8 @@
       const warm = [mix(P.leaf[5], P.amber[4], 0.35), mix(P.leaf[6], P.amber[5], 0.35)];
       return {
         // thin wisp from the hearth on the warm night
-        // (calm curl and more, smaller puffs so the thread stays continuous)
-        chim: chim({ tone: s, n: 26, rad0: 1.8, radK: 4.6, lvK: 1.2, hlK: 1.1, life: 12, rise: 52, curl: 1.6 }),
+        // (calm curl, more and smaller puffs, no tiny highlight discs: they read as beads)
+        chim: chim({ tone: s, n: 26, rad0: 1.8, radK: 4.6, lvK: 1.2, hlK: 1.1, hlMin: 2.2, life: 15, rise: 52, curl: 1.6 }),
         // the midsummer bonfire: wider column, more puffs; it leans downwind
         // early so the head stays right of and below the title area
         camp: camp({ tone: campTones(s), n: 72, life: 9, sy: CF.base - 54, rise: 84, riseR: 8, driftK: 1.15, spread: 6, curl: 2.6, rad0: 1.8, radK: 10.2, lvK: 1.85, hlK: 1.4, gust: 12 }),

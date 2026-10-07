@@ -18,8 +18,13 @@
  * Seasons: the fire is a "rig" built from a geometry config. HD.edition.fire
  * picks the rig at draw time: 'campfire' (the original, constants unchanged),
  * 'bonfire' (the same fire ~1.6x: taller/wider flames, a bigger coal bed,
- * more sparks, a bigger light) or 'none'. Sparklers and fireworks live in
- * fire-seasons.js.
+ * more sparks, a bigger light) or 'none'. The bonfire paints its teepee logs
+ * as emissive charcoal with ember rims (so its own light never relights them
+ * to flame colour), keeps a rarer white core, a calmer 1px-jitter light whose
+ * ember pops swell instead of jump, and sparks that cool off before the
+ * title-safe sky. On snowy ground the light is gentler and tighter (bright
+ * snow relights far harder than wet earth). Halloween's campfire path is
+ * unchanged. Sparklers and fireworks live in fire-seasons.js.
  */
 (function () {
   'use strict';
@@ -28,6 +33,7 @@
   const T = HD.time;
   const C = HD.layout.campfire;
   const WIND = HD.layout.wind;
+  const SAFE = HD.layout.titleSafe;
 
   // fire colours as RGB
   const FIRE = P.fire.map((c) => HD.color.hex(c));
@@ -105,6 +111,8 @@
   }
 
   const LCY = C.base - 1;
+  // per-ground light tuning for snowy editions (thin or deep snow is near-white)
+  const SNOW_GROUND = { snow: { k: 0.46, pow: 2.0, r: 0.86 }, 'thin-snow': { k: 0.46, pow: 2.0, r: 0.86 } };
   // pop timing: one burst every ~6-10 s
   const POP_P = 8;
   function popState(t) {
@@ -140,6 +148,15 @@
     const N_BLOB = o.nBlob;
     const N_SPARK = o.nSpark;
     const LT = o.light;
+    // bonfire-only tuning (the campfire keeps the original constants)
+    const ROOT_A = o.rootK ? 0.86 * o.rootK : 0.86; // hot-root splat strengths
+    const ROOT_B = o.rootK ? 0.42 * o.rootK : 0.42;
+    const KN0 = o.kN0 === undefined ? 0.22 : o.kN0; // noise erosion floor at the root
+    const TH = o.bandTh || BAND_TH; // band thresholds (the bonfire's white core is rarer)
+    const JS = o.jitterS === undefined ? S : o.jitterS; // main-light jitter scale
+    const CHAR = !!o.charLogs; // logs inside the flame are painted as emissive charcoal
+    const SAFE_FADE = !!o.safeFade; // sparks fade out before the title-safe sky
+    const SOFT_POP = !!o.softPop; // ember pops swell the light instead of jumping it
 
     let NOISE = null; // Float32Array NW*NH, tileable
     let LOGMASK = null; // Uint8Array GW*GH: 1 where a front-crossing log covers the flame
@@ -153,6 +170,7 @@
     let coalCtx = null;
     let coalImg = null;
     let COALS = null; // [{x, y, base, cl}] coal pixels
+    let LOGCOL = null; // Uint8Array GW*GH: charcoal shade index of the teepee logs (CHAR rigs)
 
     function logAt(x, y) {
       for (const l of LOGS) if (inLog(x, y, l[0], l[1], l[2], l[3], l[4])) return true;
@@ -212,8 +230,8 @@
       const fld = FLD;
       fld.fill(0);
       // hot root over the coals
-      splat(fld, CX + 0.5, BASE - 1, HALFW * (0.92 + 0.08 * st.f), (5 + 1.5 * st.f) * S, 0.86);
-      splat(fld, CX + 0.5, BASE - 5 * S, HALFW * 0.55, (7 + 2 * st.f) * S, 0.42);
+      splat(fld, CX + 0.5, BASE - 1, HALFW * (0.92 + 0.08 * st.f), (5 + 1.5 * st.f) * S, ROOT_A);
+      splat(fld, CX + 0.5, BASE - 5 * S, HALFW * 0.55, (7 + 2 * st.f) * S, ROOT_B);
       // streaming blobs
       for (let i = 0; i < N_BLOB; i++) {
         const c = T.cycle(ts, i, (0.95 + HD.hash(i, 1, 23) * 0.5) * o.blobLife, 321);
@@ -246,7 +264,7 @@
         const hc = Math.min(1.2, Math.max(0, h / Hc));
         const nRowA = ((gy + sA) % NH) * NW;
         const nRowB = ((gy + sB + 17) % NH) * NW;
-        const kN = 0.22 + 0.36 * hc;
+        const kN = KN0 + 0.36 * hc;
         for (let gx = 0; gx < GW; gx++) {
           const f0 = fld[row + gx];
           if (f0 <= 0.02) {
@@ -256,7 +274,7 @@
           const n = 0.62 * NOISE[nRowA + (gx % NW)] + 0.38 * NOISE[nRowB + ((gx + 11) % NW)];
           const F = f0 - (n - 0.35) * kN;
           let L = 0;
-          while (L < 7 && F > BAND_TH[L]) L++;
+          while (L < 7 && F > TH[L]) L++;
           lv[row + gx] = L;
         }
       }
@@ -291,17 +309,62 @@
           l2[p] = ov;
         }
       }
-      for (let p = 0, q = 0; p < GW * GH; p++, q += 4) {
-        const v = l2[p];
-        if (v === 0 || LOGMASK[p]) continue;
-        const col = FIRE[BAND_COL[v - 1]];
-        d[q] = col[0];
-        d[q + 1] = col[1];
-        d[q + 2] = col[2];
-        d[q + 3] = 255;
-      }
+      if (CHAR) paintCharLogs(d, l2);
+      else
+        for (let p = 0, q = 0; p < GW * GH; p++, q += 4) {
+          const v = l2[p];
+          if (v === 0 || LOGMASK[p]) continue;
+          const col = FIRE[BAND_COL[v - 1]];
+          d[q] = col[0];
+          d[q + 1] = col[1];
+          d[q + 2] = col[2];
+          d[q + 3] = 255;
+        }
       flameCtx.putImageData(flameImg, 0, 0);
       g.em.sprite(flameCv, GX0, GY0);
+    }
+
+    // Bonfire: the teepee logs are backlit by the fire, so where they cross the
+    // flame body they are painted here as emissive charcoal (never relit to the
+    // flame's own value), with a 1px ember rim where a flame touches them and a
+    // few dull ember cracks where the fire is behind. Elsewhere the flame is drawn as usual.
+    const CHAR_COL = [null, P.wood[0], P.wood[1], P.wood[2], P.fire[1]].map((c) => c && HD.color.hex(c));
+    const RIM_LO = HD.color.hex(P.fire[2]);
+    const RIM_HI = HD.color.hex(P.fire[3]);
+    function paintCharLogs(d, l2) {
+      for (let gy = 0, p = 0; gy < GH; gy++) {
+        for (let gx = 0; gx < GW; gx++, p++) {
+          const q = p * 4;
+          const v = l2[p];
+          const lc = LOGCOL[p];
+          if (v > 0 && !LOGMASK[p]) {
+            // visible flame
+            const col = FIRE[BAND_COL[v - 1]];
+            d[q] = col[0];
+            d[q + 1] = col[1];
+            d[q + 2] = col[2];
+            d[q + 3] = 255;
+            continue;
+          }
+          if (!lc) continue;
+          // a log pixel the flame does not cover: charcoal, ember rim next to flame
+          let nb = 0;
+          if (gx > 0 && !LOGMASK[p - 1] && l2[p - 1] > nb) nb = l2[p - 1];
+          if (gx < GW - 1 && !LOGMASK[p + 1] && l2[p + 1] > nb) nb = l2[p + 1];
+          if (gy > 0 && !LOGMASK[p - GW] && l2[p - GW] > nb) nb = l2[p - GW];
+          if (gy < GH - 1 && !LOGMASK[p + GW] && l2[p + GW] > nb) nb = l2[p + GW];
+          // flame on the far side shows only as a rim where it is actually behind
+          let col;
+          if (nb > 0 && v > 0) col = nb >= 4 ? RIM_HI : RIM_LO;
+          else if (nb > 0) col = RIM_LO;
+          else if (lc === 4) col = v > 0 ? CHAR_COL[4] : CHAR_COL[2];
+          else col = CHAR_COL[lc];
+          d[q] = col[0];
+          d[q + 1] = col[1];
+          d[q + 2] = col[2];
+          d[q + 3] = 255;
+        }
+      }
     }
 
     // ---- coal bed ---------------------------------------------------------------------
@@ -350,7 +413,9 @@
         const y = Math.round(y0 - rise);
         // cooling, with a gentle twinkle
         const tw = HD.hash(i, tick(t, 14), c.c, 2) < 0.12 ? -0.12 : 0;
-        const temp = (1 - a) * (0.75 + 0.25 * c.rnd(10)) + tw;
+        let temp = (1 - a) * (0.75 + 0.25 * c.rnd(10)) + tw;
+        // the bonfire's tall sparks cool off before they reach the title-safe sky
+        if (SAFE_FADE && x < SAFE.x1 + 4 && y < SAFE.y1 + 18) temp *= Math.max(0, (y - SAFE.y1 - 4) / 14);
         if (temp < 0.03) continue;
         const col = sparkCol(temp);
         const big = c.rnd(11) < o.bigP && a < 0.35;
@@ -394,6 +459,38 @@
       LOGMASK = new Uint8Array(GW * GH);
       for (let gy = 0; gy < GH; gy++)
         for (let gx = 0; gx < GW; gx++) if (logOcc(GX0 + gx, GY0 + gy)) LOGMASK[gy * GW + gx] = 1;
+      if (CHAR) {
+        // charcoal shade per log pixel, same capsule geometry and draw order as
+        // the props teepee (later logs on top); 4 = a glowing crack
+        LOGCOL = new Uint8Array(GW * GH);
+        const all = LOGS.concat(o.backLogs || []);
+        for (const l of all) {
+          const [x0, y0, x1, y1, w] = l;
+          const len = Math.hypot(x1 - x0, y1 - y0);
+          const tx = (x1 - x0) / len;
+          const ty = (y1 - y0) / len;
+          let nx = -ty;
+          let ny = tx;
+          if (ny > 0) {
+            nx = -nx;
+            ny = -ny;
+          }
+          const r = w / 2;
+          for (let gy = 0; gy < GH; gy++)
+            for (let gx = 0; gx < GW; gx++) {
+              const px = GX0 + gx - x0;
+              const py = GY0 + gy - y0;
+              const s = px * tx + py * ty;
+              const v = px * nx + py * ny;
+              if (s < 0 || s > len || Math.abs(v) > r) continue;
+              const vv = v / r;
+              let c = vv > 0.45 ? 3 : vv < -0.7 ? 1 : 2;
+              const groove = Math.sin(s * 0.7 + Math.round(vv * 2) * 2.3 + x0) > 0.62 && Math.abs(vv) < 0.6;
+              if (groove && s / len > 0.3) c = 4;
+              LOGCOL[gy * GW + gx] = c;
+            }
+        }
+      }
       flameCv = HD.canvas(GW, GH, true);
       flameCtx = flameCv.getContext('2d');
       flameImg = flameCtx.createImageData(GW, GH);
@@ -436,15 +533,46 @@
       const st = flameHeight(t);
       const f = st.f;
       const pp = popState(t);
-      const pop = pp.tau >= 0 && pp.tau < 0.35 ? 0.3 * (1 - pp.tau / 0.35) : 0;
+      let pop = pp.tau >= 0 && pp.tau < 0.35 ? 0.3 * (1 - pp.tau / 0.35) : 0;
+      // the bonfire's big light swells into a pop instead of jumping
+      if (SOFT_POP) pop = pp.tau >= 0 && pp.tau < 0.45 ? 0.24 * (pp.tau < 0.1 ? pp.tau / 0.1 : 1 - (pp.tau - 0.1) / 0.35) : 0;
       // 1px jitter of the light centre at 12 fps follows the dancing tongues
       const ts = T.step(t, 12);
       const jx = Math.round((T.noise(ts, 0.5, 61) - 0.5) * 2.4 * S);
       const jy = Math.round((T.noise(ts, 0.6, 62) - 0.5) * 1.6 * S);
       const cy = BASE - Math.round(st.h * 0.42);
+      const snow = SNOW_GROUND[HD.edition.ground];
+      if (snow) {
+        // bright snow: the same fire relights it far harder than wet ground, so
+        // the light is gentler and tighter there (keeps the warm pocket precious)
+        const k = snow.k;
+        Lt.add({
+          x: CX + jx + 1,
+          y: cy + jy,
+          r: Math.round(LT.r * snow.r),
+          color: HD.LIGHT.fire,
+          i: (LT.i0 + LT.i1 * f + 0.15 * st.flare + pop) * k,
+          pow: snow.pow,
+          halo: { r: LT.haloR, a: LT.haloA, y: cy + 2 * S },
+        });
+        Lt.add({
+          x: CX + jx,
+          y: BASE - 3 * S,
+          r: LT.poolR,
+          ry: LT.poolRy,
+          color: HD.LIGHT.fire,
+          i: (LT.p0 + LT.p1 * f + pop * 0.3) * k,
+          bands: 4,
+          pow: 2.2,
+        });
+        return;
+      }
+      // the bonfire's big light keeps a 1px jitter; its base pool carries the dance
+      const mjx = JS === S ? jx : Math.round((T.noise(ts, 0.5, 61) - 0.5) * 2.4 * JS);
+      const mjy = JS === S ? jy : Math.round((T.noise(ts, 0.6, 62) - 0.5) * 1.6 * JS);
       Lt.add({
-        x: CX + jx + 1,
-        y: cy + jy,
+        x: CX + mjx + 1,
+        y: cy + mjy,
         r: LT.r,
         color: HD.LIGHT.fire,
         i: LT.i0 + LT.i1 * f + 0.15 * st.flare + pop,
@@ -520,6 +648,8 @@
     [BX + 5, BY - 3, BAPEX[0] - 2, BAPEX[1] + 2, 4.4, BY - 18],
     [BX + 16, BY - 1, BAPEX[0] + 2, BAPEX[1], 4.8, BY - 28],
   ];
+  // the back-centre log (behind the flames; painted as charcoal where it shows)
+  const BON_BACK = [[BX - 2, BY - 4, BAPEX[0] - 2, BAPEX[1] + 1, 3.8]];
   const bon = makeRig({
     S: BS,
     FH: C.flameH * BS,
@@ -535,6 +665,14 @@
     NW: 48,
     NH: 72,
     logs: BON_LOGS,
+    backLogs: BON_BACK,
+    charLogs: true,
+    rootK: 0.8,
+    kN0: 0.3,
+    bandTh: [0.1, 0.22, 0.38, 0.56, 0.78, 1.08, 1.46],
+    jitterS: 1,
+    safeFade: true,
+    softPop: true,
     logOccY: LCY - 16,
     nBlob: 30,
     nSpark: 96,
@@ -549,7 +687,7 @@
     coalRy: 5.4,
     chunkW: 4,
     chunkH: 3,
-    light: { r: 168, i0: 0.95, i1: 0.45, haloR: 50, haloA: 0.16, poolR: 62, poolRy: 44, p0: 0.22, p1: 0.2 },
+    light: { r: 145, i0: 1.0, i1: 0.3, haloR: 50, haloA: 0.16, poolR: 62, poolRy: 44, p0: 0.22, p1: 0.2 },
   });
 
   /** the rig for the current edition (read at draw time), or null for 'none' */

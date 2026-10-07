@@ -632,7 +632,7 @@
     // ---------------- windows ----------------
     if (has(ed, 'tangerines')) {
       // bowl of tangerines with a couple of leaves on the inner sill
-      rowsW(I, gr, ['....ll....', '...oOol...', '..oOooOo..', '.oOoooOoo.', 'bbbbbbbbbb', '.bbbbbbbb.', '..bbbbbb..'], 3, gr.gh - 7, {
+      rowsW(I, gr, ['....ll....', '...oOol...', '..oOooOo..', '.oOoooOoo.', 'bbbbbbbbbb', '.bbbbbbbb.', '..bbbbbb..'], has(ed, 'plum-vase') ? 1 : 3, gr.gh - 7, {
         o: F[5],
         O: F[7],
         l: LF[5],
@@ -808,6 +808,13 @@
       stamp(I, EAR, PO.postL - 5, 200, map);
       stamp(I, flip(EAR), PO.postR + 4, 200, map);
     }
+    // ---------------- Summer Story + the Boston plum vase ----------------
+    if (has(ed, 'cat-away')) paintAway(I);
+    if (has(ed, 'tv-match')) paintTV(I);
+    if (has(ed, 'flags-matchday') || has(ed, 'bunting-party')) paintCords(I, true, true);
+    if (has(ed, 'pub-sign')) paintSignBracket(I);
+    if (has(ed, 'bunting-usa')) paintFans(I);
+    if (has(ed, 'plum-vase')) paintPlumVase(I);
     if (has(ed, 'bunting')) {
       // party pennants: little 5-3-1 triangles (dark leading edge, lit body)
       // on a sagging cord, hung under the porch string
@@ -873,6 +880,21 @@
       const i = WIN['ground-left'].index;
       cfg[i] = Object.assign({}, cfg[i], { ramp: [A[1], A[2], A[3], A[4], A[5], A[5]], src: [0.5, 0.9], R: 22 });
       boost[i] = 0.8;
+    }
+    if (has(ed, 'tv-match')) {
+      // the parlour lamp is off for the match: the room glows TV-green
+      const i = WIN['ground-left'].index;
+      cfg[i] = Object.assign({}, cfg[i], {
+        ramp: TV_GLASS,
+        src: [0.5, 0.66],
+        R: 19,
+        seed: 48,
+        speed: 1.6,
+        amp: 0.5,
+        light: { r: 30, i: 0.34, col: [0.5, 1.0, 0.62] },
+        halo: 0.07,
+        spill: { r: 22, ry: 7, i: 0.3 },
+      });
     }
     if (ed.id === 'winter') {
       const i = WIN['ground-right'].index;
@@ -996,6 +1018,7 @@
         FE.flame(g, w.gx + lx, w.gy + (lx === 8 ? 12 : 14), t, 300 + i, 1);
       }
     }
+    if (has(ed, 'tv-match')) drawTV(g, t);
     if (has(ed, 'xmas-tree')) {
       const w = WIN['ground-right'];
       const e = g.em;
@@ -1073,6 +1096,14 @@
       for (const grp of DIYA_GROUPS) for (const [x, y] of grp) FE.diya(g, x, y, t, 80 + s++);
     }
     if (has(ed, 'open-windows')) drawCurtains(g, t);
+    // Summer Story: the saltire on the wall, the pub sign, then the bunting
+    const sal = saltire();
+    if (sal) drawSaltire(g, t, sal);
+    if (has(ed, 'pub-sign')) drawSign(g, t);
+    const mf = matchFlags();
+    if (mf) drawHung(g, t, mf);
+    const pp = partyPennants();
+    if (pp) drawHung(g, t, pp);
   }
 
   function lights(t, L) {
@@ -1110,6 +1141,484 @@
   }
 
   // ===================================================================
+  // SUMMER STORY (SUMMER.md): the cat away, match-day flags, the saltire,
+  // the TV, the pub sign, July 4th fans, birthday pennants; and the plum
+  // vase of the Boston Lunar New Year
+  // ===================================================================
+  const NI = P.night;
+  const RG = P.rangoli;
+  const PLM = P.plum;
+  const mixc = HD.color.mix;
+  const SUM = HD.summer;
+  const breeze = (t) => (SUM ? SUM.breeze(t) : 0);
+  // flag cloth: pigments taken a step into the night (so they sit in the cold
+  // frame and the house lights relight them to full colour). Upper case =
+  // cloth, lower case = the same cloth in a fold.
+  const CLOTH = {
+    R: RD[4], r: RD[3],
+    W: BN[3], w: BN[2],
+    U: mixc(NI[5], RG[4], 0.32), u: mixc(NI[4], RG[4], 0.22), // navy (USA, Norway)
+    V: mixc(NI[9], BN[3], 0.3), // a star in the canton
+    S: mixc(RG[4], NI[7], 0.22), s: mixc(RG[4], NI[5], 0.45), // Scottish azure
+    F: mixc(RG[4], NI[5], 0.42), f: mixc(RG[4], NI[4], 0.6), // French blue
+    G: mixc(RG[3], NI[3], 0.28), g: mixc(RG[3], NI[2], 0.5), // Irish green
+    O: mixc(RG[1], NI[3], 0.15), o: mixc(RG[1], NI[2], 0.38), // Irish orange
+    K: NI[1], k: NI[0], // German black
+    Y: GD[4], y: GD[3], // German gold, Spanish yellow
+  };
+  const rep = (row, n) => Array(n).fill(row);
+  /** a white saltire on azure, arms about `th` px from the diagonals */
+  function saltireRows(w, h, th) {
+    const n = Math.hypot(w, h);
+    const out = [];
+    for (let y = 0; y < h; y++) {
+      let r = '';
+      for (let x = 0; x < w; x++) {
+        const d1 = Math.abs(h * (x + 0.5) - w * (y + 0.5)) / n;
+        const d2 = Math.abs(h * (x + 0.5) - w * (h - y - 0.5)) / n;
+        r += Math.min(d1, d2) < th ? 'W' : 'S';
+      }
+      out.push(r);
+    }
+    return out;
+  }
+  // the seven teams, each drawn as accurately as its pixel size allows
+  const FLAG = {
+    usa: ['UUUURRRRR', 'UVUVWWWWW', 'UUUURRRRR', 'UVUVWWWWW', 'RRRRRRRRR', 'WWWWWWWWW', 'RRRRRRRRR'],
+    ireland: rep('GGGWWWOOO', 6),
+    scotland: saltireRows(9, 7, 0.62),
+    norway: ['RRWUWRRRR', 'RRWUWRRRR', 'WWWUWWWWW', 'UUUUUUUUU', 'WWWUWWWWW', 'RRWUWRRRR', 'RRWUWRRRR'],
+    france: rep('FFFWWWRRR', 6),
+    germany: [...rep('KKKKKKKKK', 2), ...rep('RRRRRRRRR', 2), ...rep('YYYYYYYYY', 2)],
+    spain: [...rep('RRRRRRRRRRRR', 2), ...rep('YYYYYYYYYYYY', 4), ...rep('RRRRRRRRRRRR', 2)],
+  };
+  // party pennants (birthday): little triangles, 5 wide
+  const PENNANT = ['PPPPp', 'PPPPp', '.PPp.', '.PPp.', '..p..'];
+  const PARTY = [
+    [mixc(RG[0], NI[3], 0.12), mixc(RG[0], NI[2], 0.4)], // pink
+    [GD[4], GD[3]], // yellow
+    [mixc(RG[4], NI[7], 0.1), mixc(RG[4], NI[5], 0.4)], // blue
+    [mixc(RG[1], NI[3], 0.1), mixc(RG[1], NI[2], 0.38)], // orange
+    [mixc(RG[3], NI[5], 0.12), mixc(RG[3], NI[3], 0.42)], // green
+    [mixc(RG[5], NI[6], 0.1), mixc(RG[5], NI[4], 0.4)], // violet
+  ];
+
+  /** a cord hung between anchors with a soft sag: Map x -> y */
+  function cord(anchors, sag) {
+    const ys = new Map();
+    for (let i = 0; i + 1 < anchors.length; i++) {
+      const [x0, y0] = anchors[i];
+      const [x1, y1] = anchors[i + 1];
+      for (let x = x0; x <= x1; x++) {
+        const u = (x - x0) / (x1 - x0);
+        ys.set(x, RND(y0 + (y1 - y0) * u + sag * Math.sin(Math.PI * u)));
+      }
+    }
+    return ys;
+  }
+  // under the roof eave (gutter brackets at the ends and between the windows)
+  const EAVE_CORD = cord(
+    [
+      [162, 130],
+      [191, 131],
+      [220, 131],
+      [249, 131],
+      [277, 130],
+    ],
+    3,
+  );
+  // under the porch fascia, post to post, clear of the iron lantern
+  const PORCH_CORD = cord(
+    [
+      [209, 176],
+      [235, 176],
+    ],
+    2,
+  );
+  const cordY = (cd, x) => (cd.has(x) ? cd.get(x) : null);
+
+  /**
+   * Bake one hung flag (or pennant) in three stir states (-1, 0, +1). The
+   * cloth stays whole: in a breeze a fold (a shaded column with a lit one
+   * beside it) rolls across it and the trailing bottom corner lifts. Pennant
+   * tips swing a pixel. The top row of every column follows the cord.
+   * Returns { x, y, frames }.
+   */
+  function hangFlag(cd, x, rows, colorOf) {
+    const w = rows[0].length;
+    const h = rows.length;
+    let top = 1e9;
+    for (let c = 0; c < w; c++) top = Math.min(top, cordY(cd, x + c));
+    const dy = [];
+    for (let c = 0; c < w; c++) dy.push(cordY(cd, x + c) - top);
+    const md = Math.max(...dy);
+    const frames = [-1, 0, 1].map((st) =>
+      HD.bake(w + 2, h + md + 1, (g) => {
+        const fc = st < 0 ? Math.floor(w / 3) : Math.ceil((2 * w) / 3) - 1;
+        const tri = rows[h - 1].indexOf('.') >= 0; // a pennant (pointed tip)
+        for (let r = 0; r < h; r++) {
+          const sh = tri && st !== 0 && r >= h - 2 ? st : 0;
+          for (let c = 0; c < w; c++) {
+            let ch = rows[r][c];
+            if (ch === '.') continue;
+            if (!tri && st !== 0 && r === h - 1 && (st > 0 ? c === 0 : c === w - 1)) continue; // corner lifts
+            let col;
+            if (st !== 0 && r > 0 && c === fc) col = colorOf(ch.toLowerCase());
+            else if (!tri && st !== 0 && r > 0 && c === fc - st) col = lift(colorOf(ch));
+            else col = colorOf(ch);
+            g.px(1 + c + sh, dy[c] + r, col);
+          }
+        }
+      }),
+    );
+    return { x: x - 1, y: top + 1, frames };
+  }
+  const clothOf = (ch) => CLOTH[ch] || CLOTH[ch.toUpperCase()];
+  const LIFT = new Map();
+  /** the lit side of a fold: a touch towards pale cloth */
+  const lift = (c) => {
+    let v = LIFT.get(c);
+    if (!v) LIFT.set(c, (v = mixc(c, BN[4], 0.16)));
+    return v;
+  };
+
+  // ---- match-day bunting: the six teams that played in Boston + Spain ----
+  const EAVE_FLAGS = [
+    [165, 'usa'],
+    [176, 'ireland'],
+    [187, 'scotland'],
+    [198, 'norway'],
+    [209, 'france'],
+    [220, 'germany'],
+    [231, 'spain'],
+    [245, 'usa'],
+    [256, 'ireland'],
+    [267, 'scotland'],
+  ];
+  const matchFlags = HD.perEdition((ed) => {
+    if (!has(ed, 'flags-matchday')) return null;
+    const out = EAVE_FLAGS.map(([x, k]) => hangFlag(EAVE_CORD, x, FLAG[k], clothOf));
+    // Spain (the team you cheer for) over the front door
+    out.push(hangFlag(PORCH_CORD, 216, FLAG.spain, clothOf));
+    return out;
+  });
+  const partyPennants = HD.perEdition((ed) => {
+    if (!has(ed, 'bunting-party')) return null;
+    const out = [];
+    let k = 0;
+    const put = (cd, xa, xb) => {
+      for (let x = xa; x + 4 <= xb; x += 7) {
+        const [c, d] = PARTY[k++ % PARTY.length];
+        out.push(hangFlag(cd, x, PENNANT, (ch) => (ch === 'P' ? c : d)));
+      }
+    };
+    put(EAVE_CORD, 165, 275);
+    put(PORCH_CORD, 211, 234);
+    return out;
+  });
+  /** stir state of the i-th flag on a string: the breeze runs along it */
+  function stir(t, i) {
+    const b = breeze(T.step(t, 8) - i * 0.18);
+    return b > 0.32 ? 2 : b < -0.32 ? 0 : 1;
+  }
+  function drawHung(g, t, list) {
+    for (let i = 0; i < list.length; i++) {
+      const f = list[i];
+      g.sprite(f.frames[stir(t, i)], f.x, f.y);
+    }
+  }
+  /** the cords, gutter hooks and porch-post ties (static, in the overlay) */
+  function paintCords(I, eave, porch) {
+    if (eave) {
+      for (const [x, y] of EAVE_CORD) I.set(x, y, S[1], 0);
+      for (const x of [162, 191, 220, 249, 277]) {
+        I.set(x, EAVE_CORD.get(x) - 1, S[3], 0);
+        I.set(x, EAVE_CORD.get(x), S[2], 0);
+      }
+    }
+    if (porch) {
+      for (const [x, y] of PORCH_CORD) I.set(x, y, S[1], 0);
+      I.set(208, 176, S[2], 0);
+      I.set(236, 176, S[2], 0);
+    }
+  }
+
+  // ---- the big saltire hung from the upper-left window like a fan flag ----
+  const SAL_W = 18;
+  const SAL_H = 11;
+  const SAL_ROWS = saltireRows(SAL_W, SAL_H, 0.95);
+  const SALTIRE_AT = (() => {
+    const w = WIN['upper-left'].w;
+    return { x: w.x - 2, y: w.y + w.h + 3 }; // top edge over the sill
+  })();
+  const saltire = HD.perEdition((ed) => {
+    if (!has(ed, 'saltire-banner')) return null;
+    const frames = [];
+    for (let k = 0; k < 4; k++)
+      for (const st of [-1, 0, 1])
+        frames.push(
+          HD.bake(SAL_W + 2, SAL_H + 1, (g) => {
+            for (let r = 0; r < SAL_H; r++) {
+              // the top is tied to the sill; in a gust the trailing hem corner lifts
+              const sh = 0;
+              for (let c = 0; c < SAL_W; c++) {
+                const cc = st > 0 ? c : SAL_W - 1 - c; // distance from the lifting corner
+                if (st !== 0 && ((r === SAL_H - 1 && cc < 2) || (r === SAL_H - 2 && cc < 1))) continue;
+                let ch = SAL_ROWS[r][c];
+                // slow folds travelling across the cloth (deeper towards the hem)
+                const fold = Math.sin(2 * Math.PI * (c / 7.5 - k / 4) + r * 0.08);
+                if (r > 0 && fold < (r < 4 ? -0.8 : -0.55)) ch = ch.toLowerCase();
+                let col = clothOf(ch);
+                if (r > 0 && fold > 0.85 && ch === 'S') col = mixc(CLOTH.S, BN[3], 0.18);
+                g.px(1 + c + sh, r, col);
+              }
+            }
+            // tie cords at the top corners
+            g.px(1, 0, S[2]);
+            g.px(SAL_W, 0, S[2]);
+          }),
+        );
+    return frames;
+  });
+  function drawSaltire(g, t, frames) {
+    const ts = T.step(t, 6);
+    const k = Math.floor(T.phase(ts, 3.2) * 4) % 4;
+    const b = breeze(ts);
+    const st = b > 0.3 ? 2 : b < -0.3 ? 0 : 1;
+    g.sprite(frames[k * 3 + st], SALTIRE_AT.x - 1, SALTIRE_AT.y);
+  }
+
+  // ---- the TV in the ground-left window (Match Night) ----
+  const TV = { lx: 2, ly: 11, w: 14, h: 9 }; // bezel; the screen is inset by 1
+  const SCR_W = TV.w - 2;
+  const SCR_H = TV.h - 2;
+  const PG = P.bulb.green;
+  const PITCH = [mixc(PG[1], NI[3], 0.42), mixc(PG[1], NI[3], 0.28)];
+  const PITCH_LINE = mixc(PG[1], P.bulb.white[1], 0.45);
+  const TV_GLASS = [0.1, 0.2, 0.32, 0.46, 0.62].map((k) => mixc(NI[2], PG[1], k));
+  function paintTV(I) {
+    const w = WIN['ground-left'];
+    // bezel (a dark slab: it stays dark under the relight) and a low cabinet
+    for (let ly = TV.ly; ly < TV.ly + TV.h; ly++)
+      for (let lx = TV.lx; lx < TV.lx + TV.w; lx++) putW(I, w, lx, ly, NI[0]);
+    rowsW(I, w, ['cccccccccccc', '.c........c.'], TV.lx + 1, TV.ly + TV.h, { c: A[0] });
+    // a green-and-white scarf draped over the cabinet end
+    rowsW(I, w, ['gwg', 'g..', 'w..'], TV.lx + 9, TV.ly + TV.h, { g: CLOTH.G, w: BN[3] });
+    // the pelmet in the dark (the hearth is out): a plain dark band, no red glow
+    for (let lx = 0; lx < w.gw; lx++) {
+      putW(I, w, lx, 0, W[1]);
+      putW(I, w, lx, 1, W[1]);
+      if (lx % 4 !== 0) putW(I, w, lx, 2, W[1]);
+      if (lx % 4 === 2) putW(I, w, lx, 3, W[1]);
+    }
+  }
+  const pitchArt = HD.perEdition((ed) =>
+    has(ed, 'tv-match')
+      ? HD.bake(SCR_W, SCR_H, (g) => {
+          for (let y = 0; y < SCR_H; y++) for (let x = 0; x < SCR_W; x++) g.px(x, y, PITCH[(x >> 1) & 1]);
+          g.vline(SCR_W >> 1, 0, SCR_H - 1, PITCH_LINE); // halfway line
+          g.vline(0, 2, SCR_H - 3, PITCH_LINE); // goal mouths
+          g.vline(SCR_W - 1, 2, SCR_H - 3, PITCH_LINE);
+        })
+      : null,
+  );
+  // player home spots on the 12 x 7 screen: [x, y, team]
+  const PLAYERS = [
+    [3, 2, 0],
+    [4, 5, 0],
+    [7, 3, 0],
+    [5, 1, 1],
+    [8, 5, 1],
+    [9, 2, 1],
+  ];
+  const TEAM = [P.bulb.red[2], P.bulb.white[2]];
+  function goalK(t) {
+    if (!SUM || HD.edition.id !== 'match') return -1;
+    return SUM.goal(t);
+  }
+  /** soft swells of light during the goal cheer (0..1, never a strobe) */
+  function goalPulse(t) {
+    const u = goalK(t);
+    if (u < 0) return 0;
+    return Math.sin(Math.PI * u) * (0.6 + 0.4 * Math.cos(2 * Math.PI * 3 * u));
+  }
+  function drawTV(g, t) {
+    const w = WIN['ground-left'];
+    const sx = w.gx + TV.lx + 1;
+    const sy = w.gy + TV.ly + 1;
+    const e = g.em;
+    e.reset();
+    e.sprite(pitchArt(), sx, sy);
+    const ts = T.step(t, 6);
+    const u = goalK(t);
+    // play sways from end to end; in the goal window it is all at the right goal
+    const play = u >= 0 ? 2.5 : 3 * (T.noise(ts, 11, 771) * 2 - 1);
+    for (let i = 0; i < PLAYERS.length; i++) {
+      const [px, py, team] = PLAYERS[i];
+      const x = clamp(RND(px + play + 1.3 * (T.noise(ts, 2.3, 780 + i) * 2 - 1)), 1, SCR_W - 2);
+      const y = clamp(RND(py + 1.2 * (T.noise(ts, 2.9, 790 + i) * 2 - 1)), 0, SCR_H - 1);
+      const jump = u >= 0 && u < 0.6 && team === 0 && Math.floor(ts * 3 + i) % 2 === 0 ? -1 : 0;
+      e.px(sx + x, sy + clamp(y + jump, 0, SCR_H - 1), TEAM[team]);
+    }
+    // the ball: passed about, or nestled in the net
+    let bx;
+    let by;
+    if (u >= 0) {
+      bx = SCR_W - 2;
+      by = 3;
+    } else {
+      bx = clamp(RND(5.5 + play + 3 * (T.noise(ts, 1.7, 799) * 2 - 1)), 1, SCR_W - 2);
+      by = clamp(RND(3 + 2 * (T.noise(ts, 1.3, 798) * 2 - 1)), 0, SCR_H - 1);
+    }
+    e.px(sx + bx, sy + by, P.bulb.white[2]);
+    // goal: the whole screen flares (the replay crowd shot) in soft beats
+    if (goalPulse(t) > 0.55) {
+      e.hline(sx, sx + SCR_W - 1, sy, PITCH_LINE);
+      e.hline(sx, sx + SCR_W - 1, sy + SCR_H - 1, PITCH_LINE);
+    }
+  }
+
+  // ---- the pub sign: an iron bracket off the right porch post ----
+  const SIGN = { x: PO.postR + 2, y: PO.roofY + 11 }; // board top-left
+  // board 14 x 10: a gold frame on bottle green, a painted three-leaf
+  // shamrock and a pint of stout with its cream head (no words)
+  const SIGN_ROWS = [
+    '.FFFFFFFFFFFFF.',
+    'F..lLL..bHHHHbf',
+    'F..LLL..bhHHhbf',
+    'FlL.L.lLbgkkgbf',
+    'FLLLvLLLbgkkgbf',
+    'FLL.s.LLbgkkgbf',
+    'F...s...bgkkgbf',
+    'F....s..b.gg.bf',
+    'Fbbbbbbbbbbbbbf',
+    '.fffffffffffff.',
+  ];
+  const signArt = HD.perEdition((ed) =>
+    has(ed, 'pub-sign')
+      ? HD.sprite(
+          SIGN_ROWS.map((r, y) => (y > 0 && y < SIGN_ROWS.length - 1 ? r.replace(/\./g, 'b') : r)),
+          { F: GD[3], f: GD[2], b: LF[1], L: LF[6], l: LF[7], v: LF[3], s: LF[5], H: BN[4], h: BN[3], g: BN[1], k: W[0] },
+        )
+      : null,
+  );
+  function paintSignBracket(I) {
+    const x0 = PO.postR + 1;
+    const y = PO.roofY + 7;
+    // wall plate on the post, the arm, and a curled brace under it
+    I.set(x0, y - 1, S[3], 0);
+    I.set(x0, y, S[3], 0);
+    I.set(x0, y + 1, S[2], 0);
+    for (let x = x0; x <= x0 + 15; x++) I.set(x, y, x === x0 + 15 ? S[4] : S[3], 0);
+    I.set(x0 + 15, y - 1, S[2], 0);
+    stamp(I, ['....ss', '...s..', '..s...', '.s....', 's.....'], x0, y + 1, { s: S[2] });
+    I.set(x0 + 6, y + 1, S[2], 0);
+  }
+  function drawSign(g, t) {
+    const ts = T.step(t, 8);
+    const b = breeze(ts - 0.4);
+    const sh = b > 0.55 ? 1 : b < -0.55 ? -1 : 0;
+    const x = SIGN.x + sh;
+    const y = SIGN.y;
+    // two short chains from the arm
+    for (const cx of [2, 12]) {
+      g.px(SIGN.x + cx, y - 3, S[3]);
+      g.px(SIGN.x + cx + (sh > 0 ? 1 : 0), y - 2, S[2]);
+      g.px(x + cx, y - 1, S[3]);
+    }
+    g.sprite(signArt(), x, y);
+  }
+
+  // ---- July 4th: pleated red-white-blue fans (NYC) ----
+  function bakeFan(I, cx, top, w, h) {
+    const hw = w / 2;
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const dx = (x + 0.5 - hw) / hw;
+        const dy = (y + 0.5) / h;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > 1.02) continue;
+        const a = Math.atan2(dy, dx); // 0..PI
+        const pleat = (((a / Math.PI) * 7) % 1) < 0.2;
+        let ch;
+        if (d < 0.42) ch = HD.hash(x, y, 77) < 0.22 && y > 0 ? 'V' : 'U';
+        else if (d < 0.6) ch = 'R';
+        else if (d < 0.78) ch = 'W';
+        else ch = 'R';
+        if (pleat && d >= 0.42) ch = ch.toLowerCase();
+        I.set(RND(cx - hw) + x, top + y, clothOf(ch), 0);
+      }
+    // the rod it hangs from
+    for (let x = RND(cx - hw) - 1; x <= RND(cx - hw) + w; x++) I.set(x, top - 1, W[4], 0);
+  }
+  function paintFans(I) {
+    const ul = WIN['upper-left'].w;
+    const ur = WIN['upper-right'].w;
+    bakeFan(I, ul.x + ul.w / 2, ul.y + ul.h + 4, 17, 8);
+    bakeFan(I, ur.x + ur.w / 2, ur.y + ur.h + 4, 17, 6);
+    bakeFan(I, K.DCX + 0.5, PO.roofY + 5, 21, 7);
+  }
+
+  // ---- the series cat's window while the family is away ----
+  function paintAway(I) {
+    const w = WIN['upper-right'];
+    // a potted geranium where the cat sits, and a little folded note with a heart
+    rowsW(I, w, ['.r.l.r', 'rlrlll', '.llrl.', '..ll..', '..t...', '.pppp.', '.pppp.', '..pp..'], 3, w.gh - 8, {
+      r: RD[5],
+      l: LF[4],
+      t: LF[3],
+      p: P.pumpkin[2],
+    });
+    rowsW(I, w, ['..cc', '.ccc', 'chcc', 'cccc'], 10, w.gh - 4, { c: BN[4], h: RD[4] });
+  }
+
+  // ---- Lunar New Year (Boston): red plum branches in a vase indoors ----
+  function paintPlumVase(I) {
+    const w = WIN['ground-right'];
+    // angular branches (silhouettes) from the vase mouth up across the glass
+    const B = W[1];
+    const br = [
+      [12, 13, 11, 10],
+      [11, 10, 9, 8],
+      [9, 8, 8, 5],
+      [8, 5, 6, 3],
+      [6, 3, 5, 1],
+      [11, 10, 7, 9],
+      [7, 9, 5, 7],
+      [12, 12, 14, 9],
+      [14, 9, 13, 6],
+      [9, 8, 10, 4],
+    ];
+    for (const [x0, y0, x1, y1] of br) {
+      const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+      for (let k = 0; k <= n; k++) putW(I, w, RND(x0 + ((x1 - x0) * k) / n), RND(y0 + ((y1 - y0) * k) / n), B);
+    }
+    // blossoms: five-petal dots in plum red with a pale heart
+    const bl = [
+      [5, 1, 1],
+      [6, 3, 0],
+      [8, 5, 1],
+      [10, 4, 0],
+      [9, 8, 0],
+      [5, 7, 1],
+      [7, 9, 0],
+      [13, 6, 1],
+      [14, 9, 0],
+      [11, 11, 0],
+      [3, 2, 0],
+    ];
+    for (const [x, y, big] of bl) {
+      putW(I, w, x, y, PLM[5]);
+      putW(I, w, x - 1, y, PLM[4]);
+      putW(I, w, x + 1, y, PLM[4]);
+      putW(I, w, x, y - 1, PLM[4]);
+      if (big) putW(I, w, x, y + 1, PLM[3]);
+    }
+    // the vase: a slim meiping, dark against the glow
+    rowsW(I, w, ['.nn.', 'vvvv', 'vVvv', 'vVvv', 'vvvv', '.vv.', 'vvvv'], 11, 15, { n: A[0], v: A[0], V: A[1] });
+  }
+
+  // ===================================================================
   // hooks used by house.js
   // ===================================================================
   const omitCache = new Map();
@@ -1120,6 +1629,10 @@
     if (has(ed, 'menorah')) o.add('chair');
     if (has(ed, 'paper-cuts') || has(ed, 'party-windows')) o.add('herbs');
     if (has(ed, 'open-windows')) o.add('gr-curtains');
+    if (has(ed, 'tv-match')) {
+      o.add('chair');
+      o.add('gl-vbar');
+    }
     omitCache.set(ed.id, o);
     return o;
   }
@@ -1137,9 +1650,22 @@
       if (has(ed, 'paper-lantern-string')) paintHook(R);
     },
     decorateInterior,
-    warm: () => winSetup(),
+    warm() {
+      winSetup();
+      matchFlags();
+      partyPennants();
+      saltire();
+      pitchArt();
+      signArt();
+    },
     winCfg: (win) => winSetup().cfg[win.index],
-    winBoost: (win) => winSetup().boost[win.index],
+    winBoost: (win, t) => winSetup().boost[win.index] * (1 + 0.6 * goalPulse(t)),
+    /** window glass level: the goal cheer lifts every window for a few beats */
+    level(i, lv, t) {
+      const p = goalPulse(t);
+      return p > 0 ? Math.min(K.NL - 1, lv + RND(p * 3)) : lv;
+    },
+    catAway: () => has(HD.edition, 'cat-away'),
     glass(i, lv) {
       const gl = winSetup().glass[i];
       return gl ? gl[lv] : K.glass[i][lv];

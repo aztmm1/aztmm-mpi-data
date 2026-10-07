@@ -1595,6 +1595,16 @@
         },
       },
       {
+        // Summer Story: the little boat on the big puddle, above the engine's
+        // puddle reflections (z20) and the ground's puddle overlay (z21)
+        layer: 'fx',
+        z: 21.5,
+        id: 'boat',
+        draw(g, t) {
+          if (HD.edition.story) hook('fxBoat', g, t);
+        },
+      },
+      {
         layer: 'scene',
         z: 47,
         id: 'jacks',

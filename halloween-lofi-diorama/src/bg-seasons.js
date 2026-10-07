@@ -666,6 +666,27 @@
     return geo;
   }
 
+  /** prefix sums of tile columns holding cloud within the rows mask m covers */
+  function columnOcc(Ly, m) {
+    const tn = Ly.tn;
+    const y0 = Math.max(m.y, Ly.y) - Ly.y;
+    const y1 = Math.min(m.y + m.h, Ly.y + tn.h) - Ly.y;
+    const pre = new Uint16Array(tn.w + 1);
+    for (let x = 0; x < tn.w; x++) {
+      let any = 0;
+      for (let y = y0; y < y1 && !any; y++) if (tn.a[y * tn.w + x]) any = 1;
+      pre[x + 1] = pre[x] + any;
+    }
+    return pre;
+  }
+  /** does the scrolled tile have any cloud under mask box m? */
+  function occupied(pre, Ly, off, m) {
+    const w = Ly.w;
+    const c0 = (((m.x - off) % w) + w) % w;
+    const c1 = c0 + Math.min(m.w, w);
+    return c1 <= w ? pre[c1] > pre[c0] : pre[w] > pre[c0] || pre[c1 - w] > 0;
+  }
+
   function bakeClouds(ed) {
     const lk = lookOf(ed);
     const cl = lk.clouds;
@@ -679,12 +700,14 @@
       const Ly = deck ? deck[ids[i]] : ids[i] === 'near' ? brokenNear(cl.deep || 1) : Ly0;
       const pal = deck ? Ly && deckPalette(Ly.rows, cl.deck) : cl[ids[i]];
       if (!pal) return;
-      const L = { Ly, cv: K.tonesToCanvas(Ly.tn, pal), lit: null, masks };
-      if (masks)
+      const L = { Ly, cv: K.tonesToCanvas(Ly.tn, pal), lit: null, masks, occ: null };
+      if (masks) {
         L.lit = cl.lit.k.map((ks, j) => {
           const p2 = K.shade(pal, cl.lit.tgt[j], ks);
           return K.tonesToCanvas(Ly.tn, p2);
         });
+        L.occ = masks.map((m) => columnOcc(Ly, m));
+      }
       out[ids[i]] = L;
     });
     return out;
@@ -707,7 +730,7 @@
     const Ly = L.Ly;
     const off = layerOff(t, Ly, id);
     for (let x = off - Ly.w; x < W; x += Ly.w) ctx.drawImage(L.cv, x, Ly.y);
-    if (L.lit) for (let i = 0; i < L.lit.length; i++) masked(ctx, L.lit[i], Ly, off, L.masks[i]);
+    if (L.lit) for (let i = 0; i < L.lit.length; i++) if (occupied(L.occ[i], Ly, off, L.masks[i])) masked(ctx, L.lit[i], Ly, off, L.masks[i]);
   }
 
   // ------------------------------------------------------------------
