@@ -209,8 +209,14 @@
     im.set(MOON.x + 3, MOON.y + 9, P.moon[2]);
   }
 
-  /** summer Milky Way: a soft dusty band rising behind the cottage */
-  const MW = { ax: 150, ay: 168, bx: 352, by: -12 };
+  /**
+   * summer Milky Way: a faint dusty band that climbs out of the far hills
+   * behind the chapel, passes high behind the cottage and thins out toward
+   * the top right. The spine bows gently, the width breathes, and the dark
+   * rift is a few separate dust blotches rather than a line.
+   */
+  const MW = { ax: 34, ay: 152, bx: 336, by: -14 };
+  const smooth01 = (v) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v));
   function milkyField(x, y) {
     const vx = MW.bx - MW.ax;
     const vy = MW.by - MW.ay;
@@ -220,16 +226,19 @@
     const px = x - MW.ax;
     const py = y - MW.ay;
     const along = (px * ux + py * uy) / len; // 0..1
-    const d = px * -uy + py * ux; // signed distance from the spine
-    const half = 22 + 7 * Math.sin(along * 5.1 + 0.6) + 7 * along;
+    // signed distance from a bowed spine (+ = lower right, toward the roof)
+    const bow = -9 * Math.sin(Math.PI * along) + 4 * Math.sin(along * 7.4 + 1.1);
+    const d = px * -uy + py * ux - bow;
+    const half = 17 + 8 * Math.sin(along * 4.6 + 0.4) + 5 * Math.sin(along * 12.3 + 2.2) + 6 * along;
     const n = 0.55 * vnoise(x, y, 11, 31) + 0.3 * vnoise(x, y, 5, 32) + 0.15 * vnoise(x, y, 2.5, 33);
-    let dens = Math.exp(-((d / half) * (d / half))) * (0.45 + 0.75 * n);
-    // dark dust rift running along one side of the spine
-    const rift = d - (3 + 4 * Math.sin(along * 7.3));
-    const rw = 3.2 + 2.5 * vnoise(x, y, 9, 34);
-    dens *= 1 - 0.75 * Math.exp(-((rift / rw) * (rift / rw))) * (along > 0.18 ? 1 : along / 0.18);
-    // fade near the horizon haze
-    if (y > 130) dens *= Math.max(0, 1 - (y - 130) / 30);
+    let dens = Math.exp(-((d / half) * (d / half))) * (0.42 + 0.78 * n);
+    // dust rift: three or four separate dark blotches beside the spine
+    const rift = d - (2 + 3 * Math.sin(along * 6.7));
+    const rw = 2.6 + 2.6 * vnoise(x, y, 6, 34);
+    const blot = smooth01((vnoise(x, y, 17, 35) - 0.5) / 0.14) * (along > 0.2 ? 1 : along / 0.2);
+    dens *= 1 - 0.7 * Math.exp(-((rift / rw) * (rift / rw))) * blot;
+    // the horizon haze swallows its foot
+    if (y > 118) dens *= Math.max(0, 1 - (y - 118) / 34);
     return { dens, along, d, half };
   }
 
@@ -257,7 +266,7 @@
       const r0 = rng();
       if (lk.milky && r0 < 0.34) {
         // extra fine stars packed into the Milky Way
-        x = 140 + rng() * 240;
+        x = 20 + rng() * 330;
         y = rng() * 150;
         const f = milkyField(x, y);
         if (rng() > f.dens * 1.3) continue;
@@ -358,7 +367,7 @@
       const glow = mix(P.moon[2], P.spirit[3], 0.3);
       const core = mix(P.moon[3], P.amber[7], 0.25);
       for (let y = 0; y < 165; y++)
-        for (let x = 100; x < 420; x++) {
+        for (let x = 0; x < 400; x++) {
           const f = milkyField(x, y);
           if (f.dens < 0.1) continue;
           // flat tone levels with a narrow ordered-dither seam between them
@@ -366,7 +375,7 @@
           const lv = q < 0.6 ? 0 : q < 1.45 ? 1 : q < 2.3 ? 2 : 3;
           if (!lv) continue;
           const band = skyAt(lk, x, y);
-          im.set(x, y, lv === 1 ? mix(band, glow, 0.07) : lv === 2 ? mix(band, glow, 0.14) : mix(band, core, 0.22));
+          im.set(x, y, lv === 1 ? mix(band, glow, 0.05) : lv === 2 ? mix(band, glow, 0.1) : mix(band, core, 0.14));
         }
     }
     paintHalo(im, lk, ed.moon);

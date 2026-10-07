@@ -455,7 +455,7 @@
       const k = HD.hash(Math.floor(x / 10), Math.floor(y / 10), 78) < 0.2 ? 1 : 0;
       return RP.autumn[((h < 0.45 ? 0 : h < 0.72 ? 1 : 2) + k) % 3];
     };
-    const bias = ed.id === 'harvest' ? 0.04 : ed.id === 'lights' ? -0.08 : style === 'blossom' ? -0.08 : 0;
+    const bias = ed.id === 'harvest' ? 0.04 : ed.id === 'lights' ? -0.08 : style === 'blossom' ? -0.05 : 0;
     let foliage = null;
     let leafGroups = null; // [group][sway state] tip clumps that ride on their twig
     let twigs = null; // [group][sway state] twigs re-drawn to lead into their clumps
