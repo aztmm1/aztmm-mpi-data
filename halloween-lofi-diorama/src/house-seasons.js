@@ -98,6 +98,7 @@
 
   function snowRoof(R, heavy) {
     const rows = K.courses(21, RF.x0 - 4, RF.x1 + 4, 6, 10);
+    const pillows = K.courses(61, RF.x0 - 4, RF.x1 + 4, 8, 17);
     const x0 = RF.x0 - 2;
     const x1 = RF.x1 + 2;
     const lipBottom = new Map();
@@ -108,11 +109,21 @@
         if (tg !== TG.roof && tg !== TG.moss) continue;
         const right = x >= RF.peakX;
         if (heavy) {
-          // creases between soft drifts, curving gently across the slope
-          const ph = Math.round(2.2 * Math.sin(x * 0.11 + (right ? 1.3 : 0)) + 1.4 * Math.sin(x * 0.29));
-          const crease = (((y + ph) % 9) + 9) % 9 === 0;
+          // soft pillows of snow over the slate courses: broken ledges with a
+          // lit lip above a shadow line, sagging with the roof like the slates
+          const dip = K.roofDip(x);
+          const rc = RF.eave - 2 + Math.round(dip) - y;
+          const band = Math.floor(rc / 8);
+          const v = ((rc % 8) + 8) % 8;
+          const pj = pillows(band);
+          const pk = K.seg(pj, x);
+          const pa = pj[pk];
+          const pb = pk + 1 < pj.length ? pj[pk + 1] : x + 99;
+          const on = HD.hash(band, pk, 63) < 0.62 && band > 0;
           let c = right ? SN[6] : SN[5];
-          if (crease) c = right ? SN[5] : SN[4];
+          if (on && v === 0 && x > pa + 1 && x < pb - 2) c = right ? SN[5] : SN[4];
+          else if (on && v === 1 && x > pa + 2 && x < pb - 3) c = right ? SN[7] : SN[6];
+          else if (on && v === 7 && x > pa + 4 && x < pb - 5 && HD.hash(band, pk, 64) < 0.5) c = right ? SN[7] : SN[6];
           const up = R.tg(x, y - 1);
           if (up !== TG.roof && up !== TG.moss) c = SN[7];
           if (R.get(x - 1, y) === null) c = SN[4];
@@ -168,7 +179,14 @@
         lipBottom.set(x, yb + 1);
       }
     }
-    if (heavy) icicleRun(R, RF.x0 + 1, RF.x1 - 2, (x) => (lipBottom.has(x) ? lipBottom.get(x) : null), 41, 6, 0.42);
+    if (heavy) {
+      icicleRun(R, RF.x0 + 1, RF.x1 - 2, (x) => (lipBottom.has(x) ? lipBottom.get(x) : null), 41, 6, 0.42);
+      // the round attic window: a cap of snow on its frame, a shadow pocket under the sill
+      const a = LH.windows.find((w) => w.round);
+      R.rows(['..mmmmm..', '.mlllllm.', 'm.......m'], a.cx - 4, a.cy - a.r - 4, { m: SN[6], l: SN[7] }, TG.roof);
+      R.hl(a.cx - 4, a.cx + 4, a.cy + a.r + 4, SN[4], TG.roof);
+      R.hl(a.cx - 2, a.cx + 2, a.cy + a.r + 5, SN[5], TG.roof);
+    }
   }
 
   const CONE_TILE = ['BBBBBB', 'BBBBBB', 'OBHHBO', 'BOOOOB'];
@@ -347,13 +365,8 @@
   const HOOK = HD.layout.seasonal.lanternString.from;
   function paintHook(R) {
     const [hx, hy] = HOOK;
-    R.vl(hx - 2, hy - 2, hy + 1, S[1], TG.iron);
-    R.set(hx - 2, hy - 1, S[3], TG.iron);
-    R.set(hx - 1, hy - 1, S[3], TG.iron);
-    R.set(hx, hy - 1, S[4], TG.iron);
-    R.set(hx + 1, hy, S[3], TG.iron);
-    R.set(hx, hy + 1, S[2], TG.iron);
-    R.set(hx, hy, S[1], TG.iron);
+    // p plate (cold iron, moonlit top), a arm, d drop, c curl, s shadow on the wall
+    R.rows(['.P....', 'pPaaaa', 'p....d', 'p..c.d', 's...c.'], hx - 4, hy - 3, { P: S[6], p: S[4], a: S[5], d: S[4], c: S[3], s: S[1] }, TG.iron);
   }
 
   // ===================================================================

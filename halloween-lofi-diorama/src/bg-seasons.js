@@ -49,6 +49,7 @@
       // clear frosty night, a faint rosy glow of lanterns on the horizon
       sky: [N[1], mix(N[1], N[2], 0.5), N[2], mix(N[3], V[1], 0.35), mix(N[4], V[2], 0.35), mix(N[4], V[3], 0.45), mix(N[5], P.red[2], 0.2), mix(N[6], P.red[3], 0.2)],
       land: 'snow',
+      redLanterns: true,
       shoot: { x: 336, y: 20, dx: -0.86, dy: 0.5, len: 58, at: 0.31 },
     },
     spring: {
@@ -56,7 +57,7 @@
       sky: [mix(N[2], V[1], 0.3), mix(N[2], N[3], 0.5), N[3], mix(N[4], V[2], 0.3), mix(N[5], V[3], 0.3), mix(N[5], P.blossom[2], 0.35), mix(N[6], P.blossom[3], 0.35), mix(N[6], P.blossom[3], 0.45)],
       land: 'spring',
       clouds: {
-        far: [mix(N[4], V[3], 0.4), mix(N[5], V[3], 0.4), mix(N[5], P.blossom[3], 0.3), mix(N[6], P.blossom[4], 0.3)],
+        far: [mix(N[4], V[3], 0.45), mix(N[6], V[4], 0.4), mix(N[6], P.blossom[3], 0.32), mix(N[6], P.blossom[4], 0.3)],
         mid: [mix(N[3], V[2], 0.45), mix(N[4], V[3], 0.35), mix(N[5], V[3], 0.3), mix(N[7], P.blossom[4], 0.25)],
         lit: { tgt: [P.moon[0], P.moon[0], P.moon[1]], k: [[0.04, 0.07, 0.12, 0.24], [0.08, 0.13, 0.22, 0.42], [0.14, 0.22, 0.36, 0.6]], r: [[52, 10], [34, 7], [20, 4]] },
       },
@@ -74,7 +75,7 @@
       land: 'autumn',
       rimTint: P.amber[4],
       clouds: {
-        far: [mix(N[4], V[3], 0.5), mix(V[4], P.autumn[2], 0.25), mix(V[4], P.autumn[3], 0.3), mix(V[5], P.autumn[4], 0.3)],
+        far: [mix(N[4], V[3], 0.5), mix(V[4], P.autumn[3], 0.32), mix(V[5], P.autumn[3], 0.34), mix(V[5], P.autumn[4], 0.3)],
         mid: [mix(N[2], V[2], 0.5), mix(N[3], V[3], 0.45), mix(N[4], V[3], 0.45), mix(N[5], V[4], 0.45)],
         lit: { tgt: [P.amber[2], P.amber[3], P.amber[4]], k: [[0.08, 0.12, 0.2, 0.4], [0.14, 0.22, 0.36, 0.62], [0.24, 0.36, 0.52, 0.85]], r: [[84, 12], [56, 8], [34, 5]] },
       },
@@ -88,13 +89,12 @@
     },
     winter: {
       // heavy lilac-grey snow sky, softly bright
-      sky: [mix(N[3], V[2], 0.5), mix(N[4], V[3], 0.45), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5), mix(N[6], V[4], 0.5), mix(N[6], V[5], 0.5), mix(P.snow[4], V[5], 0.5), mix(P.snow[4], V[5], 0.4)],
+      sky: [mix(N[2], V[2], 0.5), mix(N[3], V[2], 0.5), mix(N[3], V[3], 0.5), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5), mix(N[5], V[4], 0.4), mix(N[6], V[5], 0.45), mix(P.snow[4], V[5], 0.45)],
       land: 'snow',
       clouds: {
         deck: true,
-        far: [mix(N[5], V[4], 0.5), mix(N[6], V[4], 0.45), mix(N[6], V[5], 0.4), mix(P.snow[3], V[5], 0.4)],
-        mid: [mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.45), mix(N[6], V[4], 0.4), mix(P.snow[3], V[5], 0.42)],
-        near: [mix(N[2], V[2], 0.55), mix(N[3], V[3], 0.5), mix(N[4], V[3], 0.45), mix(N[5], V[4], 0.42)],
+        mid: [mix(N[4], V[3], 0.55), mix(N[5], V[4], 0.45), mix(N[6], V[4], 0.42), mix(N[6], V[5], 0.42)],
+        near: [mix(N[3], V[2], 0.55), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5), mix(N[5], V[4], 0.3)],
       },
     },
     newyear: {
@@ -427,26 +427,36 @@
   // horizon upward so the nearer (higher) masses hang their dark bellies over
   // the lit tops of the farther ones. Geometry is edition independent.
   // ------------------------------------------------------------------
-  function genDeck(seed, w, h, rows) {
+  function genDeck(seed, w, h, rows, fillTo) {
     const rng = HD.rng(seed);
     const tn = new K.Tones(w, h);
+    // a continuous ceiling down to a gently lumpy line: the masses below only
+    // add lit tops and dark bellies, so the deck reads as one heavy sky
+    if (fillTo) {
+      const ph = rng() * 6.28;
+      for (let x = 0; x < w; x++) {
+        const yb = Math.round(fillTo + 3 * Math.sin((x / w) * 6.283 * 3 + ph) + 2 * Math.sin((x / w) * 6.283 * 7 + ph * 2));
+        for (let y = 0; y <= yb; y++) tn.put(x, y, 2);
+      }
+    }
     for (const r of rows) {
-      // r: [yBase, ryMin, ryMax, stretch, under]
-      let x = rng() * 30;
+      // r: [yBase, ryMin, ryMax, stretch, under, gap]
+      let x = rng() * 40;
       const x0 = x;
       while (x < x0 + w) {
         const ry = r[1] + rng() * (r[2] - r[1]);
-        const rx = ry * (r[3] + rng() * 0.8);
+        const rx = ry * (r[3] + rng() * 1.2);
+        const yb = r[0] + (rng() - 0.5) * ry * 0.9;
         const mass = [];
-        const n = 2 + Math.floor(rng() * 3);
+        const n = 2 + Math.floor(rng() * 2);
         for (let j = 0; j < n; j++) {
-          const u = n === 1 ? 0.5 : j / (n - 1);
+          const u = j / (n - 1);
           const hump = Math.sin(Math.PI * (0.15 + 0.7 * u));
           const pr = ry * (0.55 + 0.45 * hump) * (0.85 + rng() * 0.3);
-          mass.push([x + u * rx * 1.6, r[0] - pr * 0.6 - rng() * 1.5, pr * (1.25 + rng() * 0.4), pr, r[0] + 1, j > 0 && rng() < 0.6]);
+          mass.push([x + u * rx * 2 + (rng() - 0.5) * 4, yb - pr * 0.5 - rng() * 2, pr * (1.7 + rng() * 0.6), pr, yb + (rng() < 0.4 ? 2 : 0), j > 0 && rng() < 0.35]);
         }
         K.cloud(tn, mass, true, r[4]);
-        x += rx * 1.6 + ry * (0.6 + rng() * 0.9);
+        x += rx * 2 + ry * r[5] * (0.2 + rng());
       }
     }
     K.tidy(tn, 2);
@@ -456,10 +466,10 @@
   function deckLayers() {
     if (deckGeo) return deckGeo;
     deckGeo = {
-      // low deck towards the horizon: flatter, smaller masses (1 tile / loop)
-      mid: { y: 40, w: 480, h: 96, k: 1, tn: genDeck(9151, 480, 96, [[92, 3, 5, 2.6, 2], [80, 4, 6, 2.4, 2], [66, 5, 8, 2.2, 3], [50, 6, 9, 2, 3], [34, 6, 10, 2, 3]]) },
-      // overhead deck: big heavy masses (2 tiles / loop)
-      near: { y: 0, w: 480, h: 58, k: 2, tn: genDeck(7717, 480, 58, [[50, 7, 10, 1.8, 3], [36, 8, 12, 1.8, 3], [20, 9, 13, 1.7, 4], [6, 9, 12, 1.7, 3]]) },
+      // low deck towards the horizon: long flat masses (1 tile / loop)
+      mid: { y: 40, w: 600, h: 96, k: 1, tn: genDeck(9151, 600, 96, [[90, 3, 5, 4, 2, 1.4], [76, 5, 8, 3.2, 2, 0.8], [60, 7, 10, 2.8, 3, 0.6], [40, 9, 13, 2.8, 3, 0.9]], 56) },
+      // overhead deck: a few big, heavy masses (2 tiles / loop)
+      near: { y: 0, w: 480, h: 52, k: 2, tn: genDeck(7717, 480, 52, [[42, 9, 12, 2.8, 3, 0.9], [20, 12, 15, 2.6, 3, 1.1]], 46) },
     };
     return deckGeo;
   }
@@ -541,7 +551,7 @@
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
           { base: mix(mix(P.leaf[5], P.vine[4], 0.4), N[4], 0.3), light: mix(P.leaf[7], N[7], 0.3), dark: mix(P.leaf[3], N[3], 0.3) },
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
-          { base: mix(P.blossom[5], N[7], 0.55), light: mix(P.blossom[6], N[9], 0.45), dark: mix(P.leaf[3], N[3], 0.35), blossom: true },
+          { base: mix(P.blossom[2], N[4], 0.3), light: mix(P.blossom[4], N[6], 0.35), dark: mix(P.blossom[1], N[2], 0.45), blossom: true },
         ],
         speck: mix(P.blossom[6], N[8], 0.4),
         speck2: mix(P.blossom[7], N[10], 0.3),
@@ -714,11 +724,14 @@
       for (let xx = tr.x - half; xx <= tr.x + half; xx++) {
         let col = c.pine;
         if (snow) {
+          // dark boughs with snow resting on each tier: the narrow first row of
+          // a tier is snow (shaded on the right), the drooping tips catch some too
           const m = r % 3;
-          if (r < 2) col = c.pineSnowTop;
-          else if (m === 0) col = c.pineSnow;
-          else if (m === 1) col = xx <= tr.x ? c.pineSnow : c.pineSnowMid;
-          else if (Math.abs(xx - tr.x) > above) col = c.pineSnowMid;
+          const edge = Math.abs(xx - tr.x) === half;
+          if (r === 0) col = c.pineSnowTop;
+          else if (r === 1) col = c.pine;
+          else if (m === 0) col = xx > tr.x && edge ? c.pineSnowMid : c.pineSnow;
+          else if (m === 1) col = edge && half > above ? (xx < tr.x ? c.pineSnow : c.pineSnowMid) : c.pine;
         }
         S(xx, y, col);
       }
@@ -729,10 +742,11 @@
   function drawCanopy(S, tr, c, kind, rim, rimTint) {
     const pick = HD.hash(tr.x, 991, 7, 2);
     const cp = c.canopy[Math.floor(pick * c.canopy.length) % c.canopy.length];
-    const rx = Math.max(2, tr.hw + 1);
-    const ry = Math.max(2, Math.round(tr.h * 0.42));
-    const cy = tr.b - Math.round(tr.h * 0.48);
-    const twin = (tr.h > 9 && pick > 0.5) || (cp.blossom && tr.h > 6); // wide crowns get a second lobe
+    const small = cp.blossom ? 1 : 0; // blossom trees: smaller crowns on a visible trunk
+    const rx = Math.max(2, tr.hw + 1 - small);
+    const ry = Math.max(2, Math.round(tr.h * 0.42) - small);
+    const cy = tr.b - Math.round(tr.h * 0.48) - small;
+    const twin = tr.h > 9 && pick > 0.5 && !cp.blossom; // wide crowns get a second lobe
     const lobes = [[tr.x, cy, rx, ry]];
     if (twin) lobes.push([tr.x + (pick > 0.75 ? 2 : -2), cy - 2, rx - 1, ry - 1]);
     const inside = (x, y) => {
@@ -769,26 +783,36 @@
       S(sx + 1, sy + 1, c.speck);
       if (rx > 2) S(sx - 2, sy + 2, c.speck);
     } else if (cp.blossom) {
-      S(tr.x, cy - ry + 1, c.speck2);
-      S(tr.x + 1, cy - 1, c.speck);
+      // little clusters of pale bloom scattered through the pink crown
+      for (let y = y0; y <= y1; y++)
+        for (let x = x0; x <= x1; x++) {
+          if (!inside(x, y) || !inside(x + 1, y) || !inside(x, y + 1)) continue;
+          if (HD.hash(x >> 1, y >> 1, tr.x, 17) < 0.3 && ((x + y) & 1) === 0) S(x, y, HD.hash(x, y, 3, 9) < 0.5 ? c.speck2 : c.speck);
+        }
     }
   }
   const landArt = HD.perEdition(bakeLand);
 
   // chapel lamps for the festival of lights: tiny diyas along the eaves and sill
+  // (they trace the silhouette: the gable, the tower cornice and the footing)
   const CHAPEL_LAMPS = [
+    [56, 128],
+    [59, 125],
+    [62, 122],
+    [66, 122],
+    [70, 122],
+    [73, 125],
+    [76, 128],
+    [48, 119],
+    [57, 119],
+    [50, 140],
+    [53, 140],
     [58, 140],
     [61, 140],
     [64, 140],
     [70, 140],
     [73, 140],
-    [76, 140],
-    [49, 140],
-    [55, 140],
-    [48, 119],
-    [57, 119],
-    [66, 122],
-    [79, 132],
+    [77, 140],
   ];
 
   function drawLandLights(g, t, lk) {
@@ -800,6 +824,13 @@
     for (let i = 0; i < C.length; i++) {
       const k = T.noise(t, 13, 91 + i);
       g.px(C[i].x, C[i].y, k > 0.5 ? P.amber[4] : P.amber[3]);
+    }
+    if (lk.redLanterns) {
+      // a red lantern glows by each far cottage door
+      for (let i = 0; i < C.length; i++) {
+        const f = T.flicker(T.step(t, 8), 360 + i, 0.6);
+        g.px(C[i].x + 2, C[i].y, f > 0.45 ? P.red[6] : P.red[5]);
+      }
     }
     if (lk.lamps) {
       for (let i = 0; i < CHAPEL_LAMPS.length; i++) {

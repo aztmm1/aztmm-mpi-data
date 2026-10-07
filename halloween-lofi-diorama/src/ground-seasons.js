@@ -110,6 +110,13 @@
           if (kind === 'ice') {
             c = r.dy < 0 ? P.ice[2] : P.ice[1];
             if (r.dy > 0 && Math.abs(x - cx) > r.hw - 3) c = P.ice[0];
+            // frost creeping in from the banks, in soft blotches (matte: drawn
+            // above the reflection); the clear middle stays a dark mirror
+            const fr = K.vn(x / 4, r.y / 1.4, 9200 + pi) + (Math.abs(x - cx) / (r.hw + 1)) * 0.55;
+            if (fr > 1.02) {
+              c = fr > 1.2 ? P.ice[4] : P.ice[3];
+              K.over(x, r.y);
+            }
             if (edge) {
               c = r.dy <= 0 ? S[6] : P.ice[3]; // frosted rim
               K.over(x, r.y);
@@ -196,14 +203,14 @@
       K.set(x, y, c);
       K.over(x, y);
     };
+    const padHi = mix(P.leaf[7], P.gold[4], 0.18);
     for (const [dx, dy, w] of pads) {
       const x0 = cx + dx;
       const y0 = cy + dy;
-      // a pad seen low: two rows, a notch in the top row
-      for (let i = 0; i < w; i++) put(x0 + i, y0, i === w - 1 ? P.leaf[3] : P.leaf[4]);
-      for (let i = 1; i < w - 1; i++) if (i !== 1 || w < 5) put(x0 + i, y0 - 1, i === 1 ? P.leaf[6] : P.leaf[5]);
-      if (w >= 5) put(x0 + 3, y0 - 1, P.leaf[5]);
-      put(x0 + 1, y0 + 1, P.leaf[2]);
+      // a pad seen low: a flat oval with a notch, lit far rim, dark water line
+      for (let i = 0; i < w; i++) put(x0 + i, y0, i === w - 1 ? P.leaf[4] : i === 0 ? P.leaf[5] : P.leaf[6]);
+      for (let i = 1; i < w - 1; i++) if (!(w >= 5 && i === 2)) put(x0 + i, y0 - 1, i === 1 ? padHi : P.leaf[7]);
+      for (let i = 1; i < w - 1; i++) put(x0 + i, y0 + 1, P.leaf[2]); // waterline shadow
     }
     if (pi === 0) {
       // the one water lily, on the far right pad
@@ -315,7 +322,11 @@
     }
   }
 
-  /** frost the topsoil band of the cut face (snow editions) */
+  /**
+   * Frost the topsoil band of the cut face (snow editions): a cold blue-grey
+   * frozen layer with glassy ice lenses and a fringe of needle ice where it
+   * meets the unfrozen soil below.
+   */
   function frozenLayer(K, thick) {
     const { FRONT } = K;
     const { C } = K.raw();
@@ -323,7 +334,7 @@
     const frost = (c, k) => {
       const key = c + k;
       let v = memo.get(key);
-      if (!v) memo.set(key, (v = mix(c, P.ice[1], k)));
+      if (!v) memo.set(key, (v = mix(c, P.ice[2], k)));
       return v;
     };
     const fl = (x) => FRONT + 2 + thick + Math.round((K.vn(x / 11, 5, 61) - 0.5) * 2.6);
@@ -333,53 +344,31 @@
         const k = K.at(x, y);
         if (k < 0 || !C[k]) continue;
         const deep = (y - FRONT - 2) / Math.max(1, yb - FRONT - 2);
-        C[k] = frost(C[k], 0.6 - deep * 0.2);
+        C[k] = frost(C[k], deep < 0.75 ? 0.55 : 0.38);
       }
-      // the frost front: a broken pale line
-      if (HD.hash(x, 9, 61) > 0.25) K.set(x, yb + 1, mix(P.soil[3], P.ice[2], 0.4));
+      // the frost front: a broken pale line with needle ice hanging from it
+      if (HD.hash(x, 9, 61) > 0.22) K.set(x, yb + 1, mix(P.soil[3], P.ice[3], 0.45));
+      const nd = K.vn(x / 5, 6, 62);
+      if (nd > 0.55 && HD.hash(x, 10, 61) < 0.55) {
+        const len = 1 + Math.floor(HD.hash(x, 13, 61) * 2.4);
+        for (let j = 0; j < len; j++) K.set(x, yb + 2 + j, j === len - 1 ? P.ice[2] : mix(P.ice[3], P.soil[3], 0.3));
+      }
     }
     // ice lenses: short glassy streaks in the frozen band
     const r = HD.rng(6161);
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < 30; i++) {
       const x = Math.floor(r() * W);
       const yb = fl(x);
-      const y = FRONT + 3 + Math.floor(r() * Math.max(1, yb - FRONT - 3));
-      const len = 2 + Math.floor(r() * 4);
-      for (let j = 0; j < len; j++) K.set(x + j, y, j === 0 ? P.ice[4] : P.ice[3]);
-      if (len > 3) K.set(x + 1, y - 1, P.ice[1]);
+      const y = FRONT + 4 + Math.floor(r() * Math.max(1, yb - FRONT - 4));
+      const len = 3 + Math.floor(r() * 4);
+      for (let j = 0; j < len; j++) K.set(x + j, y, j === 0 ? P.ice[5] : j < len - 1 ? P.ice[4] : P.ice[3]);
+      K.set(x + 1, y + 1, P.ice[1]);
     }
   }
 
   // ------------------------------------------------------------------
   // snow surfaces
   // ------------------------------------------------------------------
-  /** height field of soft drifts (deep snow) */
-  function driftField(K) {
-    const { BACK, FRONT } = K;
-    const Hh = FRONT - BACK + 6;
-    const hf = new Float32Array(W * Hh);
-    const r = HD.rng(3203);
-    const mounds = [];
-    for (let i = 0; i < 18; i++) mounds.push([r() * W, BACK + 4 + r() * (FRONT - BACK - 6), 26 + r() * 50, 3.5 + r() * 3.5, 0.7 + r() * 0.6]);
-    // banked snow along the back edge, the house front, the left and right ends
-    mounds.push([30, 214, 46, 9, 1.4], [455, 214, 50, 9, 1.3], [233, 207, 80, 2.6, 1.0], [120, 205, 60, 4, 0.8], [360, 206, 60, 4, 0.8]);
-    for (let yy = 0; yy < Hh; yy++) {
-      const y = BACK - 2 + yy;
-      for (let x = 0; x < W; x++) {
-        let h = (K.vn(x / 40, y / 9, 311) - 0.5) * 0.6;
-        for (const [mx, my, rx, ry, a] of mounds) {
-          const e = ((x - mx) / rx) ** 2 + ((y - my) / ry) ** 2;
-          if (e < 1) h += a * (1 - e) * (1 - e);
-        }
-        hf[yy * W + x] = h;
-      }
-    }
-    return (x, y) => {
-      const yy = clamp(Math.round(y) - BACK + 2, 0, Hh - 1);
-      return hf[yy * W + clamp(Math.round(x), 0, W - 1)];
-    };
-  }
-
   function distToPath(x, y, pts, ky) {
     let best = 1e9;
     for (let i = 0; i + 1 < pts.length; i++) {
@@ -421,42 +410,130 @@
       for (; acc <= len; acc += step, n++) {
         const k = acc / len;
         const side = n % 2 ? 1 : -1;
-        const x = Math.round(ax + (bx - ax) * k + nx * side * 1.6);
-        const y = Math.round(ay + (by - ay) * k + ny * side * 0.7);
+        const w = o.wide || 1;
+        const x = Math.round(ax + (bx - ax) * k + nx * side * 1.6 * w);
+        const y = Math.round(ay + (by - ay) * k + ny * side * 0.7 * w);
         if (o.onlyOn && !o.onlyOn(x, y)) continue;
         if (K.mask(x, y) & (K.PUD | K.RIM)) continue;
         K.set(x, y, o.dark);
         K.set(x + 1, y, o.mid);
-        if (o.lip) K.set(x, y - 1, o.lip);
+        if (o.lip) {
+          K.set(x, y + 1, o.lip); // pressed-up rim on the near side
+          K.set(x + 1, y + 1, o.lip);
+        }
       }
       acc -= len;
     }
   }
 
+  /**
+   * Soft drift lenses: each drift is a raised lens of brighter snow with a
+   * moonlit crest on its far edge and a cold shadow tucked under its near
+   * edge. Drawn back to front so nearer drifts overlap farther ones.
+   */
+  const DRIFTS = [
+    // x, y (centre), rx, ry, seed
+    [22, 210, 26, 4.2, 1],
+    [64, 212, 22, 3.4, 2],
+    [124, 207, 20, 2.6, 3],
+    [302, 209, 14, 2.4, 4],
+    [368, 209, 18, 2.6, 5],
+    [446, 211, 24, 4.0, 6],
+    [44, 222, 24, 3.6, 7],
+    [98, 220, 18, 3.0, 8],
+    [162, 218, 18, 3.0, 9],
+    [282, 217, 16, 2.6, 10],
+    [404, 221, 22, 3.6, 11],
+    [470, 222, 16, 3.4, 12],
+    [16, 232, 22, 4.0, 13],
+    [118, 232, 26, 4.2, 14],
+    [176, 233, 14, 3.0, 15],
+    [270, 234, 18, 3.0, 16],
+    [344, 233, 24, 3.8, 17],
+    [440, 233, 22, 3.8, 18],
+  ];
+  function drifts(K, list, skip) {
+    const { BACK, FRONT, PUD, RIM } = K;
+    const sorted = list.slice().sort((a, b) => a[1] - b[1]);
+    for (const [cx, cy, rx, ry, sd] of sorted) {
+      const inL = (x, y) => {
+        const u = (x - cx) / rx;
+        const v = (y - cy) / ry;
+        return u * u + v * v + (K.vn(x / 7, y / 2, 330 + sd) - 0.5) * 0.45 < 1;
+      };
+      const x0 = Math.floor(cx - rx - 2);
+      const x1 = Math.ceil(cx + rx + 2);
+      for (let y = Math.floor(cy - ry - 2); y <= Math.ceil(cy + ry + 3); y++) {
+        if (y < BACK + 1 || y >= FRONT - 1) continue;
+        for (let x = x0; x <= x1; x++) {
+          if (K.mask(x, y) & (PUD | RIM) || (skip && skip(x, y))) continue;
+          const u = Math.abs(x - cx) / rx;
+          if (inL(x, y)) {
+            let c = S[6];
+            if (!inL(x, y - 1)) c = u < 0.6 ? S[7] : S[6]; // moonlit crest
+            else if (!inL(x, y + 1)) c = S[5]; // rolling down to the near edge
+            K.set(x, y, c);
+          } else if (inL(x, y - 1) && u < 0.85) K.set(x, y, u < 0.55 || bayer(x, y) < 0.5 ? S[4] : S[5]); // soft shadow under it
+          else if (inL(x, y - 2) && u < 0.45 && bayer(x, y) < 0.35) K.set(x, y, S[4]);
+        }
+      }
+    }
+  }
+
   function deepSnow(K) {
     const { BACK, FRONT } = K;
-    const h = driftField(K);
     for (let y = BACK; y < FRONT; y++) {
       const d = K.depth(y);
       for (let x = 0; x < W; x++) {
-        const slope = h(x, y) - h(x, y + 1.5);
-        let v = 4.35 + d * 0.9 + slope * 2.3 + (K.vn(x / 11, y / 3, 317) - 0.5) * 0.35;
-        if (y < BACK + 3) v -= (BACK + 3 - y) * 0.3;
-        const tp = distToPath(x, y, TRAIL, 1);
-        if (tp < 3.4) v = 4.1 + (K.vn(x / 3, y / 1.5, 318) - 0.5) * 0.7; // trodden
-        else if (tp < 4.6) v = Math.max(v, 5.6); // shoved-up banks either side
-        K.set(x, y, S[K.qd(v, x, y, 3, 7, 0.3)]);
+        let v = 4.75 + d * 0.95 + (K.fbm(x / 26, y / 5, 317) - 0.5) * 1.0;
+        if (y < BACK + 3) v -= (BACK + 3 - y) * 0.45;
+        K.set(x, y, S[K.qd(v, x, y, 4, 6, 0.3)]);
       }
     }
     despeckle(K, BACK + 1, FRONT - 1);
-    // contact shadow where the house and turret meet the snow
-    for (let x = 166; x <= 300; x++) {
+    const trailD = (x, y) => distToPath(x, y, TRAIL, 1);
+    drifts(K, DRIFTS, (x, y) => trailD(x, y) < 5.5 || (x > 202 && x < 238 && y < 216));
+    // snow banked against the house and turret walls, with a contact shadow
+    for (let x = 164; x <= 302; x++) {
       if (x >= 204 && x <= 236) continue;
+      const hb = 1 + Math.round(K.vn(x / 6, 2, 341) * 1.6);
       K.set(x, 206, S[3]);
-      if (HD.hash(x, 1, 206) < 0.5) K.set(x, 207, S[4]);
+      K.set(x, 207, HD.hash(x, 1, 206) < 0.5 ? S[4] : S[5]);
+      for (let j = 0; j < hb; j++) K.set(x, 208 + j, j === 0 ? S[7] : S[6]);
+      K.set(x, 208 + hb, S[5]);
     }
-    footprints(K, TRAIL, { dark: S[2], mid: S[3], lip: S[5] });
-    footprints(K, SNOWMAN_TRAIL, { dark: S[3], mid: S[4], step: 4.2 });
+    // the trodden trail from the steps to the front lip: packed, greyer snow
+    // between two shoved-up banks
+    for (let y = 210; y < FRONT; y++)
+      for (let x = 180; x < 240; x++) {
+        const tp = trailD(x, y);
+        if (tp < 3.2) K.set(x, y, HD.hash(x >> 1, y, 318) < 0.18 ? S[3] : S[4]);
+        else if (tp < 4.4) K.set(x, y, trailD(x, y - 1) >= 4.4 ? S[7] : S[6]); // shoved-up banks else if (tp < 5.4 && bayer(x, y) < 0.5) K.set(x, y, S[5]);
+      }
+    footprints(K, TRAIL, { dark: S[2], mid: S[3], lip: S[6], step: 3.4, wide: 1.4 });
+    footprints(K, SNOWMAN_TRAIL, { dark: S[3], mid: S[4], lip: S[7], step: 4.2 });
+    // sled runner tracks curving away from the sled
+    {
+      const runner = [
+        [322, 216],
+        [300, 218],
+        [276, 221],
+        [262, 223],
+      ];
+      for (const off of [0, 2]) {
+        for (let i = 0; i + 1 < runner.length; i++) {
+          const [ax, ay] = runner[i];
+          const [bx, by] = runner[i + 1];
+          const n = Math.max(Math.abs(bx - ax), Math.abs(by - ay));
+          for (let s = 0; s <= n; s++) {
+            const x = Math.round(ax + ((bx - ax) * s) / n);
+            const y = Math.round(ay + ((by - ay) * s) / n) + off;
+            if (K.mask(x, y) & (K.PUD | K.RIM)) continue;
+            K.set(x, y, off ? S[4] : S[3]);
+          }
+        }
+      }
+    }
   }
 
   function snowBackEdge(K) {
@@ -475,23 +552,51 @@
     }
   }
 
-  /** snow cornice hanging over the cut */
+  /**
+   * Snow cornice hanging over the cut: a moonlit crest along the lip, a
+   * rounded lumpy overhang (lit, it catches warm light), a cold underside,
+   * a dark shadow line on the soil below and the odd icicle.
+   */
   function snowLip(K, o) {
     const { FRONT } = K;
+    const prof = new Int8Array(W);
     for (let x = 0; x < W; x++) {
-      const on = o.cover ? o.cover(x) : true;
-      if (!on) continue;
-      let od = o.depth + Math.round(K.vn(x / 8, 3, 51) * o.var);
-      if (HD.hash(x >> 2, 3, 52) < 0.12) od++; // little lumps
+      if (o.cover && !o.cover(x)) {
+        prof[x] = -1;
+        continue;
+      }
+      // big soft lumps plus a few heavier droops
+      let od = o.depth + K.vn(x / 9, 3, 51) * o.var;
+      const lump = Math.floor(x / 14);
+      if (HD.hash(lump, 3, 52) < (o.droop || 0.18)) {
+        const u = (x - lump * 14 - 7) / 7;
+        od += Math.max(0, 1 - u * u) * 2.2;
+      }
+      prof[x] = Math.max(1, Math.round(od));
+    }
+    // round off single-pixel steps so the hanging edge reads as soft
+    for (let x = 1; x < W - 1; x++) if (prof[x] > 0 && prof[x - 1] > 0 && prof[x + 1] > 0 && prof[x] > prof[x - 1] && prof[x] > prof[x + 1]) prof[x]--;
+    for (let x = 0; x < W; x++) {
+      const od = prof[x];
+      if (od < 0) continue;
       K.setLit(x, FRONT - 1, S[o.depth > 2 ? 7 : 6], 1);
-      K.setLit(x, FRONT, S[6], 1);
-      for (let j = 1; j < od; j++) K.setLit(x, FRONT + j, j === od - 1 ? S[3] : j === 1 ? S[5] : S[4], 1);
-      K.setLit(x, FRONT + od, P.soil[0], 0);
-      if (o.depth > 2) K.setLit(x, FRONT + od + 1, P.soil[1], 0);
-      // the odd icicle under the overhang
-      if (o.icicles && HD.hash(x, 11, 53) < 0.05) {
-        K.setLit(x, FRONT + od, P.ice[3], 0);
-        if (HD.hash(x, 12, 53) < 0.6) K.setLit(x, FRONT + od + 1, P.ice[2], 0);
+      K.setLit(x, FRONT, o.depth > 2 ? S[7] : S[6], 1);
+      for (let j = 1; j <= od; j++) {
+        let c = S[5];
+        if (j === od) c = S[3]; // cold underside
+        else if (j === od - 1 && od > 2) c = S[4];
+        else if (j === 1) c = S[6];
+        K.setLit(x, FRONT + j, c, 1);
+      }
+      // the end of a run of snow tapers
+      const edge = (x > 0 && prof[x - 1] < 0) || (x < W - 1 && prof[x + 1] < 0);
+      if (edge) K.setLit(x, FRONT + od, S[3], 1);
+      K.setLit(x, FRONT + od + 1, P.soil[0], 0);
+      if (o.depth > 2 && HD.hash(x, 2, 53) < 0.6) K.setLit(x, FRONT + od + 2, P.soil[1], 0);
+      // icicles under the overhang (tapering, glassy)
+      if (o.icicles && HD.hash(x, 11, 53) < 0.06 && !edge) {
+        const len = 1 + Math.floor(HD.hash(x, 12, 53) * 3.2);
+        for (let j = 0; j < len; j++) K.setLit(x, FRONT + od + 1 + j, j === len - 1 ? P.ice[5] : j === 0 ? P.ice[3] : P.ice[4], 0);
       }
     }
   }
@@ -529,12 +634,23 @@
     for (let y = BACK; y < FRONT; y++)
       for (let x = 0; x < W; x++) {
         if (!g(x, y)) continue;
-        let c = S[5];
-        if (!g(x, y - 1)) c = S[6];
-        else if (!g(x, y + 1)) c = S[3];
-        else if (!g(x, y + 2) || !g(x - 2, y) || !g(x + 2, y)) c = S[4];
-        else if (K.vn(x / 7, y / 2, seed + 4) < 0.25) c = S[4];
-        K.set(x, y, c);
+        // index into the snow ramp: lit top edge, body, cold near edge
+        let i = 5;
+        if (!g(x, y - 1)) i = 6;
+        else if (!g(x, y + 1)) i = 3;
+        else if (!g(x - 1, y) || !g(x + 1, y)) i = 4;
+        else {
+          const n = K.vn(x / 9, y / 2.2, seed + 4);
+          if (n > 0.7) i = 6; // soft brighter mounds
+          else if (n < 0.18 && bayer(x, y) < 0.5) i = 4;
+        }
+        // snow near the campfire: keep it a step darker so the warm relight
+        // reads as glow on snow instead of blowing out to paper-white
+        if (ed.fire !== 'none') {
+          const e = ((x - cf.x) / 96) ** 2 + ((y - cf.base) / 26) ** 2;
+          if (e < 1) i -= e < 0.45 ? 2 : 1;
+        }
+        K.set(x, y, S[clamp(i, 2, 7)]);
       }
     return g;
   }
@@ -842,9 +958,9 @@
   // hibernating frog curled in a mud pocket
   SECRET['hibernating-frog'] = (K) => {
     pocket(K, 367, 253, 10, 4.2, (x, y) => (K.vn(x / 3, y / 2, 701) > 0.6 ? P.soil[2] : mix(P.soil[1], P.violet[1], 0.5)), P.soil[0], 702);
-    const fr = { h: mix(P.leaf[6], P.vine[4], 0.4), G: mix(P.leaf[4], P.vine[3], 0.4), d: P.leaf[2], e: P.leaf[0], b: mix(P.bone[1], P.leaf[4], 0.5) };
-    stamp(K, ['..hhh......', '.hGGGhhh...', 'hGeeGGGGGh.', 'GbGGGGGGGGh', 'bbGGdGGGGGd', '.bbddd.dddd'], 362, 250, fr);
-    return { breathe: [368, 250, fr.h] };
+    const fr = { h: mix(P.leaf[7], P.gold[3], 0.22), G: mix(P.leaf[5], P.vine[4], 0.3), d: P.leaf[3], k: P.leaf[1], b: mix(P.bone[2], P.leaf[6], 0.45) };
+    stamp(K, ['..hhh.......', '.hGGGh.hhh..', 'hGkkGGhGGGh.', 'GGGGGGGGGGGh', 'bGGGGdGGGGGd', 'bbGGdGGGGGd.', '.bbbddddd...'], 361, 250, fr);
+    return { breathe: [367, 250, fr.h] };
   };
   // a rabbit asleep at the end of its burrow
   SECRET['rabbit-burrow'] = (K) => {
@@ -852,9 +968,10 @@
     pocket(K, 366, 253, 12, 4.6, P.soil[1], P.soil[0], 711);
     // dry grass bedding
     for (let x = 356; x <= 377; x++) if (HD.hash(x, 7, 712) < 0.7) K.set(x, 256 + (HD.hash(x, 8, 712) < 0.3 ? 1 : 0), P.vine[3]);
-    const rb = { E: P.stone[5], p: P.blossom[3], B: mix(P.stone[4], P.wood[5], 0.4), h: P.stone[6], k: P.soil[0], n: P.blossom[4], t: P.bone[3], d: P.stone[2] };
-    stamp(K, ['...EEEEEE....', '..hEppppEh...', '.hBBBBBBBBBh.', 'hBkBBBBBBBBBt', 'BnBBBBBBBBBtt', '.dddddddddd..'], 359, 250, rb);
-    return { breathe: [365, 251, rb.h] };
+    const rbB = mix(P.stone[6], P.wood[6], 0.45);
+    const rb = { E: mix(P.stone[5], P.wood[5], 0.4), p: P.blossom[4], B: rbB, h: mix(P.stone[7], P.bone[2], 0.5), k: P.soil[0], n: P.blossom[5], T: P.bone[3], b: mix(rbB, P.bone[2], 0.4), d: P.stone[2] };
+    stamp(K, ['....EEEEE.....', '..EEppppEE....', '.hhBBBBBBhhh..', 'hBBkBBBBBBBBh.', 'nBBBBBBBBBBBBT', '.BBBbbbBBBBBTT', '..ddd..ddddd..'], 359, 249, rb);
+    return { breathe: [366, 251, rb.h] };
   };
   // ant colony: tunnels, chambers with eggs, ants on the move (4 fps)
   const ANT_PATHS = [
@@ -877,21 +994,26 @@
       K.set(x, y, P.bone[2]);
       K.set(x + 1, y, P.bone[1]);
     }
-    for (const [x, y] of [[378, 256], [380, 257], [382, 256]]) K.set(x, y, P.gold[2]);
+    for (const [x, y] of [[378, 256], [380, 257], [382, 256]]) K.set(x, y, P.gold[3]);
+    // a pale packed floor under every tunnel so the network reads
+    for (let y = 240; y < 262; y++)
+      for (let x = 298; x < 392; x++)
+        if (K.mask(x, y) & K.COF && !(K.mask(x, y + 1) & K.COF) && K.get(x, y) === P.soil[0]) K.set(x, y + 1, P.soil[5]);
     return { ants: true };
   };
   // a squirrel's acorn cache
   SECRET['squirrel-stash'] = (K) => {
     tunnel(K, [[336, 241], [342, 245], [350, 249]], P.soil[1], 3);
-    pocket(K, 364, 253, 11, 4.4, P.soil[1], P.soil[0], 721);
+    pocket(K, 364, 252.5, 13, 5.4, P.soil[1], P.soil[0], 721);
     for (let x = 354; x <= 375; x++) if (HD.hash(x, 7, 722) < 0.8) K.set(x, 256 + (HD.hash(x, 9, 722) < 0.3 ? 1 : 0), HD.hash(x, 5, 722) < 0.5 ? P.autumn[2] : P.autumn[1]);
-    const ac = { c: P.wood[3], C: P.wood[5], H: P.wood[6], n: P.autumn[3], N: P.autumn[5], d: P.autumn[2] };
-    const A = ['.c.', 'CHC', 'nNn', '.d.'];
-    const B = ['.c.', 'CCH', 'nnN', '.n.'];
-    const heap = [[356, 252], [359, 252], [362, 252], [365, 252], [368, 252], [371, 252], [358, 249], [361, 249], [364, 249], [367, 249], [362, 246]];
-    heap.forEach(([x, y], i) => stamp(K, i % 3 ? A : B, x, y + 1, ac));
-    // one acorn rolled aside
-    stamp(K, ['.cC', 'nNn', '.n.'], 375, 254, ac);
+    const ac = { s: P.wood[2], c: P.wood[3], C: mix(P.wood[6], P.autumn[3], 0.35), N: P.autumn[6], n: P.autumn[4], d: P.autumn[2] };
+    const A = ['.s..', 'cCCc', 'nNNn', '.dd.'];
+    const B = ['..s.', 'cCCc', 'nNnn', '.dd.'];
+    const heap = [[358, 247], [363, 247], [355, 250], [360, 250], [365, 250], [352, 253], [357, 253], [362, 253], [367, 253], [372, 253]];
+    heap.forEach(([x, y], i) => stamp(K, i % 2 ? A : B, x, y, ac));
+    // one acorn rolled aside, and a lost cap
+    stamp(K, B, 377, 254, ac);
+    stamp(K, ['cCc'], 372, 249, ac);
     return {};
   };
   // a clay pot of gold coins, tipped over
@@ -905,14 +1027,18 @@
   };
   // hedgehog asleep in a leaf nest
   SECRET['hedgehog'] = (K) => {
-    pocket(K, 366, 253, 12, 4.8, (x, y) => (K.vn(x / 2, y / 1.5, 741) > 0.55 ? P.autumn[2] : HD.hash(x, y, 742) < 0.5 ? P.autumn[1] : P.wood[3]), P.soil[0], 743);
-    const hh = { s: mix(P.stone[5], P.wood[6], 0.4), S: P.wood[4], T: P.wood[3], F: mix(P.bone[1], P.wood[5], 0.4), k: P.soil[0], n: P.night[0] };
-    stamp(K, ['...s.s.s....', '..sSsSsSs...', '.sSTSTSTSs..', 'sSTSTSTSTSs.', 'FFkSTSTSTSs.', 'nFFFTTTTTT..'], 359, 250, hh);
+    // a nest of dry leaves in a dark hollow
+    pocket(K, 366, 253, 12, 4.8, (x, y) => {
+      const h = HD.hash(x >> 1, y, 742);
+      return K.vn(x / 2, y / 1.5, 741) > 0.62 ? P.autumn[3] : h < 0.35 ? P.autumn[2] : h < 0.6 ? P.wood[3] : P.soil[1];
+    }, P.soil[0], 743);
+    const hh = { s: mix(P.stone[6], P.bone[1], 0.5), T: P.wood[2], F: mix(P.bone[2], P.wood[6], 0.45), k: P.soil[0], e: P.wood[1] };
+    stamp(K, ['...sTsTsT....', '..sTsTsTsTs..', '.sTsTsTsTsTs.', 'FesTsTsTsTsTs', 'kFFFsTsTsTsT.', '.FFFFTTTTTT..'], 359, 250, hh);
     // a few leaves tucked over it
-    K.set(370, 250, P.autumn[3]);
-    K.set(371, 250, P.autumn[2]);
-    K.set(372, 251, P.autumn[3]);
-    return { breathe: [364, 249, hh.s] };
+    K.set(370, 249, P.autumn[4]);
+    K.set(371, 249, P.autumn[3]);
+    K.set(372, 250, P.autumn[4]);
+    return { breathe: [364, 250, hh.s] };
   };
   // a small tin time capsule tied with a red ribbon
   SECRET['time-capsule'] = (K) => {
@@ -996,7 +1122,7 @@
       deepSnow(K);
       puddles(K, ed.tagSet.has('frozen-puddles') ? 'ice' : 'water', { far: S[3], near: S[6], end: S[5] });
       snowBackEdge(K);
-      const sec = under(K, ed, { frozen: 5 });
+      const sec = under(K, ed, { frozen: 9 });
       snowLip(K, { depth: 3, var: 2.2, icicles: true });
       return sec;
     },
@@ -1036,7 +1162,7 @@
       if (ed.id === 'lunar') redPaper(K);
       if (ed.id === 'newyear') confetti(K);
       backEdge(K, G[1], { top: (x) => (K.vn(x / 9, 0, 67) > 0.45 ? S[4] : null) });
-      const sec = under(K, ed, { frozen: 3 });
+      const sec = under(K, ed, { frozen: 6 });
       turfLip(K, G, { len: 0.7 });
       const cover = (x) => snowy(x, K.FRONT - 1) || snowy(x, K.FRONT - 2);
       snowLip(K, { depth: 1, var: 1.2, cover });

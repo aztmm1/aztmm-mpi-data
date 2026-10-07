@@ -1,8 +1,8 @@
 /*
  * AZTMM marks, built into the diorama rather than stamped on top of it.
- *  1. A pewter maker's mark on the front of the diorama base (every edition):
- *     the AZTMM HLDGS badge as a pixel medallion beside an engraved AZTMM
- *     plate, with a rare cyan-to-violet glint in the brand gradient.
+ *  1. The AZTMM HLDGS badge as a hanging inn-style sign on an iron bracket
+ *     off the turret (every edition), plus an engraved AZTMM name plate on
+ *     the front of the diorama base with a rare cyan-to-violet glint.
  *  2. "AZ" carved into the tree trunk (an easter egg, every edition).
  *  3. Midnight Fireworks only: once per loop one rocket bursts into the
  *     letters AZTMM in the brand gradient.
@@ -43,73 +43,55 @@
   }
 
   // ------------------------------------------------------------------
-  // 1. maker's mark: a pewter medallion of the AZTMM HLDGS badge (ring,
-  //    lettering band, the two towers and the bridge pylons) beside an
-  //    engraved AZTMM plate, low on the dark front of the diorama base.
-  //    Pewter matches the silver-on-black logo and the cold night palette.
+  // 1a. the AZTMM HLDGS badge (ring, lettering band, the two towers and
+  //     the bridge pylons) as a pixel emblem: silver on black, like the
+  //     silver-on-black logo.
   // ------------------------------------------------------------------
-  // dark pewter so the mark sits quietly in the shadow of the base
-  const PEWTER = ['#0a0b0e', '#131418', '#1c1e23', '#272a31', '#363a43', '#4a4f5a', '#646a77'];
-  const MR = 11; // medallion radius
-  const MD = MR * 2 + 1;
-  const TXT = word(SMALL, 'AZTMM', 1);
-  const PW = TXT.w + 8;
-  const PH = 11;
-  const GAP = 3;
-  const BADGE = { x: 403, y: 245, w: MD + GAP + PW, h: MD };
-  let badge = null;
-  let glintable = null; // metal-face pixels the glint may light
-  function bakeBadge() {
-    glintable = new Set();
-    const face = (x, y) => glintable.add(x + ',' + y);
-    badge = HD.bake(BADGE.w, BADGE.h, (g) => {
-      // --- medallion ---
-      const c = MR;
-      for (let y = 0; y < MD; y++) {
-        for (let x = 0; x < MD; x++) {
+  const SILVER = ['#0c0d10', '#15161b', '#24262d', '#3a3d46', '#5d616c', '#8a8f9c', '#b4b9c4', '#d2d6de'];
+  function bakeEmblem(R) {
+    const D = R * 2 + 1;
+    return HD.bake(D, D, (g) => {
+      const c = R;
+      for (let y = 0; y < D; y++) {
+        for (let x = 0; x < D; x++) {
           const dx = x - c;
           const dy = y - c;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d > MR + 0.45) continue;
-          let col = PEWTER[2];
-          if (d > MR - 0.85) {
-            // raised rim: lit from the upper left, shadowed lower right
-            const lit = -dx - dy;
-            col = lit > 4 ? PEWTER[5] : lit < -4 ? PEWTER[1] : PEWTER[3];
-          } else if (d > 6.9 && d < 7.9) col = PEWTER[4]; // inner ring
+          if (d > R + 0.45) continue;
+          let col = SILVER[1];
+          if (d > R - 0.85) {
+            const lit = -dx - dy; // rim lit from the upper left
+            col = lit > 4 ? SILVER[6] : lit < -4 ? SILVER[3] : SILVER[5];
+          } else if (d > 6.9 && d < 7.9) col = SILVER[5]; // inner ring
           else if (d >= 7.9) {
-            // lettering band: tiny raised marks suggest the circular text
+            // lettering band: small raised marks stand in for the circular text
             const a = Math.atan2(dy, dx);
-            const k = Math.floor(((a + Math.PI) / (Math.PI * 2)) * 44);
-            col = d > 8.5 && d < 9.6 && k % 2 === 0 && HD.hash(k, 3, 19) < 0.8 ? PEWTER[4] : PEWTER[2];
-            if (col === PEWTER[2]) face(x, y);
-          } else face(x, y);
+            const k = Math.floor(((a + Math.PI) / (Math.PI * 2)) * 40);
+            col = d > 8.3 && d < 9.4 && k % 2 === 0 && HD.hash(k, 3, 19) < 0.85 ? SILVER[4] : SILVER[1];
+          }
           g.px(x, y, col);
         }
       }
-      const L = PEWTER[6];
-      const M = PEWTER[4];
-      const D = PEWTER[1];
+      const L = SILVER[7];
+      const M = SILVER[5];
+      const K = SILVER[3];
       const P = (x, y, col) => {
-        const dx = x;
-        const dy = y;
-        if (dx * dx + dy * dy > 6.8 * 6.8) return; // clip to inside the inner ring
+        if (x * x + y * y > 6.8 * 6.8) return; // inside the inner ring only
         g.px(c + x, c + y, col);
-        glintable.delete(c + x + ',' + (c + y));
       };
-      // bridge pylons with a short fan of cables, dimmer than the towers
+      // cable-stayed bridge pylons and deck
       for (const sx of [-6, 6]) {
         const o = Math.sign(sx);
         for (let y = -2; y <= 5; y++) P(sx, y, M);
-        P(sx - o, -1, M);
-        P(sx - o * 2, 0, M);
-        P(sx - o * 3, 1, M);
+        P(sx - o, -1, K);
+        P(sx - o * 2, 0, K);
+        P(sx - o * 3, 1, K);
       }
-      for (const x of [-6, -5, 5, 6]) P(x, 3, M); // deck
+      for (const x of [-6, -5, 5, 6]) P(x, 3, M);
       // left tower: shaft, stepped crown, antenna
       for (let y = -2; y <= 7; y++) {
         P(-4, y, L);
-        P(-3, y, y % 3 === 0 ? D : M);
+        P(-3, y, y % 3 === 0 ? K : M);
         P(-2, y, L);
       }
       for (let x = -5; x <= -1; x++) P(x, -3, L);
@@ -117,42 +99,95 @@
       P(-3, -4, M);
       P(-2, -4, M);
       for (let y = -7; y <= -5; y++) P(-3, y, L);
-      // right slab tower, taller, with a slanted roof line and a shaded face
+      // right slab tower with its slanted roof and shaded face
       for (let y = -6; y <= 7; y++) {
         if (y > -6) P(0, y, M);
         P(1, y, L);
-        P(2, y, y % 2 ? D : M);
+        P(2, y, y % 2 ? K : M);
         P(3, y, M);
         P(4, y, L);
       }
       for (let x = 1; x <= 4; x++) P(x, -6, L);
       P(0, -5, L);
+    });
+  }
 
-      // --- engraved plate ---
-      const ox = MD + GAP;
-      const oy = (MD - PH) >> 1;
-      g.rect(ox, oy, PW, PH, PEWTER[0]);
-      g.rect(ox + 1, oy + 1, PW - 2, PH - 2, PEWTER[2]);
-      g.hline(ox + 1, ox + PW - 2, oy + 1, PEWTER[4]);
-      g.vline(ox + 1, oy + 1, oy + PH - 2, PEWTER[3]);
-      g.hline(ox + 1, ox + PW - 2, oy + PH - 2, PEWTER[1]);
-      g.vline(ox + PW - 2, oy + 2, oy + PH - 2, PEWTER[1]);
-      g.px(ox + 2, oy + 5, PEWTER[5]);
-      g.px(ox + PW - 3, oy + 5, PEWTER[5]);
+  // ------------------------------------------------------------------
+  // 1b. hanging inn-style sign on an iron bracket off the turret's right
+  //     wall: the badge at eye level beside the house. Scene layer, so the
+  //     turret windows warm it; it sways a little; snow settles on it in
+  //     the snowy editions.
+  // ------------------------------------------------------------------
+  // dir -1: the bracket sticks out to the LEFT of the house's left wall, so
+  // the campfire warms the sign and it never meets the turret lantern string
+  const SIGN = { wallX: 165, dir: -1, armY: 150, armLen: 23, hangOff: 14, R: 10 };
+  let emblem = null;
+  function drawSign(g, t) {
+    if (!emblem) emblem = bakeEmblem(SIGN.R);
+    const iron = HD.PAL.stone;
+    const S = SIGN;
+    const d = S.dir;
+    const end = S.wallX + d * S.armLen;
+    const hangX = S.wallX + d * S.hangOff;
+    const cy = S.armY + 8 + S.R;
+    // bracket: arm, curled brace, finial and wall plate
+    g.hline(S.wallX, end, S.armY, iron[1]);
+    g.hline(S.wallX, end - d, S.armY - 1, iron[3]);
+    g.px(end + d, S.armY - 1, iron[2]);
+    g.px(end + d, S.armY - 2, iron[3]);
+    g.line(S.wallX + d, S.armY + 7, S.wallX + d * 9, S.armY + 1, iron[1]);
+    g.px(S.wallX + d * 4, S.armY + 2, iron[2]);
+    g.px(S.wallX + d * 5, S.armY + 3, iron[1]);
+    g.vline(S.wallX, S.armY - 2, S.armY + 8, iron[2]);
+    // gentle sway: at most one pixel either way
+    const dx = Math.round(1.15 * T.wave(t, 5.3, 0.2));
+    const top = cy - S.R;
+    g.line(hangX, S.armY + 1, hangX + dx, top - 2, iron[3]);
+    g.px(hangX + dx, top - 1, iron[4]);
+    g.sprite(emblem, hangX + dx - S.R, top);
+    const ed = HD.edition;
+    if (ed.ground === 'snow' || ed.ground === 'thin-snow') {
+      const snow = HD.PAL.snow;
+      g.hline(S.wallX + d, end, S.armY - 2, snow[6]);
+      g.hline(hangX + dx - 4, hangX + dx + 4, top, snow[7]);
+      g.hline(hangX + dx - 2, hangX + dx + 2, top - 1, snow[6]);
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // 1c. engraved AZTMM name plate on the front of the diorama base
+  // ------------------------------------------------------------------
+  const PEWTER = ['#0f1013', '#1c1d22', '#2b2d34', '#40434c', '#5d616c', '#7e838f', '#a9adb8'];
+  const TXT = word(SMALL, 'AZTMM', 1);
+  const PW = TXT.w + 8;
+  const PH = 11;
+  const BADGE = { x: 436, y: 255, w: PW, h: PH };
+  let badge = null;
+  let glintable = null; // plate pixels the glint may light
+  function bakeBadge() {
+    glintable = new Set();
+    badge = HD.bake(PW, PH, (g) => {
+      g.rect(0, 0, PW, PH, PEWTER[0]);
+      g.rect(1, 1, PW - 2, PH - 2, PEWTER[2]);
+      g.hline(1, PW - 2, 1, PEWTER[5]);
+      g.vline(1, 1, PH - 2, PEWTER[4]);
+      g.hline(1, PW - 2, PH - 2, PEWTER[1]);
+      g.vline(PW - 2, 2, PH - 2, PEWTER[1]);
+      g.px(2, 5, PEWTER[6]);
+      g.px(PW - 3, 5, PEWTER[6]);
+      for (let y = 2; y < PH - 2; y++) for (let x = 2; x < PW - 2; x++) glintable.add(x + ',' + y);
       const cut = new Set(TXT.pts.map(([x, y]) => x + ',' + y));
-      for (let y = oy + 2; y < oy + PH - 2; y++) for (let x = ox + 2; x < ox + PW - 2; x++) face(x, y);
       for (const [x, y] of TXT.pts) {
-        g.px(ox + 4 + x, oy + 3 + y, PEWTER[0]);
-        glintable.delete(ox + 4 + x + ',' + (oy + 3 + y));
-        if (!cut.has(x + ',' + (y + 1)) && y + 1 < 5) g.px(ox + 4 + x, oy + 4 + y, PEWTER[4]);
-        else if (y === 4) g.px(ox + 4 + x, oy + 4 + y, PEWTER[4]);
+        g.px(4 + x, 3 + y, PEWTER[0]);
+        glintable.delete(4 + x + ',' + (3 + y));
+        if (!cut.has(x + ',' + (y + 1))) g.px(4 + x, 4 + y, PEWTER[5]); // lit lower lip of each cut
       }
     });
   }
   function drawPlate(g, t) {
     if (!badge) bakeBadge();
     g.sprite(badge, BADGE.x, BADGE.y);
-    // now and then a slow glint in the AZTMM cyan-to-violet sweeps across the metal
+    // now and then a slow glint in the AZTMM cyan-to-violet sweeps across it
     const ph = T.phase(t, 48, 0.31);
     if (ph < 0.04) {
       const pos = (ph / 0.04) * (BADGE.w + 16) - 8;
@@ -262,6 +297,7 @@
     passes: [
       { layer: 'bg', z: 9.6, id: 'logo-firework', draw: (g, t) => HD.edition.id === 'newyear' && drawLogoFirework(g, t) },
       { layer: 'scene', z: 12.5, id: 'carving', draw: (g) => drawCarving(g) },
+      { layer: 'scene', z: 29.5, id: 'sign', draw: drawSign },
       { layer: 'fx', z: 96, id: 'nameplate', draw: drawPlate },
     ],
   });

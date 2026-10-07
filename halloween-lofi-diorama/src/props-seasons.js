@@ -353,10 +353,11 @@
           const dx = m.x - x;
           const dy = m.y - y;
           const dm = Math.hypot(dx, dy);
-          if (dm < m.r + 34 && dm > m.r + 0.5) {
+          if (dm < m.r + 18 && dm > m.r + 0.5 && i >= 2) {
             const sx = Math.round(dx / dm);
             const sy = Math.round(dy / dm);
-            if (!inM(x + sx, y + sy) && (sx || sy)) col = rimC;
+            // only where the outline looks straight at the moon, in short broken runs
+            if (!inM(x + sx, y + sy) && !inM(x + 2 * sx, y + 2 * sy) && (sx || sy) && HD.hash(x >> 2, y >> 2, 57) < 0.7) col = rimC;
           }
         }
         if (m && Math.hypot(x - m.x, y - m.y) < m.r + 0.5) col = o.sil || ramp[0];
@@ -431,8 +432,8 @@
     if (style === 'snowy') snowCaps(bark, m, true);
     if (style === 'plum') snowCaps(bark, m, false);
     let cfg = null;
-    if (style === 'summer') cfg = { tipP: 1, tipR: [6.5, 9], sub: 4.2, step: 8, iw: [1.45, 6], iR: [7, 10], pad: 3 };
-    if (style === 'blossom') cfg = { tipP: 0.95, tipR: [5, 7.5], sub: 3.4, step: 9, iw: [1.45, 4.8], iR: [5.5, 8.5], pad: 1 };
+    if (style === 'summer') cfg = { tipP: 1, tipR: [7, 9.5], sub: 4.4, step: 8, iw: [1.45, 6], iR: [7.5, 10.5], pad: 3 };
+    if (style === 'blossom') cfg = { tipP: 1, tipR: [5.5, 8], sub: 3.8, step: 8, iw: [1.45, 4.8], iR: [6, 9], pad: 1 };
     if (style === 'autumn') cfg = { tipP: 0.6, tipR: [4.5, 6.5], sub: 3.2, step: 11, iw: [1.45, 4.4], iR: [5, 7.5], pad: 0 };
     const pickRamp = (x, y) => {
       if (style === 'summer') return HD.hash(Math.floor(x / 18), Math.floor(y / 16), 5) < 0.3 ? RP.summerDeep[0] : RP.summer[0];
@@ -468,26 +469,64 @@
       canopy(F, clumps, m, { bias, rim, sil: style === 'blossom' ? P.blossom[0] : undefined });
       foliage = F.bake();
     }
-    // plum: blossoms sit right on the dark branches, in little sprays
-    const plumBloom = (B, x, y, k, dx) => {
-      const big = k % 3 !== 0;
-      if (inDisc(m, x, y, 1)) return;
-      if (big) {
-        B.set(x + dx, y - 1, P.plum[3]);
-        B.set(x + dx - 1, y, P.plum[3]);
-        B.set(x + dx + 1, y, P.plum[4]);
-        B.set(x + dx, y + 1, P.plum[2]);
-        B.set(x + dx, y, k % 2 ? P.plum[5] : mix(P.plum[5], P.gold[5], 0.4));
+    // plum: five-petal blossoms and buds gathered in sprays on the branch tops,
+    // with bare stretches between them (deliberate clusters, never confetti)
+    const PC = {
+      lit: P.plum[5],
+      mid: P.plum[4],
+      sh: P.plum[3],
+      dk: P.plum[2],
+      eye: mix(P.plum[5], P.gold[6], 0.55),
+    };
+    const flower = (B, x, y, kind) => {
+      if (inDisc(m, x, y, 2)) return;
+      if (kind === 0) {
+        // open blossom, lit from the upper right
+        B.set(x, y - 1, PC.lit);
+        B.set(x + 1, y, PC.lit);
+        B.set(x - 1, y, PC.mid);
+        B.set(x, y + 1, PC.sh);
+        B.set(x - 1, y + 1, PC.dk);
+        B.set(x + 1, y - 1, PC.mid);
+        B.set(x, y, PC.eye);
+      } else if (kind === 1) {
+        // half-open, seen from the side
+        B.set(x, y, PC.mid);
+        B.set(x + 1, y, PC.lit);
+        B.set(x, y - 1, PC.lit);
+        B.set(x, y + 1, PC.dk);
       } else {
-        B.set(x + dx, y, P.plum[3]);
-        B.set(x + dx + 1, y - 1, P.plum[4]);
+        // bud
+        B.set(x, y, PC.sh);
+        B.set(x, y - 1, PC.mid);
       }
     };
     if (style === 'plum') {
-      for (const a of anchors(7, 1.45, 4.6, 41)) {
-        if (rnd() < 0.3) continue;
-        const n = 1 + Math.floor(rnd() * 3);
-        for (let k = 0; k < n; k++) plumBloom(bark, a.x + k * 2 - n + 1, a.y - 1 - (k % 2), k + a.x, 0);
+      const TRh = TR.has;
+      const Fd = TR.F;
+      for (const a of anchors(13, 1.45, 5.5, 41)) {
+        if (rnd() < 0.22) continue;
+        // walk to the top surface of the branch at this anchor
+        let x = a.x;
+        let y = a.y;
+        while (TRh(x, y - 1)) y--;
+        const q = TR.idx(a.x, a.y);
+        const tx = q >= 0 ? Fd.ny[q] : 1; // branch tangent ~ (ny, -nx)
+        const ty = q >= 0 ? -Fd.nx[q] : 0;
+        const n = 3 + Math.floor(rnd() * 3);
+        for (let k = 0; k < n; k++) {
+          const sgn = k % 2 ? -1 : 1;
+          const off = Math.ceil(k / 2) * 3 * sgn + (rnd() - 0.5);
+          let fx = R(x + tx * off);
+          let fy = R(y + ty * off);
+          // sit on the branch top: climb out of the wood, then perch
+          let guard = 6;
+          while (TRh(fx, fy) && guard--) fy--;
+          guard = 4;
+          while (!TRh(fx, fy + 1) && !TRh(fx, fy + 2) && guard--) fy++;
+          const kind = k === 0 ? 0 : k < 3 ? (rnd() < 0.6 ? 0 : 1) : 2;
+          flower(bark, fx, fy - (kind === 0 ? 1 : 0), kind);
+        }
       }
     }
     const barkArt = bark.bake();
@@ -504,10 +543,16 @@
             const pts = tp.pts;
             const n = pts.length;
             if (style === 'plum') {
-              for (let k = 1; k < n; k++) {
-                if (HD.hash(ti, k, 9) < 0.35) continue;
-                const u = k / (n - 1);
-                plumBloom(Bg, R(pts[k][0]), R(pts[k][1]), ti + k, R(sw * Math.pow(u, 1.5) * 1.2));
+              // one blossom (or a bud) at the end of most twigs, a bud at some forks
+              const h = HD.hash(ti, 5, 9);
+              if (h < 0.75) {
+                const e = pts[n - 1];
+                flower(Bg, R(e[0] + sw * 1.2), R(e[1]), h < 0.45 ? 0 : h < 0.62 ? 1 : 2);
+              }
+              if (HD.hash(ti, 6, 9) < 0.3 && n > 2) {
+                const p = pts[1];
+                const u = 1 / (n - 1);
+                flower(Bg, R(p[0] + sw * Math.pow(u, 1.5) * 1.2), R(p[1]) - 1, 2);
               }
             } else if (HD.hash(ti, 3, 11) >= 0.4) {
               // a pinch of snow caught where each twig forks off
@@ -602,7 +647,7 @@
     add(lim.M1, 0, 999, 7, 1.7);
     return { pts, groups };
   }
-  const FAIRY_COLS = ['gold', 'white', 'gold', 'gold'];
+  const FAIRY_COLS = ['gold', 'gold', 'white', 'gold', 'gold'];
 
   // hammock between the trunk and a post (summer)
   const HAM = { x0: 414, y0: 191, x1: 455, y1: 196, post: 457 };
@@ -1008,57 +1053,62 @@
 
   // scarecrow (harvest): friendly burlap face, straw hat, patched plaid shirt
   const SCARE_ROWS = [
-    '..........hh..........',
-    '.........hHHh.........',
-    '........hHHHHh........',
-    '........rrrrrr........',
-    '.....hhhhhhhhhhhh.....',
-    '........bbbbbb........',
-    '.......bBBBBBBb.......',
-    '.......beBBBeBb.......',
-    '.......bBBBBBBb.......',
-    '.......bBsBBsBb.......',
-    '........bbssbb........',
-    '..........yy..........',
-    'y..pppPpppppppPppp..y.',
-    'yypPpPpPpPppPpPpPpPpyy',
-    '.y.pppppppppppppppp.y.',
-    '.........pPpPq........',
-    '.........pPqqq........',
-    '.........pPqqq........',
-    '.........pPpPp........',
-    '.........dddddd.......',
-    '.........dd..dd.......',
-    '.........y.ww.y.......',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
-    '...........ww.........',
+    '..........hhh.........',
+    '.........hHHHh........',
+    '.........hHHHH........',
+    '........rrrrRRr.......',
+    '.....hhhHHHHHHHHhh....',
+    '......hhhhhhhhhhh.....',
+    '.........ss.sss.......',
+    '........sbBBBBBB......',
+    '........bbBBBBBB......',
+    '........beeBBeeB......',
+    '........bBBBBBBB......',
+    '........bBkBkBkB......',
+    '.........bbBBBB.......',
+    '...........yY.........',
+    '.yy..pppPPPPPPPP..YY..',
+    'yYyppppPPPPPPPPPPPPyYy',
+    '.y.ppp.pppPPPPP.PPPPY.',
+    '.......pppPqqqP.......',
+    '.......pppPqQqP.......',
+    '.......ppppPPPP.......',
+    '.......dddDDDDD.......',
+    '.......yY.yYy.Y.......',
+    '..........wW..........',
+    '..........wW..........',
+    '..........wW..........',
+    '..........wW..........',
+    '..........wW..........',
+    '..........wW..........',
+    '..........wW..........',
+    '..........wW..........',
+    '.........wwWW.........',
   ];
   function bakeScarecrow() {
     const s = SL.scarecrow;
     const map = {
-      h: P.gold[1],
-      H: P.gold[2],
+      h: HAY[2],
+      H: HAY[4],
+      y: HAY[3],
+      Y: HAY[4],
       r: P.red[2],
-      b: P.wood[5],
-      B: P.wood[6],
+      R: P.red[4],
+      s: HAY[1],
+      b: mix(P.bone[0], P.wood[5], 0.45),
+      B: mix(P.bone[1], P.wood[6], 0.35),
       e: P.night[0],
-      s: P.wood[2],
-      y: P.gold[2],
-      p: P.red[2],
-      P: P.plum[1],
-      q: P.ice[2],
-      d: P.night[4],
+      k: P.wood[2],
+      p: P.red[1],
+      P: P.red[3],
+      q: P.ice[1],
+      Q: P.ice[3],
+      d: P.night[3],
+      D: P.night[5],
       w: P.wood[3],
+      W: P.wood[5],
     };
     const spr = HD.sprite(SCARE_ROWS, map);
-    // the pole's right edge catches the moon
     return { cv: spr, x: s.x - 11, y: s.base - SCARE_ROWS.length + 1 };
   }
 
@@ -1413,14 +1463,16 @@
       for (const p of fairy.pts) {
         const ramp = P.bulb[FAIRY_COLS[p.k % FAIRY_COLS.length]];
         const n = T.noise(ts, 2.8, 1300 + p.k);
-        const lv = n > 0.72 ? 2 : n < 0.18 ? 0 : 1;
-        g.em.px(p.x, p.y, ramp[lv]);
-        if (p.big && lv === 2) g.em.px(p.x, p.y + 1, ramp[1]);
+        const lv = n > 0.62 ? 2 : n < 0.14 ? 0 : 1;
+        // warm bulb with a soft plus-shaped bloom when it twinkles up
+        g.em.px(p.x, p.y, lv === 0 ? ramp[1] : ramp[2]);
+        if (lv === 2) {
+          g.em.px(p.x - 1, p.y, ramp[0]);
+          g.em.px(p.x + 1, p.y, ramp[0]);
+          g.em.px(p.x, p.y - 1, ramp[0]);
+          g.em.px(p.x, p.y + 1, p.big ? ramp[1] : ramp[0]);
+        }
       }
-    }
-    if (HD.tag('hammock')) {
-      blit(g, gardenArt().ham);
-      drawHammock(g, t);
     }
     void ed;
   };
@@ -1465,6 +1517,11 @@
     if (A.snowman) {
       blit(g, A.snowman);
       drawScarf(g, t);
+    }
+    if (HD.tag('hammock') && A.ham) {
+      // slung between the trunk and a post, in front of the picket fence
+      blit(g, A.ham);
+      drawHammock(g, t);
     }
     if (HD.tag('frog')) {
       const spr = FROG_SPR[frogFrame(t)];

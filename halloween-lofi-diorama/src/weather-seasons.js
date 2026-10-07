@@ -59,18 +59,29 @@
   // turns to warm cream. Flakes drift with the wind (slightly right, like the
   // smoke), wobble, and simply vanish where they land.
   // ------------------------------------------------------------------
+  // Lamp-lit snow does not turn orange: it brightens into glowing cream and
+  // pale gold, so the flakes sparkle against the warm walls instead of
+  // melting into them.
   const CREAM = P.amber[7];
+  const GOLD = P.amber[6];
+  const WHITE_W = P.amber[8];
+  /** cold flake -> 7 light levels that brighten towards a warm highlight */
+  function glowSteps(cold, warm, kmax) {
+    const out = [cold];
+    for (let k = 1; k <= 6; k++) out.push(mix(cold, warm, Math.min(kmax, 0.1 + 0.14 * k)));
+    return out;
+  }
   const SF = [
-    warmSteps(mix(P.snow[3], P.snow[4], 0.6), P.warmrain[2], 0.5),
-    warmSteps(P.snow[4], P.warmrain[3], 0.55),
-    warmSteps(mix(P.snow[5], P.snow[6], 0.4), P.warmrain[4], 0.6),
+    glowSteps(mix(P.snow[3], P.snow[4], 0.6), P.warmrain[3], 0.45),
+    glowSteps(P.snow[4], P.warmrain[4], 0.5),
+    glowSteps(mix(P.snow[5], P.snow[6], 0.4), GOLD, 0.55),
   ];
-  const SM = [warmSteps(mix(P.snow[5], P.snow[6], 0.5), P.warmrain[3], 0.7), warmSteps(P.snow[7], P.warmrain[4], 0.75), warmSteps(P.snow[8], CREAM, 0.8)];
-  const SN = [warmSteps(P.snow[4], P.warmrain[3], 0.7), warmSteps(P.snow[6], P.warmrain[4], 0.75), warmSteps(P.snow[7], CREAM, 0.8)];
+  const SM = [glowSteps(mix(P.snow[5], P.snow[6], 0.4), GOLD, 0.7), glowSteps(P.snow[7], CREAM, 0.8), glowSteps(P.snow[8], WHITE_W, 0.85)];
+  const SN = [glowSteps(mix(P.snow[4], P.snow[5], 0.5), GOLD, 0.65), glowSteps(P.snow[6], CREAM, 0.78), glowSteps(P.snow[8], WHITE_W, 0.85)];
 
   const SNOW_FAR_N = 440;
-  const SNOW_MID_N = 270;
-  const SNOW_NEAR_N = 36;
+  const SNOW_MID_N = 360;
+  const SNOW_NEAR_N = 42;
   const SFP = perArr(SNOW_FAR_N, 15, 21, 9101);
   const SMP = perArr(SNOW_MID_N, 8.5, 11.5, 9202);
   const SNP = perArr(SNOW_NEAR_N, 5.2, 7, 9303);
@@ -108,12 +119,13 @@
       let b = d > 0.55 ? (r3 < 0.55 ? 2 : 1) : r3 < 0.3 ? 0 : r3 < 0.85 ? 1 : 2;
       if (b > 0 && inTitle(x, y)) b--;
       const lv = lvOf(lum(x, y));
-      g.rect(x, y, 1, 1, SM[b][lv]);
-      // the nearer half of the mid flakes are a soft little clump
-      if (d > 0.45) {
-        g.rect(x + 1, y, 1, 1, SM[0][lv]);
-        g.rect(x, y + 1, 1, 1, SM[0][lv]);
-      }
+      if (d > 0.62) {
+        // the nearest mid flakes: a soft round 2x2, lit from the top-left
+        g.rect(x, y, 1, 1, SM[b][lv]);
+        g.rect(x + 1, y, 1, 1, SM[b > 0 ? b - 1 : 0][lv]);
+        g.rect(x, y + 1, 1, 1, SM[b > 0 ? b - 1 : 0][lv]);
+        g.rect(x + 1, y + 1, 1, 1, SM[0][lv]);
+      } else g.rect(x, y, 1, 1, SM[b][lv]);
     }
   }
 
@@ -180,7 +192,8 @@
     frames(['..22', '.211', '011.']), // long leaf, stem bottom-left
     frames(['21.', '.12', '..0']), // curled leaf, stem bottom-right
     frames(['.221', '011.']), // flat leaf side-on
-    frames(['.2.', '221', '01.']), // round birch leaf
+    frames(['.22', '221', '10.']), // round birch leaf, stem bottom-left
+    frames(['.22.', '2211', '.11.', '..0.']), // broad leaf hanging from its stem
   ];
   const LEAF_BIG = frames(['...21', '.2221', '2211.', '0....']);
   const PETAL = frames(['21', '.1']);
@@ -216,7 +229,7 @@
 
   const PETAL_PINK = toneTab(P.blossom[4], P.blossom[6], P.blossom[7], P.amber[7], 0.5);
   const PETAL_PINK2 = toneTab(P.blossom[4], P.blossom[5], P.blossom[6], P.amber[7], 0.5);
-  const PETAL_PLUM = toneTab(P.plum[2], P.plum[4], P.plum[5], P.amber[6], 0.5);
+  const PETAL_PLUM = toneTab(P.plum[3], P.plum[4], P.plum[5], P.amber[6], 0.5);
   const PETAL_PLUM2 = toneTab(P.plum[2], P.plum[3], P.plum[4], P.amber[6], 0.5);
 
   /**
@@ -403,7 +416,7 @@
     rest: [restTab(PETAL_PLUM), restTab(PETAL_PLUM2)],
   });
   function petalsMid(g, t, k, plum) {
-    const n = Math.max(1, R(PETAL_N * k));
+    const n = Math.max(1, R(PETAL_N * (plum ? Math.max(k, 0.18) : k)));
     const o = plum ? PLUMS : PETALS;
     for (let i = 0; i < n; i++) faller(g, t, i, o, 9501);
   }
@@ -532,15 +545,17 @@
         g.rect(x, y, 1, 1, e > 0.6 ? FFC[2] : FFC[1]);
         continue;
       }
-      if (e > 0.66) {
-        HD.glow(g, x, y, 6, HD.LIGHT.firefly, 0.32 * e);
-        g.rect(x - 1, y, 3, 1, FFC[1]);
-        g.rect(x, y - 1, 1, 3, FFC[1]);
+      if (e > 0.62) {
+        // full glow: a soft yellow-green bloom, a white-hot core and a plus of light
+        HD.glow(g, x, y, 7, HD.LIGHT.firefly, 0.5 * e);
+        g.rect(x - 1, y, 3, 1, FFC[2]);
+        g.rect(x, y - 1, 1, 3, FFC[2]);
         g.rect(x, y, 1, 1, FFC[4]);
-      } else if (e > 0.4) {
+      } else if (e > 0.34) {
+        HD.glow(g, x, y, 4, HD.LIGHT.firefly, 0.4 * e);
         g.rect(x, y, 1, 1, FFC[3]);
       } else {
-        g.rect(x, y, 1, 1, FFC[2]);
+        g.rect(x, y, 1, 1, FFC[e > 0.22 ? 2 : 1]);
       }
     }
   }

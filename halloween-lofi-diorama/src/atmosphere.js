@@ -87,6 +87,83 @@
     tone: null, // 4 tones
   };
 
+  // ---------------------------------------------------------------------
+  // smoke raster: puffs are written straight into a pixel buffer (exactly
+  // the pixels g.ditherCircle would fill, in the same order) and composited
+  // with a single drawImage of the touched rectangle. Thousands of 1px
+  // fillRect calls per frame become plain array writes.
+  // ---------------------------------------------------------------------
+  const SR = { cv: null, ctx: null, img: null, u32: null, x0: W, y0: H, x1: -1, y1: -1 };
+  const c32Cache = new Map();
+  function c32(c) {
+    let v = c32Cache.get(c);
+    if (v === undefined) {
+      const a = hex(c);
+      v = ((255 << 24) | (a[2] << 16) | (a[1] << 8) | a[0]) >>> 0;
+      c32Cache.set(c, v);
+    }
+    return v;
+  }
+  function srInit() {
+    if (SR.cv) return;
+    SR.cv = HD.canvas(W, H, true);
+    SR.ctx = SR.cv.getContext('2d');
+    SR.img = SR.ctx.createImageData(W, H);
+    SR.u32 = new Uint32Array(SR.img.data.buffer);
+  }
+  /** same pixel set as g.ditherCircle(cx, cy, rad, c, level, soft, ox, oy) */
+  function srDisc(cx, cy, rad, c, level, soft, ox, oy) {
+    if (level <= 0 || rad <= 0) return;
+    cx = Math.round(cx);
+    cy = Math.round(cy);
+    const sx = ox | 0;
+    const sy = oy | 0;
+    const sf = soft || 0;
+    const col = c32(c);
+    const u32 = SR.u32;
+    const bayer = HD.bayer;
+    const ir = Math.ceil(rad);
+    const rr = rad * rad + rad * 0.6;
+    const ya = Math.max(0, cy - ir);
+    const yb = Math.min(H - 1, cy + ir);
+    const xa = Math.max(0, cx - ir);
+    const xb = Math.min(W - 1, cx + ir);
+    if (ya > yb || xa > xb) return;
+    let hit = false;
+    for (let py = ya; py <= yb; py++) {
+      const dy = py - cy;
+      const row = py * W;
+      for (let px = xa; px <= xb; px++) {
+        const dx = px - cx;
+        const d2 = dx * dx + dy * dy;
+        if (d2 > rr) continue;
+        let lv = level;
+        if (sf > 0) lv *= 1 - sf * Math.sqrt(d2 / rr);
+        if (bayer(px + sx, py + sy) < lv) {
+          u32[row + px] = col;
+          hit = true;
+        }
+      }
+    }
+    if (!hit) return;
+    if (xa < SR.x0) SR.x0 = xa;
+    if (ya < SR.y0) SR.y0 = ya;
+    if (xb > SR.x1) SR.x1 = xb;
+    if (yb > SR.y1) SR.y1 = yb;
+  }
+  function srFlush(g) {
+    if (SR.x1 < SR.x0) return;
+    const w = SR.x1 - SR.x0 + 1;
+    const h = SR.y1 - SR.y0 + 1;
+    SR.ctx.putImageData(SR.img, 0, 0, SR.x0, SR.y0, w, h);
+    g.ctx.drawImage(SR.cv, SR.x0, SR.y0, w, h, SR.x0, SR.y0, w, h);
+    for (let y = SR.y0; y <= SR.y1; y++) SR.u32.fill(0, y * W + SR.x0, y * W + SR.x1 + 1);
+    SR.x0 = W;
+    SR.y0 = H;
+    SR.x1 = -1;
+    SR.y1 = -1;
+  }
+
   // order puffs oldest -> youngest so younger (lower) smoke sits in front
   function puffs(sys, t, fn) {
     const n = T.cyclesFor(sys.life);
@@ -132,15 +209,16 @@
       // tone by age (banded, jittered per puff): light grey -> sky-ish blue
       const aj = a + (r3 - 0.5) * 0.12;
       const tone = aj < 0.2 ? 1 : aj < 0.42 ? 2 : aj < 0.68 ? 3 : 4;
-      g.ditherCircle(xi, yi, rad, chimTone[tone][L], lv * S.lvK, 0.9, ox, oy);
+      srDisc(xi, yi, rad, chimTone[tone][L], lv * S.lvK, 0.9, ox, oy);
       // moon-facing highlight on the upper right
       const hr = rad * 0.55;
       if (tone < 4 && hr >= 1.2) {
         const hx = xi + Math.round(rad * 0.3);
         const hy = yi - Math.round(rad * 0.3);
-        g.ditherCircle(hx, hy, hr, chimTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
+        srDisc(hx, hy, hr, chimTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
       }
     });
+    srFlush(g);
   }
 
   function drawCamp(g, t, St) {
@@ -170,9 +248,10 @@
       const L = level(xi, yi);
       const aj = a + (r3 - 0.5) * 0.1;
       const tone = aj < 0.12 ? 2 : aj < 0.36 ? 1 : aj < 0.64 ? 2 : 3;
-      g.ditherCircle(xi, yi, rad, campTone[tone][L], lv * S.lvK, 0.88, ox, oy);
-      if (rad > 2.2 && tone < 3) g.ditherCircle(xi + 1, yi - 1, rad * 0.5, campTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
+      srDisc(xi, yi, rad, campTone[tone][L], lv * S.lvK, 0.88, ox, oy);
+      if (rad > 2.2 && tone < 3) srDisc(xi + 1, yi - 1, rad * 0.5, campTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
     });
+    srFlush(g);
   }
 
   // ---------------------------------------------------------------------
@@ -354,6 +433,8 @@
     drawBand,
     drawChimney,
     drawCamp,
+    srDisc,
+    srFlush,
     scratch: () => ({ tmp, tmpCtx, tmpG }),
   };
 
@@ -377,6 +458,7 @@
       tmp = HD.canvas(W, 96, true);
       tmpCtx = tmp.getContext('2d');
       tmpG = HD.makeGfx(tmpCtx);
+      srInit();
 
       // --- distant mist banks along the hill bases (bg z 26)
       {

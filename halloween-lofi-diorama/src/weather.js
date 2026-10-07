@@ -83,7 +83,7 @@
   function rainOn() {
     const r = HD.edition.weather.rain || 0;
     if (!(r > 0)) return false;
-    RK = r >= 1 ? 1 : r;
+    RK = r >= 1 ? 1 : 0.3 + 0.7 * r; // spring 0.55 -> ~0.69 of the Halloween density
     SOFT = r >= 1 ? 0 : 1;
     return true;
   }
@@ -361,7 +361,7 @@
       const yh = Math.round(-4 + (yEnd + 4) * age);
       const xh = ax + S * yh;
       let b = r3 < 0.3 ? 0 : r3 < 0.88 ? 1 : 2;
-      if (b > 0 && (SOFT || inTitle(xh, yh))) b--;
+      if (b > 0 && ((SOFT && r3 > 0.7) || inTitle(xh, yh))) b--;
       streak(g, ax, yh - len + 1, yh, FAR[b][lvOf(lum(xh, yh) * 0.6)]);
     }
   }
@@ -380,7 +380,7 @@
       const yh = Math.round(-8 + (yl + 8) * age);
       const xh = ax + S * yh;
       let b = d > 0.6 ? (r3 < 0.6 ? 2 : 1) : r3 < 0.25 ? 0 : r3 < 0.85 ? 1 : 2;
-      if (b > 0 && (inTitle(xh, yh) || (SOFT && r3 < 0.7))) b--;
+      if (b > 0 && (inTitle(xh, yh) || (SOFT && r3 < 0.4))) b--;
       streak(g, ax, yh - len + 1, yh, MID[b][lvOf(lum(xh, yh))]);
     }
   }

@@ -396,13 +396,17 @@
     // Halloween-like cold grey-blue, lifted by moonlight on the upper right
     moon: () => [mix(P.stone[6], P.moon[1], 0.35), mix(P.stone[5], P.night[7], 0.3), mix(P.stone[4], P.night[6], 0.4), mix(P.stone[3], P.night[5], 0.5), mix(P.night[3], P.stone[2], 0.45)],
     snow: () => [mix(P.snow[6], P.violet[6], 0.12), mix(P.snow[5], P.violet[5], 0.18), mix(P.snow[4], P.violet[5], 0.22), mix(P.snow[3], P.violet[4], 0.3), mix(P.snow[2], P.violet[3], 0.35)],
-    frost: () => [mix(P.ice[4], P.stone[6], 0.3), mix(P.ice[3], P.stone[5], 0.35), mix(P.ice[2], P.night[6], 0.45), mix(P.night[5], P.ice[1], 0.45), mix(P.night[3], P.ice[0], 0.4)],
+    // frosty air: pale ice-grey, kept close to the stone ramp so it stays smoke, not cloud
+    frost: () => [mix(P.ice[4], P.stone[7], 0.45), mix(P.ice[3], P.stone[6], 0.5), mix(P.ice[2], P.stone[5], 0.55), mix(P.night[5], P.stone[3], 0.5), mix(P.night[3], P.stone[2], 0.45)],
     spring: () => [mix(P.stone[6], P.blossom[5], 0.2), mix(P.stone[5], P.blossom[4], 0.16), mix(P.stone[4], P.night[6], 0.4), mix(P.stone[3], P.night[5], 0.5), mix(P.night[3], P.stone[2], 0.45)],
-    gold: () => [mix(P.stone[6], P.gold[4], 0.3), mix(P.stone[5], P.autumn[4], 0.2), mix(P.stone[4], P.night[6], 0.35), mix(P.stone[3], P.violet[4], 0.4), mix(P.night[3], P.violet[2], 0.45)],
+    // harvest moon rim: a warm highlight close in value to the body so it clusters, never speckles
+    gold: () => [mix(P.stone[6], P.gold[4], 0.17), mix(P.stone[5], P.autumn[4], 0.14), mix(P.stone[4], P.violet[5], 0.3), mix(P.stone[3], P.violet[4], 0.4), mix(P.night[3], P.violet[2], 0.45)],
     lamp: () => [mix(P.stone[5], P.wood[7], 0.4), mix(P.stone[4], P.wood[6], 0.4), mix(P.stone[3], P.wood[5], 0.4), mix(P.stone[3], P.night[4], 0.45), mix(P.night[3], P.stone[2], 0.45)],
   };
   // campfire smoke: 4 tones, the light one slightly wood-tinted near the flames
   const campTones = (s) => [s[1], mix(s[2], P.wood[5], 0.35), s[3], s[4]];
+  // one step lighter: reads as pale smoke over snowy hills instead of a dark streak
+  const campTonesPale = (s) => [s[0], mix(s[1], P.wood[6], 0.3), s[2], s[3]];
 
   const RECIPES = {
     lunar(ed) {
@@ -434,7 +438,7 @@
         // thin wisp from the hearth on the warm night
         chim: chim({ tone: s, n: 22, rad0: 1.8, radK: 4.6, lvK: 1.4, hlK: 1.1, life: 12, rise: 52, curl: 2.8 }),
         // the midsummer bonfire: taller, wider column, more puffs
-        camp: camp({ tone: campTones(s), n: 64, life: 9, sy: CF.base - 54, rise: 108, riseR: 14, spread: 7, curl: 3.4, rad0: 1.4, radK: 8.4, lvK: 1.85, hlK: 1.4, gust: 14 }),
+        camp: camp({ tone: campTones(s), n: 72, life: 9, sy: CF.base - 54, rise: 108, riseR: 16, spread: 9, curl: 3.6, rad0: 1.8, radK: 10.2, lvK: 1.85, hlK: 1.4, gust: 14 }),
         far: farBands({ cols: [mix(P.night[5], P.amber[2], 0.32), mix(P.night[6], P.amber[3], 0.3)], alpha: 0.5, seed: 411, gain: 0.9 }),
         // warm low haze lying over the meadow
         ground: [groundBand({ cols: warm, alpha: 0.4, c: 10, up: 3.5, down: 7, lo: 0.05, hi: 0.6, gain: 0.75, floor: 0.25, seed: 431, holes: [PORCH_HOLE, ...fireHoles(ed)] })],
@@ -502,7 +506,7 @@
       const s = SMOKE.frost();
       return {
         chim: chim({ tone: s, rise: 64, driftK: 0.55, gust: 14 }),
-        camp: camp({ tone: campTones(s) }),
+        camp: camp({ tone: campTonesPale(s) }),
         far: farBands({ cols: [mix(P.night[7], P.ice[3], 0.4), mix(P.night[8], P.ice[4], 0.4)], alpha: 0.46, seed: 811, gain: 0.85 }),
         ground: [
           groundBand({
