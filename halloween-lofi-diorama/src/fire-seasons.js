@@ -32,7 +32,6 @@
   const MOON = LY.moon;
   const R = Math.round;
   const TAU = Math.PI * 2;
-  const GOLDEN = 2.399963; // golden angle: even star spread on a sphere
 
   // ------------------------------------------------------------------
   // colour ramps: 0 = dim ember sinking into the sky ... 6 = white-hot
