@@ -44,6 +44,21 @@
   // ------------------------------------------------------------------
   const N = P.night;
   const V = P.violet;
+  // winter's snow-cloud deck: lilac-grey, heavy overhead, paler over the
+  // horizon. The sky behind it (seen only in the gaps) is a touch lighter at
+  // every height and brightens into a glow band just above the hills, so the
+  // gradient stays monotonic under the deck.
+  const WINTER_DECK = {
+    top: mix(mix(V[5], P.stone[6], 0.5), V[1], 0.42),
+    hor: mix(mix(V[5], P.stone[6], 0.6), P.snow[4], 0.2),
+    belly: mix(V[2], N[2], 0.35),
+  };
+  const WINTER_GLOW = mix(P.snow[5], V[6], 0.3);
+  const winterSky = () =>
+    [12, 36, 60, 84, 107, 129, 151, 175].map((cy) => {
+      const d = Math.min(1, Math.max(0, (cy - 15) / 120));
+      return mix(mix(WINTER_DECK.top, WINTER_DECK.hor, Math.pow(d, 0.85)), WINTER_GLOW, 0.1 + 0.2 * d * d);
+    });
   const LOOKS = {
     lunar: {
       // clear frosty night, a faint rosy glow of lanterns on the horizon
@@ -89,13 +104,9 @@
     },
     winter: {
       // heavy lilac-grey snow sky, softly bright
-      sky: [mix(N[2], V[2], 0.5), mix(N[3], V[2], 0.5), mix(N[3], V[3], 0.5), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5), mix(N[5], V[4], 0.4), mix(N[6], V[5], 0.45), mix(P.snow[4], V[5], 0.45)],
+      sky: winterSky(),
       land: 'snow',
-      clouds: {
-        deck: true,
-        mid: [mix(N[4], V[3], 0.55), mix(N[5], V[4], 0.45), mix(N[6], V[4], 0.42), mix(N[6], V[5], 0.42)],
-        near: [mix(N[3], V[2], 0.55), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5), mix(N[5], V[4], 0.3)],
-      },
+      clouds: { deck: WINTER_DECK },
     },
     newyear: {
       // crisp, deep navy midnight
@@ -422,56 +433,124 @@
   }
 
   // ------------------------------------------------------------------
-  // Snow-cloud deck (winter): a heavy, lumpy ceiling of overlapping cloud
-  // masses in two parallax layers, few gaps. Rows are painted from the
-  // horizon upward so the nearer (higher) masses hang their dark bellies over
-  // the lit tops of the farther ones. Geometry is edition independent.
+  // Snow-cloud deck (winter): a heavy ceiling of wide, overlapping, undulating
+  // masses in two parallax layers. Nothing is outlined: every mass is a flat
+  // body whose underside sinks into a dithered dark belly, and the masses are
+  // painted from the horizon upward, so each nearer (higher) mass hangs its
+  // belly over the body of the farther one. Row r owns tones 3r+1 (dark
+  // belly), 3r+2 (belly half-tone) and 3r+3 (body); its colours run from the
+  // dark overhead ceiling (depth 0) to pale lilac-grey at the horizon (1).
+  // Geometry is edition independent; mass sizes and heights are hashed so the
+  // rows never line up.
   // ------------------------------------------------------------------
-  function genDeck(seed, w, h, rows, fillTo) {
-    const rng = HD.rng(seed);
-    const tn = new K.Tones(w, h);
-    // a continuous ceiling down to a gently lumpy line: the masses below only
-    // add lit tops and dark bellies, so the deck reads as one heavy sky
-    if (fillTo) {
-      const ph = rng() * 6.28;
-      for (let x = 0; x < w; x++) {
-        const yb = Math.round(fillTo + 3 * Math.sin((x / w) * 6.283 * 3 + ph) + 2 * Math.sin((x / w) * 6.283 * 7 + ph * 2));
-        for (let y = 0; y <= yb; y++) tn.put(x, y, 2);
+  function deckMass(tn, puffs, tb, bd, hang) {
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    for (const p of puffs) {
+      x0 = Math.min(x0, Math.floor(p[0] - p[2] - 1));
+      x1 = Math.max(x1, Math.ceil(p[0] + p[2] + 1));
+      y0 = Math.min(y0, Math.floor(p[1] - p[3] - 1));
+      y1 = Math.max(y1, Math.ceil(p[1] + p[3] + 1));
+    }
+    if (hang) y0 = 0;
+    y0 = Math.max(y0, 0);
+    y1 = Math.min(y1, tn.h - 1);
+    // a hanging mass (the ceiling) continues straight up out of the frame
+    const inM = (x, y) => {
+      for (const p of puffs) {
+        const dx = (x - p[0]) / p[2];
+        const dy = (y - p[1]) / p[3];
+        if (dx * dx + (hang && dy < 0 ? 0 : dy * dy) <= 1) return true;
+      }
+      return false;
+    };
+    for (let x = x0; x <= x1; x++) {
+      // walk each column upward so we know the distance to the underside
+      let d = -1;
+      for (let y = y1; y >= y0; y--) {
+        if (!inM(x, y)) {
+          d = -1;
+          continue;
+        }
+        d++;
+        const q = d / bd + (HD.bayer(x, y) - 0.5) * 0.4;
+        tn.put(x, y, tb + (q < 0.34 ? 1 : q < 1 ? 2 : 3));
       }
     }
-    for (const r of rows) {
-      // r: [yBase, ryMin, ryMax, stretch, under, gap]
-      let x = rng() * 40;
-      const x0 = x;
-      while (x < x0 + w) {
-        const ry = r[1] + rng() * (r[2] - r[1]);
-        const rx = ry * (r[3] + rng() * 1.2);
-        const yb = r[0] + (rng() - 0.5) * ry * 0.9;
-        const mass = [];
-        const n = 2 + Math.floor(rng() * 2);
+  }
+  function genDeck(seed, w, h, rows, r0) {
+    const tn = new K.Tones(w, h);
+    const hs = (a, b, c) => HD.hash(seed, a, b, c);
+    const masses = [];
+    rows.forEach((r, ri) => {
+      // r: { y: underside (tile-local), rx/ry: [min, max], step: [min, max]
+      //      spacing in mass widths (< 1 overlaps, > 1 leaves gaps), belly px }
+      let x = hs(ri, 0, 1) * 60;
+      const xEnd = x + w;
+      for (let i = 0; x < xEnd; i++) {
+        const rx = r.rx[0] + hs(ri, i, 2) * (r.rx[1] - r.rx[0]);
+        const ry = r.ry[0] + hs(ri, i, 3) * (r.ry[1] - r.ry[0]);
+        const yb = r.y + (hs(ri, i, 4) - 0.5) * 12; // +-6 px: the rows never line up
+        const cx = x + rx;
+        const n = 3 + Math.floor(hs(ri, i, 5) * 3);
+        const puffs = [];
         for (let j = 0; j < n; j++) {
           const u = j / (n - 1);
-          const hump = Math.sin(Math.PI * (0.15 + 0.7 * u));
-          const pr = ry * (0.55 + 0.45 * hump) * (0.85 + rng() * 0.3);
-          mass.push([x + u * rx * 2 + (rng() - 0.5) * 4, yb - pr * 0.5 - rng() * 2, pr * (1.7 + rng() * 0.6), pr, yb + (rng() < 0.4 ? 2 : 0), j > 0 && rng() < 0.35]);
+          const hump = 0.5 + 0.5 * Math.sin(Math.PI * (0.08 + 0.84 * u));
+          const pr = ry * hump * (0.75 + 0.45 * hs(ri, i, 10 + j));
+          const px = cx + (u - 0.5) * rx * 1.35 + (hs(ri, i, 20 + j) - 0.5) * 10;
+          const prx = rx * (0.3 + 0.24 * hs(ri, i, 30 + j));
+          const sag = (hs(ri, i, 40 + j) - 0.35) * ry * 0.7; // undulating underside
+          puffs.push([px, yb - pr + sag, prx, pr]);
         }
-        K.cloud(tn, mass, true, r[4]);
-        x += rx * 2 + ry * r[5] * (0.2 + rng());
+        masses.push({ yb, puffs, tb: (r0 + ri) * 3, bd: r.belly, hang: !!r.ceiling });
+        x += 2 * rx * (r.step[0] + hs(ri, i, 6) * (r.step[1] - r.step[0]));
       }
-    }
-    K.tidy(tn, 2);
+    });
+    // farthest (lowest underside) first, so nearer bellies hang over them
+    masses.sort((a, b) => b.yb - a.yb);
+    for (const m of masses) deckMass(tn, m.puffs, m.tb, m.bd, m.hang);
     return tn;
   }
+  // rows: underside y in screen space (converted to tile-local below), depth
+  // 0 = overhead .. 1 = horizon
+  const DECK_ROWS = {
+    near: [
+      { y: 21, rx: [60, 90], ry: [14, 18], step: [0.42, 0.62], belly: 8, depth: 0, ceiling: true },
+      { y: 36, rx: [52, 90], ry: [10, 14], step: [0.48, 0.72], belly: 7, depth: 0.12 },
+      { y: 52, rx: [46, 84], ry: [8, 12], step: [0.5, 0.8], belly: 6, depth: 0.24 },
+    ],
+    mid: [
+      { y: 67, rx: [44, 84], ry: [8, 11], step: [0.5, 0.8], belly: 6, depth: 0.36 },
+      { y: 83, rx: [42, 78], ry: [7, 10], step: [0.55, 0.9], belly: 5, depth: 0.5 },
+      { y: 98, rx: [40, 70], ry: [6, 8], step: [0.6, 1.0], belly: 4, depth: 0.64 },
+      { y: 112, rx: [34, 60], ry: [5, 7], step: [0.7, 1.15], belly: 3, depth: 0.78 },
+      { y: 124, rx: [28, 50], ry: [4, 6], step: [0.8, 1.35], belly: 3, depth: 0.9 },
+      { y: 134, rx: [22, 40], ry: [3, 4], step: [1.0, 1.7], belly: 2, depth: 1 },
+    ],
+  };
   let deckGeo = null;
   function deckLayers() {
     if (deckGeo) return deckGeo;
+    const local = (rows, y0) => rows.map((r) => Object.assign({}, r, { y: r.y - y0 }));
     deckGeo = {
-      // low deck towards the horizon: long flat masses (1 tile / loop)
-      mid: { y: 40, w: 600, h: 96, k: 1, tn: genDeck(9151, 600, 96, [[90, 3, 5, 4, 2, 1.4], [76, 5, 8, 3.2, 2, 0.8], [60, 7, 10, 2.8, 3, 0.6], [40, 9, 13, 2.8, 3, 0.9]], 56) },
-      // overhead deck: a few big, heavy masses (2 tiles / loop)
-      near: { y: 0, w: 480, h: 52, k: 2, tn: genDeck(7717, 480, 52, [[42, 9, 12, 2.8, 3, 0.9], [20, 12, 15, 2.6, 3, 1.1]], 46) },
+      // overhead deck: big heavy masses hanging from the ceiling (2 tiles / loop)
+      near: { y: 0, w: 480, h: 66, k: 2, rows: DECK_ROWS.near, tn: genDeck(7717, 480, 66, local(DECK_ROWS.near, 0), 0) },
+      // lower deck towards the horizon: long flat masses (1 tile / loop)
+      mid: { y: 40, w: 600, h: 104, k: 1, rows: DECK_ROWS.mid, tn: genDeck(9151, 600, 104, local(DECK_ROWS.mid, 40), 0) },
     };
     return deckGeo;
+  }
+  /** per-row palette [dark belly, belly half-tone, body] x rows */
+  function deckPalette(rows, dk) {
+    const pal = [];
+    for (const r of rows) {
+      const body = mix(dk.top, dk.hor, Math.pow(r.depth, 0.85));
+      pal.push(mix(body, dk.belly, 0.62), mix(body, dk.belly, 0.3), body);
+    }
+    return pal;
   }
 
   function bakeClouds(ed) {
@@ -484,9 +563,9 @@
     if (cl.lit && ed.moon !== 'none') masks = cl.lit.r.map((r) => K.radialMask(MR.w, MR.h, MOON.x - MR.x, MOON.y - MR.y, r[0], r[1]));
     const deck = cl.deck ? deckLayers() : null;
     K.LAYERS.forEach((Ly0, i) => {
-      const pal = cl[ids[i]];
+      const Ly = deck ? deck[ids[i]] : Ly0;
+      const pal = deck ? Ly && deckPalette(Ly.rows, cl.deck) : cl[ids[i]];
       if (!pal) return;
-      const Ly = deck && deck[ids[i]] ? deck[ids[i]] : Ly0;
       const L = { Ly, cv: K.tonesToCanvas(Ly.tn, pal), lit: null, masks };
       if (masks)
         L.lit = cl.lit.k.map((ks, j) => {
