@@ -54,6 +54,8 @@ Tips:
   4K uploads a much higher bitrate, which keeps the rain and the pixel edges sharp.
 - Other codecs: `--codec h265`, `--codec prores` (`.mov` for editing), and
   `--codec lossless` (RGB, very large).
+- Vertical 9:16 short (60 s seamless loop, centred on the cottage, 7x pixels):
+  `node tools/render-video.mjs --loop 60 --crop 152,0,154,270 --scale 7 --pad 1080x1920 --out out/vertical.mp4`
 - `--loop` changes the loop length. All motion re-snaps to fit the new length,
   so the loop stays seamless.
 
