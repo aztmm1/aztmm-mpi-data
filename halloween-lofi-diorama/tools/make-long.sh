@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Stretch the seamless loop into a long video with your music, without re-encoding the picture.
-#   tools/make-long.sh <loop.mp4 | loop-part1-of-N.mp4> <music-file> [minutes=30] [out.mp4]
+#   tools/make-long.sh <loop.mp4 | loop-part1-of-N.mp4> <music-file> [minutes=3] [out.mp4]
 # If you pass part 1 of a split loop (…-part1-of-6.mp4), the other parts in the
 # same folder are joined first, losslessly.
 # The music file is looped too; for a playlist, first concatenate your tracks into one file:
 #   ffmpeg -f concat -safe 0 -i tracks.txt -c:a aac -b:a 192k playlist.m4a
 set -euo pipefail
 if [ $# -lt 2 ]; then
-  echo "usage: $0 <loop.mp4 | loop-part1-of-N.mp4> <music-file> [minutes=30] [out.mp4]" >&2
+  echo "usage: $0 <loop.mp4 | loop-part1-of-N.mp4> <music-file> [minutes=3] [out.mp4]" >&2
   exit 1
 fi
 LOOP_VIDEO=$1
 AUDIO=$2
-MINUTES=${3:-30}
+MINUTES=${3:-3}
 OUT=${4:-rainy-hollow-${MINUTES}min.mp4}
 SECS=$(awk "BEGIN { print $MINUTES * 60 }")
 

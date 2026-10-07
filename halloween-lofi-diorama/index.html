@@ -155,11 +155,19 @@
       <div id="hint"><b>F</b> fullscreen &middot; <b>&larr; &rarr;</b> season &middot; <b>Space</b> pause &middot; <b>H</b> stats</div>
     </div>
     <script>
-      // The live page opens on the edition for today's date (tools pass ?edition=).
+      // The live page opens on the edition for today's date in Boston
+      // (Somerville, MA), wherever the viewer is. Tools pass ?edition=.
       (function () {
         var d = new Date();
+        var md = [d.getMonth() + 1, d.getDate()];
+        try {
+          var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'numeric', day: 'numeric' }).formatToParts(d);
+          var m = +parts.find(function (p) { return p.type === 'month'; }).value;
+          var dd = +parts.find(function (p) { return p.type === 'day'; }).value;
+          if (m && dd) md = [m, dd];
+        } catch (e) {}
         window.HD = window.HD || {};
-        window.HD.todayMD = [d.getMonth() + 1, d.getDate()];
+        window.HD.todayMD = md;
       })();
     </script>
     <!-- core -->
@@ -168,6 +176,7 @@
     <script src="src/layout.js"></script>
     <script src="src/editions.js"></script>
     <script src="src/festive.js"></script>
+    <script src="src/summer.js"></script>
     <!-- scene modules (each file registers itself with HD.module) -->
     <script src="src/bg.js"></script>
     <script src="src/ground.js"></script>
@@ -184,6 +193,8 @@
     <script src="src/fire-seasons.js"></script>
     <script src="src/weather-seasons.js"></script>
     <script src="src/atmosphere-seasons.js"></script>
+    <!-- the Summer Story family -->
+    <script src="src/family.js"></script>
     <script>
       // Edition picker, keyboard switching and the title card.
       (function () {
@@ -233,7 +244,7 @@
           var i = list.indexOf(HD.edition);
           if (ev.key === 'ArrowRight') HD.setEdition(list[(i + 1) % list.length].id);
           else if (ev.key === 'ArrowLeft') HD.setEdition(list[(i - 1 + list.length) % list.length].id);
-          else if (/^[1-8]$/.test(ev.key)) HD.setEdition(list[+ev.key - 1].id);
+          else if (/^[1-9]$/.test(ev.key) && list[+ev.key - 1]) HD.setEdition(list[+ev.key - 1].id);
         });
       })();
     </script>

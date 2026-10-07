@@ -120,6 +120,21 @@
       fireworks: { x0: 150, x1: 470, y0: 14, y1: 112 },
     },
 
+    // ---- Summer Story anchors (SUMMER.md) ---------------------------------
+    // No campfire in these chapters, so the left yard is the family's stage.
+    summer: {
+      stage: { x0: 66, x1: 196, y0: 214, y1: 236 }, // where the family cats gather (family module)
+      table: { x: 112, base: 229, w: 34 }, // DC birthday table (props); cats sit/stand around it
+      bench: { x: 118, base: 227, w: 30 }, // NYC anniversary bench (props); you + partner sit on it
+      heater: { x: 182, base: 224 }, // LA patio heater (props)
+      flagpole: { x: 34, base: 224 }, // US flag on a pole (props)
+      football: { x: 262, base: 233 }, // Match Night ball (props)
+      castle: { x: 338, base: 223 }, // San Diego toy-brick castle (props, garden corner)
+      brickCat: { x: 300, base: 228 }, // original brick cat sculpture (props)
+      giraffes: { x: 452, base: 213 }, // two giraffes peeking over the fence (props)
+      boat: { x: 236, y: 228 }, // little boat on the big puddle in San Diego (props), puddle = bay
+    },
+
     // eave points where fat drips fall from
     drips: [
       { x: 161, y: 129 },
