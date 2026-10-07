@@ -49,7 +49,7 @@
       h: o.h,
       k: o.k || 1,
       ly: o.ly === undefined ? o.y0 + (o.h >> 1) : o.ly,
-      tex: A().bakeTile(o.tw, o.h, o.dens, o.cols, !!o.lit, o.core === undefined ? 0.45 : o.core),
+      tex: A().bakeTile(o.tw, o.h, o.dens, o.cols, !!o.lit, o.core === undefined ? 0.45 : o.core, o.levels),
       alpha: o.alpha,
       mask: o.mask || (o.holes && o.holes.length ? A().bakeMask(o.y0, o.h, o.holes) : null),
     };
@@ -146,6 +146,7 @@
       alpha: o.alpha,
       core: o.core === undefined ? 0.45 : o.core,
       holes: o.holes,
+      levels: o.levels,
       dens: (x, y) => {
         const c = (o.c || 8) + (yc[x] - 0.5) * (o.wob === undefined ? 5 : o.wob);
         const q = (y - c) / (y < c ? o.up || 3 : o.down || 5.5);
@@ -466,6 +467,27 @@
         far: farBands({ cols: [mix(P.night[4], P.wood[5], 0.4), mix(P.night[5], P.wood[6], 0.4)], alpha: 0.5, seed: 611, gain: 0.9 }),
         ground: [
           groundBand({ cols: lamp, alpha: 0.3, c: 9, up: 4, down: 6, lo: 0.05, hi: 0.65, gain: 0.7, floor: 0.2, seed: 631, holes: [PORCH_HOLE, { x: 220, y: 221, rx: 22, ry: 7 }] }),
+          // lamp smoke hanging at fence-top height: a thin smoky veil that
+          // only really shows where the rows of diyas light it up
+          groundBand({
+            cols: [mix(P.stone[5], P.wood[7], 0.45), mix(P.stone[6], P.amber[3], 0.22)],
+            alpha: 0.34,
+            y0: 176,
+            h: 30,
+            c: 15,
+            up: 4,
+            down: 4.5,
+            wob: 4,
+            lo: 0.05,
+            hi: 0.6,
+            gain: 0.9,
+            floor: 0.45,
+            seed: 671,
+            sub: 0.19,
+            ly: 192,
+            levels: [0, 0.5, 0.85, 1.2], // catches the little flames eagerly
+            holes: [{ x: 234, y: 192, rx: 70, ry: 60 }],
+          }),
         ],
         front: [frontBand({ cols: lamp, alpha: 0.26, n: 4, seed: 641, holes: [] })],
         sky: skyHaze({ cols: [mix(P.night[5], P.wood[5], 0.4), mix(P.night[6], P.wood[6], 0.4)], alpha: 0.24, seed: 651, n: 5, lit: 0.45 }),

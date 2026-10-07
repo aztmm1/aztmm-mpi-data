@@ -182,19 +182,21 @@
     const cy = Math.round(p.y);
     const pads = [
       [
-        [-14, 0, 5],
-        [-7, 2, 4],
-        [5, -1, 5],
-        [13, 1, 4],
-        [-1, 2, 3],
+        [-17, 0, 6],
+        [-9, 2, 5],
+        [-3, -1, 4],
+        [4, 1, 6],
+        [13, -1, 5],
+        [15, 2, 4],
       ],
       [
-        [-5, 0, 4],
-        [5, 1, 3],
+        [-7, 0, 5],
+        [3, 1, 4],
       ],
       [
-        [-6, 0, 4],
-        [6, 0, 3],
+        [-9, 0, 5],
+        [1, -1, 4],
+        [6, 1, 5],
       ],
     ][pi] || [];
     const ins = (x, y) => (K.mask(x, y) & K.PUD) !== 0;
@@ -647,8 +649,8 @@
         // snow near the campfire: keep it a step darker so the warm relight
         // reads as glow on snow instead of blowing out to paper-white
         if (ed.fire !== 'none') {
-          const e = ((x - cf.x) / 96) ** 2 + ((y - cf.base) / 26) ** 2;
-          if (e < 1) i -= e < 0.45 ? 2 : 1;
+          const e = ((x - cf.x) / 120) ** 2 + ((y - cf.base) / 30) ** 2;
+          if (e < 1) i -= e < 0.5 ? 2 : 1;
         }
         K.set(x, y, S[clamp(i, 2, 7)]);
       }
@@ -722,6 +724,24 @@
       [150, 235, 3],
     ];
     for (const [x, y, c] of fl) leafAt(K, x, y, HD.rng(x * 7 + y), cols[c], true);
+  }
+
+  /** a light scatter of dry fallen leaves, gathered under the tree and at the edges (dry autumn) */
+  function fallenLeaves(K) {
+    const { BACK, FRONT, FIRE, MUD } = K;
+    const cols = LEAF_COLS();
+    const r = HD.rng(5252);
+    for (let i = 0; i < 900; i++) {
+      const x = Math.floor(r() * W);
+      const y = BACK + 3 + Math.floor(r() * (FRONT - BACK - 4));
+      let s = K.fbm(x / 14, y / 3.5, 521) - 0.62;
+      if (x > 352) s += 0.26 + (x > 380 && x < 440 ? 0.1 : 0);
+      if (x < 30) s += 0.12;
+      if (r() > (s > 0 ? 0.06 + s * 1.2 : 0.012)) continue;
+      if (K.mask(x, y) & (FIRE | MUD | K.STONE)) continue;
+      const hue = K.vn(x / 30, y / 6, 527);
+      leafAt(K, x, y, r, cols[hue < 0.35 ? 2 : hue < 0.6 ? 4 : hue < 0.8 ? 1 : 0]);
+    }
   }
 
   function lipLeaves(K) {
@@ -913,8 +933,14 @@
         else c = rr < 0.1 ? wht : yel;
         if (c) K.set(x, y, c);
       }
-    // a tiny dotted white outline outside the scallops, left & right only
-    for (const s of [-1, 1]) K.set(R.x + s * (R.rx + 2), R.y, wht);
+    // a ring of chalk-white dots just outside the scallops
+    const N = 28;
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      const x = Math.round(R.x + Math.cos(a) * (R.rx + 2.6));
+      const y = Math.round(R.y + Math.sin(a) * (R.ry + 1.6));
+      if (K.get(x, y) !== wht) K.set(x, y, wht);
+    }
   }
 
   // ------------------------------------------------------------------
@@ -981,7 +1007,7 @@
     [[352, 249], [354, 255], [366, 257], [378, 256]],
   ];
   SECRET['ant-colony'] = (K) => {
-    for (const p of ANT_PATHS) tunnel(K, p, P.soil[0], 2);
+    for (const p of ANT_PATHS) tunnel(K, p, P.soil[0], 3);
     const ch = [
       [337, 252, 4, 1.6],
       [369, 251, 4.5, 1.8],
@@ -998,7 +1024,7 @@
     // a pale packed floor under every tunnel so the network reads
     for (let y = 240; y < 262; y++)
       for (let x = 298; x < 392; x++)
-        if (K.mask(x, y) & K.COF && !(K.mask(x, y + 1) & K.COF) && K.get(x, y) === P.soil[0]) K.set(x, y + 1, P.soil[5]);
+        if (K.mask(x, y) & K.COF && !(K.mask(x, y + 1) & K.COF) && K.get(x, y) === P.soil[0]) K.set(x, y + 1, mix(P.soil[6], P.bone[0], 0.25));
     return { ants: true };
   };
   // a squirrel's acorn cache
@@ -1032,8 +1058,9 @@
       const h = HD.hash(x >> 1, y, 742);
       return K.vn(x / 2, y / 1.5, 741) > 0.62 ? P.autumn[3] : h < 0.35 ? P.autumn[2] : h < 0.6 ? P.wood[3] : P.soil[1];
     }, P.soil[0], 743);
-    const hh = { s: mix(P.stone[6], P.bone[1], 0.5), T: P.wood[2], F: mix(P.bone[2], P.wood[6], 0.45), k: P.soil[0], e: P.wood[1] };
-    stamp(K, ['...sTsTsT....', '..sTsTsTsTs..', '.sTsTsTsTsTs.', 'FesTsTsTsTsTs', 'kFFFsTsTsTsT.', '.FFFFTTTTTT..'], 359, 250, hh);
+    const hh = { s: mix(P.stone[6], P.bone[1], 0.5), t: mix(P.wood[4], P.stone[4], 0.5), T: P.wood[2], F: mix(P.bone[2], P.wood[6], 0.45), k: P.soil[0], e: P.wood[1] };
+    // spines in diagonal strokes (light tip, mid, dark root) sweeping back
+    stamp(K, ['...stTstTs...', '..tTstTstTs..', '.TstTstTstTs.', 'FestTstTstTst', 'kFFFTstTstTs.', '.FFFFTTTTTT..'], 359, 250, hh);
     // a few leaves tucked over it
     K.set(370, 249, P.autumn[4]);
     K.set(371, 249, P.autumn[3]);
@@ -1110,8 +1137,9 @@
       K.paintMud(mudSpotsFor(ed, { k: 0.55, noSteps: true }), true);
       puddles(K, 'water', { far: P.soil[2], near: P.soil[1], end: P.soil[4] });
       sweptPath(K);
-      grass(K, G, { dens: 0.95, hk: 1.1 });
+      grass(K, G, { dens: 0.72, hk: 1.1 });
       pathStones(K, G, { only: (s) => s.i === 3, mud: false });
+      fallenLeaves(K);
       rangoli(K);
       backEdge(K, G[1], { stalks: 0.1 });
       const sec = under(K, ed, { worm: true });
@@ -1233,8 +1261,8 @@
           const dir = ph < 0.5 ? 1 : -1;
           const [x, y] = a.p[k];
           const [hx, hy] = a.p[clamp(k + dir, 0, n - 1)];
-          g.em.px(x, y + 1, body);
-          g.em.px(hx, hy + 1 - wig, head);
+          g.em.px(x, y + 2, body);
+          g.em.px(hx, hy + 2 - wig, head);
         }
       });
     }

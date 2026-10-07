@@ -279,8 +279,8 @@
    * Bake one dithered texture per light level (or a single cold one).
    * Colour cols[1] (core) where bayer < (d - core) * 1.6, cols[0] where bayer < d.
    */
-  function bakeTile(tw, h, dens, cols, lit, core) {
-    const sets = cols.map((c) => (lit ? litSet(c) : [c]));
+  function bakeTile(tw, h, dens, cols, lit, core, levels) {
+    const sets = cols.map((c) => (lit ? litSet(c, levels) : [c]));
     const nv = lit ? LEVEL_L.length : 1;
     const D = new Float32Array(tw * h);
     for (let y = 0; y < h; y++) for (let x = 0; x < tw; x++) D[y * tw + x] = dens(x, y);

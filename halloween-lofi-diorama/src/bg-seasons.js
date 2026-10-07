@@ -551,7 +551,7 @@
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
           { base: mix(mix(P.leaf[5], P.vine[4], 0.4), N[4], 0.3), light: mix(P.leaf[7], N[7], 0.3), dark: mix(P.leaf[3], N[3], 0.3) },
           { base: mix(P.leaf[4], N[4], 0.3), light: mix(P.leaf[6], N[6], 0.3), dark: mix(P.leaf[2], N[3], 0.3) },
-          { base: mix(P.blossom[2], N[4], 0.3), light: mix(P.blossom[4], N[6], 0.35), dark: mix(P.blossom[1], N[2], 0.45), blossom: true },
+          { base: mix(P.blossom[4], N[5], 0.42), light: mix(P.blossom[5], N[8], 0.3), dark: mix(P.blossom[2], N[3], 0.4), blossom: true },
         ],
         speck: mix(P.blossom[6], N[8], 0.4),
         speck2: mix(P.blossom[7], N[10], 0.3),

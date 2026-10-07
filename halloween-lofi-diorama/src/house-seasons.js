@@ -596,12 +596,14 @@
     // ---------------- windows ----------------
     if (has(ed, 'tangerines')) {
       // bowl of tangerines with a couple of leaves on the inner sill
-      rowsW(I, gr, ['....l.....', '...oOo....', '..oOooOo..', '.oOoOooOo.', 'bbbbbbbbbb', '.bbbbbbbb.', '..bbbbbb..'], 3, gr.gh - 7, {
-        o: P.pumpkin[4],
-        O: P.pumpkin[5],
+      rowsW(I, gr, ['....ll....', '...oOol...', '..oOooOo..', '.oOoooOoo.', 'bbbbbbbbbb', '.bbbbbbbb.', '..bbbbbb..'], 3, gr.gh - 7, {
+        o: F[5],
+        O: F[7],
         l: LF[5],
         b: A[0],
       });
+      // a second dish on the parlour side table
+      rowsW(I, gl, ['.oO.', 'oooo', 'bbbb'], 12, 12, { o: F[5], O: F[7], b: A[0] });
     }
     if (has(ed, 'paper-cuts')) {
       const rc = { r: RD[4] };
@@ -630,16 +632,21 @@
       rowsW(I, gr, ['...s...', '.ppppp.', 'ppppppp', 'ppppppp', '.ppppp.'], 4, gr.gh - 5, { s: LF[3], p: A[0] });
       // the pie cooling on the outside sill (lattice crust in a tin)
       const w = gl.w;
-      const px = w.x + 6;
+      const px = w.x + 5;
       const py = w.y + w.h + 1;
-      stamp(I, ['.cLcLc.', 'LcLcLcL', 'ddddddd', '.eeeee.'], px, py - 3, { c: AU[6], L: GD[4], d: S[5], e: S[3] });
+      stamp(I, ['..LLLLL..', '.LcLcLcL.', 'LcLcLcLcL', 'kkkkkkkkk', '.ddddddd.'], px, py - 4, { c: AU[4], L: AU[6], k: S[6], d: S[4] });
     }
     if (has(ed, 'party-windows')) {
       // balloons and streamers as silhouettes
-      const bal = ['.bb.', 'bbbb', 'bbbb', '.bb.', '..s.', '.s..', '..s.'];
-      rowsW(I, gr, bal, 3, 9, { b: A[0], s: A[1] });
-      rowsW(I, gr, bal, 8, 12, { b: A[1], s: A[1] });
-      rowsW(I, gr, ['.bb.', 'bbbb', 'bbbb', '.bb.', '.s..', '..s.'], 5, 15, { b: A[0], s: A[1] });
+      // a bunch of balloons tied to the curtain rail, backlit (dark rims, glowing skins)
+      const BAL = ['.bb.', 'bhbb', 'bbbb', 'dbbd', '.dd.', '..s.'];
+      const bal = (lx, ly, ramp, tail) => {
+        rowsW(I, gr, BAL, lx, ly, { b: ramp[1], h: ramp[2], d: ramp[0], s: A[1] });
+        for (let k = 0; k < tail; k++) putW(I, gr, lx + 2 + (k % 3 === 1 ? -1 : 0), ly + 6 + k, A[1]);
+      };
+      bal(1, 2, [RD[1], RD[3], RD[5]], 4);
+      bal(6, 0, [GD[1], GD[3], GD[5]], 6);
+      bal(10, 3, [P.night[4], P.night[7], P.night[9]], 3);
       for (let lx = 0; lx < ul.gw; lx++) {
         putW(I, ul, lx, 2 + ((lx >> 1) & 1), A[1]);
         if (lx % 4 === 1) putW(I, ul, lx, 4 + ((lx >> 2) & 1), A[1]);
@@ -693,6 +700,8 @@
       }
     }
     if (has(ed, 'red-banners')) {
+      // a plain red diamond on the door, gold edged (no characters)
+      stamp(I, ['...g...', '..grg..', '.grRrg.', 'grRRRrg', '.grRrg.', '..grg..', '...g...'], DX0 + 4, DY0 + 10, { g: GD[3], r: RD[3], R: RD[4] });
       // plain red vertical banners on both porch posts, gold flecks
       for (const bx of [PO.postL, PO.postR - 2]) {
         I.hl(bx - 1, bx + 3, 178, W[1], 0);
@@ -711,32 +720,40 @@
       stamp(I, FC, PO.x1 - 1, PO.roofY + 7, { k: GD[2], r: RD[4], R: RD[3], g: GD[4] });
     }
     if (has(ed, 'corn-bundles')) {
-      const CORN = [
-        'l..b..l',
-        '.l.b.l.',
-        '..lbl..',
-        '.lbbbl.',
-        '..bbb..',
-        '..bcb..',
-        '..bbb..',
-        '..bcb..',
-        '..rrr..',
-        '..bbb..',
-        '..bcb..',
-        '.bbcbb.',
-        '.bbbbb.',
-        'bbcbcbb',
-        'bb.b.bb',
-        'oc.b.co',
-        'oo.b.oo',
-        'o..b..o',
-        'b..b..b',
-        'b..b..b',
-        'b.....b',
+      // corn shocks: a sheaf of dry stalks tied to each porch post, tassels
+      // fanning above the twine, two ears of corn leaning at the foot.
+      // Lit side faces the door (the lanterns), so the right shock is mirrored.
+      const SHOCK = [
+        '.b.....a.',
+        '..b.a.b..',
+        'b..bab..a',
+        '.b.bab.b.',
+        '..babab..',
+        '...bab...',
+        '...bab...',
+        '...ttt...',
+        '..lcabl..',
+        '.l.cabbl.',
+        'l.ccabb.l',
+        '..cbabb..',
+        '..cbabbc.',
+        '.ccbabbc.',
+        '.cbcabbc.',
+        '.cbcababc',
+        'ccbcababc',
+        'cbcbababc',
+        'cbcbababc',
+        'cbcbababc',
+        'dcdcdbdbd',
       ];
-      const map = { l: AU[5], b: GD[2], c: GD[1], r: RD[3], o: MG[2] };
-      stamp(I, CORN, PO.postL - 7, 206 - CORN.length, map);
-      stamp(I, CORN, PO.postR + 1, 206 - CORN.length, map);
+      const EAR = ['.h', 'hy', 'yY', 'yY', 'yy', 'y.'];
+      const map = { a: BN[2], b: BN[1], c: BN[0], d: W[2], l: AU[3], t: RD[3], h: BN[2], y: GD[2], Y: GD[3] };
+      const flip = (rows) => rows.map((r) => r.split('').reverse().join(''));
+      const baseY = 206 - SHOCK.length;
+      stamp(I, SHOCK, PO.postL - 4, baseY, map);
+      stamp(I, flip(SHOCK), PO.postR - 5, baseY, map);
+      stamp(I, EAR, PO.postL - 5, 200, map);
+      stamp(I, flip(EAR), PO.postR + 4, 200, map);
     }
     if (has(ed, 'bunting')) {
       const cols = [GD[4], RD[4], P.night[9], BN[4], V[5]];
@@ -835,7 +852,7 @@
   const STR_GOLD = { colors: ['gold'], spacing: 4, sag: 2, twinkle: 0.45 };
   const strings = (ed) => {
     if (has(ed, 'string-lights-color')) return { o: STR_COLOR, paths: [EAVE, PORCH, TURRET] };
-    if (has(ed, 'string-lights-gold')) return { o: STR_GOLD, paths: [EAVE, PORCH] };
+    if (has(ed, 'string-lights-gold')) return { o: STR_GOLD, paths: has(ed, 'bunting') ? [EAVE] : [EAVE, PORCH] };
     return null;
   };
 
@@ -848,7 +865,6 @@
     harvest: [
       [DX0, PO.roofY + 8, 'harvest', 'big', 2],
       [DX1 + 1, PO.roofY + 8, 'harvest', 'big', 2],
-      [PO.x1 - 4, PO.roofY + 7, 'harvest', 'small', 2],
     ],
   };
 
@@ -951,7 +967,7 @@
       // a thin curl of steam from the pie
       const w = WIN['ground-left'].w;
       const px = w.x + 9;
-      const py = w.y + w.h - 3;
+      const py = w.y + w.h - 4;
       for (let i = 0; i < 3; i++) {
         const c = T.cycle(t, i, 3.4, 610);
         const a = c.age;
@@ -970,7 +986,7 @@
       for (let i = 0; i < st.paths.length; i++)
         FE.bulbLights(L, st.paths[i], t, { colors: st.o.colors, sag: st.o.sag, every: 20, r: 16, i: has(ed, 'string-lights-color') ? 0.15 : 0.17 });
     const ls = LANTERNS[ed.id];
-    if (ls) for (let i = 0; i < ls.length; i++) FE.lanternLight(L, ls[i][0], ls[i][1], t, 60 + i, ls[i][2], { size: ls[i][3], len: ls[i][4], amp: 0.1 });
+    if (ls) for (let i = 0; i < ls.length; i++) FE.lanternLight(L, ls[i][0], ls[i][1], t, 60 + i, ls[i][2], { size: ls[i][3], len: ls[i][4], amp: 0.1, r: 34, i: 0.5 });
     if (has(ed, 'diyas-house')) {
       let s = 0;
       for (const grp of DIYA_GROUPS) {
@@ -1000,16 +1016,20 @@
   // ===================================================================
   // hooks used by house.js
   // ===================================================================
-  const omitCache = HD.perEdition((ed) => {
-    const o = new Set(['pumpkin']);
+  const omitCache = new Map();
+  function omit(ed) {
+    let o = omitCache.get(ed.id);
+    if (o) return o;
+    o = new Set(['pumpkin']);
     if (has(ed, 'menorah')) o.add('chair');
     if (has(ed, 'paper-cuts') || has(ed, 'party-windows')) o.add('herbs');
     if (has(ed, 'open-windows')) o.add('gr-curtains');
+    omitCache.set(ed.id, o);
     return o;
-  });
+  }
 
   K.seasons = {
-    omit: (ed) => (ed === HD.edition ? omitCache() : omitCache.call(null)),
+    omit,
     decorateHouse(R, ed) {
       if (has(ed, 'roof-snow')) snowAll(R, true);
       else if (has(ed, 'roof-snow-light')) snowAll(R, false);
@@ -1022,7 +1042,7 @@
       const gl = winSetup().glass[i];
       return gl ? gl[lv] : K.glass[i][lv];
     },
-    ironLantern: () => !has(HD.edition, 'red-lanterns'),
+    ironLantern: () => !has(HD.edition, 'red-lanterns') && !has(HD.edition, 'harvest-lanterns'),
     drawInside,
     drawFront,
     lights,
