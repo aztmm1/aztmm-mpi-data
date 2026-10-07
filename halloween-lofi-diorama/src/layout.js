@@ -97,6 +97,29 @@
       [202, 168, 240, 168], // porch roof
       [184, 84, 194, 84], // chimney cap
     ],
+    // ---- seasonal anchors (Rainy Hollow series, see SEASONS.md) ----------
+    seasonal: {
+      // replaces the graveyard in every edition except Halloween
+      gardenCorner: { x0: 312, x1: 474, y0: 204, y1: 228 },
+      snowman: { x: 352, base: 223 },
+      sled: { x: 330, base: 214 },
+      hayBales: [
+        { x: 330, base: 221 },
+        { x: 354, base: 225 },
+      ],
+      scarecrow: { x: 447, base: 220 },
+      sparklers: [
+        { x: 126, base: 229 },
+        { x: 142, base: 232 },
+      ],
+      rangoli: { x: 220, y: 221, rx: 18, ry: 5 },
+      // lantern string: the house draws a hook at `from`, props draws the
+      // string and lanterns from there to a branch of the tree
+      lanternString: { from: [300, 150] },
+      // fireworks burst zone (fire module); keep clear of titleSafe and the moon
+      fireworks: { x0: 150, x1: 470, y0: 14, y1: 112 },
+    },
+
     // eave points where fat drips fall from
     drips: [
       { x: 161, y: 129 },

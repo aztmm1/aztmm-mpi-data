@@ -261,11 +261,12 @@
   // used, so nothing is ever anti-aliased.
   // ------------------------------------------------------------------
   function makeGfx(ctx, maskCtx) {
-    let cur = null;
+    // The fillStyle cache lives on the context, not the gfx object, because
+    // g and g.em draw onto the same scene context and must not go stale.
     const set = (c) => {
-      if (c !== cur) {
+      if (c !== ctx.__hdFill) {
         ctx.fillStyle = c;
-        cur = c;
+        ctx.__hdFill = c;
       }
     };
     const R = maskCtx
@@ -282,7 +283,7 @@
       H,
       /** forget cached fillStyle (call if you touched ctx.fillStyle directly) */
       reset() {
-        cur = null;
+        ctx.__hdFill = null;
         if (maskCtx) maskCtx.fillStyle = '#fff';
       },
       px(x, y, c) {

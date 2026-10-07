@@ -87,7 +87,7 @@ await page.evaluate(() => {
   };
 });
 const LOOP = await page.evaluate(() => window.HD.LOOP);
-console.log(`loop length ${LOOP}s, modules: ${await page.evaluate(() => window.HD.moduleNames.join(', '))}`);
+console.log(`edition ${await page.evaluate(() => window.HD.edition.id)}, loop length ${LOOP}s, modules: ${await page.evaluate(() => window.HD.moduleNames.join(', '))}`);
 
 // ---------- 2. seamless loop ----------
 const seam = await page.evaluate((L) => {
@@ -129,6 +129,23 @@ ok(seek.d === 0, `seek determinism: re-rendering t=5 after other frames differs 
   });
   await second.browser.close();
   ok(h2 === seek.h, `fresh page load renders identical frame (hash ${seek.h} vs ${h2})`);
+}
+
+// ---------- 3b. live edition switching leaves no residue ----------
+{
+  const sw = await page.evaluate(() => {
+    const HD = window.HD;
+    const id = HD.edition.id;
+    const A = window.__frame(5.0);
+    for (const e of HD.EDITIONS) {
+      HD.setEdition(e.id);
+      window.__frame(7.3);
+    }
+    HD.setEdition(id);
+    const B = window.__frame(5.0);
+    return window.__diff(A, B).n;
+  });
+  ok(sw === 0, `switching through every edition and back changes ${sw} px`);
 }
 
 // ---------- 4. seam smoothness ----------

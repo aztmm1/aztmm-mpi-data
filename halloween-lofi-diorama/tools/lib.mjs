@@ -46,10 +46,13 @@ export async function openDiorama(query = {}, { html = 'index.html', viewport = 
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push('console: ' + m.text());
   });
+  // every tool accepts --edition <id> (see src/editions.js)
+  const cli = parseArgs();
+  if (cli.edition && query.edition === undefined) query = { ...query, edition: cli.edition };
   // never touch the network (the page only links an optional web font)
   await page.route(/^https?:\/\//, (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
   const q = new URLSearchParams({ export: '1', ...Object.fromEntries(Object.entries(query).filter(([, v]) => v !== undefined && v !== null && v !== '')) });
-  const url = pathToFileURL(path.join(ROOT, html)).href + '?' + q.toString();
+  const url = pathToFileURL(path.isAbsolute(html) ? html : path.join(ROOT, html)).href + '?' + q.toString();
   await page.goto(url);
   await page.waitForFunction(() => window.HD && window.HD.isReady === true, null, { timeout: 30000 });
   return { browser, page, errors };
