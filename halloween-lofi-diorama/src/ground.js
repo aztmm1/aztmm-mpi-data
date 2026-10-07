@@ -872,14 +872,22 @@
         if (y < y0) y0 = y;
         if (y > y1) y1 = y;
       }
-    const out = { lit: bakeCanvas(1), cut: bakeCanvas(0), over: null, overY0: y0 + Y0, overY1: y1 + Y0 };
-    if (y1 >= 0)
-      out.over = HD.bake(W, H, (g, cv) => {
-        const ctx = cv.getContext('2d');
-        const im = ctx.createImageData(W, H);
-        for (let k = 0; k < W * H; k++) if (OV[k]) im.data[k * 4 + 3] = 255;
-        ctx.putImageData(im, 0, 0);
-      });
+    const out = { lit: bakeCanvas(1), cut: bakeCanvas(0), over: null };
+    if (y1 >= 0) {
+      // bounding box of the overlay pixels + their offsets inside it
+      let x0 = W;
+      let x1 = -1;
+      for (let k = 0; k < W * H; k++)
+        if (OV[k]) {
+          const x = k % W;
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+        }
+      const bw = x1 - x0 + 1;
+      const idx = [];
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (OV[y * W + x]) idx.push(((y - y0) * bw + (x - x0)) * 4);
+      out.over = { x: x0, y: y0 + Y0, w: bw, h: y1 - y0 + 1, idx: Int32Array.from(idx) };
+    }
     C = LIT = M = OV = null;
     return out;
   }
@@ -928,8 +936,6 @@
   };
 
   const art = HD.perEdition((ed) => (ed.ground === 'wet-autumn' || !HD.groundSeasons ? buildHalloween() : HD.groundSeasons.build(ed, kit)));
-  // overlay scratch (pads, ice cracks, floating leaves above the reflections)
-  let ovCv = null;
 
   const WORM_BODY = P.wood[7];
   const WORM_HEAD = mix(P.wood[7], P.bone[2], 0.35);
@@ -959,18 +965,20 @@
           // seasonal bits that float on the puddles (lily pads, ice cracks,
           // leaves): copy their relit scene pixels back above the reflections
           const A = art();
-          if (!A.over) return;
-          const y0 = A.overY0;
-          const h = A.overY1 - y0 + 1;
-          if (!ovCv) ovCv = HD.canvas(W, H);
-          const o = ovCv.getContext('2d');
-          o.globalCompositeOperation = 'source-over';
-          o.clearRect(0, 0, W, h);
-          o.drawImage(HD.buffers.scene, 0, y0, W, h, 0, 0, W, h);
-          o.globalCompositeOperation = 'destination-in';
-          o.drawImage(A.over, 0, y0 - Y0, W, h, 0, 0, W, h);
-          o.globalCompositeOperation = 'source-over';
-          g.ctx.drawImage(ovCv, 0, 0, W, h, 0, y0, W, h);
+          const O = A.over;
+          if (!O) return;
+          const src = HD.buffers.scene.getContext('2d').getImageData(O.x, O.y, O.w, O.h).data;
+          const img = g.ctx.getImageData(O.x, O.y, O.w, O.h);
+          const d = img.data;
+          const idx = O.idx;
+          for (let i = 0; i < idx.length; i++) {
+            const q = idx[i];
+            if (src[q + 3] === 0) continue;
+            d[q] = src[q];
+            d[q + 1] = src[q + 1];
+            d[q + 2] = src[q + 2];
+          }
+          g.ctx.putImageData(img, O.x, O.y);
         },
       },
       {
