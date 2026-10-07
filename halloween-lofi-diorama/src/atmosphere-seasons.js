@@ -575,45 +575,112 @@
   function burstSmoke(o) {
     const LIFE = o.life || 20;
     const DRIFT = o.drift || 1.6; // px/s downwind, high up
-    const ALPHA = o.alpha || 0.5;
-    // tone sets: [level 0..3][rim, core] per light colour key
-    const base = o.cols;
-    const toneCache = new Map();
-    function tonesFor(key) {
-      let tt = toneCache.get(key);
-      if (tt) return tt;
-      const lc = HD.LIGHT.firework[key] || HD.LIGHT.firework.gold;
-      const tint = css(255 * lc[0], 255 * lc[1], 255 * lc[2]);
-      tt = [0, 0.16, 0.3, 0.46].map((k) => [mix(base[0], tint, k * 0.8), mix(base[1], tint, k)]);
-      toneCache.set(key, tt);
-      return tt;
-    }
-    const layouts = new WeakMap(); // show -> per-shell puff layout
-    function layoutFor(s) {
-      let lay = layouts.get(s);
-      if (lay) return lay;
-      lay = s.list.map((sh) => {
+    const ALPHA = o.alpha || 0.4;
+    // each cloud is baked at a few moments of its life (seconds after the
+    // burst) and cross-faded between them; its fade is the composite alpha,
+    // so the dither never crawls and a frame costs a few drawImage calls
+    const STAGE_T = [1.4, 6, 13];
+    const c0 = A().rgba32(o.cols[0]);
+    const c1 = A().rgba32(o.cols[1]);
+    const CORE = 0.55;
+    const states = new WeakMap(); // show -> per-shell state
+    function stateFor(s) {
+      let st = states.get(s);
+      if (st) return st;
+      st = s.list.map((sh) => {
         const rng = HD.rng(sh.seed ^ 0x51a7);
         const n = sh.R > 26 ? 6 : 5;
         const puffs = [];
         for (let k = 0; k < n; k++) {
           const th = ((k + 0.25 + 0.5 * rng()) / n) * TAU;
           const rho = 0.28 + 0.38 * rng();
-          puffs.push({
-            dx: Math.cos(th) * rho,
-            dy: Math.sin(th) * rho * 0.85,
-            r: 0.2 + 0.1 * rng(),
-            a: 0.75 + 0.35 * rng(),
-            kx: (rng() * 8) | 0,
-            ky: (rng() * 8) | 0,
-          });
+          puffs.push({ dx: Math.cos(th) * rho, dy: Math.sin(th) * rho * 0.85, r: 0.2 + 0.1 * rng(), a: 0.75 + 0.35 * rng() });
         }
         // willows and crackles leave more smoke, far shells less
         const k = (sh.type === 'willow' ? 1.15 : sh.type === 'crackle' ? 1.1 : 1) * (sh.far ? 0.55 : 1);
-        return { puffs, k, sag: sh.type === 'willow' ? 0.32 : 0.14 };
+        return { sh, puffs, k, sag: sh.type === 'willow' ? 0.32 : 0.14, stages: [] };
       });
-      layouts.set(s, lay);
-      return lay;
+      states.set(s, st);
+      return st;
+    }
+    /** bake stage i of a cloud: puffs relative to the drifting burst centre */
+    function stage(c, i) {
+      let sg = c.stages[i];
+      if (sg) return sg;
+      const d = STAGE_T[i];
+      const R = c.sh.R;
+      const grow = 0.55 + 0.45 * sm(0, 1.6, d) + 0.5 * (d / LIFE);
+      const ps = c.puffs.map((p) => ({
+        // upper puffs ride a slightly faster wind (gentle shear)
+        x: p.dx * R * grow - 0.35 * p.dy * DRIFT * d,
+        y: p.dy * R * grow,
+        rx: R * p.r * (1 + 0.9 * (d / LIFE)) * 1.25 + 2,
+        a: p.a * 0.62,
+      }));
+      let x0 = Infinity;
+      let x1 = -Infinity;
+      let y0 = Infinity;
+      let y1 = -Infinity;
+      for (const p of ps) {
+        x0 = Math.min(x0, p.x - p.rx * 1.9);
+        x1 = Math.max(x1, p.x + p.rx * 1.9);
+        y0 = Math.min(y0, p.y - p.rx * 0.8 * 1.9);
+        y1 = Math.max(y1, p.y + p.rx * 0.8 * 1.9);
+      }
+      const ox = Math.floor(x0);
+      const oy = Math.floor(y0);
+      const w = Math.ceil(x1) - ox + 1;
+      const h = Math.ceil(y1) - oy + 1;
+      // accumulate each puff over its own box only (baking stays cheap)
+      const D = new Float32Array(w * h);
+      for (const p of ps) {
+        const ry = p.rx * 0.8;
+        const xa = Math.max(0, Math.floor(p.x - p.rx * 1.9) - ox);
+        const xb = Math.min(w - 1, Math.ceil(p.x + p.rx * 1.9) - ox);
+        const ya = Math.max(0, Math.floor(p.y - ry * 1.9) - oy);
+        const yb = Math.min(h - 1, Math.ceil(p.y + ry * 1.9) - oy);
+        for (let y = ya; y <= yb; y++) {
+          const qy = (y + oy - p.y) / ry;
+          const qy2 = qy * qy;
+          for (let x = xa; x <= xb; x++) {
+            const qx = (x + ox - p.x) / p.rx;
+            const e = qx * qx + qy2;
+            if (e >= 3.5) continue;
+            const f = 1 - e / 3.5; // ~exp(-1.4 e), cheaper to bake
+            D[y * w + x] += p.a * f * f * f;
+          }
+        }
+      }
+      const cv = A().bakePixels(w, h, (u32) => {
+        for (let y = 0; y < h; y++)
+          for (let x = 0; x < w; x++) {
+            let dd = D[y * w + x];
+            if (dd <= 0.02) continue;
+            dd = Math.min(1, dd);
+            const b = HD.bayer(x, y); // anchored to the cloud: it travels with it
+            if (b < (dd - CORE) * 1.6) u32[y * w + x] = c1;
+            else if (b < dd) u32[y * w + x] = c0;
+          }
+      });
+      sg = c.stages[i] = { cv, ox, oy, w, h };
+      return sg;
+    }
+    /** the stage sprite recoloured in a burst's light (for the additive relight) */
+    let scratch = null;
+    function tinted(sg, key) {
+      if (!scratch || scratch.width < sg.w || scratch.height < sg.h) {
+        scratch = HD.canvas(Math.max(sg.w, scratch ? scratch.width : 0), Math.max(sg.h, scratch ? scratch.height : 0), true);
+      }
+      const x = scratch.getContext('2d');
+      const lc = HD.LIGHT.firework[key] || HD.LIGHT.firework.gold;
+      x.globalCompositeOperation = 'source-over';
+      x.clearRect(0, 0, sg.w, sg.h);
+      x.drawImage(sg.cv, 0, 0);
+      x.globalCompositeOperation = 'source-in';
+      x.fillStyle = css(130 * lc[0], 130 * lc[1], 130 * lc[2]);
+      x.fillRect(0, 0, sg.w, sg.h);
+      x.globalCompositeOperation = 'source-over';
+      return scratch;
     }
     const flashAt = (sh, tt) => {
       const L = HD.LOOP;
@@ -624,11 +691,24 @@
       return (tb < 0.1 ? tb / 0.1 : Math.exp(-(tb - 0.1) / 0.65)) * (sh.far ? 0.55 : 1);
     };
     const flashes = [];
+    const TSX = LY.titleSafe.x1 + 4;
+    const TSY = LY.titleSafe.y1 + 4;
+    function put(ctx, img, sg, bx, by, alpha) {
+      if (alpha <= 0.01) return;
+      let sx = 0;
+      const dx = bx + sg.ox;
+      const dy = by + sg.oy;
+      // the title-safe sky stays clear
+      if (dy < TSY && dx < TSX) sx = TSX - dx;
+      if (sx >= sg.w) return;
+      ctx.globalAlpha = Math.min(1, alpha);
+      ctx.drawImage(img, sx, 0, sg.w - sx, sg.h, dx + sx, dy, sg.w - sx, sg.h);
+    }
     return function (g, t) {
       const fw = HD._fireworks;
       const s = fw && fw.show && fw.show();
       if (!s || !s.list || !s.list.length) return;
-      const lay = layoutFor(s);
+      const st = stateFor(s);
       const L = HD.LOOP;
       const tt = ((t % L) + L) % L;
       // bursts lighting the sky right now
@@ -637,21 +717,32 @@
         const f = flashAt(sh, tt);
         if (f > 0.08) flashes.push(sh, f);
       }
-      const at = A();
-      for (let i = 0; i < s.list.length; i++) {
-        const sh = s.list[i];
+      const ctx = g.ctx;
+      const ga = ctx.globalAlpha;
+      for (const c of st) {
+        const sh = c.sh;
         let d = tt - (sh.t0 + sh.rise);
         d -= Math.floor(d / L) * L; // seconds since the burst
         if (d >= LIFE) continue;
-        const env = sm(0.5, 2.4, d) * Math.pow(1 - sm(4, LIFE, d), 1.3);
-        if (env <= 0.03) continue;
-        const ly = lay[i];
-        // relight: the strongest flash near this cloud picks the tint
+        const env = sm(0.5, 2.4, d) * Math.pow(1 - sm(4, LIFE, d), 1.3) * c.k;
+        if (env <= 0.02) continue;
+        // the whole cloud drifts downwind and sinks a little
+        const bx = Math.round(sh.bx + DRIFT * d);
+        const by = Math.round(sh.by + c.sag * sh.R * sm(0, 3, d) + 0.12 * d);
+        let i = 0;
+        while (i < STAGE_T.length - 1 && d >= STAGE_T[i + 1]) i++;
+        const w = i < STAGE_T.length - 1 ? sm(STAGE_T[i], STAGE_T[i + 1], d) : 0;
+        const a = ALPHA * env;
+        const s0 = stage(c, i);
+        const s1 = w > 0 ? stage(c, i + 1) : null;
+        put(ctx, s0.cv, s0, bx, by, a * (1 - w));
+        if (s1) put(ctx, s1.cv, s1, bx, by, a * w);
+        // relight: the strongest flash near this cloud tints it for a moment
         let best = 0;
-        let key = sh.col;
+        let key = null;
         for (let j = 0; j < flashes.length; j += 2) {
           const o2 = flashes[j];
-          const dd = Math.hypot(o2.bx - sh.bx, o2.by - sh.by) / (o2.R * 2.2 + 8);
+          const dd = Math.hypot(o2.bx - bx, o2.by - by) / (o2.R * 2.2 + 8);
           if (dd >= 1) continue;
           const v = flashes[j + 1] * (1 - dd);
           if (v > best) {
@@ -659,30 +750,15 @@
             key = o2.col === 'willow' ? 'gold' : o2.col;
           }
         }
-        const lvl = best > 0.55 ? 3 : best > 0.3 ? 2 : best > 0.12 ? 1 : 0;
-        const tones = tonesFor(key === 'willow' ? 'gold' : key)[lvl];
-        const grow = 0.55 + 0.45 * sm(0, 1.6, d) + 0.5 * (d / LIFE);
-        const R = sh.R;
-        for (const p of ly.puffs) {
-          // upper puffs ride a slightly faster wind (gentle shear), all sink a little
-          const x = sh.bx + p.dx * R * grow + DRIFT * d * (1 - 0.35 * p.dy);
-          const y = sh.by + p.dy * R * grow + ly.sag * R * sm(0, 3, d) + 0.12 * d;
-          const rad = R * p.r * (1 + 0.9 * (d / LIFE)) + 1.5;
-          let lv = env * ly.k * p.a * o.dens;
-          lv *= keepTitle(x, y, rad) * keepTop(x, y, rad);
-          if (lv <= 0.04) continue;
-          const xi = Math.round(x);
-          const yi = Math.round(y);
-          // a solid soft body (faintness comes from the alpha, so it reads as
-          // a veil, not a dot screen), dithered only at its rim
-          at.srDisc(xi, yi, rad, tones[0], lv, 0.9, p.kx - xi, p.ky - yi);
-          if (rad > 3) at.srDisc(xi + 1, yi - 1, rad * 0.62, tones[1], lv * 0.85, 0.85, p.kx - xi, p.ky - yi);
+        if (best > 0.1) {
+          ctx.globalCompositeOperation = 'lighter';
+          const lit = Math.min(1, best * 0.6) * env;
+          put(ctx, tinted(s0, key), s0, bx, by, lit * (1 - w));
+          if (s1) put(ctx, tinted(s1, key), s1, bx, by, lit * w);
+          ctx.globalCompositeOperation = 'source-over';
         }
       }
-      const ga = g.ctx.globalAlpha;
-      g.ctx.globalAlpha = ALPHA;
-      at.srFlush(g);
-      g.ctx.globalAlpha = ga;
+      ctx.globalAlpha = ga;
     };
   }
 
@@ -954,21 +1030,22 @@
         core: 0.55,
         dens: strataDens(480, 911, {
           layers: [
-            { y: 20, th: 2.4, gain: 1.15 }, // the bright streak lying right on the water
-            { y: 13, th: 3.2, gain: 0.6, lo: 0.4, hi: 0.9 }, // a softer veil over the far shore's foot
-            { y: 25, th: 1.8, gain: 0.8, lo: 0.35, hi: 0.85 },
+            // (the bay runs from the far shore's lamps, y ~180, to the yard, y 200)
+            { y: 14, th: 2.4, gain: 1.1 }, // the main streak lying on the open water
+            { y: 7, th: 2.2, gain: 0.55, lo: 0.45, hi: 0.95 }, // a soft veil at the far shore's foot
+            { y: 21, th: 1.6, gain: 0.75, lo: 0.35, hi: 0.85 }, // a thin low streak near our shore
           ],
         }),
       }),
       band({
         tw: 240,
         sub: 0.23,
-        y0: 184,
+        y0: 180,
         h: 20,
         cols: [mix(P.blossom[4], P.night[9], 0.5), mix(P.blossom[5], P.night[10], 0.5)],
         alpha: 0.34,
         core: 0.5,
-        dens: strataDens(240, 921, { layers: [{ y: 10, th: 2, gain: 0.85, lo: 0.35, hi: 0.9 }] }),
+        dens: strataDens(240, 921, { layers: [{ y: 14, th: 2, gain: 0.85, lo: 0.35, hi: 0.9 }] }),
       }),
     ];
   }
@@ -1005,7 +1082,7 @@
       front: [frontBand({ cols: air.yard, alpha: 0.2, n: 4, seed: 1041 + id.length, holes })],
     };
     if (id === 'sandiego') r.far = seaMist();
-    if (id === 'nyc') r.sky = burstSmoke({ cols: [mix(P.night[5], P.stone[5], 0.45), mix(P.night[7], P.stone[6], 0.45)], alpha: 0.4, dens: 1.7, life: 20 });
+    if (id === 'nyc') r.sky = burstSmoke({ cols: [mix(P.night[5], P.stone[5], 0.45), mix(P.night[7], P.stone[6], 0.45)], alpha: 0.42, life: 20 });
     return r;
   }
   for (const id of Object.keys(STORY_AIR)) RECIPES[id] = storyRecipe;

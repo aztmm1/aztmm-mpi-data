@@ -1929,7 +1929,7 @@
       }
     // arms: a curl of iron at each end
     for (const [ax, dir] of [[x0, -1], [x1, 1]]) {
-      for (let k = 0; k <= 3; k++) B.set(ax + dir * k * 0 , s - 4 + 0, IR[1]);
+      B.set(ax, s - 4, IR[1]);
       B.set(ax, s - 5, IR[1]);
       B.set(ax + dir, s - 5, IR[2]);
       B.set(ax + dir * 2, s - 4, IR[1]);
@@ -2567,7 +2567,7 @@
     if (out >= 0) return { lit: false, smoke: out * 12 };
     // relit one by one, left to right, just after the cheer
     if (s >= 112 && s < 112 + 0.45 * (i + 1)) return { lit: false, smoke: 99 };
-    return { lit: true, blow, fresh: s >= 112 && s < 112 + 0.45 * (i + 1) + 0.3 };
+    return { lit: true, blow };
   }
   function drawCandles(g, t) {
     CANDLES.forEach((c, i) => {

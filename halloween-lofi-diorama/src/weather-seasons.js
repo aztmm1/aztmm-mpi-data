@@ -778,6 +778,33 @@
     }
   }
   const FFC = P.firefly;
+  /** one firefly at envelope e (>= 0.12): a dim dot, a soft glow, or full bloom */
+  function flyPx(g, x, y, e) {
+    if (e > 0.62) {
+      // full glow: a soft yellow-green bloom, a white-hot core and a plus of light
+      HD.glow(g, x, y, 7, HD.LIGHT.firefly, 0.5 * e);
+      g.rect(x - 1, y, 3, 1, FFC[2]);
+      g.rect(x, y - 1, 1, 3, FFC[2]);
+      g.rect(x, y, 1, 1, FFC[4]);
+    } else if (e > 0.34) {
+      HD.glow(g, x, y, 4, HD.LIGHT.firefly, 0.4 * e);
+      g.rect(x, y, 1, 1, FFC[3]);
+    } else {
+      g.rect(x, y, 1, 1, FFC[e > 0.22 ? 2 : 1]);
+    }
+  }
+  /** a small firefly (resting in the grass, or hovering over the cake): a tight glow, never the big bloom */
+  function flySmall(g, x, y, e) {
+    if (e > 0.45) {
+      HD.glow(g, x, y, 4, HD.LIGHT.firefly, 0.5 * e);
+      g.rect(x, y, 1, 1, FFC[4]);
+    } else if (e > 0.27) {
+      HD.glow(g, x, y, 3, HD.LIGHT.firefly, 0.35 * e);
+      g.rect(x, y, 1, 1, FFC[3]);
+    } else {
+      g.rect(x, y, 1, 1, FFC[e > 0.18 ? 2 : 1]);
+    }
+  }
   function fireflies(g, t, k, far) {
     const n = R(FF_N * k);
     ffState(t, n);
@@ -792,18 +819,7 @@
         g.rect(x, y, 1, 1, e > 0.6 ? FFC[2] : FFC[1]);
         continue;
       }
-      if (e > 0.62) {
-        // full glow: a soft yellow-green bloom, a white-hot core and a plus of light
-        HD.glow(g, x, y, 7, HD.LIGHT.firefly, 0.5 * e);
-        g.rect(x - 1, y, 3, 1, FFC[2]);
-        g.rect(x, y - 1, 1, 3, FFC[2]);
-        g.rect(x, y, 1, 1, FFC[4]);
-      } else if (e > 0.34) {
-        HD.glow(g, x, y, 4, HD.LIGHT.firefly, 0.4 * e);
-        g.rect(x, y, 1, 1, FFC[3]);
-      } else {
-        g.rect(x, y, 1, 1, FFC[e > 0.22 ? 2 : 1]);
-      }
+      flyPx(g, x, y, e);
     }
   }
   // One light per zone, centred on the flies that are lit right now (so the
@@ -840,13 +856,333 @@
   }
 
   // ------------------------------------------------------------------
+  // SUMMER STORY fireflies (edition.story, SUMMER.md). The same bugs, but
+  // laid out per chapter around the family and the chapter's props (never
+  // over a cat), with no far layer (the backdrop is a city now). Each one
+  // climbs a little while it glows (the firefly "J" stroke), a few rest on
+  // grass blades and glow softly, and each chapter has one small moment:
+  //   match  after the goal a ripple of flashes spreads out from the porch
+  //   nyc    a pair circling each other, blinking together, by the bench
+  //   dc     candles out: a few fireflies come and hover where the flames
+  //          were, and drift off again as the candles are relit
+  //   home   one visits the niece and lights up just as she reaches for it
+  // Counts follow edition.weather.fireflies (56 at 1.0).
+  // ------------------------------------------------------------------
+  const SU = LY.summer;
+  const STEPS = LY.house.steps;
+  // groups: [weight, x0, x1, y0, y1, kind]  m meadow, t tree, h hedge line, r resting in the grass
+  // avoid:  [x0, y0, x1, y1] that no firefly's wander may enter
+  // zones:  aggregated light pools (one L.add each)
+  const FLAG = [26, 166, 66, 198]; // the US flag on its pole (props)
+  const TREE_G = [352, 458, 100, 192];
+  const STORY_FF = {
+    match: {
+      seed: 9701,
+      groups: [
+        [10, 8, 186, 206, 234, 'm'],
+        [4, 244, 318, 214, 236, 'm'],
+        [3, 70, 160, 182, 200, 'h'],
+        [7, ...TREE_G, 't'],
+        [6, 318, 474, 198, 228, 'm'],
+        [6, 8, 470, 213, 236, 'r'],
+      ],
+      // you + partner on the porch steps; the niece by her ball
+      avoid: [FLAG, [196, 184, 250, 217], [250, 216, 292, 238]],
+      zones: [[56, 220], [138, 218], [282, 228], [348, 212], [408, 150], [446, 222]],
+      ripple: true,
+    },
+    nyc: {
+      seed: 9702,
+      groups: [
+        [3, 8, 92, 208, 234, 'm'],
+        [5, 244, 330, 212, 236, 'm'],
+        [4, ...TREE_G, 't'],
+        [4, 318, 474, 198, 228, 'm'],
+        [4, 8, 470, 213, 236, 'r'],
+      ],
+      // the anniversary bench, the couple and the heart lantern
+      avoid: [FLAG, [92, 178, 152, 238]],
+      zones: [[52, 222], [286, 226], [408, 150], [420, 216]],
+      pair: true,
+    },
+    dc: {
+      seed: 9703,
+      groups: [
+        [6, 8, 72, 206, 234, 'm'],
+        [5, 154, 200, 210, 236, 'm'],
+        [5, 240, 318, 212, 236, 'm'],
+        [7, ...TREE_G, 't'],
+        [5, 318, 474, 204, 230, 'm'],
+        [3, 6, 72, 176, 200, 'h'],
+        [6, 8, 470, 213, 236, 'r'],
+      ],
+      // the whole party round the table; the balloon bunches on the fence
+      avoid: [FLAG, [74, 184, 152, 238], [316, 164, 348, 204], [406, 164, 438, 204]],
+      zones: [[40, 220], [178, 222], [280, 226], [408, 150], [400, 218]],
+      gather: true,
+    },
+    home: {
+      seed: 9704,
+      groups: [
+        [11, 8, 180, 204, 234, 'm'],
+        [5, 240, 318, 212, 236, 'm'],
+        [4, 70, 160, 180, 200, 'h'],
+        [7, ...TREE_G, 't'],
+        [6, 318, 474, 198, 228, 'm'],
+        [7, 8, 470, 213, 236, 'r'],
+      ],
+      // the niece's spot below the steps and her way to and from the door
+      avoid: [FLAG, [184, 194, 234, 228]],
+      zones: [[50, 220], [138, 216], [282, 228], [348, 212], [408, 150], [446, 222]],
+      friend: true,
+    },
+  };
+
+  // DC: where the gathered fireflies hover, relative to the middle candle's
+  // wick (props: the table top is base - 10, the wicks 9 px above it)
+  const CAKE_X = SU.table.x;
+  const WICK_Y = SU.table.base - 19;
+  const HOVER = [[-3, -5], [1, -8], [4, -4], [-5, -11], [5, -13]];
+
+  const storyFlies = HD.perEdition((ed) => {
+    const cfg = STORY_FF[ed.id];
+    if (!ed.story || !cfg) return null;
+    const total = R(FF_N * (ed.weather.fireflies || 0));
+    let wsum = 0;
+    for (const gr of cfg.groups) wsum += gr[0];
+    const flies = [];
+    let i = 0;
+    for (const [w, x0, x1, y0, y1, kind] of cfg.groups) {
+      const n = R((total * w) / wsum);
+      for (let j = 0; j < n; j++, i++) {
+        const h = (q) => hash(i, q, cfg.seed);
+        const rest = kind === 'r';
+        const ax = rest ? 0 : kind === 't' ? 8 + h(3) * 8 : 8 + h(3) * 10;
+        const ay = rest ? 0 : kind === 't' ? 6 + h(4) * 8 : kind === 'h' ? 4 + h(4) * 4 : 3 + h(4) * 3;
+        const jr = rest ? 0 : 2 + h(10) * 2;
+        const wob = rest ? 0 : 1;
+        let hx = 0;
+        let hy = 0;
+        let ok = false;
+        for (let k = 0; k < 24 && !ok; k++) {
+          hx = x0 + hash(i, 20 + k, cfg.seed) * (x1 - x0);
+          hy = y0 + hash(i, 60 + k, cfg.seed) * (y1 - y0);
+          const ex = ax + 2 * wob + 1;
+          const eu = ay + 1.2 * wob + jr + 1;
+          const ed2 = ay + 1.2 * wob + 1;
+          ok = !cfg.avoid.some((a) => hx + ex >= a[0] && hx - ex <= a[2] && hy + ed2 >= a[1] && hy - eu <= a[3]);
+        }
+        if (!ok) continue;
+        let zone = 0;
+        let best = 1e9;
+        cfg.zones.forEach((z, q) => {
+          const dd = (z[0] - hx) ** 2 + (z[1] - hy) ** 2 * 2;
+          if (dd < best) {
+            best = dd;
+            zone = q;
+          }
+        });
+        flies.push({
+          hx,
+          hy,
+          ax,
+          ay,
+          jr,
+          wob,
+          rest,
+          pw: 7 + h(5) * 6,
+          pb: rest ? 5.5 + h(6) * 4 : 3.4 + h(6) * 3.6,
+          ob: h(7),
+          s: i * 7 + cfg.seed,
+          zone,
+          gather: -1,
+        });
+      }
+    }
+    // dc: the meadow fireflies nearest the table are the ones that come to the cake
+    if (cfg.gather) {
+      const near = flies
+        .filter((f) => !f.rest && f.hy > 196)
+        .map((f) => [(f.hx - CAKE_X) ** 2 + (f.hy - WICK_Y) ** 2 * 3, f])
+        .sort((a, b) => a[0] - b[0]);
+      for (let q = 0; q < HOVER.length && q < near.length; q++) near[q][1].gather = q;
+    }
+    const n = flies.length;
+    return { cfg, flies, X: new Float64Array(n), Y: new Float64Array(n), E: new Float64Array(n), small: new Uint8Array(n), zones: cfg.zones.length + 1 };
+  });
+
+  // the goal ripple (match): the yard goes quiet as the goal goes in, then
+  // flashes spread out from the porch at ~80 px/s (a second, softer ripple
+  // follows), and the usual blinking comes back once both have passed
+  const RIPPLE_C = [(STEPS.x0 + STEPS.x1) / 2, STEPS.y0];
+  const RIPPLES = [[151.2, 1], [153.7, 0.72]];
+  const RIP_SPD = 80;
+  const RIP_LEN = 1.25;
+  /** returns the ripple flash (0..1) and writes the blink damping to RIP_HOLD[0] */
+  const RIP_HOLD = [1];
+  function goalRipple(s, x, y) {
+    RIP_HOLD[0] = 1;
+    if (s < 149.6 || s > 164) return 0;
+    const d = Math.hypot(x - RIPPLE_C[0], (y - RIPPLE_C[1]) * 1.5) / RIP_SPD;
+    let w = 0;
+    for (const [a, k] of RIPPLES) {
+      const u = s - a - d;
+      if (u < 0 || u >= RIP_LEN) continue;
+      w = Math.max(w, k * (u < 0.15 ? u / 0.15 : 1 - (u - 0.15) / (RIP_LEN - 0.15)));
+    }
+    const back = RIPPLES[1][0] + d + RIP_LEN; // the second ripple has passed this one
+    const Q = 0.12;
+    RIP_HOLD[0] = s < 150.4 ? 1 - (1 - Q) * HD.smoothstep(149.6, 150.4, s) : s < back ? Q : Q + (1 - Q) * HD.smoothstep(back, back + 1.6, s);
+    return w;
+  }
+  /** dc: 0..1 how far the cake fireflies have come in (candles out 100..112 s) */
+  function gatherAmt(s) {
+    if (s < 100.4 || s >= 114.2) return 0;
+    if (s < 103.4) return HD.smoothstep(0, 1, (s - 100.4) / 3);
+    if (s < 111) return 1;
+    return 1 - HD.smoothstep(0, 1, (s - 111) / 3.2);
+  }
+  /** blink envelope: quick rise, long fade, mostly dark */
+  const blink = (ph) => (ph < 0.14 ? ph / 0.14 : ph < 0.56 ? 1 - (ph - 0.14) / 0.42 : 0);
+
+  function storyState(t, S) {
+    const s = HD.summer.sec(t);
+    const F = S.flies;
+    const cfg = S.cfg;
+    const m = cfg.gather ? gatherAmt(s) : 0;
+    for (let i = 0; i < F.length; i++) {
+      const f = F[i];
+      const ph = T.phase(t, f.pb, f.ob);
+      let e = blink(ph);
+      let x = f.hx;
+      let y = f.hy;
+      if (f.wob) {
+        x += f.ax * (2 * T.noise(t, f.pw, f.s) - 1) + 2 * T.wave(t, f.pw * 0.37, f.ob);
+        y += f.ay * (2 * T.noise(t, f.pw * 1.3, f.s + 1) - 1) + 1.2 * T.wave(t, f.pw * 0.29, f.ob + 0.3);
+        // the J stroke: it climbs while it glows
+        y += f.jr * (0.3 - Math.min(1, ph / 0.56));
+      }
+      let small = f.rest ? 1 : 0;
+      if (cfg.gather && f.gather >= 0 && m > 0) {
+        const hv = HOVER[f.gather];
+        const tx = CAKE_X + hv[0] + 1.3 * T.wave(t, 2.6 + 0.4 * f.gather, f.ob);
+        const ty = WICK_Y + hv[1] + 0.9 * T.wave(t, 2.1 + 0.3 * f.gather, f.ob + 0.25);
+        x += (tx - x) * m;
+        y += (ty - y) * m;
+        // a soft steady glow, like the little flames they stand in for
+        const eg = 0.5 + 0.12 * T.wave(t, 1.7 + 0.25 * f.gather, f.ob + 0.5);
+        e = e * (1 - m) + eg * m;
+        if (m > 0.25) small = 1;
+      }
+      if (cfg.ripple) {
+        const w = goalRipple(s, x, y);
+        e = Math.max(e * RIP_HOLD[0], w);
+      }
+      if (small && e > 0.6) e = 0.6;
+      S.X[i] = x;
+      S.Y[i] = y;
+      S.E[i] = e;
+      S.small[i] = small;
+    }
+    return m;
+  }
+
+  // nyc: a pair circling each other over the grass right of the bench
+  function pairState(t, j) {
+    const cx = 163 + 7 * (2 * T.noise(t, 31, 9811) - 1);
+    const cy = 210 + 3 * (2 * T.noise(t, 23, 9812) - 1);
+    const a = TAU * T.phase(t, 3.6, 0) + j * Math.PI;
+    const ph = T.phase(t, 4.8, 0.37 + 0.03 * j); // she answers a beat after him
+    return [cx + 3.2 * cos(a), cy + 1.3 * sin(a) + 2 * (0.3 - Math.min(1, ph / 0.56)), blink(ph)];
+  }
+  // home: one firefly visits the niece while she stays below the steps, and
+  // lights up half a second before she reaches up for it (family: her reach
+  // is the first 1.5 s of an 8.5 s cycle)
+  const KIT = [STEPS.x0 - 8, STEPS.y1 + 9];
+  function friendState(t) {
+    const v = HD.summer.niece(t);
+    if (!v.here || v.phase !== 'stay') return null;
+    const c = T.cycle(t, 5, 8.5, 63);
+    const tau = (c.age * c.P + 0.5) % c.P;
+    const e = tau < 0.3 ? tau / 0.3 : tau < 1.9 ? 1 : tau < 2.9 ? 1 - (tau - 1.9) : 0;
+    if (e <= 0) return null;
+    const rise = 3 * Math.min(1, Math.max(0, (tau - 0.3) / 2.6));
+    const x = KIT[0] + 1 + 2.5 * (2 * T.noise(t, 5.4, 9821) - 1);
+    const y = KIT[1] - 19 + 1.2 * (2 * T.noise(t, 4.2, 9822) - 1) - rise;
+    return [x, y, e];
+  }
+
+  function storyFireflies(g, t, S) {
+    storyState(t, S);
+    const F = S.flies;
+    // resting ones first (they sit in the grass), then the flying ones
+    for (let pass = 0; pass < 2; pass++)
+      for (let i = 0; i < F.length; i++) {
+        if ((F[i].rest ? 0 : 1) !== pass) continue;
+        const e = S.E[i];
+        if (e < 0.12) continue;
+        (S.small[i] ? flySmall : flyPx)(g, R(S.X[i]), R(S.Y[i]), e);
+      }
+    if (S.cfg.pair)
+      for (let j = 0; j < 2; j++) {
+        const p = pairState(t, j);
+        if (p[2] >= 0.12) flyPx(g, R(p[0]), R(p[1]), p[2]);
+      }
+    if (S.cfg.friend) {
+      const p = friendState(t);
+      if (p && p[2] >= 0.12) flyPx(g, R(p[0]), R(p[1]), p[2]);
+    }
+  }
+
+  const SZ_S = new Float64Array(8);
+  const SZ_X = new Float64Array(8);
+  const SZ_Y = new Float64Array(8);
+  function storyLights(t, L, S) {
+    const m = storyState(t, S);
+    const F = S.flies;
+    const Z = S.cfg.zones;
+    SZ_S.fill(0);
+    SZ_X.fill(0);
+    SZ_Y.fill(0);
+    for (let i = 0; i < F.length; i++) {
+      const e = S.E[i];
+      if (!(e > 0)) continue;
+      if (F[i].gather >= 0 && m > 0.5) continue; // pooled over the cake below
+      const z = F[i].zone;
+      SZ_S[z] += e;
+      SZ_X[z] += e * S.X[i];
+      SZ_Y[z] += e * S.Y[i];
+    }
+    for (let z = 0; z < Z.length; z++) {
+      const s = SZ_S[z];
+      const i = 0.12 * (1 - Math.exp(-0.4 * s));
+      if (i < 0.01) continue;
+      const x = HD.clamp(SZ_X[z] / s, Z[z][0] - ZONE_DX, Z[z][0] + ZONE_DX);
+      const y = HD.clamp(SZ_Y[z] / s, Z[z][1] - ZONE_DY, Z[z][1] + ZONE_DY);
+      L.add({ x: R(x), y: R(y), r: 42, ry: 30, color: HD.LIGHT.firefly, i, bands: 5, pow: 2.2 });
+    }
+    // dc: the fireflies over the cake keep a little light on the party while the candles are out
+    if (m > 0.5) L.add({ x: CAKE_X, y: WICK_Y - 6, r: 30, ry: 22, color: HD.LIGHT.firefly, i: 0.085 * m, bands: 5, pow: 2 });
+    if (S.cfg.pair) {
+      const a = pairState(t, 0);
+      const b = pairState(t, 1);
+      const e = a[2] + b[2];
+      if (e > 0.05) L.add({ x: R((a[0] + b[0]) / 2), y: R((a[1] + b[1]) / 2), r: 20, ry: 14, color: HD.LIGHT.firefly, i: 0.05 * e, bands: 4, pow: 2 });
+    }
+    if (S.cfg.friend) {
+      const p = friendState(t);
+      if (p) L.add({ x: R(p[0]), y: R(p[1]) + 2, r: 16, ry: 12, color: HD.LIGHT.firefly, i: 0.09 * p[2], bands: 4, pow: 2 });
+    }
+  }
+
+  // ------------------------------------------------------------------
   // hooks
   // ------------------------------------------------------------------
   SEA.far = function (g, t) {
     const ed = HD.edition;
     const w = ed.weather;
     if (w.snow > 0) snowFar(g, t, w.snow, ed.sky === 'clear');
-    if (w.fireflies > 0) fireflies(g, t, w.fireflies, true);
+    if (w.fireflies > 0 && !ed.story) fireflies(g, t, w.fireflies, true);
   };
   SEA.mid = function (g, t) {
     const ed = HD.edition;
@@ -854,7 +1190,11 @@
     if (w.snow > 0) snowMid(g, t, w.snow, ed.sky === 'clear');
     if (w.leaves > 0) leavesMid(g, t, w.leaves);
     if (w.petals > 0) petalsMid(g, t, w.petals, ed.tree === 'plum');
-    if (w.fireflies > 0) fireflies(g, t, w.fireflies, false);
+    if (w.fireflies > 0) {
+      const S = ed.story ? storyFlies() : null;
+      if (S) storyFireflies(g, t, S);
+      else if (!ed.story) fireflies(g, t, w.fireflies, false);
+    }
   };
   SEA.near = function (g, t) {
     const ed = HD.edition;
@@ -864,7 +1204,13 @@
     if (w.petals > 0.3) petalsNear(g, t, w.petals, ed.tree === 'plum');
   };
   SEA.lights = function (t, L) {
-    const w = HD.edition.weather;
-    if (w.fireflies > 0) fireflyLights(t, L, w.fireflies);
+    const ed = HD.edition;
+    const w = ed.weather;
+    if (!(w.fireflies > 0)) return;
+    if (!ed.story) fireflyLights(t, L, w.fireflies);
+    else {
+      const S = storyFlies();
+      if (S) storyLights(t, L, S);
+    }
   };
 })();

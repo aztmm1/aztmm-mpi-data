@@ -1360,7 +1360,6 @@
           HD.bake(SAL_W + 2, SAL_H + 1, (g) => {
             for (let r = 0; r < SAL_H; r++) {
               // the top is tied to the sill; in a gust the trailing hem corner lifts
-              const sh = 0;
               for (let c = 0; c < SAL_W; c++) {
                 const cc = st > 0 ? c : SAL_W - 1 - c; // distance from the lifting corner
                 if (st !== 0 && ((r === SAL_H - 1 && cc < 2) || (r === SAL_H - 2 && cc < 1))) continue;
@@ -1370,7 +1369,7 @@
                 if (r > 0 && fold < (r < 4 ? -0.8 : -0.55)) ch = ch.toLowerCase();
                 let col = clothOf(ch);
                 if (r > 0 && fold > 0.85 && ch === 'S') col = mixc(CLOTH.S, BN[3], 0.18);
-                g.px(1 + c + sh, r, col);
+                g.px(1 + c, r, col);
               }
             }
             // tie cords at the top corners
