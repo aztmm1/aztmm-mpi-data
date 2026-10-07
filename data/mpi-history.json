@@ -1390,6 +1390,22 @@
     "currency": 18.3,
     "liquidity": 55.0
    }
+  },
+  {
+   "date": "2026-10-06",
+   "score": 66,
+   "regime": "Neutral",
+   "subs": {
+    "trend": 77.9,
+    "breadth": 53.2,
+    "volatility": 83.5,
+    "yield_curve": 69.2,
+    "credit": 82.6,
+    "sentiment": 47.4,
+    "rotation": 72.2,
+    "currency": 22.5,
+    "liquidity": 55.0
+   }
   }
  ]
 }
