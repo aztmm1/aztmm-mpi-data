@@ -382,7 +382,7 @@
     const bx = L.tree.x;
     const by = L.tree.base;
     limb([[bx, by + 1], [bx - 1, by - 7], [bx - 2, by - 16]], 25, 16, { gnarl: 0, taper: 0.4 });
-    limb(
+    const TRUNK = limb(
       [[bx, by], [bx - 1, by - 14], [bx - 4, by - 30], [bx - 3, by - 46], [bx - 7, by - 62], [bx - 10, by - 74], [bx - 9, by - 84]],
       17,
       12.5,
@@ -430,7 +430,7 @@
     const M1b = limb([[fx + 7, fy - 72], [fx + 4, fy - 78], [fx + 2, fy - 85], [fx - 2, fy - 90], [fx - 5, fy - 95]], 1.6, 1.2, { gnarl: 0.2, freq: 0.4 });
     grow(fx - 5, fy - 95, -2.0, 9, 1.2, 4, MO);
     tips.push({ pts: [[fx + 1, fy - 66], [fx + 4, fy - 63], [fx + 9, fy - 62], [fx + 12, fy - 60]], g: 3 });
-    TREE.limbs = { A, B2, C, D, M1, M1b };
+    TREE.limbs = { A, B2, C, D, M1, M1b, TRUNK };
 
     // ---- shading -----------------------------------------------------------
     const has = (x, y) => {

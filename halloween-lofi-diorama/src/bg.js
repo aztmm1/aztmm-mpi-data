@@ -189,23 +189,13 @@
     return n;
   }
 
-  function bakeSky() {
-    const im = new Img(W, 210);
-    for (let y = 0; y < 210; y++)
-      for (let x = 0; x < W; x++) {
-        let c = SKY_BANDS[skyBand(x, y)];
-        // banded halo around the moon (dithered band edges)
-        const dx = x - MOON.x;
-        const dy = y - MOON.y;
-        const d = Math.sqrt(dx * dx + dy * dy) + (HD.bayer(x + 3, y + 5) - 0.5) * 5;
-        if (d < 64) {
-          const k = d < 23 ? 0.24 : d < 31 ? 0.15 : d < 44 ? 0.085 : 0.04;
-          c = mix(c, P.moon[0], k);
-        }
-        im.set(x, y, c);
-      }
-    // the moon disc
-    const r = MOON.r;
+  /**
+   * Paint the moon disc into an Img: limb darkening, crater clusters, a lit
+   * upper-right cap. Crater layout is authored for r = 16 and scales with r.
+   * ramp = 5 colours dark -> light (P.moon for the classic silver moon).
+   */
+  function paintMoon(im, mx, my, r, ramp) {
+    const k = r / 16;
     const rr = r * r + r * 0.6;
     const inD = (dx, dy) => dx * dx + dy * dy <= rr;
     const craters = [
@@ -226,27 +216,46 @@
       [3, 4],
       [-2, 8],
     ];
-    for (let dy = -r - 1; dy <= r + 1; dy++)
-      for (let dx = -r - 1; dx <= r + 1; dx++) {
+    const ri = Math.ceil(r);
+    for (let dy = -ri - 1; dy <= ri + 1; dy++)
+      for (let dx = -ri - 1; dx <= ri + 1; dx++) {
         if (!inD(dx, dy)) continue;
-        let c = P.moon[3];
+        let c = ramp[3];
         // a little brighter toward the upper right
-        if (inD(dx - 3, dy + 3) && (dx - 4) * (dx - 4) + (dy + 4) * (dy + 4) < 46) c = P.moon[4];
-        for (const k of craters) {
-          const ex = (dx - k[0]) / k[2];
-          const ey = (dy - k[1]) / k[3];
-          if (ex * ex + ey * ey <= 1) c = P.moon[2];
+        if (inD(dx - 3 * k, dy + 3 * k) && (dx - 4 * k) * (dx - 4 * k) + (dy + 4 * k) * (dy + 4 * k) < 46 * k * k) c = ramp[4];
+        for (const q of craters) {
+          const ex = (dx - q[0] * k) / (q[2] * k);
+          const ey = (dy - q[1] * k) / (q[3] * k);
+          if (ex * ex + ey * ey <= 1) c = ramp[2];
         }
         // lower-left limb darkening (2 px)
-        if (!inD(dx - 1.5, dy + 1.5)) c = P.moon[2];
-        if (!inD(dx - 0.7, dy + 0.7) && dx < 0 && dy > 0) c = P.moon[1];
-        im.set(MOON.x + dx, MOON.y + dy, c);
+        if (!inD(dx - 1.5, dy + 1.5)) c = ramp[2];
+        if (!inD(dx - 0.7, dy + 0.7) && dx < 0 && dy > 0) c = ramp[1];
+        im.set(mx + dx, my + dy, c);
       }
-    for (const p of dark) im.set(MOON.x + p[0], MOON.y + p[1], P.moon[1]);
+    for (const q of dark) im.set(mx + Math.round(q[0] * k), my + Math.round(q[1] * k), ramp[1]);
     // light crater rims (lower-right edge of the bigger maria)
-    im.set(MOON.x - 3, MOON.y - 2, P.moon[4]);
-    im.set(MOON.x + 6, MOON.y + 5, P.moon[4]);
-    im.set(MOON.x + 7, MOON.y + 4, P.moon[4]);
+    im.set(mx + Math.round(-3 * k), my + Math.round(-2 * k), ramp[4]);
+    im.set(mx + Math.round(6 * k), my + Math.round(5 * k), ramp[4]);
+    im.set(mx + Math.round(7 * k), my + Math.round(4 * k), ramp[4]);
+  }
+
+  function bakeSky() {
+    const im = new Img(W, 210);
+    for (let y = 0; y < 210; y++)
+      for (let x = 0; x < W; x++) {
+        let c = SKY_BANDS[skyBand(x, y)];
+        // banded halo around the moon (dithered band edges)
+        const dx = x - MOON.x;
+        const dy = y - MOON.y;
+        const d = Math.sqrt(dx * dx + dy * dy) + (HD.bayer(x + 3, y + 5) - 0.5) * 5;
+        if (d < 64) {
+          const k = d < 23 ? 0.24 : d < 31 ? 0.15 : d < 44 ? 0.085 : 0.04;
+          c = mix(c, P.moon[0], k);
+        }
+        im.set(x, y, c);
+      }
+    paintMoon(im, MOON.x, MOON.y, MOON.r, P.moon);
     return im.canvas();
   }
 
@@ -468,8 +477,19 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
   const COTTAGES = [];
   const LAND_Y = 108;
 
-  function bakeLand(rng) {
-    const im = new Img(W, 210 - LAND_Y);
+  // Landscape labels: the geometry is baked once as a label map so seasonal
+  // editions can recolour and redecorate the very same hills, chapel and
+  // forest line (bg-seasons.js). Labels in paint order:
+  const LB = {
+    hillA: 1, hazeA: 2, rimA: 3, chapel: 4, slit: 5, rimCh: 6, spill: 7,
+    hillB: 8, hazeB: 9, rimB: 10, cotRoof: 11, cotWall: 12, yard: 13, forest: 14, pine: 15, rimC: 16,
+  };
+  const LAND_H = 210 - LAND_Y;
+  const LAND = { lab: null, pre: null, trees: [], topA: null, topB: null, topC: null, h: LAND_H, y: LAND_Y };
+
+  /** bake the landscape geometry into LAND (labels + tree list + hill tops) */
+  function buildLand(rng) {
+    const lab = new Uint8Array(W * LAND_H);
     const ph = [];
     for (let i = 0; i < 9; i++) ph.push(rng() * 6.283);
     const gauss = (x, c, s) => Math.exp(-((x - c) / s) * ((x - c) / s));
@@ -481,26 +501,33 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
     };
     const yB = (x) => 171 + 4 * Math.sin(x / 31 + ph[3]) + 2.2 * Math.sin(x / 12 + ph[4]) - 7 * gauss(x, 150, 42) - 6 * gauss(x, 438, 46) + 4 * gauss(x, 60, 30);
     const yC = (x) => 191 + 2.5 * Math.sin(x / 23 + ph[5]) + 1.2 * Math.sin(x / 8.5 + ph[6]);
-    const S = (x, y, c) => im.set(x, y - LAND_Y, c);
-    const rimA = mix(HILL_A, P.moon[0], 0.14);
-    const hazeA = mix(HILL_A, P.violet[4], 0.4);
-    const rimB = mix(HILL_B, P.moon[0], 0.12);
-    const hazeB = mix(HILL_B, HILL_A, 0.6);
+    const S = (x, y, l) => {
+      x = Math.round(x);
+      y = Math.round(y) - LAND_Y;
+      if (x < 0 || y < 0 || x >= W || y >= LAND_H) return;
+      lab[y * W + x] = l;
+    };
+    LAND.topA = new Int16Array(W);
+    LAND.topB = new Int16Array(W);
+    LAND.topC = new Int16Array(W);
     // far hazy hills
     for (let x = 0; x < W; x++) {
       const top = Math.round(yA(x));
       const bTop = Math.round(yB(x));
+      LAND.topA[x] = top;
+      LAND.topB[x] = bTop;
+      LAND.topC[x] = Math.round(yC(x));
       for (let y = top; y < 210; y++) {
-        let c = HILL_A;
+        let c = LB.hillA;
         // mist settles at the foot of the far hills
         const f = (y - (bTop - 7)) / 8;
-        if (f > 0 && HD.bayer(x, y) < f * 0.6) c = hazeA;
+        if (f > 0 && HD.bayer(x, y) < f * 0.6) c = LB.hazeA;
         S(x, y, c);
       }
-      if (x > 250 || HD.bayer(x, 0) < 0.5) S(x, top, rimA);
+      if (x > 250 || HD.bayer(x, 0) < 0.5) S(x, top, LB.rimA);
     }
     // the chapel on the left hill: a dark silhouette, moon-rimmed on the right
-    const ch = (x, y) => S(x, y, CHAPEL);
+    const ch = (x, y) => S(x, y, LB.chapel);
     const base = 140;
     for (let y = 130; y <= base; y++) for (let x = 57; x <= 75; x++) ch(x, y); // nave
     for (let i = 0; i <= 6; i++) for (let x = 56 + i; x <= 76 - i; x++) ch(x, 129 - i); // gable roof
@@ -515,58 +542,59 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
     // a small apse on the far end
     for (let y = 133; y <= base; y++) for (let x = 76; x <= 78; x++) ch(x, y);
     // dark belfry slit
-    S(52, 123, PINE);
-    S(53, 123, PINE);
-    S(52, 124, PINE);
-    S(53, 124, PINE);
+    S(52, 123, LB.slit);
+    S(53, 123, LB.slit);
+    S(52, 124, LB.slit);
+    S(53, 124, LB.slit);
     // moon rim on the right-facing edges
-    const rimCh = mix(CHAPEL, P.moon[0], 0.2);
-    for (let i = 1; i <= 6; i++) S(76 - i, 129 - i, rimCh);
-    for (let y = 134; y <= 138; y++) S(78, y, rimCh);
-    for (let y = 121; y <= 128; y++) S(56, y, rimCh);
-    for (let i = 1; i < 9; i++) S(52 + spire[i] + (i < 6 ? 1 : 0), 119 - i, rimCh);
+    for (let i = 1; i <= 6; i++) S(76 - i, 129 - i, LB.rimCh);
+    for (let y = 134; y <= 138; y++) S(78, y, LB.rimCh);
+    for (let y = 121; y <= 128; y++) S(56, y, LB.rimCh);
+    for (let i = 1; i < 9; i++) S(52 + spire[i] + (i < 6 ? 1 : 0), 119 - i, LB.rimCh);
     // graves and a bare far tree beside the chapel
+    const yd = (x, y) => S(x, y, LB.yard);
     for (const gx of [82, 86, 44]) {
-      S(gx, base - 1, CHAPEL);
-      S(gx, base - 2, CHAPEL);
-      S(gx + 1, base - 1, CHAPEL);
+      yd(gx, base - 1);
+      yd(gx, base - 2);
+      yd(gx + 1, base - 1);
     }
-    for (let y = 128; y <= base; y++) S(91, y, CHAPEL);
-    S(90, 131, CHAPEL);
-    S(89, 130, CHAPEL);
-    S(89, 129, CHAPEL);
-    S(92, 132, CHAPEL);
-    S(93, 131, CHAPEL);
-    S(93, 130, CHAPEL);
-    S(94, 129, CHAPEL);
-    S(91, 127, CHAPEL);
-    S(90, 135, CHAPEL);
+    for (let y = 128; y <= base; y++) yd(91, y);
+    yd(90, 131);
+    yd(89, 130);
+    yd(89, 129);
+    yd(92, 132);
+    yd(93, 131);
+    yd(93, 130);
+    yd(94, 129);
+    yd(91, 127);
+    yd(90, 135);
     // faint warm spill beside the window (static); the window itself is drawn per frame
-    S(CHAPEL_WIN.x - 1, CHAPEL_WIN.y + 1, mix(CHAPEL, P.amber[2], 0.25));
-    S(CHAPEL_WIN.x + 1, CHAPEL_WIN.y + 1, mix(CHAPEL, P.amber[2], 0.25));
+    S(CHAPEL_WIN.x - 1, CHAPEL_WIN.y + 1, LB.spill);
+    S(CHAPEL_WIN.x + 1, CHAPEL_WIN.y + 1, LB.spill);
     // nearer, darker hills
     for (let x = 0; x < W; x++) {
       const top = Math.round(yB(x));
       const cTop = Math.round(yC(x));
       for (let y = top; y < 210; y++) {
-        let c = HILL_B;
+        let c = LB.hillB;
         const f = (y - (cTop - 12)) / 10;
-        if (f > 0 && HD.bayer(x + 2, y) < f * 0.45) c = hazeB;
+        if (f > 0 && HD.bayer(x + 2, y) < f * 0.45) c = LB.hazeB;
         S(x, y, c);
       }
-      if (x > 300 && HD.bayer(x, 1) < 0.75) S(x, top, rimB);
+      if (x > 300 && HD.bayer(x, 1) < 0.75) S(x, top, LB.rimB);
     }
     // far cottage lights sit in the dark hills
     COTTAGES.length = 0;
     for (const cx of [134, 452]) COTTAGES.push({ x: cx, y: Math.round(yB(cx)) + 4 });
     for (const c of COTTAGES) {
-      S(c.x - 1, c.y - 1, mix(HILL_B, P.stone[2], 0.6));
-      S(c.x, c.y - 1, mix(HILL_B, P.stone[2], 0.6));
-      S(c.x + 1, c.y, mix(HILL_B, P.stone[2], 0.4));
+      S(c.x - 1, c.y - 1, LB.cotRoof);
+      S(c.x, c.y - 1, LB.cotRoof);
+      S(c.x + 1, c.y, LB.cotWall);
     }
+    LAND.pre = lab.slice();
     // pine line: clumps of tiered pines with varied heights and a few gaps
-    const rimC = mix(PINE, P.moon[0], 0.12);
-    for (let x = 0; x < W; x++) for (let y = Math.round(yC(x)); y < 210; y++) S(x, y, PINE);
+    for (let x = 0; x < W; x++) for (let y = Math.round(yC(x)); y < 210; y++) S(x, y, LB.forest);
+    const trees = [];
     let x = -6;
     while (x < W + 6) {
       const dens = Math.sin(x / 37 + ph[7]) + 0.6 * Math.sin(x / 13 + ph[8]);
@@ -577,16 +605,54 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
       const h = Math.round(5 + rng() * 7 + Math.max(0, dens) * 5);
       const hw = Math.max(2, Math.round(h * 0.3));
       const b = Math.round(yC(x)) + 1;
+      trees.push({ x, b, h, hw });
       for (let r = 0; r <= h; r++) {
-        const tier = Math.floor(r / 3);
-        const half = r < 2 ? 0 : Math.min(hw, Math.floor(tier * 0.75 + (r % 3) * 0.55));
         const y = b - h + r;
-        for (let xx = x - half; xx <= x + half; xx++) S(xx, y, PINE);
-        if (x > 300 && r > 1 && r % 3 !== 0 && half > 0) S(x + half, y, rimC);
+        const half = pineHalf(r, hw);
+        for (let xx = x - half; xx <= x + half; xx++) S(xx, y, LB.pine);
+        if (x > 300 && r > 1 && r % 3 !== 0 && half > 0) S(x + half, y, LB.rimC);
       }
       x += 3 + Math.round(rng() * 4);
     }
-    return im.canvas();
+    LAND.lab = lab;
+    LAND.trees = trees;
+  }
+  /** half-width of tiered pine row r (0 = tip) */
+  function pineHalf(r, hw) {
+    const tier = Math.floor(r / 3);
+    return r < 2 ? 0 : Math.min(hw, Math.floor(tier * 0.75 + (r % 3) * 0.55));
+  }
+
+  /** colour a label map (Uint8Array W x LAND_H) with pal[label] -> canvas */
+  function landCanvas(lab, pal) {
+    const im = new Img(W, LAND_H);
+    for (let i = 0; i < lab.length; i++) {
+      const l = lab[i];
+      if (l && pal[l]) im.set(i % W, (i / W) | 0, pal[l]);
+    }
+    return im;
+  }
+
+  function bakeLand(rng) {
+    buildLand(rng);
+    const pal = [];
+    pal[LB.hillA] = HILL_A;
+    pal[LB.hazeA] = mix(HILL_A, P.violet[4], 0.4);
+    pal[LB.rimA] = mix(HILL_A, P.moon[0], 0.14);
+    pal[LB.chapel] = CHAPEL;
+    pal[LB.slit] = PINE;
+    pal[LB.rimCh] = mix(CHAPEL, P.moon[0], 0.2);
+    pal[LB.spill] = mix(CHAPEL, P.amber[2], 0.25);
+    pal[LB.hillB] = HILL_B;
+    pal[LB.hazeB] = mix(HILL_B, HILL_A, 0.6);
+    pal[LB.rimB] = mix(HILL_B, P.moon[0], 0.12);
+    pal[LB.cotRoof] = mix(HILL_B, P.stone[2], 0.6);
+    pal[LB.cotWall] = mix(HILL_B, P.stone[2], 0.4);
+    pal[LB.yard] = CHAPEL;
+    pal[LB.forest] = PINE;
+    pal[LB.pine] = PINE;
+    pal[LB.rimC] = mix(PINE, P.moon[0], 0.12);
+    return landCanvas(LAND.lab, pal).canvas();
   }
 
   // ------------------------------------------------------------------
@@ -632,6 +698,8 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
   // module
   // ------------------------------------------------------------------
   let skyCv = null;
+  /** the classic Rainy Hollow look (Halloween); other editions live in bg-seasons.js */
+  const classic = () => HD.edition.id === 'halloween';
   let landCv = null;
   let flashTiles = null;
   let flashMasks = null;
@@ -682,17 +750,19 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
         z: 0,
         id: 'sky',
         draw(g) {
+          if (!classic()) return;
           g.ctx.drawImage(skyCv, 0, 0);
         },
       },
-      { layer: 'bg', z: 3, id: 'clouds-far', draw: (g, t) => drawLayer(g, t, LAYERS[0]) },
-      { layer: 'bg', z: 5, id: 'clouds-mid', draw: (g, t) => drawLayer(g, t, LAYERS[1]) },
-      { layer: 'bg', z: 7, id: 'clouds-near', draw: (g, t) => drawLayer(g, t, LAYERS[2]) },
+      { layer: 'bg', z: 3, id: 'clouds-far', draw: (g, t) => classic() && drawLayer(g, t, LAYERS[0]) },
+      { layer: 'bg', z: 5, id: 'clouds-mid', draw: (g, t) => classic() && drawLayer(g, t, LAYERS[1]) },
+      { layer: 'bg', z: 7, id: 'clouds-near', draw: (g, t) => classic() && drawLayer(g, t, LAYERS[2]) },
       {
         layer: 'bg',
         z: 8,
         id: 'lightning',
         draw(g, t) {
+          if (!classic() || !HD.tag('lightning')) return;
           const lv = flashLevel(t);
           if (!lv) return;
           const far = LAYERS[0];
@@ -706,6 +776,7 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
         z: 10,
         id: 'land',
         draw(g, t) {
+          if (!classic()) return;
           g.ctx.drawImage(landCv, 0, LAND_Y);
           // chapel window: one tiny warm pane, breathing very slowly
           const v = T.noise(t, 9, 77);
@@ -718,7 +789,30 @@ const layerOff = (t, Ly) => Math.floor(T.phase(t, HD.LOOP / Ly.k) * Ly.w + 1e-6)
           }
         },
       },
-      { layer: 'bg', z: 18, id: 'bats', draw: drawBats },
+      { layer: 'bg', z: 18, id: 'bats', draw: (g, t) => classic() && HD.tag('bats') && drawBats(g, t) },
     ],
   });
+
+  // Everything the seasonal editions (bg-seasons.js) reuse: raster helpers,
+  // the cloud tone maps, the moon painter and the landscape geometry.
+  HD._bgKit = {
+    Img,
+    Tones,
+    cloud,
+    tidy,
+    tonesToCanvas,
+    shade,
+    radialMask,
+    skyBand,
+    paintMoon,
+    LAYERS,
+    layerOff,
+    LAND,
+    LB,
+    pineHalf,
+    landCanvas,
+    CHAPEL_WIN,
+    COTTAGES,
+    LAND_Y,
+  };
 })();

@@ -49,12 +49,24 @@
   // ---------------------------------------------------------------------
   // smoke
   // ---------------------------------------------------------------------
+  // Smoke styles. These are the Halloween values; seasonal editions derive
+  // their own styles from them (atmosphere-seasons.js) via HD.atmo.
   const CHIM = {
     n: 30,
     life: 14,
     seed: 401,
     sx: (CH.x0 + CH.x1) / 2 + 1,
     sy: CH.top - 1,
+    rise: 58,
+    riseR: 10,
+    driftK: 0.75,
+    gust: 18,
+    curl: 2.2,
+    rad0: 2.4,
+    radK: 7.2,
+    lvK: 1.5,
+    hlK: 1.25,
+    tone: null, // 5 tones (light -> dark) x warm-lit variants, set in init
   };
   const CAMP = {
     n: 40,
@@ -62,9 +74,18 @@
     seed: 433,
     sx: CF.x,
     sy: CF.base - 33,
+    rise: 82,
+    riseR: 8,
+    driftK: 0.8,
+    gust: 12,
+    spread: 2,
+    curl: 2.6,
+    rad0: 0.7,
+    radK: 5.2,
+    lvK: 1.7,
+    hlK: 1.2,
+    tone: null, // 4 tones
   };
-  // tones (cold, light -> dark) each with warm-lit variants per light level
-  let chimTone, campTone;
 
   // order puffs oldest -> youngest so younger (lower) smoke sits in front
   function puffs(sys, t, fn) {
@@ -84,8 +105,9 @@
     }
   }
 
-  function drawChimney(g, t) {
-    const S = CHIM;
+  function drawChimney(g, t, St) {
+    const S = St || CHIM;
+    const chimTone = S.tone;
     puffs(S, t, (i, a, c, Pd) => {
       const r1 = HD.hash(S.seed, i, c, 1);
       const r2 = HD.hash(S.seed, i, c, 2);
@@ -93,13 +115,13 @@
       const kx = (HD.hash(S.seed, i, c, 4) * 8) | 0;
       const ky = (HD.hash(S.seed, i, c, 5) * 8) | 0;
       const te = t - a * Pd; // emission time: puffs born in a gust drift further
-      const gust = (T.noise(te, 21, 77) - 0.5) * 18;
-      const rise = (58 + 10 * r1) * (1 - Math.pow(1 - a, 1.6));
-      const drift = (WIND * Pd * 0.75 + gust) * Math.pow(a, 1.55);
-      const curl = 2.2 * a * Math.sin(TAU * (a * 1.2 + r2));
+      const gust = (T.noise(te, 21, 77) - 0.5) * S.gust;
+      const rise = (S.rise + S.riseR * r1) * (1 - Math.pow(1 - a, 1.6));
+      const drift = (WIND * Pd * S.driftK + gust) * Math.pow(a, 1.55);
+      const curl = S.curl * a * Math.sin(TAU * (a * 1.2 + r2));
       const x = S.sx + drift + curl;
       const y = S.sy - rise;
-      const rad = 2.4 + 7.2 * Math.pow(a, 0.7) * (0.85 + 0.3 * r3);
+      const rad = S.rad0 + S.radK * Math.pow(a, 0.7) * (0.85 + 0.3 * r3);
       const lv = Math.min(1, a / 0.04) * Math.pow(1 - a, 0.8);
       if (lv <= 0.02) return;
       const xi = Math.round(x);
@@ -110,19 +132,20 @@
       // tone by age (banded, jittered per puff): light grey -> sky-ish blue
       const aj = a + (r3 - 0.5) * 0.12;
       const tone = aj < 0.2 ? 1 : aj < 0.42 ? 2 : aj < 0.68 ? 3 : 4;
-      g.ditherCircle(xi, yi, rad, chimTone[tone][L], lv * 1.5, 0.9, ox, oy);
+      g.ditherCircle(xi, yi, rad, chimTone[tone][L], lv * S.lvK, 0.9, ox, oy);
       // moon-facing highlight on the upper right
       const hr = rad * 0.55;
       if (tone < 4 && hr >= 1.2) {
         const hx = xi + Math.round(rad * 0.3);
         const hy = yi - Math.round(rad * 0.3);
-        g.ditherCircle(hx, hy, hr, chimTone[tone - 1][L], lv * 1.25, 0.95, ox, oy);
+        g.ditherCircle(hx, hy, hr, chimTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
       }
     });
   }
 
-  function drawCamp(g, t) {
-    const S = CAMP;
+  function drawCamp(g, t, St) {
+    const S = St || CAMP;
+    const campTone = S.tone;
     puffs(S, t, (i, a, c, Pd) => {
       const r1 = HD.hash(S.seed, i, c, 1);
       const r2 = HD.hash(S.seed, i, c, 2);
@@ -130,14 +153,14 @@
       const kx = (HD.hash(S.seed, i, c, 4) * 8) | 0;
       const ky = (HD.hash(S.seed, i, c, 5) * 8) | 0;
       const te = t - a * Pd;
-      const gust = (T.noise(te, 13, 91) - 0.5) * 12;
-      const rise = (82 + 8 * r1) * Math.pow(a, 0.88);
-      const drift = (WIND * Pd * 0.8 + gust) * Math.pow(a, 1.5);
-      const curl = 2.6 * Math.sqrt(a) * Math.sin(TAU * (a * 1.5 + T.noise(te, 6, 92) * 0.6));
-      const x = S.sx + (r2 - 0.5) * 2 * (1 - a) + drift + curl;
+      const gust = (T.noise(te, 13, 91) - 0.5) * S.gust;
+      const rise = (S.rise + S.riseR * r1) * Math.pow(a, 0.88);
+      const drift = (WIND * Pd * S.driftK + gust) * Math.pow(a, 1.5);
+      const curl = S.curl * Math.sqrt(a) * Math.sin(TAU * (a * 1.5 + T.noise(te, 6, 92) * 0.6));
+      const x = S.sx + (r2 - 0.5) * S.spread * (1 - a) + drift + curl;
       const y = S.sy - rise;
       // emerges as a thin solid thread from the flame tips, widens and thins out
-      const rad = 0.7 + 5.2 * Math.pow(a, 0.85);
+      const rad = S.rad0 + S.radK * Math.pow(a, 0.85);
       const lv = Math.min(1, a / 0.02) * Math.min(1, 0.45 + a / 0.1) * Math.pow(1 - a, 0.9);
       if (lv <= 0.02) return;
       const xi = Math.round(x);
@@ -147,8 +170,8 @@
       const L = level(xi, yi);
       const aj = a + (r3 - 0.5) * 0.1;
       const tone = aj < 0.12 ? 2 : aj < 0.36 ? 1 : aj < 0.64 ? 2 : 3;
-      g.ditherCircle(xi, yi, rad, campTone[tone][L], lv * 1.7, 0.88, ox, oy);
-      if (rad > 2.2 && tone < 3) g.ditherCircle(xi + 1, yi - 1, rad * 0.5, campTone[tone - 1][L], lv * 1.2, 0.95, ox, oy);
+      g.ditherCircle(xi, yi, rad, campTone[tone][L], lv * S.lvK, 0.88, ox, oy);
+      if (rad > 2.2 && tone < 3) g.ditherCircle(xi + 1, yi - 1, rad * 0.5, campTone[tone - 1][L], lv * S.hlK, 0.95, ox, oy);
     });
   }
 
@@ -312,24 +335,46 @@
   let FRONT = null;
   let vignette = null;
 
+  // per-edition recipe (null = Halloween, the original layers above)
+  const season = HD.perEdition((ed) => (ed.id === 'halloween' || !HD.atmoSeasons ? null : HD.atmoSeasons.build(ed) || null));
+
+  // helpers shared with atmosphere-seasons.js
+  HD.atmo = {
+    CHIM,
+    CAMP,
+    SMOKE_L,
+    LEVEL_L,
+    relit,
+    litSet,
+    level,
+    puffs,
+    pnoise,
+    bakeTile,
+    bakeMask,
+    drawBand,
+    drawChimney,
+    drawCamp,
+    scratch: () => ({ tmp, tmpCtx, tmpG }),
+  };
+
   HD.module('atmosphere', {
     init() {
       // smoke tones: light (moonlit) -> dark (almost sky), warm-lit variants
-      chimTone = [
+      CHIM.tone = [
         litSet(mix(P.stone[6], P.moon[0], 0.3), SMOKE_L),
         litSet(mix(P.stone[5], P.night[7], 0.3), SMOKE_L),
         litSet(mix(P.stone[4], P.night[6], 0.4), SMOKE_L),
         litSet(mix(P.stone[3], P.night[5], 0.5), SMOKE_L),
         litSet(mix(P.night[3], P.stone[2], 0.45), SMOKE_L),
       ];
-      campTone = [
+      CAMP.tone = [
         litSet(mix(P.stone[5], P.night[7], 0.25), SMOKE_L),
         litSet(mix(P.stone[4], P.wood[5], 0.35), SMOKE_L),
         litSet(mix(P.stone[3], P.night[5], 0.45), SMOKE_L),
         litSet(mix(P.night[3], P.stone[2], 0.45), SMOKE_L),
       ];
 
-      tmp = HD.canvas(W, 32, true);
+      tmp = HD.canvas(W, 96, true);
       tmpCtx = tmp.getContext('2d');
       tmpG = HD.makeGfx(tmpCtx);
 
@@ -473,14 +518,30 @@
       vignette = bakeVignette();
     },
 
+    // Halloween draws the original layers (season() is null); every other
+    // edition draws the per-edition recipe from atmosphere-seasons.js.
     passes: [
+      {
+        layer: 'bg',
+        z: 8.5,
+        id: 'sky-haze',
+        draw(g, t) {
+          const S = season();
+          if (S && S.sky) S.sky(g, t);
+        },
+      },
       {
         layer: 'bg',
         z: 26,
         id: 'far-mist',
         draw(g, t) {
-          drawBand(g, FAR, t);
-          drawBand(g, FAR2, t);
+          const S = season();
+          if (!S) {
+            drawBand(g, FAR, t);
+            drawBand(g, FAR2, t);
+            return;
+          }
+          for (const B of S.far) drawBand(g, B, t);
         },
       },
       {
@@ -488,17 +549,47 @@
         z: 15,
         id: 'ground-mist',
         draw(g, t) {
-          drawBand(g, GROUND, t);
+          const S = season();
+          if (!S) {
+            drawBand(g, GROUND, t);
+            return;
+          }
+          for (const B of S.ground) drawBand(g, B, t);
+          if (S.low) S.low(g, t);
         },
       },
-      { layer: 'fx', z: 31, id: 'campfire-smoke', draw: drawCamp },
-      { layer: 'fx', z: 32, id: 'chimney-smoke', draw: drawChimney },
+      {
+        layer: 'fx',
+        z: 31,
+        id: 'campfire-smoke',
+        draw(g, t) {
+          const S = season();
+          if (!S) drawCamp(g, t, CAMP);
+          else if (S.camp) drawCamp(g, t, S.camp);
+        },
+      },
+      {
+        layer: 'fx',
+        z: 32,
+        id: 'chimney-smoke',
+        draw(g, t) {
+          const S = season();
+          drawChimney(g, t, S ? S.chim : CHIM);
+          if (S && S.high) S.high(g, t);
+        },
+      },
       {
         layer: 'fx',
         z: 61,
         id: 'front-mist',
         draw(g, t) {
-          drawBand(g, FRONT, t);
+          const S = season();
+          if (!S) {
+            drawBand(g, FRONT, t);
+            return;
+          }
+          for (const B of S.front) drawBand(g, B, t);
+          if (S.near) S.near(g, t);
         },
       },
       {

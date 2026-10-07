@@ -13,6 +13,12 @@
  * its colour from the lightmap where it is (HD.lights.lum), quantised to a
  * few precomputed steps: cold blue-grey in the dark, warming through
  * PAL.warmrain around the campfire, the windows and the porch lantern.
+ *
+ * Seasons: rain runs only when HD.edition.weather.rain > 0. rain = 1 is the
+ * original Halloween path, bit for bit; rain < 1 (spring) is sparser, softer
+ * and slower, and skips the Halloween-only surfaces (tombstones, jacks).
+ * Snow, leaves, petals and fireflies live in weather-seasons.js and plug in
+ * through HD.weatherSeasons hooks (far / mid / near passes and lights).
  */
 (function () {
   'use strict';
@@ -67,6 +73,20 @@
   // (at the life's start time) so a drop never pops in or out mid-fall
   // ------------------------------------------------------------------
   const dens = (ts) => 0.8 + 0.2 * T.noise(ts, 47, 6119);
+
+  // ------------------------------------------------------------------
+  // edition switch. RK multiplies the density (exactly 1 for Halloween, so
+  // the comparisons are bit-identical); SOFT selects the gentle spring rain.
+  // ------------------------------------------------------------------
+  let RK = 1;
+  let SOFT = 0;
+  function rainOn() {
+    const r = HD.edition.weather.rain || 0;
+    if (!(r > 0)) return false;
+    RK = r >= 1 ? 1 : r;
+    SOFT = r >= 1 ? 0 : 1;
+    return true;
+  }
 
   // ------------------------------------------------------------------
   // drawing helpers
@@ -237,6 +257,7 @@
   // porch roof and chimney cap
   for (let x = PO.x0 + 2; x <= PO.x1 - 3; x++) addPt(x, PO.roofY);
   for (let x = CH.x0; x <= CH.x1 + 1; x++) addPt(x, CH.top);
+  const NS_HOUSE = SX.length; // house-only surfaces (the rest are Halloween props)
   // tombstone tops (every other column)
   for (const st of LY.tombstones) {
     const inside = tombInside(st.kind);
@@ -298,6 +319,11 @@
     const per = 2.5 + 2 * hash(j, 17, 801);
     return { x, y0, land, size, per, td: Math.sqrt((2 * (land - y0 - 1)) / GRAV) };
   });
+  // spring: no jack-o'-lanterns to land on, and a slower, lazier drip
+  const DRIPS_SOFT = DRIPS.map((D) => {
+    const land = D.size === 0 ? D.land : G0 + 3;
+    return { x: D.x, y0: D.y0, land, size: D.size, per: D.per * 1.7, td: Math.sqrt((2 * (land - D.y0 - 1)) / GRAV) };
+  });
 
   // per-slot periods (snapped by HD.time.cycle)
   const per = (n, a, b, seed) => Array.from({ length: n }, (_, i) => a + (b - a) * hash(i, seed, 3));
@@ -309,6 +335,13 @@
   const MID_P = per(MID_N, 0.5, 0.62, 12);
   const NEAR_P = per(NEAR_N, 0.34, 0.42, 13);
   const SURF_P = per(SURF_N, 0.8, 1.1, 14);
+  // spring rain falls a little slower (longer lives) -> softer
+  const FAR_PS = FAR_P.map((v) => v * 1.25);
+  const MID_PS = MID_P.map((v) => v * 1.3);
+  const NEAR_PS = NEAR_P.map((v) => v * 1.3);
+  const FARP = () => (SOFT ? FAR_PS : FAR_P);
+  const MIDP = () => (SOFT ? MID_PS : MID_P);
+  const NEARP = () => (SOFT ? NEAR_PS : NEAR_P);
   const FIRE = LY.campfire;
   const nearFlame = (x, y) => Math.abs(x - FIRE.x) < FIRE.flameW * 0.6 && y > FIRE.base - 10 && y < FIRE.base + 3;
 
@@ -317,9 +350,9 @@
   // ------------------------------------------------------------------
   function drawFar(g, t) {
     for (let i = 0; i < FAR_N; i++) {
-      const c = T.cycle(t, i, FAR_P[i], 3301);
+      const c = T.cycle(t, i, FARP()[i], 3301);
       const age = c.age;
-      if (c.rnd(7) > dens(t - age * c.P)) continue;
+      if (c.rnd(7) > dens(t - age * c.P) * RK) continue;
       const yEnd = 200 + c.rnd(1) * 6;
       const xEnd = c.rnd(0) * (W + 24) - 12;
       const r3 = c.rnd(3);
@@ -328,26 +361,26 @@
       const yh = Math.round(-4 + (yEnd + 4) * age);
       const xh = ax + S * yh;
       let b = r3 < 0.3 ? 0 : r3 < 0.88 ? 1 : 2;
-      if (b > 0 && inTitle(xh, yh)) b--;
+      if (b > 0 && (SOFT || inTitle(xh, yh))) b--;
       streak(g, ax, yh - len + 1, yh, FAR[b][lvOf(lum(xh, yh) * 0.6)]);
     }
   }
 
   function drawMid(g, t) {
     for (let i = 0; i < MID_N; i++) {
-      const c = T.cycle(t, i, MID_P[i], 4409);
+      const c = T.cycle(t, i, MIDP()[i], 4409);
       const age = c.age;
-      if (c.rnd(7) > dens(t - age * c.P)) continue;
+      if (c.rnd(7) > dens(t - age * c.P) * RK) continue;
       const d = c.rnd(1);
       const yl = G0 + Math.round(d * (G1 - 1 - G0));
       const xl = c.rnd(0) * (W + 30) - 15;
-      const len = 3 + Math.round(d * 2 + c.rnd(2) * 1.2);
+      const len = 3 + Math.round(d * 2 + c.rnd(2) * 1.2) - SOFT;
       const r3 = c.rnd(3);
       const ax = xl - S * yl;
       const yh = Math.round(-8 + (yl + 8) * age);
       const xh = ax + S * yh;
       let b = d > 0.6 ? (r3 < 0.6 ? 2 : 1) : r3 < 0.25 ? 0 : r3 < 0.85 ? 1 : 2;
-      if (b > 0 && inTitle(xh, yh)) b--;
+      if (b > 0 && (inTitle(xh, yh) || (SOFT && r3 < 0.7))) b--;
       streak(g, ax, yh - len + 1, yh, MID[b][lvOf(lum(xh, yh))]);
     }
   }
@@ -355,11 +388,11 @@
   function drawGroundSplashes(g, t) {
     const SPL_T = SPL_F * 3;
     for (let i = 0; i < MID_N; i++) {
-      const c = T.cycle(t, i, MID_P[i], 4409);
+      const c = T.cycle(t, i, MIDP()[i], 4409);
       const ts = c.age * c.P;
       if (ts >= SPL_T) continue;
       const pc = c.prev;
-      if (c.rnd(7, pc) > dens(t - ts - c.P)) continue;
+      if (c.rnd(7, pc) > dens(t - ts - c.P) * RK) continue;
       const d = c.rnd(1, pc);
       const yl = G0 + Math.round(d * (G1 - 1 - G0));
       const xl = Math.round(c.rnd(0, pc) * (W + 30) - 15);
@@ -373,7 +406,7 @@
         else ering(g, pd, xl, yl, f + 1, RIP[f === 1 ? 1 : 0][lv]);
         continue;
       }
-      const size = d < 0.3 ? 0 : d < 0.7 ? 1 : 2;
+      const size = d < 0.3 ? 0 : d < 0.7 || SOFT ? 1 : 2;
       crown(g, xl, yl, size, f, SPL, lv);
     }
   }
@@ -383,8 +416,8 @@
       const c = T.cycle(t, i, SURF_P[i], 5501);
       const ts = c.age * c.P;
       if (ts >= SPL_F * 2) continue;
-      if (c.rnd(7) > dens(t - ts)) continue;
-      const k = Math.floor(c.rnd(0) * NS);
+      if (c.rnd(7) > dens(t - ts) * RK) continue;
+      const k = Math.floor(c.rnd(0) * (SOFT ? NS_HOUSE : NS));
       const x = SX[k];
       const y = SY[k];
       crown(g, x, y, 0, Math.floor(ts / SPL_F), SPL, lvOf(lum(x, y - 1)));
@@ -398,7 +431,7 @@
         const c = T.cycle(t, k * 16 + s, 0.85 + 0.4 * hash(k, s, 77), 7707);
         const age = c.age;
         if (age > 0.7) continue;
-        if (c.rnd(7) > dens(t - age * c.P)) continue;
+        if (c.rnd(7) > dens(t - age * c.P) * RK) continue;
         const rmax = pd.rmax - (c.rnd(3) < 0.4 ? 1 : 0);
         const a = age / 0.7;
         const r = 1 + Math.floor(rmax * a * (1.6 - 0.6 * a));
@@ -412,8 +445,9 @@
   }
 
   function drawDrips(g, t) {
-    for (let j = 0; j < DRIPS.length; j++) {
-      const D = DRIPS[j];
+    const DR = SOFT ? DRIPS_SOFT : DRIPS;
+    for (let j = 0; j < DR.length; j++) {
+      const D = DR[j];
       const c = T.cycle(t, j, D.per, 8801);
       const Pd = c.P;
       const ts = c.age * Pd;
@@ -452,32 +486,58 @@
 
   function drawNear(g, t) {
     for (let i = 0; i < NEAR_N; i++) {
-      const c = T.cycle(t, i, NEAR_P[i], 6607);
+      const c = T.cycle(t, i, NEARP()[i], 6607);
       const age = c.age;
-      if (c.rnd(7) > dens(t - age * c.P)) continue;
-      const len = 8 + Math.floor(c.rnd(2) * 7);
+      if (c.rnd(7) > dens(t - age * c.P) * RK) continue;
+      const len = SOFT ? 5 + Math.floor(c.rnd(2) * 5) : 8 + Math.floor(c.rnd(2) * 7);
       const ax = c.rnd(0) * (W + 80) - 70;
       const r3 = c.rnd(3);
       const yh = Math.round(-18 + (H + 34) * age);
       const ym = yh - (len >> 1);
       const xm = ax + S * ym;
       const lv = lvOf(lum(xm, ym));
-      let b = i < 4 ? 2 : r3 < 0.4 ? 0 : 1;
+      let b = i < 4 ? 2 - SOFT : r3 < 0.4 ? 0 : 1;
       if (b > 0 && inTitle(xm, ym)) b--;
       streak(g, ax, yh - len + 1, yh, NEAR[b][lv]);
-      if (i < 4) streak(g, ax + 1, yh - len + 3, yh - 1, NEAR[0][lv]);
+      if (i < 4 && !SOFT) streak(g, ax + 1, yh - len + 3, yh - 1, NEAR[0][lv]);
     }
   }
 
+  // seasonal layers (weather-seasons.js fills these hooks; read at draw time)
+  const SEA = (HD.weatherSeasons = HD.weatherSeasons || {});
+  const hook = (k) => (g, t) => {
+    const f = SEA[k];
+    if (f) f(g, t);
+  };
+
   HD.module('weather', {
+    lights(t, L) {
+      if (SEA.lights) SEA.lights(t, L);
+    },
     passes: [
-      { layer: 'bg', z: 22, id: 'far-rain', draw: drawFar },
-      { layer: 'fx', z: 26, id: 'ripples', draw: drawRipples },
+      {
+        layer: 'bg',
+        z: 22,
+        id: 'far-rain',
+        draw(g, t) {
+          if (rainOn()) drawFar(g, t);
+        },
+      },
+      { layer: 'bg', z: 23, id: 'far-season', draw: hook('far') },
+      {
+        layer: 'fx',
+        z: 26,
+        id: 'ripples',
+        draw(g, t) {
+          if (rainOn()) drawRipples(g, t);
+        },
+      },
       {
         layer: 'fx',
         z: 27,
         id: 'splashes',
         draw(g, t) {
+          if (!rainOn()) return;
           drawGroundSplashes(g, t);
           drawSurfaceSplashes(g, t);
         },
@@ -487,11 +547,21 @@
         z: 42,
         id: 'mid-rain',
         draw(g, t) {
+          if (!rainOn()) return;
           drawMid(g, t);
           drawDrips(g, t);
         },
       },
-      { layer: 'fx', z: 66, id: 'near-rain', draw: drawNear },
+      { layer: 'fx', z: 43, id: 'mid-season', draw: hook('mid') },
+      {
+        layer: 'fx',
+        z: 66,
+        id: 'near-rain',
+        draw(g, t) {
+          if (rainOn()) drawNear(g, t);
+        },
+      },
+      { layer: 'fx', z: 67, id: 'near-season', draw: hook('near') },
     ],
   });
 })();

@@ -34,6 +34,7 @@
   let C = null; // colour per pixel
   let LIT = null; // 1 = relit (top face), 0 = emissive (cut face)
   let M = null; // mask bits
+  let OV = null; // 1 = seasonal overlay pixel (re-drawn above puddle reflections)
   const PUD = 1;
   const RIM = 2;
   const STONE = 4;
@@ -133,8 +134,8 @@
       }
   }
 
-  function paintMud() {
-    for (const m of mudSpots()) {
+  function paintMud(spots, noGlints) {
+    for (const m of spots || mudSpots()) {
       const x0 = Math.floor(m.x - m.rx - 3);
       const x1 = Math.ceil(m.x + m.rx + 3);
       const y0 = Math.max(BACK + 2, Math.floor(m.y - m.ry - 2));
@@ -163,6 +164,7 @@
           set(x, y, c);
         }
     }
+    if (noGlints) return;
     // wet glints in the mud: short cold strokes
     const r = HD.rng(611);
     for (let k = 0; k < 140; k++) {
@@ -231,9 +233,10 @@
   }
 
   /** one grass tuft: a little fan of blades rooted at (x, y) */
-  function tuft(x, y, d, r, dark) {
+  function tuft(x, y, d, r, dark, ramp, hk) {
+    const RAMP = ramp || P.moss;
     const n = 2 + Math.floor(r() * 2.2 + d * 1.6);
-    const hmax = 1 + d * 3.4;
+    const hmax = (1 + d * 3.4) * (hk || 1);
     const k0 = dark ? 1 : d < 0.3 ? 2 : 3;
     const half = (n - 1) / 2;
     for (let b = 0; b < n; b++) {
@@ -256,10 +259,10 @@
         else if (j >= h / 2) ci = k0 + 1;
         if (dark) ci = Math.min(ci, 2);
         if (!dark && j === h - 1 && d > 0.55 && r() < 0.22) ci = 6;
-        set(xx, yy, P.moss[clamp(ci, 0, 6)]);
+        set(xx, yy, RAMP[clamp(ci, 0, 6)]);
       }
       // a darker root pixel grounds the blade
-      if (h >= 2 && !(mask(bx, y + 1) & (PUD | RIM | STONE)) && y + 1 < FRONT) set(bx, y + 1, P.moss[Math.max(1, k0 - 1)]);
+      if (h >= 2 && !(mask(bx, y + 1) & (PUD | RIM | STONE)) && y + 1 < FRONT) set(bx, y + 1, RAMP[Math.max(1, k0 - 1)]);
     }
   }
 
@@ -808,6 +811,7 @@
 
   // ---- worm tunnel ---------------------------------------------------------
   const WORM = { x: 150, y: 243 };
+  // (kit.WORM is filled in below)
   function paintWormTunnel() {
     let x = WORM.x - 1;
     let y = WORM.y;
@@ -852,11 +856,37 @@
     });
   }
 
-  let ART = null;
-  function build() {
+  function begin() {
     C = new Array(W * H).fill(null);
     LIT = new Uint8Array(W * H);
     M = new Uint8Array(W * H);
+    OV = new Uint8Array(W * H);
+  }
+  /** bake the current raster; `over` = mask of pixels drawn above the puddle reflections */
+  function finish() {
+    let y0 = H;
+    let y1 = -1;
+    for (let k = 0; k < W * H; k++)
+      if (OV[k]) {
+        const y = (k / W) | 0;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    const out = { lit: bakeCanvas(1), cut: bakeCanvas(0), over: null, overY0: y0 + Y0, overY1: y1 + Y0 };
+    if (y1 >= 0)
+      out.over = HD.bake(W, H, (g, cv) => {
+        const ctx = cv.getContext('2d');
+        const im = ctx.createImageData(W, H);
+        for (let k = 0; k < W * H; k++) if (OV[k]) im.data[k * 4 + 3] = 255;
+        ctx.putImageData(im, 0, 0);
+      });
+    C = LIT = M = OV = null;
+    return out;
+  }
+
+  // the Halloween ('wet-autumn') slab: the original pipeline, untouched
+  function buildHalloween() {
+    begin();
     paintBase();
     paintMud();
     paintPuddles();
@@ -872,30 +902,84 @@
     paintWormTunnel();
     paintLip();
     paintFade();
-    ART = { lit: bakeCanvas(1), cut: bakeCanvas(0) };
-    C = LIT = M = null;
+    const out = finish();
+    out.worm = true;
+    return out;
   }
+
+  // toolkit for src/ground-seasons.js (the other seven editions)
+  const kit = {
+    W, H, Y0, BACK, FRONT, BOT, CUT_LIT, PUD, RIM, STONE, MUD, COF, ROOT, BONE, FIRE, WORM: null,
+    begin, finish, at, set, get, mask, addMask, vn, fbm, qd, depth, mudSpots, pudRows, tuft, pathPoint, pathLen, stone, pebble, polyInside,
+    paintMud, paintStrata, paintPebbles, paintRoots, paintWormTunnel, paintFade,
+    /** set a pixel with an explicit lit flag (1 = relit top face, 0 = emissive cut face) */
+    setLit(x, y, c, lit) {
+      const k = at(x, y);
+      if (k < 0) return;
+      C[k] = c;
+      LIT[k] = lit;
+    },
+    /** mark a pixel to be re-drawn above the puddle reflections */
+    over(x, y) {
+      const k = at(x, y);
+      if (k >= 0) OV[k] = 1;
+    },
+    raw: () => ({ C, LIT, M, OV }),
+  };
+
+  const art = HD.perEdition((ed) => (ed.ground === 'wet-autumn' || !HD.groundSeasons ? buildHalloween() : HD.groundSeasons.build(ed, kit)));
+  // overlay scratch (pads, ice cracks, floating leaves above the reflections)
+  let ovCv = null;
 
   const WORM_BODY = P.wood[7];
   const WORM_HEAD = mix(P.wood[7], P.bone[2], 0.35);
   const WORM_BELLY = P.wood[5];
 
+  kit.WORM = WORM;
+
   HD.module('ground', {
-    init: build,
+    init() {
+      art();
+    },
     passes: [
       {
         layer: 'scene',
         z: 5,
         draw(g) {
-          if (!ART) return;
-          g.em.sprite(ART.cut, 0, Y0);
-          g.sprite(ART.lit, 0, Y0);
+          const A = art();
+          g.em.sprite(A.cut, 0, Y0);
+          g.sprite(A.lit, 0, Y0);
+        },
+      },
+      {
+        layer: 'fx',
+        z: 21,
+        id: 'puddle-overlay',
+        draw(g) {
+          // seasonal bits that float on the puddles (lily pads, ice cracks,
+          // leaves): copy their relit scene pixels back above the reflections
+          const A = art();
+          if (!A.over) return;
+          const y0 = A.overY0;
+          const h = A.overY1 - y0 + 1;
+          if (!ovCv) ovCv = HD.canvas(W, H);
+          const o = ovCv.getContext('2d');
+          o.globalCompositeOperation = 'source-over';
+          o.clearRect(0, 0, W, h);
+          o.drawImage(HD.buffers.scene, 0, y0, W, h, 0, 0, W, h);
+          o.globalCompositeOperation = 'destination-in';
+          o.drawImage(A.over, 0, y0 - Y0, W, h, 0, 0, W, h);
+          o.globalCompositeOperation = 'source-over';
+          g.ctx.drawImage(ovCv, 0, 0, W, h, 0, y0, W, h);
         },
       },
       {
         layer: 'scene',
         z: 6,
         draw(g, t) {
+          const A = art();
+          if (A.anim) A.anim(g, t);
+          if (!A.worm) return;
           // worm: a slow inchworm wiggle at 4 fps
           const ts = T.step(t, 4);
           const ph = T.phase(ts, 3.2);

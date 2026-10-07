@@ -664,7 +664,8 @@
   }
   const DOOR_LEAK = []; // [x, y, kind] pixels lit from inside (drawn per frame)
 
-  function paintDoor(R) {
+  function paintDoor(R, ed) {
+    const collect = DOOR_LEAK.length === 0;
     // stone surround (voussoirs on the arch, blocks on the jambs)
     for (let y = DY0 - 4; y <= DY1; y++)
       for (let x = DX0 - 4; x <= DX1 + 4; x++) {
@@ -722,16 +723,21 @@
     for (let y = 0; y < pw.length; y++)
       for (let x = 0; x < 5; x++) {
         const ch = pw[y][x];
-        if (ch === 'o') DOOR_LEAK.push([DX0 + 5 + x, DY0 + 3 + y, 'peep']);
+        if (ch === 'o') {
+          if (collect) DOOR_LEAK.push([DX0 + 5 + x, DY0 + 3 + y, 'peep']);
+        }
         else if (x === 2 && y > 0) R.set(DX0 + 5 + x, DY0 + 3 + y, S[1], TG.iron);
       }
     // light leaks: threshold gap, plank cracks, keyhole
-    for (let x = DX0 + 1; x <= DX1 - 1; x++) DOOR_LEAK.push([x, DY1, 'gap']);
-    for (let y = 200; y <= 203; y++) DOOR_LEAK.push([DX0 + 11, y, 'crack']);
-    DOOR_LEAK.push([DX1 - 3, 194, 'key'], [DX1 - 3, 195, 'key']);
+    if (collect) {
+      for (let x = DX0 + 1; x <= DX1 - 1; x++) DOOR_LEAK.push([x, DY1, 'gap']);
+      for (let y = 200; y <= 203; y++) DOOR_LEAK.push([DX0 + 11, y, 'crack']);
+      DOOR_LEAK.push([DX1 - 3, 194, 'key'], [DX1 - 3, 195, 'key']);
+    }
     for (const [x, y] of DOOR_LEAK) R.set(x, y, HOLE, TG.door);
     // a small Halloween wreath: twigs and moss, pumpkin berries, violet bow
-    R.rows(
+    if (ed.id === 'halloween')
+      R.rows(
       ['..www..', '.wgwgw.', 'wo...ww', 'ww...gw', 'wg...ow', '.wwbww.', '..bbb..', '.b...b.'],
       DX0 + 4,
       DY0 + 9,
@@ -889,7 +895,8 @@
   // ---------------------------------------------------------------------
   // interiors (curtains, silhouettes, mullions) - drawn over the glass
   // ---------------------------------------------------------------------
-  function paintInteriors(I) {
+  function paintInteriors(I, ed) {
+    const omit = ed.id === 'halloween' || !KIT.seasons ? NONE : KIT.seasons.omit(ed);
     const byId = {};
     for (const win of WINS) byId[win.w.id] = win;
     const put = (win, lx, ly, c) => {
@@ -929,14 +936,14 @@
 
     // ground-left: hearth-lit parlour - wing chair and a side table, valance
     let w = byId['ground-left'];
-    rows(
+    if (!omit.has('chair')) rows(
       w,
       ['.dddddd..', 'dddddddd.', 'dddddddd.', 'eddddddd.', 'eddddddde', 'eddddddde', 'edddddddd', 'edddddddd', '.d.....d.', '.d.....d.'],
       0,
       12,
       { d: A[0], e: A[1] },
     );
-    rows(w, ['.tt..', 'tttt.', 'ssssss', '..s...', '..s...', '..s...', '.sss..'], 11, 15, { t: A[1], s: A[0] });
+    if (!omit.has('chair')) rows(w, ['.tt..', 'tttt.', 'ssssss', '..s...', '..s...', '..s...', '.sss..'], 11, 15, { t: A[1], s: A[0] });
     for (let lx = 0; lx < w.gw; lx++) {
       put(w, lx, 0, F[2]);
       put(w, lx, 1, F[2]);
@@ -948,17 +955,19 @@
 
     // ground-right: red curtains + a carved pumpkin on the inside sill
     w = byId['ground-right'];
-    curtain(w, 0, 12, 4, 2, 4, F[3], F[2]);
-    curtain(w, 1, 12, 4, 2, 4, F[3], F[2]);
-    rows(w, ['...ss..', '..s....', '.ppppp.', 'pepppep', 'ppppppp', 'pmpmpmp', '.ppppp.'], 4, w.gh - 7, { s: A[1], p: A[0], e: F[8], m: F[7] });
+    if (!omit.has('gr-curtains')) {
+      curtain(w, 0, 12, 4, 2, 4, F[3], F[2]);
+      curtain(w, 1, 12, 4, 2, 4, F[3], F[2]);
+    }
+    if (!omit.has('pumpkin')) rows(w, ['...ss..', '..s....', '.ppppp.', 'pepppep', 'ppppppp', 'pmpmpmp', '.ppppp.'], 4, w.gh - 7, { s: A[1], p: A[0], e: F[8], m: F[7] });
     hbar(w, 7, 0, w.gw - 1);
     vbar(w, 7, 0, 6, true);
 
     // upper-left: hanging herb bundles (dim room)
     w = byId['upper-left'];
     hbar(w, 1, 0, w.gw - 1);
-    for (const hx of [2, 9]) rows(w, ['.s.', '.s.', 'hhh', 'hhh', 'hhh', '.h.'], hx - 1, 2, { s: A[0], h: A[1] });
-    rows(w, ['.l..l', 'l.ll.', '.lll.', 'l.l.l', '.ooo.', '.ooo.', '..o..'], 0, w.gh - 7, { l: A[1], o: A[0] });
+    if (!omit.has('herbs')) for (const hx of [2, 9]) rows(w, ['.s.', '.s.', 'hhh', 'hhh', 'hhh', '.h.'], hx - 1, 2, { s: A[0], h: A[1] });
+    if (!omit.has('ul-plant')) rows(w, ['.l..l', 'l.ll.', '.lll.', 'l.l.l', '.ooo.', '.ooo.', '..o..'], 0, w.gh - 7, { l: A[1], o: A[0] });
     vbar(w, 6, 0, w.gh - 1, true);
     hbar(w, 8, 0, w.gw - 1);
 
@@ -1006,9 +1015,33 @@
   // ---------------------------------------------------------------------
   const LANT_ROWS = ['...a...', '..a.a..', '...a...', '..bcb..', '.bcccb.', 'bbbbbbb', '.d...d.', '.d...d.', '.d...d.', '.d...d.', 'bbbbbbb', '.bcccb.', '...b...'];
 
-  // baked resources
-  let houseImg = null;
-  let interiorImg = null;
+  // baked resources (house + interiors are baked per edition)
+  let houseArt = null;
+  let interiorArt = null;
+  const NONE = new Set();
+  function buildHouse(ed) {
+    const R = raster();
+    paintTurret(R);
+    paintCone(R);
+    paintChimney(R);
+    paintBody(R);
+    paintRoof(R);
+    paintGutterPipe(R);
+    paintWindows(R);
+    paintDoor(R, ed);
+    paintPorch(R);
+    paintSteps(R);
+    paintMoss(R);
+    rimPass(R);
+    if (ed.id !== 'halloween' && KIT.seasons) KIT.seasons.decorateHouse(R, ed);
+    return R.toCanvas();
+  }
+  function buildInterior(ed) {
+    const I = raster();
+    paintInteriors(I, ed);
+    if (ed.id !== 'halloween' && KIT.seasons) KIT.seasons.decorateInterior(I, ed);
+    return { img: I.toCanvas(), drops: buildDrops(I) };
+  }
   let glass = null; // per window: [levels]
   let doorImgs = null;
   let lanternImg = null;
@@ -1041,7 +1074,6 @@
   }
 
   /** raindrops on the panes: per window the visible colour per level + muntin mask */
-  let drops = null;
   function buildDrops(I) {
     return WINS.map((win) => {
       if (win.w.round || win.w.id === 'turret-upper') return null;
@@ -1067,7 +1099,7 @@
       return { vis, solid, gw, gh, maxStart: win.w.cat ? 3 : Math.floor(gh * 0.6) };
     });
   }
-  function drawDrops(g, t, levels) {
+  function drawDrops(g, t, levels, drops) {
     g.em.reset();
     for (let i = 0; i < WINS.length; i++) {
       const D = drops[i];
@@ -1104,30 +1136,22 @@
   }
 
   const LV = new Array(WINS.length).fill(0);
+  // shared with house-seasons.js (seasonal decorations; it sets KIT.seasons)
+  const KIT = (HD.houseKit = {
+    BX, BY, BW, BH, HOLE, TG, NL, WINS, WCFG,
+    raster, winInside, wflick, glassColor, courses, seg, chk, dk, lt, at, lum,
+    roofL, roofR, roofDip, coneHW, coneCX, TCX, TX0, TX1,
+    DX0, DX1, DY0, DY1, DCX, DAY, doorInside,
+    get glass() { return glass; },
+    seasons: null,
+  });
   const DOORC = { seed: 51, speed: 0.8, amp: 0.8 };
   const LANC = { seed: 52, speed: 1.1, amp: 0.9 };
 
   HD.module('house', {
     init() {
-      const R = raster();
-      paintTurret(R);
-      paintCone(R);
-      paintChimney(R);
-      paintBody(R);
-      paintRoof(R);
-      paintGutterPipe(R);
-      paintWindows(R);
-      paintDoor(R);
-      paintPorch(R);
-      paintSteps(R);
-      paintMoss(R);
-      rimPass(R);
-      houseImg = R.toCanvas();
-
-      const I = raster();
-      paintInteriors(I);
-      interiorImg = I.toCanvas();
-      drops = buildDrops(I);
+      houseArt = HD.perEdition(buildHouse);
+      interiorArt = HD.perEdition(buildInterior);
 
       glass = WINS.map((win) => {
         const out = [];
@@ -1171,10 +1195,11 @@
     },
 
     lights(t, L) {
+      const SE = HD.edition.id === 'halloween' ? null : KIT.seasons;
       for (const win of WINS) {
-        const c = win.c;
+        const c = SE ? SE.winCfg(win) : win.c;
         const f = wflick(t, c);
-        const k = 0.86 + 0.28 * f;
+        const k = (0.86 + 0.28 * f) * (SE ? SE.winBoost(win) : 1);
         L.add({ x: Math.round(win.cx), y: Math.round(win.cy), r: c.light.r, color: c.light.col || HD.LIGHT.candle, i: c.light.i * k, halo: { r: Math.round(Math.max(win.gw, win.gh) * 0.75), a: c.halo } });
         if (c.spill) {
           L.add({
@@ -1193,9 +1218,12 @@
       const fd = wflick(t, DOORC);
       L.add({ x: Math.round(DCX), y: 209, r: 16, ry: 6, color: HD.LIGHT.candle, i: 0.3 + 0.08 * fd, bands: 4, clip: { x0: 0, y0: 204, x1: 479, y1: 240 } });
       // lantern
-      const lp = lanternPos(t);
-      const fl = wflick(t, LANC);
-      L.add({ x: lp.x, y: lp.y + 8, r: 44, color: HD.LIGHT.lantern, i: 0.7 + 0.16 * fl, halo: { r: 16, a: 0.2 } });
+      if (!SE || SE.ironLantern()) {
+        const lp = lanternPos(t);
+        const fl = wflick(t, LANC);
+        L.add({ x: lp.x, y: lp.y + 8, r: 44, color: HD.LIGHT.lantern, i: 0.7 + 0.16 * fl, halo: { r: 16, a: 0.2 } });
+      }
+      if (SE) SE.lights(t, L);
     },
 
     passes: [
@@ -1203,19 +1231,24 @@
         layer: 'scene',
         z: 22,
         draw(g, t) {
-          g.sprite(houseImg, BX, BY);
+          const ed = HD.edition;
+          const SE = ed.id === 'halloween' ? null : KIT.seasons;
+          g.sprite(houseArt(), BX, BY);
           for (let i = 0; i < WINS.length; i++) {
             const win = WINS[i];
-            const lv = Math.round(wflick(t, win.c) * (NL - 1));
+            const lv = Math.round(wflick(t, SE ? SE.winCfg(win) : win.c) * (NL - 1));
             LV[i] = lv;
-            g.em.sprite(glass[i][lv], win.gx, win.gy);
+            g.em.sprite(SE ? SE.glass(i, lv) : glass[i][lv], win.gx, win.gy);
           }
-          g.sprite(interiorImg, BX, BY);
+          const inter = interiorArt();
+          g.sprite(inter.img, BX, BY);
           drawCandle(g, t);
-          drawDrops(g, t, LV);
+          if (ed.weather.rain > 0) drawDrops(g, t, LV, inter.drops);
+          if (SE) SE.drawInside(g, t);
           drawCat(g, t);
           g.em.sprite(doorImgs[Math.round(wflick(t, DOORC) * (NL - 1))], BX, BY);
-          drawLantern(g, t);
+          if (!SE || SE.ironLantern()) drawLantern(g, t);
+          if (SE) SE.drawFront(g, t);
         },
       },
     ],
