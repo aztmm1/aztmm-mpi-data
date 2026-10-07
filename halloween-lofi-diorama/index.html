@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Kitty Diary 2026</title>
+    <title>Purrfect Year</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" />
     <style>
@@ -147,9 +147,9 @@
     </style>
   </head>
   <body>
-    <canvas id="screen" width="480" height="270" aria-label="Kitty Diary 2026: an animated pixel-art diary of a year, a cottage and a family of cats through the seasons"></canvas>
+    <canvas id="screen" width="480" height="270" aria-label="Purrfect Year: an animated pixel-art diary of a year, a cottage and a family of cats through the seasons"></canvas>
     <div id="hud"></div>
-    <div id="card" aria-live="polite"><div class="series">KITTY DIARY &middot; 2026</div><div class="name"></div><div class="meta"></div></div>
+    <div id="card" aria-live="polite"><div class="series">PURRFECT YEAR &middot; 2026</div><div class="name"></div><div class="meta"></div></div>
     <div id="ui">
       <div id="seasons" role="group" aria-label="Choose an edition"></div>
       <div id="hint"><b>F</b> fullscreen &middot; <b>&larr; &rarr;</b> season &middot; <b>Space</b> pause &middot; <b>H</b> stats</div>
@@ -216,7 +216,7 @@
           return b;
         });
         function showCard(e) {
-          card.querySelector('.series').textContent = 'KITTY DIARY \u00b7 2026 \u00b7 ENTRY ' + (list.indexOf(e) + 1);
+          card.querySelector('.series').textContent = 'PURRFECT YEAR \u00b7 2026 \u00b7 ENTRY ' + (list.indexOf(e) + 1);
           card.querySelector('.name').textContent = e.name;
           card.querySelector('.meta').textContent = e.festival + ' · ' + e.when;
           card.classList.add('show');
@@ -229,7 +229,7 @@
           buttons.forEach(function (b, i) {
             b.setAttribute('aria-pressed', list[i] === e ? 'true' : 'false');
           });
-          document.title = 'Rainy Hollow · ' + e.name;
+          document.title = 'Purrfect Year · ' + e.name;
           try {
             history.replaceState(null, '', '#' + e.id);
           } catch (err) {}

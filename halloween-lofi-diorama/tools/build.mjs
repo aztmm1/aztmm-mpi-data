@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Inline every <script src> of index.html into one self-contained HTML file.
-//   node tools/build.mjs [--out dist/kitty-diary-2026.html]
-//   node tools/build.mjs --artifact [--out dist/kitty-diary-2026.artifact.html]
+//   node tools/build.mjs [--out dist/purrfect-year.html]
+//   node tools/build.mjs --artifact [--out dist/purrfect-year.artifact.html]
 //     (--artifact emits head + body content without the html/head/body
 //      wrappers, for hosts that supply their own document skeleton)
 import fs from 'node:fs';
@@ -10,7 +10,7 @@ import { ROOT, parseArgs } from './lib.mjs';
 
 const a = parseArgs();
 const artifact = !!a.artifact;
-const out = path.resolve(ROOT, a.out || (artifact ? 'dist/kitty-diary-2026.artifact.html' : 'dist/kitty-diary-2026.html'));
+const out = path.resolve(ROOT, a.out || (artifact ? 'dist/purrfect-year.artifact.html' : 'dist/purrfect-year.html'));
 let html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 html = html.replace(/<script src="([^"]+)"><\/script>/g, (_, src) => {
   const code = fs.readFileSync(path.join(ROOT, src), 'utf8');

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Export the seamless loop as a video, rendering frame-exactly (no screen capture).
-//   node tools/render-video.mjs --out out/kitty-diary-loop-1080p.mp4
+//   node tools/render-video.mjs --out out/purrfect-year-loop-1080p.mp4
 //     [--fps 30] [--scale 4]          4 = 1920x1080, 8 = 3840x2160
 //     [--codec h264|h265|prores|lossless] [--crf 14] [--preset slow]
 //     [--seconds N] [--start S]       default: exactly one loop from t=0
@@ -31,7 +31,7 @@ const frames = Math.round(seconds * fps);
 if (Math.abs(frames - seconds * fps) > 1e-6) throw new Error('seconds * fps must be a whole number of frames');
 if (!a.seconds && Math.abs(LOOP * fps - Math.round(LOOP * fps)) > 1e-6) throw new Error(`LOOP (${LOOP}s) * fps (${fps}) is not whole: the loop would not be seamless`);
 const ext = codec === 'prores' ? '.mov' : codec === 'lossless' ? '.mkv' : '.mp4';
-const out = path.resolve(a.out || `out/kitty-diary-loop-${270 * scale}p${ext}`);
+const out = path.resolve(a.out || `out/purrfect-year-loop-${270 * scale}p${ext}`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
 
 const SW = crop.w * scale;

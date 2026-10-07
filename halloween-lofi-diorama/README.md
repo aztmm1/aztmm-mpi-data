@@ -1,6 +1,6 @@
-# Kitty Diary 2026: a pixel-art year of seasons, festivals and a family of cats
+# Purrfect Year: a pixel-art diary of 2026, its seasons, festivals and a family of cats
 
-Kitty Diary 2026 is an animated pixel-art diary of a year. It began as **Rainy Hollow**, a Halloween
+Purrfect Year is an animated pixel-art diary of 2026. It began as **Rainy Hollow**, a Halloween
 diorama built to be the looping
 cover of a long lofi music video. A crooked cottage glows on a cold, rainy
 night. A campfire spits sparks, jack-o'-lanterns flicker, smoke drifts from
@@ -20,7 +20,7 @@ cut away like a diorama to show the soil, roots and a buried coffin.
 
 ## Watch it
 
-Open `index.html` in a browser, or `dist/kitty-diary-2026.html` (the same page as one self-contained file).
+Open `index.html` in a browser, or `dist/purrfect-year.html` (the same page as one self-contained file).
 
 | key | action |
 |---|---|

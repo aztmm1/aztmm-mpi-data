@@ -13,7 +13,7 @@ fi
 LOOP_VIDEO=$1
 AUDIO=$2
 MINUTES=${3:-3}
-OUT=${4:-kitty-diary-2026-${MINUTES}min.mp4}
+OUT=${4:-purrfect-year-${MINUTES}min.mp4}
 SECS=$(awk "BEGIN { print $MINUTES * 60 }")
 
 if [[ "$LOOP_VIDEO" == *-part1-of-*.mp4 ]]; then

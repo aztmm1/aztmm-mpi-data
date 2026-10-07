@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Kitty Diary 2026: every entry (edition) back to back, each fading through
+// Purrfect Year: every entry (edition) back to back, each fading through
 // black into the next, in calendar order (Lunar New Year ... New Year's Eve).
-//   node tools/make-year.mjs [--minutes 3] [--scale 4] [--crf 18] [--out out/kitty-diary-2026-3min.mp4]
+//   node tools/make-year.mjs [--minutes 3] [--scale 4] [--crf 18] [--out out/purrfect-year-3min.mp4]
 //   node tools/make-year.mjs --whatsapp      35 s vertical montage, < 16 MB, for chats and Status
 // Segments are rendered frame-exactly with tools/render-video.mjs and joined
 // without re-encoding.
@@ -22,7 +22,7 @@ const wa = !!a.whatsapp;
 const minutes = Number(a.minutes ?? 3);
 // whole frames per segment at 30 fps so every segment cuts cleanly
 const seg = Math.floor((wa ? Number(a.segment ?? 2.5) : (minutes * 60) / ORDER.length) * 30) / 30;
-const out = path.resolve(ROOT, a.out || (wa ? 'out/kitty-diary-2026-whatsapp.mp4' : `out/kitty-diary-2026-${minutes}min.mp4`));
+const out = path.resolve(ROOT, a.out || (wa ? 'out/purrfect-year-whatsapp.mp4' : `out/purrfect-year-${minutes}min.mp4`));
 const work = path.resolve(ROOT, 'out', wa ? 'year-wa-parts' : 'year-parts');
 fs.mkdirSync(work, { recursive: true });
 

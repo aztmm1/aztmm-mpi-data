@@ -575,7 +575,7 @@
     const tn = new K.Tones(w, h);
     // overhead banks [x, width, depth]: tops run out of the frame, the lumpy
     // undersides hang deepest in the middle
-    for (const b of [[0, 172, 1], [200, 124, 0.7], [350, 112, 0.88]]) {
+    for (const b of [[0, 164, 1], [196, 120, 0.72], [348, 104, 0.9]]) {
       const x0 = b[0] + rng() * 12;
       const bw = b[1];
       const n = Math.max(5, Math.round(bw / 12));
@@ -584,7 +584,7 @@
         const u = (i + 0.5) / n;
         const hump = Math.sin(Math.PI * Math.pow(u, 0.85));
         const ry = 4 + hump * 7 + rng() * 3;
-        const bottom = 12 + (6 + 26 * b[2] * deep) * hump + (rng() - 0.5) * 6;
+        const bottom = 12 + (6 + 32 * b[2] * deep) * hump + (rng() - 0.5) * 6;
         const px = x0 + u * bw + (rng() - 0.5) * 6;
         const prx = ry * (1.3 + rng() * 0.5);
         body.push([px, bottom - ry, prx, ry, undefined, rng() < 0.45]);
@@ -598,10 +598,19 @@
       for (let j = 0; j < 3; j++) tail.push([tx + j * (8 + rng() * 5), ty + rng() * 3, 7 + rng() * 5, 2.5 + rng() * 2, undefined, j > 0]);
       K.cloud(tn, tail, true, 2);
     }
-    // thin streaks at mid height (fewer when the banks are shallow)
-    for (const st of [[96, 58], [262, 70], [420, 50]].slice(0, deep >= 1 ? 3 : 2)) {
-      const sx = st[0] + rng() * 20;
-      cloud2(tn, [[sx, st[1], 16 + rng() * 10, 2.5, st[1] + 1, false], [sx + 14 + rng() * 6, st[1] - 1.5, 10 + rng() * 6, 2.5, st[1] + 1, true]]);
+    // small flat clumps and streaks at mid height (fewer under shallow banks)
+    for (const st of [[92, 62, 44], [262, 72, 52], [418, 56, 36]].slice(0, deep >= 1 ? 3 : 2)) {
+      const sx = st[0] + rng() * 16;
+      const yb = st[1];
+      const cw = st[2];
+      const body = [];
+      for (let i = 0; i < 4; i++) {
+        const u = (i + 0.5) / 4;
+        const ry = 2 + Math.sin(Math.PI * u) * 3.5 + rng() * 1.5;
+        body.push([sx + u * cw, yb - ry * 0.6, ry * (1.6 + rng() * 0.6), ry, yb + 1, i > 0 && rng() < 0.5]);
+      }
+      K.cloud(tn, body, true, 2);
+      cloud2(tn, [[sx + cw * (rng() < 0.5 ? -0.1 : 1.05), yb + 1, 10 + rng() * 8, 1.6, yb + 1, false]]);
     }
     // lower clumps [x, width, base y], staggered under the gaps between banks
     for (const c of [[150, 74, 96], [296, 96, 104], [440, 66, 92]]) {
