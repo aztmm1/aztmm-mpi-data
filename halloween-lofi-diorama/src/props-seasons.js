@@ -455,31 +455,92 @@
       const k = HD.hash(Math.floor(x / 10), Math.floor(y / 10), 78) < 0.2 ? 1 : 0;
       return RP.autumn[((h < 0.45 ? 0 : h < 0.72 ? 1 : 2) + k) % 3];
     };
-    const bias = ed.id === 'harvest' ? 0.04 : ed.id === 'lights' ? -0.08 : 0;
+    const bias = ed.id === 'harvest' ? 0.04 : ed.id === 'lights' ? -0.08 : style === 'blossom' ? -0.08 : 0;
     let foliage = null;
+    let leafGroups = null; // [group][sway state] tip clumps that ride on their twig
+    let twigs = null; // [group][sway state] twigs re-drawn to lead into their clumps
     if (cfg) {
-      const clumps = [];
+      const inner = []; // clumps on the limbs: static
+      const tipC = []; // clumps at the twig ends: sway with the twig's group
       for (const a of anchors(cfg.step, cfg.iw[0], cfg.iw[1], ed.id.length * 13 + 3)) {
         const r = cfg.iR[0] + rnd() * (cfg.iR[1] - cfg.iR[0]);
         if (m && Math.hypot(a.x - m.x, a.y - m.y) < m.r + r * 0.6 + cfg.pad) continue;
-        if (style === 'autumn' && rnd() < 0.3) continue;
         const c = makeClump(rnd, a.x + (rnd() - 0.5) * 2, a.y - 1 - rnd() * 2, r, cfg.sub, rnd() * 2);
         c.ramp = pickRamp(a.x, a.y);
-        clumps.push(c);
+        inner.push(c);
       }
-      for (const tp of TR.tips) {
+      const leafy = new Set(); // twigs that carry a clump
+      TR.tips.forEach((tp, ti) => {
         const e = tipEnd(tp);
-        if (rnd() > cfg.tipP) continue;
+        if (rnd() > cfg.tipP) return;
         const r = cfg.tipR[0] + rnd() * (cfg.tipR[1] - cfg.tipR[0]);
-        if (m && Math.hypot(e.x - m.x, e.y - m.y) < m.r + r * 0.5 + cfg.pad) continue;
+        if (m && Math.hypot(e.x - m.x, e.y - m.y) < m.r + r * 0.5 + cfg.pad) return;
         const c = makeClump(rnd, e.x, e.y, r, cfg.sub, 2 + rnd() * 2);
         c.ramp = pickRamp(e.x, e.y);
-        clumps.push(c);
+        c.g = tp.g;
+        tipC.push(c);
+        leafy.add(ti);
+      });
+      const all = inner.concat(tipC);
+      const mk = () => new K.Buf(K.TX0 - 14, K.TY0 - 10, K.TW + 28, K.TH + 12);
+      const rim = !m ? null : style === 'summer' ? mix(P.leaf[7], P.moon[2], 0.45) : style === 'blossom' ? mix(P.blossom[6], P.moon[3], 0.3) : mix(P.autumn[7], P.gold[5], 0.45);
+      const opts = { bias, rim, sil: style === 'blossom' ? P.violet[1] : undefined, crease: style === 'blossom' ? P.violet[2] : undefined };
+      // the whole crown is shaded as one mass (creases between clumps stay coherent) ...
+      const Fall = mk();
+      const who = new Int32Array(Fall.w * Fall.h).fill(-1);
+      canopy(Fall, all, m, { ...opts, who });
+      // ... and the limbs' clumps alone, to fill what a swaying tip clump uncovers
+      const Fin = mk();
+      canopy(Fin, inner, m, opts);
+      const St = mk();
+      const layers = [];
+      for (let gi = 0; gi < 7; gi++) layers.push([mk(), mk(), mk()]);
+      for (let k = 0; k < Fall.c.length; k++) {
+        const x = Fall.x0 + (k % Fall.w);
+        const y = Fall.y0 + Math.floor(k / Fall.w);
+        const col = Fall.c[k];
+        const ci = who[k];
+        if (col && ci >= 0 && ci >= inner.length) {
+          const st = layers[all[ci].g];
+          for (let sw = -1; sw <= 1; sw++) st[sw + 1].set(x + sw, y, col);
+          if (Fin.c[k]) St.c[k] = Fin.c[k];
+        } else if (col) St.c[k] = col;
+        else if (Fin.c[k]) St.c[k] = Fin.c[k];
       }
-      const F = new K.Buf(K.TX0 - 14, K.TY0 - 10, K.TW + 28, K.TH + 12);
-      const rim = !m ? null : style === 'summer' ? mix(P.leaf[7], P.moon[2], 0.45) : style === 'blossom' ? mix(P.blossom[7], P.moon[3], 0.35) : mix(P.autumn[7], P.gold[5], 0.45);
-      canopy(F, clumps, m, { bias, rim, sil: style === 'blossom' ? P.blossom[0] : undefined });
-      foliage = F.bake();
+      foliage = St.bake();
+      leafGroups = layers.map((st) => st.map((b) => b.bake()));
+      // twigs: the ones that carry a clump are 2px (lit top, dark underside) so the
+      // clump visibly hangs on wood; bare tips stay 1px as on the Halloween tree
+      const has = TR.has;
+      twigs = [];
+      for (let gi = 0; gi < 7; gi++) {
+        const st = [];
+        for (let sw = -1; sw <= 1; sw++) {
+          const Bg = new K.Buf(K.TX0 - 4, K.TY0 - 4, K.TW + 8, K.TH + 8);
+          TR.tips.forEach((tp, ti) => {
+            if (tp.g !== gi) return;
+            const c = K.annotate(K.spline(tp.pts, 0.25));
+            const len = c[c.length - 1].s || 1;
+            const px = K.cleanPath(c.map((p) => [p.x + sw * Math.pow(p.s / len, 1.5) * 1.2, p.y]));
+            const thick = leafy.has(ti);
+            for (let k = 1; k < px.length; k++) {
+              const [x, y] = px[k];
+              if (has(x, y)) continue;
+              if (!thick) {
+                Bg.set(x, y, twigCol(m, x, y));
+                continue;
+              }
+              const dm = m ? Math.hypot(x - m.x, y - m.y) : 999;
+              const inMoon = !!m && dm < m.r + 1;
+              const nearMoon = !!m && dm < m.r + 12;
+              Bg.set(x, y, inMoon ? P.violet[0] : nearMoon ? P.violet[2] : P.violet[5]);
+              if (!has(x, y + 1) && !Bg.get(x, y + 1)) Bg.set(x, y + 1, inMoon ? P.violet[0] : P.violet[1]);
+            }
+          });
+          st.push(Bg.bake());
+        }
+        twigs.push(st);
+      }
     }
     // plum: five-petal blossoms and buds gathered in sprays on the branch tops,
     // with bare stretches between them (deliberate clusters, never confetti)
@@ -581,7 +642,7 @@
         groups.push(st);
       }
     }
-    return { bark: barkArt, foliage, groups };
+    return { bark: barkArt, foliage, groups, leafGroups, twigs };
   }
 
   // ------------------------------------------------------------------
@@ -1459,10 +1520,14 @@
   S.tree = function (g, t) {
     const A = treeArt();
     blit(g, A.bark);
-    const G = K.TREE.groups;
-    for (let gi = 0; gi < G.length; gi++) blit(g, G[gi][K.swayState(t, gi)]);
+    const G = A.twigs || K.TREE.groups;
+    const sw = [];
+    for (let gi = 0; gi < G.length; gi++) sw.push(K.swayState(t, gi));
+    for (let gi = 0; gi < G.length; gi++) blit(g, G[gi][sw[gi]]);
     if (A.foliage) blit(g, A.foliage);
-    if (A.groups) for (let gi = 0; gi < 7; gi++) blit(g, A.groups[gi][K.swayState(t, gi)]);
+    // tip clumps ride on their twig: same sway state as the twig group
+    if (A.leafGroups) for (let gi = 0; gi < A.leafGroups.length; gi++) blit(g, A.leafGroups[gi][sw[gi]]);
+    if (A.groups) for (let gi = 0; gi < 7; gi++) blit(g, A.groups[gi][sw[gi]]);
   };
 
   S.treeDress = function (g, t) {

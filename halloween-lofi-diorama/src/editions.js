@@ -87,7 +87,7 @@
       sky: 'clear', stars: 0.6, moon: 'crescent', backdrop: 'boston',
       weather: { rain: 0, snow: 0, leaves: 0, petals: 0, fireflies: 0.6 },
       ground: 'summer', tree: 'summer', fire: 'none', fireworks: 0,
-      tags: ['flags-usa-ireland', 'tv-match', 'pub-sign', 'football', 'us-flag-pole', 'window-boxes', 'garden', 'family-home', 'secret-ant-colony'],
+      tags: ['flags-matchday', 'saltire-banner', 'tv-match', 'pub-sign', 'football', 'us-flag-pole', 'window-boxes', 'garden', 'family-home', 'secret-ant-colony'],
     },
     {
       id: 'nyc', name: 'Anniversary in New York', festival: 'Fourth of July', season: 'summer', story: true,

@@ -36,7 +36,7 @@ are out with the family.
 
 | id | name | when | who | backdrop and props |
 |---|---|---|---|---|
-| `match` | Match Night | Jun 11 - Jul 3 | you + partner in the window; niece drops by | Boston skyline at night (Prudential-style tower with antenna, crown-topped glass tower, slab tower). USA and Irish flag bunting on the porch and eaves, a TV glowing green with a tiny match in the ground-left window, an original Irish-pub-style hanging sign (a painted shamrock and a pint, no words), a football in the yard. Once per loop a "goal": windows flash, a short cheer of confetti and 2-3 small green/white/gold fireworks |
+| `match` | Match Night | Jun 11 - Jul 3 | you + partner in the window; niece drops by | Boston skyline at night (Prudential-style tower with antenna, crown-topped glass tower, slab tower). flag bunting on the porch and eaves for the teams that played in Boston: USA, Ireland, Scotland, Norway, France and Germany (small accurate pixel flags, alternating), plus a big Scottish Saltire hanging from the upper window, a TV glowing green with a tiny match in the ground-left window, an original Irish-pub-style hanging sign (a painted shamrock and a pint, no words), a football in the yard. Once per loop a "goal": windows flash, a short cheer of confetti and 2-3 small green/white/gold fireworks |
 | `nyc` | Anniversary in New York | Jul 4 - Jul 7 | you + partner on the porch bench | New York skyline with one tall spire tower and the Statue of Liberty far off in the harbour. July 4th red/white/blue fireworks. A retro orange propliner glides across now and then. Props: square pepperoni pizza box, two lemonades, a heart-shaped lantern. A small heart floats up between them once per loop. US flag on a pole |
 | `la` | West Coast | Jul 8 - Jul 15 | you, niece, sister, brother-in-law | LA at night: palm silhouettes, a downtown skyline with one tall crowned tower, warm plaza string lights with hanging lanterns across the yard, a patio heater glow |
 | `sandiego` | Zoo, Bricks & Bay | Jul 16 - Jul 31 | you (white tee) with the niece riding on your shoulders, waving; sister, brother-in-law | San Diego bay at dusk: palm-lined far shore, calm water band, a small boat. Two giraffes peek over the fence and an elephant silhouette stands far off. A toy-brick castle and an original brick cat sculpture in the yard (blocky primary colours, no minifigures) |
@@ -52,7 +52,8 @@ The existing `summer` edition (Firefly Midsummer) stays as May - Jun 10.
   candle moment and the anniversary heart. It also handles the cats' own small lights,
   if they have any.
 - **house:** `cat-away` empties the series cat's window. It also draws:
-  - bunting: `flags-usa-ireland` and `bunting-party`;
+  - bunting: `flags-matchday` (USA, Ireland, Scotland, Norway, France, Germany) and `bunting-party`;
+  - `saltire-banner`: a big Scottish Saltire hanging from the upper window;
   - `tv-match` in the ground-left window;
   - `pub-sign`, an original hanging sign with a painted shamrock and a pint, hung off the porch;
   - `us-flag-pole`, if it's drawn on the house.

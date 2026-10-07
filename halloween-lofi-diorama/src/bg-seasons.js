@@ -74,7 +74,7 @@
       clouds: {
         far: [mix(N[4], V[3], 0.45), mix(N[6], V[4], 0.4), mix(N[6], P.blossom[3], 0.32), mix(N[6], P.blossom[4], 0.3)],
         mid: [mix(N[3], V[2], 0.45), mix(N[4], V[3], 0.35), mix(N[5], V[3], 0.3), mix(N[7], P.blossom[4], 0.25)],
-        near: [mix(N[2], V[1], 0.5), mix(N[3], V[2], 0.4), mix(N[4], V[2], 0.4), mix(N[6], P.blossom[3], 0.3)],
+        near: [mix(N[2], V[2], 0.5), mix(N[3], V[3], 0.45), mix(N[4], V[3], 0.45), mix(N[6], P.blossom[3], 0.3)],
         lit: { tgt: [P.moon[0], P.moon[0], P.moon[1]], k: [[0.04, 0.07, 0.12, 0.24], [0.08, 0.13, 0.22, 0.42], [0.14, 0.22, 0.36, 0.6]], r: [[52, 10], [34, 7], [20, 4]] },
       },
     },
@@ -93,7 +93,8 @@
       clouds: {
         far: [mix(N[4], V[3], 0.5), mix(V[4], P.autumn[3], 0.32), mix(V[5], P.autumn[3], 0.34), mix(V[5], P.autumn[4], 0.3)],
         mid: [mix(N[2], V[2], 0.5), mix(N[3], V[3], 0.45), mix(N[4], V[3], 0.45), mix(N[5], V[4], 0.45)],
-        near: [mix(N[1], V[1], 0.55), mix(N[2], V[2], 0.5), mix(N[3], V[2], 0.5), mix(N[4], V[3], 0.55)],
+        near: [mix(N[2], V[2], 0.5), mix(N[3], V[3], 0.5), mix(N[4], V[3], 0.5), mix(N[5], V[4], 0.5)],
+        deep: 0.72,
         lit: { tgt: [P.amber[2], P.amber[3], P.amber[4]], k: [[0.08, 0.12, 0.2, 0.4], [0.14, 0.22, 0.36, 0.62], [0.24, 0.36, 0.52, 0.85]], r: [[84, 12], [56, 8], [34, 5]] },
       },
     },
@@ -563,35 +564,47 @@
   // height. Shaded with the classic cloud() so all three layers match, and
   // lit around the moon like the others. (2 tiles / loop, faster than mid.)
   // ------------------------------------------------------------------
-  let brokenGeo = null;
-  function brokenNear() {
-    if (brokenGeo) return brokenGeo;
+  const brokenGeo = new Map();
+  /** deep: how far the overhead banks hang down (spring 1, harvest less) */
+  function brokenNear(deep) {
+    let geo = brokenGeo.get(deep);
+    if (geo) return geo;
     const w = 480;
     const h = 112;
     const rng = HD.rng(5309);
     const tn = new K.Tones(w, h);
-    // overhead banks [x, width, depth]: their tops run out of the frame
-    for (const b of [[4, 150, 1], [196, 112, 0.7], [338, 128, 0.85]]) {
-      const x0 = b[0] + rng() * 14;
+    // overhead banks [x, width, depth]: tops run out of the frame, the lumpy
+    // undersides hang deepest in the middle
+    for (const b of [[0, 172, 1], [200, 124, 0.7], [350, 112, 0.88]]) {
+      const x0 = b[0] + rng() * 12;
       const bw = b[1];
-      const n = Math.max(5, Math.round(bw / 13));
+      const n = Math.max(5, Math.round(bw / 12));
       const body = [];
       for (let i = 0; i < n; i++) {
         const u = (i + 0.5) / n;
         const hump = Math.sin(Math.PI * Math.pow(u, 0.85));
-        const ry = 4 + hump * 8 * b[2] + rng() * 3;
-        body.push([x0 + u * bw + (rng() - 0.5) * 6, 4 + hump * 12 * b[2] + rng() * 6 - ry * 0.4, ry * (1.3 + rng() * 0.5), ry, undefined, rng() < 0.45]);
-        body.push([x0 + u * bw, -8, (bw / n) * 1.3, 10, undefined, false]); // the part above the frame
+        const ry = 4 + hump * 7 + rng() * 3;
+        const bottom = 12 + (6 + 26 * b[2] * deep) * hump + (rng() - 0.5) * 6;
+        const px = x0 + u * bw + (rng() - 0.5) * 6;
+        const prx = ry * (1.3 + rng() * 0.5);
+        body.push([px, bottom - ry, prx, ry, undefined, rng() < 0.45]);
+        body.push([px, -24, prx * 0.9, 24 + bottom - ry, undefined, false]); // solid up out of the frame
       }
       K.cloud(tn, body, true, 3);
       // a straggling tail hanging under one end of the bank
-      const tx = x0 + (rng() < 0.5 ? bw * 0.15 : bw * 0.8);
+      const tx = x0 + (rng() < 0.5 ? bw * 0.12 : bw * 0.72);
       const tail = [];
-      for (let j = 0; j < 3; j++) tail.push([tx + j * (8 + rng() * 5), 22 + b[2] * 10 + rng() * 4, 7 + rng() * 5, 3 + rng() * 2, undefined, j > 0]);
+      const ty = 18 + 14 * b[2] * deep + rng() * 4;
+      for (let j = 0; j < 3; j++) tail.push([tx + j * (8 + rng() * 5), ty + rng() * 3, 7 + rng() * 5, 2.5 + rng() * 2, undefined, j > 0]);
       K.cloud(tn, tail, true, 2);
     }
+    // thin streaks at mid height (fewer when the banks are shallow)
+    for (const st of [[96, 58], [262, 70], [420, 50]].slice(0, deep >= 1 ? 3 : 2)) {
+      const sx = st[0] + rng() * 20;
+      cloud2(tn, [[sx, st[1], 16 + rng() * 10, 2.5, st[1] + 1, false], [sx + 14 + rng() * 6, st[1] - 1.5, 10 + rng() * 6, 2.5, st[1] + 1, true]]);
+    }
     // lower clumps [x, width, base y], staggered under the gaps between banks
-    for (const c of [[150, 70, 96], [300, 92, 104], [440, 64, 92]]) {
+    for (const c of [[150, 74, 96], [296, 96, 104], [440, 66, 92]]) {
       const x0 = c[0] + rng() * 12;
       const cw = c[1];
       const yb = c[2];
@@ -600,15 +613,17 @@
       for (let i = 0; i < n; i++) {
         const u = (i + 0.5) / n;
         const hump = Math.sin(Math.PI * Math.pow(u, 0.8));
-        const ry = 3 + hump * 6 + rng() * 2;
+        const ry = 3 + hump * 7 + rng() * 2;
         body.push([x0 + u * cw + (rng() - 0.5) * 5, yb - ry * 0.55 - rng() * 2, ry * (1.3 + rng() * 0.5), ry, yb + (rng() < 0.3 ? 2 : 0), rng() < 0.4]);
       }
       K.cloud(tn, body, true, 3);
     }
     K.tidy(tn, 2);
-    brokenGeo = { y: 0, w, h, k: 2, tn };
-    return brokenGeo;
+    geo = { y: 0, w, h, k: 2, tn };
+    brokenGeo.set(deep, geo);
+    return geo;
   }
+  const cloud2 = (tn, puffs) => K.cloud(tn, puffs, true, 1);
 
   function bakeClouds(ed) {
     const lk = lookOf(ed);
@@ -620,7 +635,7 @@
     if (cl.lit && ed.moon !== 'none') masks = cl.lit.r.map((r) => K.radialMask(MR.w, MR.h, MOON.x - MR.x, MOON.y - MR.y, r[0], r[1]));
     const deck = cl.deck ? deckLayers() : null;
     K.LAYERS.forEach((Ly0, i) => {
-      const Ly = deck ? deck[ids[i]] : ids[i] === 'near' ? brokenNear() : Ly0;
+      const Ly = deck ? deck[ids[i]] : ids[i] === 'near' ? brokenNear(cl.deep || 1) : Ly0;
       const pal = deck ? Ly && deckPalette(Ly.rows, cl.deck) : cl[ids[i]];
       if (!pal) return;
       const L = { Ly, cv: K.tonesToCanvas(Ly.tn, pal), lit: null, masks };
