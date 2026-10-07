@@ -1,6 +1,6 @@
-# Rainy Hollow: the seasons series
+# Purrfect Year: the seasons series
 
-Rainy Hollow is one cottage seen on eight nights across the year. The
+Purrfect Year is one cottage seen on eight nights across the year. The
 **same black cat sits in the same upper-right window in every edition, with
 the same sprite and animation.** That cat is the series mascot, so don't give
 it costumes, change its pose or move it. Everything else around the cat

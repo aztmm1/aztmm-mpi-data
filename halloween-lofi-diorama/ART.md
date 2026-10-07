@@ -1,4 +1,4 @@
-# Rainy Hollow: art direction and module contract
+# Purrfect Year: art direction and module contract
 
 This is an animated pixel-art Halloween diorama used as the looping cover of a
 10-hour lofi music video. It plays full-screen at 1080p (and 4K) for hours, so

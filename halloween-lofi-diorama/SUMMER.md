@@ -1,4 +1,4 @@
-# Rainy Hollow: the Summer Story
+# Purrfect Year: the Summer Story
 
 The Summer Story is six extra summer editions that tell one family's summer, with the
 family drawn as cats. These chapters follow every SEASONS.md and ART.md rule:

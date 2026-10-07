@@ -9,7 +9,7 @@
 //     [--pad WxH]                     centre the scaled picture on a black WxH canvas
 //   e.g. vertical 9:16 short: --loop 60 --crop 152,0,154,270 --scale 7 --pad 1080x1920
 //     [--fade S]                      fade in from / out to black over S seconds
-//     [--edition id]                  which Rainy Hollow edition to render
+//     [--edition id]                  which Purrfect Year edition to render
 // Frame i shows t = start + i/fps, and frame LOOP*fps would equal frame 0,
 // so repeating the file back-to-back is seamless.
 import { spawn } from 'node:child_process';
