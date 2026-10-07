@@ -1,21 +1,21 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-07T13:00:37Z",
+  "computed_at": "2026-10-07T13:16:10Z",
   "asOf": "2026-10-06",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 62,
+    "mpi_score": 66,
     "mpi_label": "Bull",
     "regime": "Sideways",
     "regime_label": "Neutral",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 57,
-      "ci_high": 67
+      "ci_low": 61,
+      "ci_high": 71
     },
     "signal": {
       "bias": "Bullish",
-      "strength": "Medium"
+      "strength": "High"
     },
     "market": {
       "spy_spot": 779.09,
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.402,
-      "probability_up": 0.402,
+      "confidence": 0.4139,
+      "probability_up": 0.4139,
       "probability_flat": 0.3826,
-      "probability_down": 0.2154
+      "probability_down": 0.2034
     },
     "hmm": {
       "state": "Sideways",
@@ -68,13 +68,15 @@
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 68.8,
-        "t10y2y_pct": 0.47,
+        "score": 69.2,
+        "t10y2y_pct": 0.48,
         "dgs10": 5.31,
         "dgs2": 4.84
       },
       "credit": {
-        "score": 50.0
+        "score": 82.6,
+        "hy_oas_pct": 3.12,
+        "ig_oas_pct": 0.84
       },
       "sentiment": {
         "score": 47.3,
