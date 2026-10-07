@@ -660,7 +660,15 @@
     if (has(ed, 'xmas-tree')) xmasTree(I, gr);
     if (ed.id === 'summer') {
       // a jug of meadow flowers where the jack-o'-lantern sat
-      rowsW(I, gr, ['.f.f.f.', 'flflflf', '.l.l.l.', '..lll..', '..jjj..', '.jjjjj.', '.jjjjj.', '..jjj..'], 4, gr.gh - 8, { f: A[1], l: A[0], j: A[0] });
+      rowsW(I, gr, ['.f.g.r.', 'gltlflg', '.l.l.l.', '..lll..', '..jjj..', '.jJjjj.', '.jJjjj.', '..jjj..'], 4, gr.gh - 8, {
+        f: BL[5],
+        g: GD[5],
+        r: RD[5],
+        t: BN[4],
+        l: LF[3],
+        j: A[0],
+        J: A[1],
+      });
     }
     if (ed.id === 'lights') {
       // a brass pot of marigolds and a small lamp on the inner sill
@@ -879,7 +887,7 @@
     sill('ground-left', [2, 12]);
     sill('ground-right', [1, 10]);
     sill('upper-left', [1, 8]);
-    sill('upper-right', [-2, 16]);
+    sill('upper-right', [-3, 20]); // sill ends, clear of the cat
     sill('turret-lower', [3]);
     sill('turret-upper', [3]);
     g.push([
