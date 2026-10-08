@@ -8732,11 +8732,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.0112,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0172,
+    "resolved_date": "2026-10-07",
+    "note": "SPY 21-session move +1.72% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-8-september-2026:watch1",
