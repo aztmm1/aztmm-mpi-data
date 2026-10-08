@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-08T19:17:11Z",
+  "computed_at": "2026-10-08T19:57:46Z",
   "asOf": "2026-10-08",
   "stale_threshold_hours": 18,
   "data": {
@@ -18,16 +18,16 @@
       "strength": "Medium"
     },
     "market": {
-      "spy_spot": 772.96,
-      "expected_move_1sigma": 7.34,
+      "spy_spot": 773.73,
+      "expected_move_1sigma": 7.35,
       "expected_move_pct": 0.0095
     },
     "volatility": {
       "vix": 15.08,
       "vix3m": 17.72,
-      "vrp": 4.83,
+      "vrp": 4.9,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 10.25
+      "realized_vol_20d_pct": 10.18
     },
     "compass": {
       "bias": "Neutral",
@@ -48,17 +48,17 @@
     "sub_indicators": {
       "trend": {
         "score": 78.8,
-        "spy_close": 772.96,
-        "ma50": 766.82,
-        "ma200": 722.45,
-        "cross_ratio_pct": 6.141,
-        "ma50_slope_pct": 0.744
+        "spy_close": 773.73,
+        "ma50": 766.83,
+        "ma200": 722.46,
+        "cross_ratio_pct": 6.142,
+        "ma50_slope_pct": 0.746
       },
       "breadth": {
-        "score": 42.1,
-        "cyclical_defensive_ratio": 1.3615,
-        "cyc_def_percentile_1y": 66.7,
-        "iwm_spy_percentile_1y": 5.2
+        "score": 42.7,
+        "cyclical_defensive_ratio": 1.3633,
+        "cyc_def_percentile_1y": 67.5,
+        "iwm_spy_percentile_1y": 5.6
       },
       "volatility": {
         "score": 82.9,
@@ -79,19 +79,19 @@
         "ig_oas_pct": 0.82
       },
       "sentiment": {
-        "score": 37.8,
-        "cnn_fg": 37.8
+        "score": 37.9,
+        "cnn_fg": 37.9
       },
       "rotation": {
         "score": 73.0,
-        "xlu_xly_ratio": 0.3676,
+        "xlu_xly_ratio": 0.3677,
         "xlu_xly_percentile_1y": 27.0
       },
       "currency": {
-        "score": 19.3,
-        "uup": 28.995,
+        "score": 19.5,
+        "uup": 28.99,
         "uup_50d_ma": 28.299,
-        "uup_vs_ma_pct": 2.46,
+        "uup_vs_ma_pct": 2.443,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
