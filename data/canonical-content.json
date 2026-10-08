@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-07T20:46:16Z",
+  "generated_at": "2026-10-08T01:17:25Z",
   "mpi": {
     "score": 64,
     "regime": "Neutral",
@@ -19,11 +19,11 @@
     "vrp": 4.71
   },
   "latest_daily_pulse": {
-    "id": 4157,
-    "url": "https://somerquant.com/2026/10/06/daily-pulse-options-flow-dark-pool-6-october-2026/",
-    "title": "SomerQuant Daily: Options Flow and Dark Pool, 6 October 2026",
-    "date": "2026-10-06",
-    "snippet": "SomerQuant Daily &middot; Options flow and dark poolThe dark-pool board came to $16.49B, the lightest of the five sessions on our recordMarket-wide net options premium gave up $290.3M between its 11:05 AM peak and the close, and the index still finished 0.55% higher.6 October\u2026",
+    "id": 4158,
+    "url": "https://somerquant.com/2026/10/07/daily-pulse-options-flow-dark-pool-7-october-2026/",
+    "title": "SomerQuant Daily: Options Flow and Dark Pool, 7 October 2026",
+    "date": "2026-10-07",
+    "snippet": "SomerQuant Daily \u00b7 Options flow and dark poolNet options premium printed below zero in 78 of its 79 five-minute readingsThe $100M and above dark-pool board came to $13.91B across 67 prints, the lightest of the five sessions on our record.7 October 2026. EOD read. Market-wide\u2026",
     "kind": "daily"
   },
   "latest_weekly_pulse": {
@@ -35,6 +35,14 @@
     "kind": "weekly"
   },
   "recent_pulses": [
+    {
+      "id": 4158,
+      "url": "https://somerquant.com/2026/10/07/daily-pulse-options-flow-dark-pool-7-october-2026/",
+      "title": "SomerQuant Daily: Options Flow and Dark Pool, 7 October 2026",
+      "date": "2026-10-07",
+      "snippet": "SomerQuant Daily \u00b7 Options flow and dark poolNet options premium printed below zero in 78 of its 79 five-minute readingsThe $100M and above dark-pool board came to $13.91B across 67 prints, the lightest of the five sessions on our record.7 October 2026. EOD read. Market-wide\u2026",
+      "kind": "daily"
+    },
     {
       "id": 4157,
       "url": "https://somerquant.com/2026/10/06/daily-pulse-options-flow-dark-pool-6-october-2026/",
@@ -65,14 +73,6 @@
       "title": "SomerQuant Daily: Options Flow and Dark Pool, 2 October 2026",
       "date": "2026-10-02",
       "snippet": "SomerQuant Daily \u00b7 Options flow and dark poolETF wrappers carried 49.0% of the dark-pool board, down 19.8 points against ThursdayMarket-wide net options premium printed above zero in all 78 of its five-minute readings and finished at +$87.9M.2 October 2026. EOD read. The $100M\u2026",
-      "kind": "daily"
-    },
-    {
-      "id": 4103,
-      "url": "https://somerquant.com/2026/10/01/daily-pulse-options-flow-dark-pool-1-october-2026/",
-      "title": "SomerQuant Daily: Options Flow and Dark Pool, 1 October 2026",
-      "date": "2026-10-01",
-      "snippet": "SomerQuant Daily \u00b7 Options flow and dark poolNet options premium printed below zero in 78 of 79 readings and the index still closed higherThe $100M and above dark-pool board came to $18.57B across 89 prints, the lightest of the five sessions on our record.1 October 2026. EOD\u2026",
       "kind": "daily"
     }
   ],
