@@ -1,17 +1,17 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-09T08:30:47Z",
+  "computed_at": "2026-10-09T13:00:39Z",
   "asOf": "2026-10-08",
   "stale_threshold_hours": 18,
   "data": {
-    "mpi_score": 63,
+    "mpi_score": 62,
     "mpi_label": "Bull",
     "regime": "Sideways",
     "regime_label": "Neutral",
     "confidence": {
       "ci_level": "85%",
-      "ci_low": 58,
-      "ci_high": 68
+      "ci_low": 57,
+      "ci_high": 67
     },
     "signal": {
       "bias": "Bullish",
@@ -31,10 +31,10 @@
     },
     "compass": {
       "bias": "Neutral",
-      "confidence": 0.405,
-      "probability_up": 0.405,
+      "confidence": 0.402,
+      "probability_up": 0.402,
       "probability_flat": 0.3826,
-      "probability_down": 0.2124
+      "probability_down": 0.2154
     },
     "hmm": {
       "state": "Sideways",
@@ -95,9 +95,8 @@
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
-        "score": 55.0,
-        "m2_latest": 23342.8,
-        "note": "trend proxy"
+        "score": 50.0,
+        "note": "M2 unavailable; using neutral 50"
       }
     }
   },
