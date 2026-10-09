@@ -8836,11 +8836,11 @@
     "statement": "Regime Bull · early",
     "direction": "up",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": -0.011,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0176,
+    "resolved_date": "2026-10-08",
+    "note": "SPY 21-session move +1.76% vs regime read 'up'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-9-september-2026:watch1",
