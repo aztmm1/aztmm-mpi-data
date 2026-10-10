@@ -1438,6 +1438,22 @@
     "currency": 19.9,
     "liquidity": 55.0
    }
+  },
+  {
+   "date": "2026-10-09",
+   "score": 65,
+   "regime": "Crisis \u00b7 early",
+   "subs": {
+    "trend": 79.1,
+    "breadth": 40.7,
+    "volatility": 86.0,
+    "yield_curve": 67.6,
+    "credit": 82.2,
+    "sentiment": 45.0,
+    "rotation": 75.0,
+    "currency": 18.9,
+    "liquidity": 55.0
+   }
   }
  ]
 }
