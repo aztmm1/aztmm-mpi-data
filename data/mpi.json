@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-14T00:55:08Z",
+  "computed_at": "2026-10-14T01:36:29Z",
   "asOf": "2026-10-13",
   "stale_threshold_hours": 18,
   "data": {
@@ -18,16 +18,16 @@
       "strength": "Medium"
     },
     "market": {
-      "spy_spot": 778.48,
-      "expected_move_1sigma": 7.46,
+      "spy_spot": 778.01,
+      "expected_move_1sigma": 7.48,
       "expected_move_pct": 0.0096
     },
     "volatility": {
-      "vix": 15.21,
+      "vix": 15.27,
       "vix3m": 17.96,
-      "vrp": 5.67,
+      "vrp": 5.72,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 9.54
+      "realized_vol_20d_pct": 9.55
     },
     "compass": {
       "bias": "Bullish",
@@ -48,23 +48,23 @@
     "sub_indicators": {
       "trend": {
         "score": 79.2,
-        "spy_close": 778.48,
-        "ma50": 768.61,
+        "spy_close": 778.01,
+        "ma50": 768.6,
         "ma200": 723.82,
-        "cross_ratio_pct": 6.188,
-        "ma50_slope_pct": 0.808
+        "cross_ratio_pct": 6.187,
+        "ma50_slope_pct": 0.806
       },
       "breadth": {
-        "score": 35.7,
-        "cyclical_defensive_ratio": 1.3484,
-        "cyc_def_percentile_1y": 57.9,
+        "score": 36.0,
+        "cyclical_defensive_ratio": 1.3496,
+        "cyc_def_percentile_1y": 58.3,
         "iwm_spy_percentile_1y": 2.4
       },
       "volatility": {
-        "score": 80.7,
-        "vix": 15.21,
+        "score": 80.2,
+        "vix": 15.27,
         "vix3m": 17.96,
-        "vix_percentile_1y": 14.7,
+        "vix_percentile_1y": 15.5,
         "term_shape": "Contango"
       },
       "yield_curve": {
@@ -83,9 +83,9 @@
         "cnn_fg": 44.7
       },
       "rotation": {
-        "score": 64.3,
-        "xlu_xly_ratio": 0.3722,
-        "xlu_xly_percentile_1y": 35.7
+        "score": 63.9,
+        "xlu_xly_ratio": 0.3726,
+        "xlu_xly_percentile_1y": 36.1
       },
       "currency": {
         "score": 20.6,
