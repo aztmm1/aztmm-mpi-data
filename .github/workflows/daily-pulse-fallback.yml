@@ -3,7 +3,9 @@ name: Daily Pulse Fallback Publisher
 # Server-side safety net for the desktop Daily Pulse publisher.
 # Runs after the desktop publisher's window; publishes a condensed
 # data-only edition ONLY if today's post is missing.
-# 22:45 UTC = 6:45 PM EDT / 5:45 PM EST.
+# 00:15 UTC Tue-Sat = 8:15 PM EDT / 7:15 PM EST Mon-Fri (moved 2026-10-14 by owner:
+# the Daily now publishes at 7:00 PM ET, so the safety net must run after it in both
+# daylight and standard time; the script dates the run in ET, so the ET day is unchanged).
 #
 # Required repo secrets (create a WordPress Application Password in
 # wp-admin -> Users -> Profile -> Application Passwords):
@@ -13,7 +15,7 @@ name: Daily Pulse Fallback Publisher
 
 on:
   schedule:
-    - cron: "45 22 * * 1-5"
+    - cron: "15 0 * * 2-6"
   workflow_dispatch: {}
 
 permissions:
