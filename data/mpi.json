@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "computed_at": "2026-10-13T20:45:42Z",
+  "computed_at": "2026-10-14T00:55:08Z",
   "asOf": "2026-10-13",
   "stale_threshold_hours": 18,
   "data": {
@@ -18,16 +18,16 @@
       "strength": "Medium"
     },
     "market": {
-      "spy_spot": 777.3,
-      "expected_move_1sigma": 7.45,
+      "spy_spot": 778.48,
+      "expected_move_1sigma": 7.46,
       "expected_move_pct": 0.0096
     },
     "volatility": {
       "vix": 15.21,
-      "vix3m": 17.93,
-      "vrp": 5.64,
+      "vix3m": 17.96,
+      "vrp": 5.67,
       "term_shape": "Contango",
-      "realized_vol_20d_pct": 9.57
+      "realized_vol_20d_pct": 9.54
     },
     "compass": {
       "bias": "Bullish",
@@ -48,11 +48,11 @@
     "sub_indicators": {
       "trend": {
         "score": 79.2,
-        "spy_close": 777.3,
-        "ma50": 768.59,
-        "ma200": 723.81,
-        "cross_ratio_pct": 6.186,
-        "ma50_slope_pct": 0.805
+        "spy_close": 778.48,
+        "ma50": 768.61,
+        "ma200": 723.82,
+        "cross_ratio_pct": 6.188,
+        "ma50_slope_pct": 0.808
       },
       "breadth": {
         "score": 35.7,
@@ -63,13 +63,13 @@
       "volatility": {
         "score": 80.7,
         "vix": 15.21,
-        "vix3m": 17.93,
+        "vix3m": 17.96,
         "vix_percentile_1y": 14.7,
         "term_shape": "Contango"
       },
       "yield_curve": {
-        "score": 67.6,
-        "t10y2y_pct": 0.44,
+        "score": 66.8,
+        "t10y2y_pct": 0.42,
         "dgs10": 5.24,
         "dgs2": 4.8
       },
@@ -83,15 +83,15 @@
         "cnn_fg": 44.7
       },
       "rotation": {
-        "score": 63.9,
-        "xlu_xly_ratio": 0.3726,
-        "xlu_xly_percentile_1y": 36.1
+        "score": 64.3,
+        "xlu_xly_ratio": 0.3722,
+        "xlu_xly_percentile_1y": 35.7
       },
       "currency": {
-        "score": 20.4,
-        "uup": 29.025,
+        "score": 20.6,
+        "uup": 29.02,
         "uup_50d_ma": 28.352,
-        "uup_vs_ma_pct": 2.372,
+        "uup_vs_ma_pct": 2.355,
         "note": "UUP ETF used as USD proxy; do not interpret as DXY level"
       },
       "liquidity": {
