@@ -9252,11 +9252,11 @@
     "statement": "Regime Neutral",
     "direction": "flat",
     "horizon_days": 21,
-    "status": "open",
+    "status": "hit",
     "ret_5d": 0.0236,
-    "ret_21d": null,
-    "resolved_date": null,
-    "note": null
+    "ret_21d": 0.0186,
+    "resolved_date": "2026-10-14",
+    "note": "SPY 21-session move +1.86% vs regime read 'flat'"
   },
   {
     "id": "daily-pulse-options-flow-dark-pool-15-september-2026:watch1",
