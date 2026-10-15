@@ -1489,15 +1489,15 @@
   },
   {
    "date": "2026-10-14",
-   "score": 58,
+   "score": 55,
    "regime": "Bull \u00b7 early",
    "subs": {
     "trend": 78.8,
     "breadth": 22.5,
-    "volatility": 80.2,
+    "volatility": 59.3,
     "yield_curve": 64.8,
     "credit": 82.1,
-    "sentiment": 32.4,
+    "sentiment": 29.9,
     "rotation": 60.7,
     "currency": 17.0,
     "liquidity": 55.0
