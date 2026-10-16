@@ -1510,10 +1510,10 @@
    "subs": {
     "trend": 78.4,
     "breadth": 19.1,
-    "volatility": 59.3,
+    "volatility": 63.5,
     "yield_curve": 63.2,
     "credit": 81.0,
-    "sentiment": 31.5,
+    "sentiment": 32.1,
     "rotation": 73.8,
     "currency": 23.1,
     "liquidity": 55.0
