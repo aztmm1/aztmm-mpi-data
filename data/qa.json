@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "rubric": "v2.2",
-  "generated_at": "2026-10-16T12:07:44Z",
-  "as_of_session": "2026-10-15",
+  "generated_at": "2026-10-17T11:26:21Z",
+  "as_of_session": "2026-10-16",
   "score": 94,
   "grade": "A",
   "critical_fail": false,
@@ -37,7 +37,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "computed_at 2026-10-16T07:53:55Z vs 2026-10-15 18:00 ET window; asOf 2026-10-15"
+      "detail": "computed_at 2026-10-17T06:34:49Z vs 2026-10-16 18:00 ET window; asOf 2026-10-16"
     },
     {
       "id": "F2",
@@ -46,7 +46,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "canonical embeds 2026-10-16T07:53:55Z (mpi 2026-10-16T07:53:55Z); generated 2026-10-16T08:11:53Z"
+      "detail": "canonical embeds 2026-10-17T06:34:49Z (mpi 2026-10-17T06:34:49Z); generated 2026-10-17T07:48:49Z"
     },
     {
       "id": "F3",
@@ -55,7 +55,7 @@
       "critical": false,
       "pass": false,
       "unverified": false,
-      "detail": "latest daily pulse none vs last session 2026-10-15"
+      "detail": "latest daily pulse none vs last session 2026-10-16"
     },
     {
       "id": "F4",
@@ -82,7 +82,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "mpi 56 vs canonical 56"
+      "detail": "mpi 48 vs canonical 48"
     },
     {
       "id": "C2",
@@ -91,7 +91,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "asOf 2026-10-15 vs canonical 2026-10-15"
+      "detail": "asOf 2026-10-16 vs canonical 2026-10-16"
     },
     {
       "id": "C3",
@@ -100,7 +100,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 771.79 vs canonical 771.79"
+      "detail": "spy_spot 763.25 vs canonical 763.25"
     },
     {
       "id": "C4",
@@ -109,7 +109,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "regime_label 'Bull \u00b7 early' vs canonical 'Bull \u00b7 early'"
+      "detail": "regime_label 'Neutral' vs canonical 'Neutral'"
     },
     {
       "id": "M1",
@@ -118,7 +118,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "label 'Neutral' for score 56 (band Neutral)"
+      "detail": "label 'Neutral' for score 48 (band Neutral)"
     },
     {
       "id": "M3",
@@ -127,7 +127,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "regime 'Bull' vs HMM state 'Bull'"
+      "detail": "regime 'Sideways' vs HMM state 'Sideways'"
     },
     {
       "id": "M4",
@@ -136,7 +136,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "CI 51-61 brackets 56"
+      "detail": "CI 43-53 brackets 48"
     },
     {
       "id": "M5",
@@ -154,7 +154,7 @@
       "critical": true,
       "pass": true,
       "unverified": false,
-      "detail": "spy_spot 771.79 vs Yahoo 771.79 for 2026-10-15"
+      "detail": "spy_spot 763.25 vs Yahoo 763.25 for 2026-10-16"
     },
     {
       "id": "H2",
@@ -163,7 +163,7 @@
       "critical": false,
       "pass": true,
       "unverified": false,
-      "detail": "vix 16.46 vs CBOE 16.46 for 2026-10-15"
+      "detail": "vix 19.99 vs CBOE 19.99 for 2026-10-16"
     },
     {
       "id": "H3",
